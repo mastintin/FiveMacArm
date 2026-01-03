@@ -1,0 +1,56 @@
+
+HB_FUNC( SCREENTOPASTEBOARD )
+{
+  if (@available(macOS 14.0, *)) {
+      dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+      __block CGImageRef capturedImage = NULL;
+      
+      [SCShareableContent getShareableContentWithCompletionHandler:^(SCShareableContent *content, NSError *error) {
+          if (error) {
+              NSLog(@"SCShareableContent error: %@", error);
+              dispatch_semaphore_signal(sema);
+              return;
+          }
+
+          SCDisplay *display = [content.displays firstObject];
+          if (!display) {
+               dispatch_semaphore_signal(sema);
+               return;
+          }
+
+          SCContentFilter *filter = [[SCContentFilter alloc] initWithDisplay:display excludingWindows:@[]];
+          SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
+          config.width = display.width;
+          config.height = display.height;
+          config.showsCursor = NO;
+
+          [SCScreenshotManager captureImageWithFilter:filter configuration:config completionHandler:^(CGImageRef image, NSError *error) {
+              if (image) {
+                 capturedImage = CGImageRetain(image);
+              } else {
+                 NSLog(@"Capture failed: %@", error);
+              }
+              dispatch_semaphore_signal(sema);
+          }];
+      }];
+
+      // Wait for async capture (timeout 5s)
+      dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+      
+      if (capturedImage) {
+          NSPasteboard * pasteBoard = hb_parptr( 1 );
+          NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc] initWithCGImage: capturedImage] autorelease];
+          NSDictionary * dict = [NSDictionary dictionaryWithObject: [NSNumber numberWithFloat:0.5] forKey:NSImageCompressionFactor];
+          NSData *data = [rep representationUsingType: NSPNGFileType properties: dict];
+          BOOL success = [pasteBoard setData:data forType:NSPasteboardTypePNG];
+          
+          CGImageRelease(capturedImage);
+          hb_retl( success );
+      } else {
+          hb_retl( FALSE );
+      }
+  } else {
+      // Fallback for older macOS (or return false if obsolete)
+      hb_retl( FALSE ); 
+  }
+}
