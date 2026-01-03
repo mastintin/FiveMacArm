@@ -1,0 +1,20 @@
+proyectos fivemac/
+harbour/
+*.app
+*.o
+*.a
+*.obj
+*.log
+.DS_Store
+fivemac/samples/testweb.c
+fivemac/samples/test.c
+fivemac/samples/testav.c
+fivemac/samples/testdbf.c
+fivemac/samples/testexec.c
+fivemac/samples/testmget.c
+fivemac/samples/testprn3.c
+fivemac/samples/testprn4.c
+fivemac/samples/testprn5.c
+fivemac/samples/testsavefile.c
+fivemac/samples/testscreenshot.c
+*.dSYM

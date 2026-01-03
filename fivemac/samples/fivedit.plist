@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Color-Strings</key>
+	<string></string>
+	<key>ExtraFrameWorks</key>
+	<array>
+		<string>Scintilla</string>
+	</array>
+	<key>FrameWorks</key>
+	<array>
+		<string>Cocoa</string>
+		<string>WebKit</string>
+		<string>QTkit</string>
+		<string>Quartz</string>
+	</array>
+	<key>HarbLibs</key>
+	<array>
+		<string>hbdebug</string>
+		<string>hbvm</string>
+		<string>hbrtl</string>
+		<string>hblang</string>
+		<string>hbrdd</string>
+		<string>hbrtl</string>
+		<string>gttrm</string>
+		<string>hbvm</string>
+		<string>hbmacro</string>
+		<string>hbpp</string>
+		<string>rddntx</string>
+		<string>rddcdx</string>
+		<string>rddfpt</string>
+		<string>hbsix</string>
+		<string>hbcommon</string>
+		<string>hbcplr</string>
+	</array>
+	<key>LastFiles</key>
+	<array>
+		<string></string>
+		<string></string>
+		<string></string>
+		<string></string>
+		<string></string>
+		<string></string>
+		<string></string>
+		<string></string>
+		<string></string>
+	</array>
+	<key>PathFiveMac</key>
+	<string>/Users/~/fivemac</string>
+	<key>PathHarbour</key>
+	<string>/Users/~/harbour</string>
+	<key>PathSDK</key>
+	<string>/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk</string>
+</dict>
+</plist>
