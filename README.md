@@ -9,6 +9,7 @@
 - **Modern Support**: 
   - Optimized for **Apple Silicon (ARM64)** and Intel. (Harbour binaries included are compiled for ARM64).
   - Built using **macOS SDK 15.4 / 26.2** (dynamically detected).
+  - **Scintilla Framework** recompiled for **ARM64**.
   - Support for **SF Symbols** (`ImgSymbols`) alongside traditional bitmaps.
   - Updated build system using `clang` and dynamic SDK path detection.
 
