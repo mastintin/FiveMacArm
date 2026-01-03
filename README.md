@@ -7,7 +7,8 @@
 - **Native UI**: Uses standard Cocoa controls (`NSWindow`, `NSButton`, `NSToolbar`, `WKWebView`, etc.) for a true native look and feel.
 - **Harbour Integration**: Familiar syntax for FiveWin/Harbour developers.
 - **Modern Support**: 
-  - Optimized for Apple Silicon (M1/M2/M3/M4) and Intel.
+  - Optimized for **Apple Silicon (ARM64)** and Intel. (Harbour binaries included are compiled for ARM64).
+  - Built using **macOS SDK 15.4 / 26.2** (dynamically detected).
   - Support for **SF Symbols** (`ImgSymbols`) alongside traditional bitmaps.
   - Updated build system using `clang` and dynamic SDK path detection.
 
