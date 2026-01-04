@@ -175,6 +175,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bLine, aHeaders, bChange,;
    ::lVscroll = .T.
 
    ::hWnd     = BrwCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
+   
    ::oWnd     = oWnd
    ::bLine    = bLine
    ::aHeaders = aHeaders

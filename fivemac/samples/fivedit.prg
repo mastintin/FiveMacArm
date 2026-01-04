@@ -893,7 +893,7 @@ return nil
 
 function BuildButtonBar()
 
-   local oBar, oSeg
+   local oBar, oBtnSearch, oSeg
 
    DEFINE TOOLBAR oBar OF oWnd
 
@@ -952,8 +952,7 @@ function BuildButtonBar()
 
    oBar:AddSpace()
 
-
-   oBar:AddSearch( , "Text to find",;
+   oBtnSearch = oBar:AddGet( , "Text to find",;
                    { | oGet | oEditor:FindText( oGet:GetText(), .T. ) } )
 
    DEFINE BUTTON OF oBar PROMPT "Previous" ;
@@ -969,12 +968,12 @@ function BuildButtonBar()
    DEFINE BUTTON OF oBar PROMPT "Replace" ;
       TOOLTIP "Search and replace" ;
        IMAGE ImgSymbols( "pencil.and.outline", "Replace" ) ;
-       ACTION oEditor:Replace()
+       ACTION EditReplace()
 
    DEFINE BUTTON OF oBar PROMPT "Goto Line" ;
       TOOLTIP "Go to a line number" ;
        IMAGE  ImgSymbols( "list.number", "Go Line" ) ;
-       ACTION oEditor:DlgGotoLine()
+       ACTION EditGotoLine()
 
    oBar:AddSpace()
 
@@ -2159,6 +2158,78 @@ function Usamos( fichero, alias )
 return  ! NetErr()
 
 //------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------//
+
+function EditGotoLine()
+
+   local cLine := Space( 20 )
+   
+   if MsgGet( "Goto Line", "Line:", @cLine )
+      if Val( cLine ) != 0
+         oEditor:GotoLineEnsureVisible( Val( cLine ) - 1 )
+         oEditor:SetFocus()
+         oEditor:Send( SCI_SETFOCUS, 1, 0 )
+      endif
+   endif
+
+return nil
+
+//----------------------------------------------------------------------------//
+
+function EditReplace()
+
+   local oDlg, oGet1, oGet2
+   local cFind := Space( 50 )
+   local cRep  := Space( 50 )
+   
+   DEFINE DIALOG oDlg TITLE "Replace" ;
+      FROM 220, 350 TO 380, 800
+
+   @ 132, 10 SAY "Find:" OF oDlg SIZE 80, 17
+
+   @ 130, 100 GET oGet1 VAR cFind OF oDlg SIZE 200, 22
+
+   @ 92, 10 SAY "Replace:" OF oDlg SIZE 80, 17
+
+   @ 90, 100 GET oGet2 VAR cRep OF oDlg SIZE 200, 22
+
+   @ 130, 320 BUTTON "Next" OF oDlg SIZE 80, 20 ;
+      ACTION FindNextWrap( oEditor, AllTrim( cFind ) )
+
+   @ 90, 320 BUTTON "Replace" OF oDlg SIZE 80, 20 ;
+      ACTION ( oEditor:ReplaceSel( AllTrim( cRep ) ),;
+               FindNextWrap( oEditor, AllTrim( cFind ) ) )
+
+   @ 50, 320 BUTTON "All" OF oDlg SIZE 80, 20 ;
+      ACTION ReplaceAll( oEditor, AllTrim( cFind ), AllTrim( cRep ) )
+
+   @ 10, 320 BUTTON "Exit" OF oDlg SIZE 80, 20 ACTION oDlg:End()
+   
+   ACTIVATE DIALOG oDlg CENTERED
+
+return nil
+
+static function FindNextWrap( oEditor, cFind )
+
+   if ! oEditor:SearchForward( cFind )
+      oEditor:GoTop()
+      if ! oEditor:SearchForward( cFind )
+         MsgBeep()
+      endif
+   endif
+
+return nil   
+
+static function ReplaceAll( oEditor, cFind, cRep )
+
+   oEditor:GoTop()
+
+   while oEditor:SearchForward( cFind )
+      oEditor:ReplaceSel( cRep )
+   end
+
+return nil
 
 #pragma BEGINDUMP
 

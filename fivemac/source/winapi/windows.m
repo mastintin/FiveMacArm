@@ -3,6 +3,8 @@
 static PHB_SYMB symFMH = NULL;
 static NSWindow *wndMain = NULL;
 
+void CocoaInit(void);
+
 @interface PrnView : NSView {
 @public
   NSWindow *hWnd;
@@ -562,7 +564,12 @@ HB_FUNC(WNDSETTEXT) {
 
 HB_FUNC(WNDGETTEXT) {
   NSWindow *window = (NSWindow *)hb_parnl(1);
-  NSString *string = [window title];
+  NSString *string;
+
+  if ([window isKindOfClass:[NSControl class]])
+    string = [((NSControl *)window) stringValue];
+  else
+    string = [window title];
 
   hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
 }
@@ -580,11 +587,11 @@ HB_FUNC(WNDTOP) {
   if (HB_ISNUM(2)) {
     frame.origin.y = hb_parnl(2);
 
-    if ([[window className] isEqual:@"NSPanel"])
+    if ([window isKindOfClass:[NSWindow class]])
       [window setFrame:frame display:YES];
     else {
-      [((NSControl *)window) setFrame:frame];
-      [[((NSControl *)window) window] display];
+      [((NSView *)window) setFrame:frame];
+      // [ [ ( ( NSControl * ) window ) window ] display ];
     }
   }
 
@@ -603,7 +610,7 @@ HB_FUNC(WNDLEFT) {
 
   if (HB_ISNUM(2)) {
     frame.origin.x = hb_parnl(2);
-    if ([[window className] isEqual:@"NSPanel"])
+    if ([window isKindOfClass:[NSWindow class]])
       [window setFrame:frame display:YES];
     else {
       [((NSControl *)window) setFrame:frame];
@@ -626,7 +633,7 @@ HB_FUNC(WNDWIDTH) {
 
   if (HB_ISNUM(2)) {
     frame.size.width = hb_parnl(2);
-    if ([[window className] isEqual:@"NSPanel"])
+    if ([window isKindOfClass:[NSWindow class]])
       [window setFrame:frame display:YES];
     else {
       [((NSControl *)window) setFrame:frame];
@@ -649,7 +656,7 @@ HB_FUNC(WNDHEIGHT) {
 
   if (HB_ISNUM(2)) {
     frame.size.height = hb_parnl(2);
-    if ([[window className] isEqual:@"NSPanel"])
+    if ([window isKindOfClass:[NSWindow class]])
       [window setFrame:frame display:YES];
     else {
       [((NSControl *)window) setFrame:frame];
@@ -935,6 +942,7 @@ HB_FUNC(WINWIDTHCHANGE) {
 
 HB_FUNC(CONTROLSETFOCUS) {
   NSControl *control = (NSControl *)hb_parnl(1);
+  [[control window] makeKeyAndOrderFront:nil];
   [[control window] makeFirstResponder:control];
 }
 
