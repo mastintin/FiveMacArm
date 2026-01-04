@@ -897,58 +897,58 @@ function BuildButtonBar()
 
    DEFINE BUTTON OF oBar PROMPT "New File" ;
       TOOLTIP "Creates a new file" ;
-      IMAGE  cBmpPath + "new.png" ;
+      IMAGE  ImgSymbols( "doc.badge.plus", "New" ) ;
       ACTION NewFile()
 
    DEFINE BUTTON OF oBar PROMPT "Open" ;
       TOOLTIP "Open a file" ;
-       IMAGE  cBmpPath + "open.png" ;
+       IMAGE  ImgSymbols( "folder", "Open" ) ;
        ACTION OpenFile()
 
    DEFINE BUTTON OF oBar PROMPT "Close" ;
       TOOLTIP "Close this file" ;
-       IMAGE  cBmpPath + "folder2.png" ;
+       IMAGE  ImgSymbols( "xmark.circle", "Close" ) ;
        ACTION CloseFile()
 
    DEFINE BUTTON oBtnSave OF oBar PROMPT "Save" ;
       TOOLTIP "Save the file to disk" ;
-      IMAGE  cBmpPath + "floppy.png" ;
+      IMAGE  ImgSymbols( "externaldrive", "Save" ) ;
        ACTION oEditor:Save(), oBtnSave:Disable()
 
    oBtnSave:Disable()
 
    DEFINE BUTTON OF oBar PROMPT "Exit" ;
       TOOLTIP "Exit" ;
-       IMAGE  cBmpPath + "exit3.png" ;
+       IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
        ACTION Exit()
 
    oBar:Addspace()
 
    DEFINE BUTTON OF oBar PROMPT "Undo" ;
       TOOLTIP "Undo the lastest actions" ;
-       IMAGE  cBmpPath + "undo.png" ;
+       IMAGE  ImgSymbols( "arrow.uturn.backward", "Undo" ) ;
        ACTION oEditor:UnDo()
 
    DEFINE BUTTON OF oBar PROMPT "Redo" ;
       TOOLTIP "Redo the lastest actions" ;
-       IMAGE  cBmpPath + "redo.png" ;
+       IMAGE  ImgSymbols( "arrow.uturn.forward", "Redo" ) ;
        ACTION oEditor:ReDo()
 
    oBar:AddSpace()
 
    DEFINE BUTTON OF oBar PROMPT "Cut" ;
       TOOLTIP "Remove the selected text and put it on the clipboard" ;
-       IMAGE  cBmpPath + "cut.png" ;
+       IMAGE  ImgSymbols( "scissors", "Cut" ) ;
        ACTION oEditor:Cut()
 
    DEFINE BUTTON OF oBar PROMPT "Copy" ;
       TOOLTIP "Copy the selected text to the clipboard" ;
-       IMAGE  cBmpPath + "copy.png" ;
+       IMAGE  ImgSymbols( "doc.on.doc", "Copy" ) ;
        ACTION oEditor:Copy()
 
    DEFINE BUTTON OF oBar PROMPT "Paste" ;
       TOOLTIP "Insert text from the clipboard at the current position" ;
-       IMAGE  cBmpPath + "paste.png" ;
+       IMAGE  ImgSymbols( "doc.on.clipboard", "Paste" ) ;
        ACTION oEditor:Paste()
 
    oBar:AddSpace()
@@ -959,44 +959,44 @@ function BuildButtonBar()
 
    DEFINE BUTTON OF oBar PROMPT "Previous" ;
       TOOLTIP "Repeat the search backwards" ;
-       IMAGE  cBmpPath + "prev.png" ;
+       IMAGE  ImgSymbols( "arrow.left", "Previous" ) ;
        ACTION oEditor:FindPrev()
 
    DEFINE BUTTON OF oBar PROMPT "Next" ;
       TOOLTIP "Repeat the search forward" ;
-       IMAGE  cBmpPath + "next.png" ;
+       IMAGE  ImgSymbols( "arrow.right", "Next" ) ;
        ACTION oEditor:FindNext()
 
    DEFINE BUTTON OF oBar PROMPT "Replace" ;
       TOOLTIP "Search and replace" ;
-       IMAGE cBmpPath + "replace.png" ;
+       IMAGE ImgSymbols( "pencil.and.outline", "Replace" ) ;
        ACTION oEditor:Replace()
 
    DEFINE BUTTON OF oBar PROMPT "Goto Line" ;
       TOOLTIP "Go to a line number" ;
-       IMAGE  cBmpPath + "goline.png" ;
+       IMAGE  ImgSymbols( "list.number", "Go Line" ) ;
        ACTION oEditor:DlgGotoLine()
 
    oBar:AddSpace()
 
    DEFINE BUTTON OF oBar ;
-      IMAGE cBmpPath + "run.png"  ;
+      IMAGE ImgSymbols( "play.rectangle", "Script" )  ;
       PROMPT FWString( "Script" ) ACTION RunScript(oEditor ) ;
       TOOLTIP FWString( "Run as script" )
 
    DEFINE BUTTON OF oBar PROMPT "Run" ;
       TOOLTIP "Build and run" ;
-      IMAGE cBmpPath + "execute.png" ;
+      IMAGE ImgSymbols( "play.fill", "Run" ) ;
       ACTION Run()
 
    DEFINE BUTTON OF oBar PROMPT "Terminal" ;
       TOOLTIP "Open a terminal window" ;
-      IMAGE  cBmpPath + "terminal.png" ;
+       IMAGE  ImgSymbols( "apple.terminal", "Terminal" ) ;
       ACTION MacExec( "terminal.app" )
 
    DEFINE BUTTON OF oBar PROMPT "Dbf Builder" ;
       TOOLTIP "Create Dbf" ;
-      IMAGE  cBmpPath + "save.png" ;
+       IMAGE  ImgSymbols( "tablecells", "Dbf" ) ;
       ACTION FunCreaDbf()
 
    oBar:AddSpace() // AddSpaceFlex()
