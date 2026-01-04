@@ -282,6 +282,8 @@ CLASS TScintilla FROM TControl
 
    METHOD ReplaceSel( cText )      INLINE ::Send( SCI_REPLACESEL,len( cText ), cText  )
 
+   METHOD Replace()
+
    METHOD Save()
    METHOD SaveAS( cFileName )
 
@@ -1226,9 +1228,18 @@ return If( ! SciSearchBackward( ::hWnd, cText, nFlags ), MsgBeep(),  )
 
 METHOD SearchForward( cText, nFlags ) CLASS TScintilla
 
-   DEFAULT cText := ::GetSelText()
+   local lFound
 
-return If( ! SciSearchForward( ::hWnd, cText, nFlags ), MsgBeep(),)
+   DEFAULT cText := ::GetSelText()
+   DEFAULT nFlags := 0
+
+   lFound := SciSearchForward( ::hWnd, cText, nFlags )
+
+   if ! lFound
+      MsgBeep()
+   endif
+
+return lFound
 
 //----------------------------------------------------------------------------//
 
@@ -1495,27 +1506,60 @@ return nil
 
 METHOD DlgGotoLine() CLASS TScintilla
 
-  local oDlg, oGet, cLine := ""
+   local cLine := Space( 20 )
 
-  DEFINE DIALOG oDlg TITLE "Goto Line" ;
-     FROM 220, 350 TO 340, 680
-
-  @ 69, 37 SAY "Goto Line" OF oDlg SIZE 150, 17
-
-  @ 67, 108 GET oGet VAR  cLine OF oDlg SIZE 192, 22
-
-  @ 20, 218 BUTTON "OK" OF oDlg ACTION  oDlg:End()
-
-  ACTIVATE DIALOG oDlg CENTERED
-
-  if ! Empty( cLine )
-     cLine = Val( cLine )
-     if cLine != 0
-        ::GotoLine( cLine )
-     endif
+   if MsgGet( "Goto Line", "Line:", @cLine )
+      if Val( cLine ) != 0
+         ::GotoLine( Val( cLine ) )
+      endif
    endif
 
 return nil
+
+//----------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
+
+METHOD Replace() CLASS TScintilla
+
+   local cFind := Space( 50 )
+   local cRep  := Space( 50 )
+   
+   if ScintillaReplace( @cFind, @cRep )
+      ::SearchForward( AllTrim( cFind ) )
+      ::ReplaceSel( AllTrim( cRep ) )
+   endif
+
+return nil
+
+//----------------------------------------------------------------------------//
+
+Function ScintillaReplace( cFind, cRep )
+
+   local oDlg, oGet1, oGet2
+   local lOk := .f.
+
+   DEFINE DIALOG oDlg TITLE "Replace" ;
+      FROM 220, 350 TO 380, 750
+
+   @ 10, 10 SAY "Find:" OF oDlg SIZE 80, 17
+
+   @ 10, 100 GET oGet1 VAR cFind OF oDlg SIZE 200, 22
+
+   @ 40, 10 SAY "Replace:" OF oDlg SIZE 80, 17
+
+   @ 40, 100 GET oGet2 VAR cRep OF oDlg SIZE 200, 22
+
+   @ 80, 100 BUTTON "Run" OF oDlg ;
+      ACTION ( lOk := .t., oDlg:End() )
+
+   @ 80, 200 BUTTON "Cancel" OF oDlg ACTION oDlg:End()
+
+   ACTIVATE DIALOG oDlg CENTERED
+
+return lOk
+
+
 
 //----------------------------------------------------------------------------//
 

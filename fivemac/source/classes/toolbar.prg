@@ -29,6 +29,7 @@ CLASS TToolBar FROM TControl
    METHOD AddPrint() INLINE  AAdd( ::aButtons, TToolBarBtn():Print( Self ) )   
 
    METHOD AddSearch( cPrompt, cToolTip, bAction )
+   METHOD AddGet( cPrompt, cToolTip, bAction )
    
    METHOD AddSegmentedBtn( cPrompt, cToolTip, oSegments )   
       
@@ -130,6 +131,16 @@ METHOD AddSearch( cPrompt, cToolTip, bAction ) CLASS TToolBar
    AAdd( ::aButtons, TToolBarBtn():Search( cPrompt, cToolTip, bAction, Self ) )
 
 return nil 
+
+//----------------------------------------------------------------------------//
+
+METHOD AddGet( cPrompt, cToolTip, bAction ) CLASS TToolBar
+
+   local oBtn
+
+   AAdd( ::aButtons, oBtn := TToolBarBtn():Search( cPrompt, cToolTip, bAction, Self ) )
+
+return oBtn 
 //----------------------------------------------------------------------------//
 
 METHOD AddSegmentedBtn( cPrompt, cToolTip, oSegments ,nLen ) CLASS TToolBar

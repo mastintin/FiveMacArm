@@ -8,10 +8,11 @@ extern dbfcdx, DBCloseArea, DbUseArea, DbGoTo, OrdSetFocus
 function Main()
 
    local oWnd, oBrw
-   //local cpath:=Path()
+   local cpath:=Path()
+   local cAlias 
    // local cpath:=CurrentPath()
-   local cpath:= "/Volumes/Escritorio/cuadrosapp"
-   local cImgPath := UserPath() // + "/fivemac/bitmaps/"
+   //local cpath:= "/Volumes/Escritorio/cuadrosapp"
+   local cImgPath := UserPath() + "/five/Fivemac/fivemac/bitmaps/"
    local oPopUp,nHandle
    local nBrowRowActive
 
@@ -26,24 +27,19 @@ function Main()
     msginfo( "no")
  endif
  
-// nHandle := hb_rddOpenTable( cpath + "/test.dbf", .T. )
  
-// IF nHandle > 0
-//   msginfo( "si")
-// else
-//    msginfo( "no")
-// endif
- 
-USE ( cpath+"/test.dbf" ) ALIAS  Texto EXCLUSIVE
+USE ( cpath+"/test.dbf" )  EXCLUSIVE
+cAlias := alias()
+
+msginfo(cAlias)
 
  
    DEFINE WINDOW oWnd TITLE "DBF Browse" ;
       FROM 213, 109 TO 650, 820
-
-  @ 48, 20 BROWSE oBrw ;
-      FIELDS If( Int( RecNo() % 2 ) == 0, cImgPath+"ok.png", cImgPath+"alert.png" ), Test->Last, Test->First ;
-      HEADERS "Image", "Last", "First" ;
-      OF oWnd SIZE 672, 363 ALIAS Alias()
+      @ 48, 20 BROWSE oBrw ;
+      FIELDS If( Int( (cAlias)->(RecNo()) % 2 ) == 0, cImgPath+"ok.png", cImgPath+"alert.png" ),(cAlias)->Last, (cAlias)->First ;
+       HEADERS "image", "Last", "First" ;
+            OF oWnd SIZE 672, 363  AUTORESIZE 18 ;
 
    @ 8,  10 BUTTON "Top"    OF oWnd ACTION oBrw:GoTop()
    @ 8, 130 BUTTON "Bottom" OF oWnd ACTION oBrw:GoBottom()
@@ -53,15 +49,16 @@ USE ( cpath+"/test.dbf" ) ALIAS  Texto EXCLUSIVE
    @ 8, 610 BUTTON "Exit"   OF oWnd ACTION oWnd:End()
 
    oBrw:SetColBmp( 1 ) // Column 1 will display images
-   
-   obrw:setFont("arial", 20 )
-   obrw:Anclaje( nOr( 16, 2 ) )
-   obrw:SetRowHeight(40)
-   
-   // oBrw:bHeadClick:= { | obj , nindex| if(nindex== 1, msginfo("clickada cabecera"+str(nindex)),)  } 
-   
-   oBrw:bDrawRect:=  { | nRow | test->(dbskip()),;
-                  if(left(test->Last,1) =="L", BRWSETGRADICOLOR(oBrw:hWnd,nRow,ETIQUETGRADCOLORS("orange") ), ) , test->(dbskip(-1)) }
+
+   oBrw:setFont("arial", 20 )
+   oBrw:Anclaje( nOr( 16, 2 ) )
+   oBrw:SetRowHeight(40)
+
+   oBrw:bHeadClick:= { | obj , nindex| if(nindex== 1, msginfo("clickada cabecera"+str(nindex)),)  } 
+ 
+   oBrw:bDrawRect:=  { | nRow | (cAlias)->(dbskip()),;
+                  if(left((cAlias)->Last,1) =="L", BRWSETGRADICOLOR(oBrw:hWnd,nRow,ETIQUETGRADCOLORS("orange") ), ) , (cAlias)->(dbskip(-1)) }
+
 
    oBrw:bClrText = { | pColumn, nRowIndex | ColorFromNRGB( If( nRowIndex % 2 == 0, CLR_RED, CLR_GREEN ) ) }
 
@@ -69,11 +66,11 @@ USE ( cpath+"/test.dbf" ) ALIAS  Texto EXCLUSIVE
 
    oBrw:bMouseDown = { | nRow, nCol, oControl |  MsgInfo( Str( nCol ) ) }
 
-   oBrw:bRClicked := { | nRow,nCol, nRowBrwnRowBrw, nColBrw, oControl | (  obrw:Select( nRowBrw + 1 ), ShowPop( nRow, nCol, opopUp, oBrw:oWnd ) ) }
-
-   oPopup = BuildMenu(obrw )
-
-ACTIVATE WINDOW oWnd
+   oBrw:bRClicked := { | nRow,nCol, nRowBrw, nColBrw, oControl | (  oBrw:Select( nRowBrw + 1 ), ShowPop( nRow, nCol, opopUp, oBrw:oWnd ) ) }
+   
+   oPopup = BuildMenu(oBrw )
+   
+   ACTIVATE WINDOW oWnd
 
 
 
@@ -84,7 +81,7 @@ return nil
 function BuildMenu( oBrw )
 
 local oMenu
-local cImgPath := UserPath() + "/fivemac/bitmaps/"
+local cImgPath := UserPath() + "/five/Fivemac/fivemac/bitmaps/"
 
 MENU oMenu POPUP
 MENUITEM "Go bottom" ACTION  oBrw:GoBottom()

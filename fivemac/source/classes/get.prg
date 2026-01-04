@@ -13,6 +13,7 @@ CLASS TGet FROM TControl
 
    DATA   lPassword
    DATA   bChanged
+   DATA   bAction
    DATA   lSearch
    DATA   cPicture
    DATA   cType
@@ -365,6 +366,12 @@ return nil
 METHOD HandleEvent( nMsg, uParam1, uParam2, uParam3 ) CLASS TGet
 
    do case
+      case nMsg == WM_BTNCLICK
+           if ! Empty( ::bAction )
+              Eval( ::bAction, Self )
+           endif
+           return nil
+
       case nMsg == WM_GETVALID
            ::Assign()
            return ::lValid()
@@ -675,7 +682,7 @@ METHOD TbrSearch( bChanged, oWnd, bSetGet, bValid ) CLASS TGet
 
    ::hWnd     = TBrSearchCreate(ownd:hWnd)
    ::bSetGet  = bSetGet
-   ::bChanged = bChanged
+   ::bAction  = bChanged
    ::oWnd     = oWnd
    ::bValid   = bValid
    // ::oGet     = FWGetNew( 20, 20, bSetGet, "search" )
@@ -895,28 +902,25 @@ endif
 
 DEFINE DIALOG oDlg TITLE cTitle ;
 FROM 220, 350 TO 340, 680
-
 @ 88, 50 SAY cSay OF oDlg SIZE 250, 17
 
 @ 62, 50 GET oGet VAR cLine OF oDlg SIZE 250, 22
 
-@ 20, 218 BUTTON "OK" OF oDlg ACTION ( lYes:= .t., oDlg:End() )
+@ 20, 218 BUTTON "OK" OF oDlg ACTION ( lYes:= .t., cLine := oGet:GetText(), oDlg:End() )
 @ 20, 118 BUTTON "Cancel" OF oDlg ACTION  oDlg:End()
 
 ACTIVATE DIALOG oDlg CENTERED
 
-
 if lYes
-  cLine := oget:getText()
-  if cTipo == "N"
-      cline:=val(cline)
+   if cTipo == "N"
+       cline:=val(cline)
    else
-      cline:= alltrim( cLine )
-    endif
-    Return .t.
+       cline:= alltrim( cLine )
+   endif
+   Return .t.
 else
-    cline:= backcLine
-    return .f.
+   cline:= backcLine
+   return .f.
 endif
 
 

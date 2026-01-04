@@ -17,11 +17,11 @@ function MyMsgLogo( cBmp, nSeconds )
    oWnd:SetSplash()
    
                   
-   @ 100, 10 IMAGE oImg OF oWnd SIZE 400,500 FILENAME cBmp  
+   @ 100, 10 IMAGE oImg OF  SIZE 400,500 FILENAME cBmp  
                  
-   @ 40, 40 BUTTON "Salir" OF oWnd ACTION  WndDestroy( oWnd:hWnd )  //If( "msglogo.app" $ AppPath(), AppTerminate(), WndDestroy( oWnd:hWnd ) )
+   @ 40, 40 BUTTON "Salir" OF oWnd ACTION  WndDestroy( oWnd:hWnd )  
                  
-   ACTIVATE WINDOW oWnd 
+   ACTIVATE WINDOW oWnd
      
 return nil
 

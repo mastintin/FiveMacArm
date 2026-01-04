@@ -1,3 +1,23 @@
+January 2026
+============
+
+* Enhancement: Fivedit sample significantly improved:
+  - Integrated Manual Search: Search icon click detection in Toolbar search field for non-intrusive searching.
+  - Enhanced Replace Dialog: Improved layout (bottom-up coordinates) and Wrap Around search logic.
+  - Replaces older sciedit/sciedit2 samples.
+
+* Enhancement: Class TGet (get.prg) now supports `bAction` and `WM_BTNCLICK` event.
+  - Allows assigning an action to the search field's magnifying glass icon.
+
+* Enhancement: Class TToolBar (toolbar.prg) added Method `AddGet( cPrompt, cToolTip, bAction )`.
+  - Returns the Button object containing the Search Get, facilitating access and configuration.
+
+* Improvement: Updated build scripts (build.sh, makefile) for modern macOS SDKs and Apple Silicon support (Arm64).
+
+* Fix: `browse.prg` sample cleaned up and modernized.
+
+* Internal: Scintilla search logic updated in `scintilla.prg` and `scintillas.m`.
+
 April 2017
 ==========
 
