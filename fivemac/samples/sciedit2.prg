@@ -38,7 +38,7 @@ function Main()
    oSplit2:SetPosition( 1, oSplit:nHeight - 120 )
 
    oEditor = TScintilla():New( 0, 0, (oSplit2:aViews[1]):nWidth , (oSplit2:aViews[1]):nHeight , (oSplit2:aViews[1]))
-   oEditor:Anclaje( nOr( 16, 2 ) )
+   oEditor:_nAutoResize( nOr( 16, 2 ) )
    oEditor:bChange = { || oMsgBar:SetText( "FiveMac IDE " + ;
                                            " Row: " + AllTrim( Str( oEditor:nLine() ) ) + ;
                                            " Col: " + AllTrim( Str( oEditor:nCol() ) ) ),;
@@ -115,58 +115,58 @@ function BuildButtonBar()
 
    DEFINE BUTTON OF oBar PROMPT "New File" ;
       TOOLTIP "Creates a new file" ;
-       IMAGE "./../bitmaps/new.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/new.png" ;
        ACTION NewFile()
 
    DEFINE BUTTON OF oBar PROMPT "Open" ;
       TOOLTIP "Open a file" ;
-       IMAGE "./../bitmaps/open.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/open.png" ;
        ACTION OpenFile()
 
    DEFINE BUTTON OF oBar PROMPT "Close" ;
       TOOLTIP "Close this file" ;
-       IMAGE "./../bitmaps/folder2.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/folder2.png" ;
        ACTION oEditor:Close()
 
    DEFINE BUTTON oBtnSave OF oBar PROMPT "Save" ;
       TOOLTIP "Save the file to disk" ;
-       IMAGE "./../bitmaps/save.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/save.png" ;
        ACTION oEditor:Save(), oBtnSave:Disable()
 
    oBtnSave:Disable()
 
    DEFINE BUTTON OF oBar PROMPT "Exit" ;
       TOOLTIP "Exit" ;
-       IMAGE "./../bitmaps/exit3.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/exit3.png" ;
        ACTION Exit()
 
    oBar:AddSeparator()
 
    DEFINE BUTTON OF oBar PROMPT "Undo" ;
       TOOLTIP "Undo the lastest actions" ;
-       IMAGE "./../bitmaps/undo.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/undo.png" ;
        ACTION oEditor:UnDo()
 
    DEFINE BUTTON OF oBar PROMPT "Redo" ;
       TOOLTIP "Redo the lastest actions" ;
-       IMAGE "./../bitmaps/redo.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/redo.png" ;
        ACTION oEditor:ReDo()
 
    oBar:AddSpace()
 
    DEFINE BUTTON OF oBar PROMPT "Cut" ;
       TOOLTIP "Remove the selected text and put it on the clipboard" ;
-       IMAGE "./../bitmaps/cut.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/cut.png" ;
        ACTION oEditor:Cut()
 
    DEFINE BUTTON OF oBar PROMPT "Copy" ;
       TOOLTIP "Copy the selected text to the clipboard" ;
-       IMAGE "./../bitmaps/copy.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/copy.png" ;
        ACTION oEditor:Copy()
 
    DEFINE BUTTON OF oBar PROMPT "Paste" ;
       TOOLTIP "Insert text from the clipboard at the current position" ;
-       IMAGE "./../bitmaps/paste.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/paste.png" ;
        ACTION oEditor:Paste()
 
    oBar:AddSpace()
@@ -175,34 +175,34 @@ function BuildButtonBar()
 
    DEFINE BUTTON OF oBar PROMPT "Find Previous" ;
       TOOLTIP "Repeat the search backwards" ;
-       IMAGE "./../bitmaps/prev.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/prev.png" ;
        ACTION oEditor:FindPrev()
 
    DEFINE BUTTON OF oBar PROMPT "Find Next" ;
       TOOLTIP "Repeat the search forward" ;
-       IMAGE "./../bitmaps/next.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/next.png" ;
        ACTION oEditor:FindNext()
 
    DEFINE BUTTON OF oBar PROMPT "Replace" ;
       TOOLTIP "Search and replace" ;
-       IMAGE "./../bitmaps/replace.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/replace.png" ;
        ACTION oEditor:Replace()
 
    DEFINE BUTTON OF oBar PROMPT "Goto Line" ;
       TOOLTIP "Go to a line number" ;
-       IMAGE "./../bitmaps/goline.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/goline.png" ;
        ACTION oEditor:DlgGotoLine()
 
    oBar:AddSpace()
 
    DEFINE BUTTON OF oBar PROMPT "Run" ;
       TOOLTIP "Build and run" ;
-       IMAGE "./../bitmaps/execute.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/execute.png" ;
        ACTION Run()
 
    DEFINE BUTTON OF oBar PROMPT "Terminal" ;
       TOOLTIP "Open a terminal window" ;
-       IMAGE "./../bitmaps/terminal.png" ;
+       IMAGE UserPath() + "/five/Fivemac/fivemac/bitmaps/terminal.png" ;
        ACTION MacExec( "terminal.app" )
 
 return nil
@@ -432,7 +432,7 @@ return nil
 
 Function CambiaselectOut()
 
-   local cFileName := out:GetSelectItem()
+   local cFileName := out:GetSelectName()
 
    If cFileName != "Files"
       if cFileNoPath( oEditor:cFileName ) != cFileName
@@ -471,3 +471,7 @@ function FillFuncList()
 return nil
 
 //----------------------------------------------------------------------------//
+
+function BuildML( cPrgName )
+
+return "Build functionality not available yet for " + cPrgName

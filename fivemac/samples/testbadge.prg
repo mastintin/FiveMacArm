@@ -20,7 +20,7 @@ function Main()
 
 
    @30,  50 BUTTON "Badge" OF oWnd ACTION  MSGBADGE(alltrim(cTest))
-   @30, 150 BUTTON "Notificacion" OF oWnd ACTION  DELIVERNOTIFICATION( cTest , cInfo )
+   @30, 150 BUTTON "Notificacion" OF oWnd ACTION  USERNOTIFICATION( cTest , cInfo )
 
 ACTIVATE WINDOW oWnd
          

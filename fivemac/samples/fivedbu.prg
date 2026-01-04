@@ -1,5 +1,5 @@
 #include "FiveMac.ch"
-#include "../../harbour/contrib/xhb/hbcompat.ch"
+#include "hbcompat.ch"
 
 #define GENBLOCK(x)  &( "{ || " + x + " }" )
 
@@ -442,16 +442,17 @@ else
    DEFINE BUTTON OF oBar PROMPT "Filters" IMAGE ImgPath() + "filter.tiff" ;
    ACTION  ( cAlias )->( Filter( oBrw ) )
 
-   DEFINE BUTTON OF oBar PROMPT FwString("Recall") IMAGE ImgPath() + "undo.png" ;
+   DEFINE BUTTON OF oBar PROMPT FwString("Recall") ;
+   IMAGE ImgSymbols( "arrow.uturn.backward.circle", "Recall" ) ;
    ACTION ( cAlias )->( Recall( oBrw, cDbfName ) )
 
    DEFINE BUTTON OF oBar PROMPT "Pack" IMAGE ImgPath() + "build.tiff" ;
    ACTION   Pack( oBrw , cDbfName )
 
-   DEFINE BUTTON OF oBar PROMPT "Zap" IMAGE ImgPath() + "Behaviors.tiff" ;
-   ACTION   Zap ( oBrw, cDbfName )
+   DEFINE BUTTON OF oBar PROMPT "Zap" IMAGE ImgPath() + "Behaviors.tiff" ; 
+     ACTION   Zap ( oBrw, cDbfName )
 
-   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgPath() + "exit2.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgSymbols( "xmark.circle", "Salir del programa") ;
       ACTION oWnd:End()
    
    sele (calias)

@@ -80,6 +80,7 @@ PRG_OBJS = \
 	./obj/segment.o \
 	./obj/settings.o \
 	./obj/slider.o \
+	./obj/sqlite.o \
 	./obj/splash.o \
 	./obj/split.o \
 	./obj/splitItem.o \
@@ -147,6 +148,7 @@ C_OBJS = ./objc/browses.o	\
   	./objc/splits.o	\
 	./objc/strtoken.o	\
   	./objc/system.o \
+   	./objc/sqlite.o \
 	./objc/timers.o	\
   	./objc/tarrays.o	\
 	./objc/transparent.o \
@@ -204,6 +206,14 @@ SWIFT_OBJS =
 
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/winapi/%.m
+	if [ ! -d "objc" ]; then mkdir objc; fi
+	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -Wall -c -o $@ $<
+	if [ ! -d "lib" ]; then mkdir lib; fi
+	if [ ! -d "lib" ]; then mkdir lib; fi
+	ar rc ./lib/libfivec.a $@
+
+# -arch i386 -arch ppc
+./objc/%.o : ./source/winapi/%.c
 	if [ ! -d "objc" ]; then mkdir objc; fi
 	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -Wall -c -o $@ $<
 	if [ ! -d "lib" ]; then mkdir lib; fi

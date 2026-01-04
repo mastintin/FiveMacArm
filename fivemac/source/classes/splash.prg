@@ -11,6 +11,8 @@ CLASS TSplash FROM TControl
    METHOD SetFile( cFileName ) INLINE SplashSetFile( ::hWnd, cFileName )
 
    METHOD Run() INLINE SplashRun(::hWnd)   
+
+   METHOD Center() INLINE WndCenter( ::hWnd )   
      
 ENDCLASS   
 

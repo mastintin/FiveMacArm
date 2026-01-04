@@ -7,7 +7,7 @@
 static aPrgs := { { "", "", "" } }
 
 
-static cHbmkPath := "~/harbour/bin/hbmk2"
+static cHbmkPath := "~/five/Fivemac/harbour/bin/hbmk2"
 static cCCompiler := "Xcode"
 
 //----------------------------------------------------------------------------//
@@ -86,7 +86,7 @@ function Settings()
    local oDlg, oHbmkPath, cMakePath := cHbmkPath
    local cCompiler := cCCompiler
    local oCbx
-   local lFWHTemp,oFWHPath,cFWHPathTmp := "~/fivemac/lib/"
+   local lFWHTemp,oFWHPath,cFWHPathTmp := "~/five/Fivemac/fivemac/lib/"
       
    DEFINE DIALOG oDlg TITLE "Settings" SIZE 500, 400 flipped
    
