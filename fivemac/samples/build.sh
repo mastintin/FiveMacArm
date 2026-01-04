@@ -48,6 +48,9 @@ if [ ! -d $1.app/Contents ]; then
    echo '		<key>NSAllowsArbitraryLoads</key>' >> $1.app/Contents/Info.plist
    echo '		<true/>' >> $1.app/Contents/Info.plist
    echo '	</dict>' >> $1.app/Contents/Info.plist
+  # para poder enviar mail
+  # echo '   <key>NSAppleEventsUsageDescription</key>' >> $1.app/Contents/Info.plist
+  # echo '   <string>FiveMac needs to control Mail to send emails.</string>' >> $1.app/Contents/Info.plist
    echo '</dict>' >> $1.app/Contents/Info.plist
    echo '</plist>' >> $1.app/Contents/Info.plist
 fi   
@@ -72,7 +75,7 @@ fi
 
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
-HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lhbrtl -lgttrm -lhbvm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lhbsix  -lrddnsx'
+HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx'
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
@@ -85,7 +88,7 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 
 #  add -arch ppc -arch i386 for universal binaries
 #  add -arch ppc -arch i386 for universal binaries
-clang $1.o -o ./$1.app/Contents/MacOS/$1 -L$CRTLIB -L./../lib -lfive -lfivec -L./../../harbour/lib $HRBLIBS $FRAMEWORKS  -F./../frameworks -framework Scintilla $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+clang $1.o -o ./$1.app/Contents/MacOS/$1 -L$CRTLIB -L./../lib -lfive -lfivec -L./../../harbour/lib $HRBLIBS $FRAMEWORKS  -F./../frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c

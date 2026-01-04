@@ -12,8 +12,13 @@
 	<array>
 		<string>Cocoa</string>
 		<string>WebKit</string>
-		<string>QTkit</string>
 		<string>Quartz</string>
+		<string>ScreenCaptureKit</string>
+		<string>ScriptingBridge</string>
+		<string>AVKit</string>
+		<string>AVFoundation</string>
+		<string>CoreMedia</string>
+		<string>iokit</string>
 	</array>
 	<key>HarbLibs</key>
 	<array>
@@ -22,9 +27,7 @@
 		<string>hbrtl</string>
 		<string>hblang</string>
 		<string>hbrdd</string>
-		<string>hbrtl</string>
 		<string>gttrm</string>
-		<string>hbvm</string>
 		<string>hbmacro</string>
 		<string>hbpp</string>
 		<string>rddntx</string>
@@ -33,11 +36,14 @@
 		<string>hbsix</string>
 		<string>hbcommon</string>
 		<string>hbcplr</string>
+		<string>hbcpage</string>
+		<string>hbhsx</string>
+		<string>rddnsx</string>
 	</array>
 	<key>LastFiles</key>
 	<array>
-		<string></string>
-		<string></string>
+		<string>/Users/manuel/five/Fivemac/fivemac/samples/msglogo.prg</string>
+		<string>/Users/manuel/five/Fivemac/fivemac/samples/msglogo.prg</string>
 		<string></string>
 		<string></string>
 		<string></string>
@@ -47,10 +53,10 @@
 		<string></string>
 	</array>
 	<key>PathFiveMac</key>
-	<string>/Users/~/fivemac</string>
+	<string>/Users/manuel/five/Fivemac/fivemac</string>
 	<key>PathHarbour</key>
-	<string>/Users/~/harbour</string>
+	<string>/Users/manuel/five/Fivemac/harbour</string>
 	<key>PathSDK</key>
-	<string>/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk</string>
+	<string>/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk</string>
 </dict>
 </plist>

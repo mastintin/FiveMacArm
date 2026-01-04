@@ -10,7 +10,8 @@ function Main()
    local obtn5,obtn6
    local obtnfin
    local nAncla:= 0
-   
+   local cPath := UserPath() + "/five/Fivemac/fivemac/bitmaps/"
+
    DEFINE DIALOG oDlg TITLE "Testing Anclas" ;
       FROM 270, 350 TO 510, 740
    
@@ -19,30 +20,30 @@ function Main()
    oGroup:setStyle(4) 
           
    
-   @ 4, 180 BTNBMP obtn1 FILENAME ( UserPath() + "/fivemac/bitmaps/VertOrigin.png") OF oDlg ACTION (.t. ) SIZE 20,55
+   @ 4, 180 BTNBMP obtn1 FILENAME ( cPath + "VertOrigin.png") OF oDlg ACTION (.t. ) SIZE 20,55
    
    oBtn1:setType(6)
   // oBtn1:SetBezelStyle(8)
    
    
-  @ 182, 180 BTNBMP obtn4 FILENAME ( UserPath() + "/fivemac/bitmaps/VertOrigin.png") OF oDlg ACTION (.t. ) SIZE 20,55
+  @ 182, 180 BTNBMP obtn4 FILENAME ( cPath + "VertOrigin.png") OF oDlg ACTION (.t. ) SIZE 20,55
    
     oBtn4:setType(6)
          
-  @ 114, 4 BTNBMP obtn2 FILENAME ( UserPath() + "/fivemac/bitmaps/HorzOrigin.png") OF oDlg ACTION ( .t. ) SIZE 65,20
+  @ 114, 4 BTNBMP obtn2 FILENAME ( cPath + "HorzOrigin.png") OF oDlg ACTION ( .t. ) SIZE 65,20
   
    oBtn2:setType(6)
       
-  @ 114, 322 BTNBMP obtn3 FILENAME ( UserPath() + "/fivemac/bitmaps/HorzOrigin.png") OF oDlg ACTION (.t. ) SIZE 65,20 
+  @ 114, 322 BTNBMP obtn3 FILENAME ( cPath + "HorzOrigin.png") OF oDlg ACTION (.t. ) SIZE 65,20 
   
    oBtn3:setType(6)
    
    
-    @ 82, 76 BTNBMP obtn6 FILENAME ( UserPath() + "/fivemac/bitmaps/VertSize.png") OF oDlg ACTION (.t.) SIZE 20,96
+    @ 82, 76 BTNBMP obtn6 FILENAME ( cPath + "VertSize.png") OF oDlg ACTION (.t.) SIZE 20,96
    
     oBtn6:setType(6)
    
-    @ 64, 74 BTNBMP obtn5 FILENAME ( UserPath() + "/fivemac/bitmaps/HorzSize.png") OF oDlg ACTION ( .t. ) SIZE 242,20
+    @ 64, 74 BTNBMP obtn5 FILENAME ( cPath + "HorzSize.png") OF oDlg ACTION ( .t. ) SIZE 242,20
   
    oBtn5:setType(6)
    

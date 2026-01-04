@@ -609,7 +609,19 @@ HB_FUNC(DOCKADDPROGRESS) {
   hb_retnl((HB_LONG)progressIndicator);
 }
 
-HB_FUNC(DELIVERNOTIFICATION) {
+@interface FNotifyDelegate : NSObject <NSUserNotificationCenterDelegate>
+@end
+
+@implementation FNotifyDelegate
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center
+     shouldPresentNotification:(NSUserNotification *)notification {
+  return YES;
+}
+@end
+
+static FNotifyDelegate *myDelegate = nil;
+
+HB_FUNC(USERNOTIFICATION) {
   NSString *title = hb_NSSTRING_par(1);
   NSString *info = hb_NSSTRING_par(2);
   NSUserNotification *notice = [[NSUserNotification alloc] init];
@@ -622,7 +634,10 @@ HB_FUNC(DELIVERNOTIFICATION) {
   NSUserNotificationCenter *center =
       [NSUserNotificationCenter defaultUserNotificationCenter];
 
-  [center setDelegate:nil];
+  if (myDelegate == nil)
+    myDelegate = [[FNotifyDelegate alloc] init];
+
+  [center setDelegate:myDelegate];
   [center deliverNotification:notice];
 }
 

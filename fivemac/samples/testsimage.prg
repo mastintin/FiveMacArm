@@ -15,9 +15,9 @@
 
 function Main()
 
-   local oWnd, oSay
+   local oWnd, oSay, oBar
    local oImage
-   local path := "./../bitmaps"
+   local path := UserPath() + "/five/Fivemac/fivemac/bitmaps"
    local cfile
            
    DEFINE WINDOW oWnd TITLE "SImage Sample" ;

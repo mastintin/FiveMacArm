@@ -3,7 +3,7 @@
 function Main()
 
    local oDlg   
-   local cImgPath := UserPath() + "/Fivemac/bitmaps/"
+   local cImgPath := UserPath() + "/five/Fivemac/fivemac/bitmaps/"
    local cFile
    local cTO:="mastintin@gmail.com"
    local cAsunto:= "primer intento"
@@ -18,7 +18,7 @@ function Main()
              
   //   cfile:= cImgPath+"puerto.jpg"
      
-     cfile:=choosefile(,"plist")
+     cfile:=choosefile(,"jpg")
   
                     
    DEFINE MAIL oMail TO cto SUBJECT cAsunto ;

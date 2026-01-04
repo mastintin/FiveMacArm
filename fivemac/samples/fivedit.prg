@@ -168,6 +168,10 @@ function BuildEditor()
    oEditor = TScintilla():New( 0, 0, oSplitH:aViews[ 1 ]:nWidth,;
                                oSplitH:aViews[ 1 ]:nHeight - 7, oSplitH:aViews[ 1 ] )
    oEditor:nAutoResize = 18
+   oEditor:Send( 2130, 0, 0 ) // SCI_SETHSCROLLBAR, 0
+   oEditor:Send( 2268, 1, 0 ) // SCI_SETWRAPMODE, SC_WRAP_WORD
+   
+   // oEditor:Send( 2276, 1, 0 ) // SCI_SETSCROLLWIDTH, 1
 
    oEditor:bChange = { || EditorChange() }
 //   oEditor:SetColor( , nRgb( 167, 167, 167 ) , .t. )
@@ -185,7 +189,7 @@ function BuildPreferences()
    if ! File( cPrefFile )
        SetPlistValue( cPrefFile, "PathHarbour", "/Users/~/harbour", .T. )
        SetPlistValue( cPrefFile, "PathFiveMac", "/Users/~/fivemac", .T. )
-       SetPlistValue( cPrefFile, "PathSDK", ;
+
        SetPlistValue( cPrefFile, "PathSDK", GetSDKPath(), .T. )
    endif
 
@@ -1250,6 +1254,7 @@ function Run()
 
    cResult := RunHarbour( oEditor:cFileName )
    if Empty( cResult )
+
       Return .f.
    endif
    
@@ -1263,13 +1268,17 @@ function Run()
       return nil
    endif
 
+ 
+
    cText += "C compiling..." + Chr( 13 )
    oGet:SetText( cText )
    oGet:GoBottom()
 
    cText += RunGcc( cFilePath + cFileName )
+
    oGet:SetText( cText )
    oGet:GoBottom()
+
 
    if ! IsFile( cFilePath + cfileName + ".o" )
       cText +=  Chr( 13 )+ "C compile error, no object file generate. please review the reported errors" + Chr( 13 )
@@ -1337,7 +1346,7 @@ function Run()
 
    //-----------  incluir frameworks ------------
 
-   cAuxFile := cFilePath + cFileName + ".app/Contents/frameworks"
+   cAuxFile := cFilePath + cFileName + ".app/Contents/Frameworks"
    
    if Len( aExtraFrameworks ) > 0
        
@@ -1456,6 +1465,7 @@ function RunHarbour( cFile )
    aadd( aArguments, cIncludes )
    aadd( aArguments, "-o"+ cFilePath + cFileName +".c" )
    
+   // MsgInfo( ValToPrg( aArguments ) ) // Debug arguments
    cText = TaskExec( cHarbour, aArguments )
  
 return cText
@@ -1469,32 +1479,22 @@ function RunGcc( cFile )
    local FivePath := oPlist:GetItemByName( "PathFiveMac" )
    local SdkPath  := oPlist:GetItemByName( "PathSDK"  )
   
-   local cGcc := "/Applications/Xcode.app/Contents/Developer/usr/bin/gcc"
+   local cGcc := "/usr/bin/clang"
    
    local HEADERS   := SdkPath + "/usr/include"
    local FRAMEPATH := sdkPath + "/System/Library/Frameworks"
 
    local aArg := {}
    
-/*
-local oArrayArguments :=  ArrayCreateEmpty()
-   
-   ArrayAddString( oArrayArguments, cFile + ".c" )
-   ArrayAddString( oArrayArguments, "-c" )
-   ArrayAddString( oArrayArguments, "-o"+ cFile + ".o" )
-   ArrayAddString( oArrayArguments, "-I" + HarbPath + "/include" )
-   ArrayAddString( oArrayArguments, "-I" + HEADERS )
-   ArrayAddString( oArrayArguments, "-I" + FRAMEPATH )
-
-return TaskExecArray( cGcc, oArrayArguments )
-*/
-
+   aadd( aArg, "-ObjC" )
    aadd( aArg, cFile + ".c")
    aadd( aArg, "-c"   )
    aadd( aArg, "-o"+ cFile + ".o" )
+   aadd( aArg, "-I" + FivePath + "/include" )
    aadd( aArg, "-I" + HarbPath + "/include" )
    aadd( aArg, "-I" + HEADERS  )
    aadd( aArg, "-I" + FRAMEPATH  )
+
 
 return TaskExec( cGcc, aArg )
 
@@ -1558,7 +1558,7 @@ function MakeShFile( cShFile )
          cText += "' " + hb_eol()
      else
      
-         cText += "FRAMEWORKS='-framework Cocoa -framework WebKit -framework QTkit -framework Quartz  -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit'"+ hb_eol()
+         cText += "FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit'"+ hb_eol()
      
      endif
      
@@ -1566,10 +1566,10 @@ function MakeShFile( cShFile )
     cText+= "FIVEPATH=" + cFivePath + hb_eol()
     cText+= "HARBPATH=" + cHarbPath + hb_eol()
 
-    cText +="gcc " + cMPath + "/$1.o -o " + cMPath + "/$1.app/Contents/MacOS/$1 -L$CRTLIB " +;
+    cText +="clang " + cMPath + "/$1.o -o " + cMPath + "/$1.app/Contents/MacOS/$1 -L$CRTLIB " +;
                 "-L$FIVEPATH/lib -lfive -lfivec "+;
                 "-L$HARBPATH/lib $HRBLIBS "+;
-                "$FRAMEWORKS"
+                "$FRAMEWORKS -lsqlite3 -lz -lpcre -rpath @executable_path/../Frameworks"
     
     //--------- Extraframeworks ----------------------
     
@@ -2153,3 +2153,22 @@ function Usamos( fichero, alias )
 return  ! NetErr()
 
 //------------------------------------------------------------------------------
+
+#pragma BEGINDUMP
+
+#include <Cocoa/Cocoa.h>
+#include <hbapi.h>
+
+HB_FUNC( SETHSCROLLELASTICITY )
+{
+   NSView * view = ( NSView * ) hb_parnl( 1 );
+   NSScrollView * sv = [ view enclosingScrollView ];
+   
+   if( sv )
+   {
+      [ sv setHorizontalScrollElasticity: 1 ]; // NSScrollElasticityNone
+      [ sv setHasHorizontalScroller: NO ];
+   }
+}
+
+#pragma ENDDUMP

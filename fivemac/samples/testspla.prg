@@ -12,9 +12,9 @@ function Main()
          
    oWnd:Center()   
     
-   oSplash := TSplash():New( 100, 10, 400, 500, oWnd, "../bitmaps/test.png" )
+   oSplash := TSplash():New( 100, 10, 400, 500, oWnd, UserPath() + "/five/Fivemac/fivemac/bitmaps/test.png" )
    
-//   oSplash:center()
+     oSplash:center()
    oSplash:run()
      
    ACTIVATE WINDOW oWnd 

@@ -71,6 +71,15 @@ RETURN NIL
 - **SF Symbols Support**: Use `ImgSymbols("gear", "Description")` to use system icons.
 - **Improved Build Scripts**: Automatic detection of SDK and Swift paths.
 - **Webview Improvements**: Fixed ATS issues for loading external websites.
+- **Fivedit IDE**: Now capable of self-hosting! built-in compiling and linking of native apps, generating fully bundled `.app` structures with correct dependencies and Frameworks.
+
+## 🖥️ IDE: Fivedit
+
+FiveMac includes `fivedit`, a fully functional IDE written in FiveMac itself (`samples/fivedit.prg`).
+- **Syntax Highlighting**: Powered by Scintilla (recompiled for macOS).
+- **Project Building**: "Run" button compiles and runs the current PRG.
+- **App Bundling**: Automatically generates `.app` bundles, copying necessary Frameworks (`Contents/Frameworks`) and Resources.
+- **Debugging**: Integrated build log and error reporting.
 
 ---
 *Powered by Harbour & Objective-C*

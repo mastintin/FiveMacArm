@@ -4,13 +4,15 @@
 //
 //  Created by Manuel Sanchez on 15/01/12.
 //  Copyright 2012 __MyCompanyName__. All rights reserved.
-//
+
 
 #include "FiveMac.ch"
 
+static oWnd
+
 function Main()
 
-  local oWnd, oTbr, oWeb
+  local oTbr, oWeb
   local path:= APPPATH()
   local obtn3,obtn2,obtn1
   local oseg,oseg2
@@ -18,7 +20,7 @@ function Main()
   local nTipoback:= 1
   local oMEnu:=BuildMenu()
    
-   DEFINE WINDOW oWnd TITLE "TestButton Segmented" TEXTURED ;
+   DEFINE WINDOW oWnd TITLE "TestButton Segmented" ; //TEXTURED ;
        FROM 370, 250 TO 480, 800	  	 
 	  	 	    	 
                                                              
@@ -30,7 +32,7 @@ function Main()
     
     oseg2:setenabled(.f.,2)
    
-    oseg2:SetImg("./../bitmaps/exit.png" ,3)
+    oseg2:SetImg( UserPath() + "/five/Fivemac/fivemac/bitmaps/exit.png" ,3)
      
     oSeg2:SetMenu(oMenu,3)
      
