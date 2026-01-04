@@ -17,6 +17,8 @@ extern dbfcdx, DBCloseArea, DbUseArea, DbGoTo, OrdSetFocus
 #include "harbour.hbx"
 #include "fivemac.hbx"
 
+REQUEST APPTERMINATE
+
 //----------------------------------------------------------------------------//
 
 function Main()
@@ -174,7 +176,7 @@ function BuildEditor()
    // oEditor:Send( 2276, 1, 0 ) // SCI_SETSCROLLWIDTH, 1
 
    oEditor:bChange = { || EditorChange() }
-//   oEditor:SetColor( , nRgb( 167, 167, 167 ) , .t. )
+   oEditor:SetColor( , nRgb( 252, 252, 252 ) , .t. )
 
    AAdd( aEditors, oEditor )
 
@@ -917,10 +919,7 @@ function BuildButtonBar()
 
    oBtnSave:Disable()
 
-   DEFINE BUTTON OF oBar PROMPT "Exit" ;
-      TOOLTIP "Exit" ;
-       IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
-       ACTION Exit()
+
 
    oBar:Addspace()
 
@@ -1017,6 +1016,13 @@ function BuildButtonBar()
   // oSeg:SetImg( cBmpPath + "ideright.tiff", 3 )
 
    oBar:AddSegmentedBtn( "Views", "Views", oSeg, 108 )
+
+   oBar:AddSpace()
+
+   DEFINE BUTTON OF oBar PROMPT "Exit" ;
+      TOOLTIP "Exit" ;
+       IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
+       ACTION Exit()
 
 return nil
 
@@ -2170,5 +2176,7 @@ HB_FUNC( SETHSCROLLELASTICITY )
       [ sv setHasHorizontalScroller: NO ];
    }
 }
+
+#pragma ENDDUMP
 
 #pragma ENDDUMP

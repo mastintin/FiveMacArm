@@ -16,23 +16,12 @@ function MyMsgLogo( cBmp, nSeconds )
    oWnd:SetPos( ( ScreenHeight() - 580 ) / 2, ( ScreenWidth() - 500 ) / 2 )
    oWnd:SetSplash()
    
-   //savescreen("./yo.png")
-                 
+                  
    @ 100, 10 IMAGE oImg OF oWnd SIZE 400,500 FILENAME cBmp  
                  
-   @ 40, 40 BUTTON "Salir" OF oWnd ACTION AppTerminate() // don't END
+   @ 40, 40 BUTTON "Salir" OF oWnd ACTION  WndDestroy( oWnd:hWnd )  //If( "msglogo.app" $ AppPath(), AppTerminate(), WndDestroy( oWnd:hWnd ) )
                  
    ACTIVATE WINDOW oWnd 
      
 return nil
 
-#pragma BEGINDUMP
-#include <Cocoa/Cocoa.h>
-#include <hbapi.h>
-
-HB_FUNC( APPTERMINATE )
-{
-   // [ NSApp terminate : nil ];
-   exit( 0 );
-}
-#pragma ENDDUMP

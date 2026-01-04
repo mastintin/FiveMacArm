@@ -419,3 +419,8 @@ forKey: @"frameOrigin" ] ];
 */
 
 HB_FUNC(ANIMASHAKE) {}
+
+HB_FUNC(APPTERMINATE) {
+  // [ NSApp terminate : nil ];
+  exit(0);
+}
