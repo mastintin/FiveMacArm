@@ -13,10 +13,14 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Improved Replace Dialog**: Redesigned layout and added "Wrap Around" logic.
 - **Stability**: Fixed various focus issues and crashes (Goto Line, Replace).
 
-### Core Library Enhancements
-- **TGet**: Added support for `WM_BTNCLICK` to handle internal button actions (like search icon clicks).
-- **TToolBar**: New `AddGet()` method to easily embed functional text fields in toolbars.
-- **Build System**: Updated scripts for Apple Silicon (M1/M2/M3) and modern macOS SDKs.
+### Browse & Data Management
+- **Record Synchronization**: Fixed `TWBrowse` to ensure reliable synchronization between the UI and DBF record pointer. Implemented pointer stabilization in `GetValue` and corrected event dispatching.
+- **Auto-Save**: Integrated auto-save logic in `scripts.prg` samples using `TScintilla:IsModify()`.
+
+### Graphics & User Interface
+- **TBrush Engine**: Rewritten `TBrush` class with support for numeric colors, pattern images, and gradients.
+- **Layer-Aware Coloring**: Modernized `WNDSETBKGCOLOR`, `WNDSETBRUSH`, and `WNDSETGRADIENTCOLOR` to use `CALayer` and `CGColor`. This fixes the "black background" issues on modern macOS versions.
+- **DEFINE DIALOG**: Corrected macro to properly pass brush objects.
 
 ## Building
 

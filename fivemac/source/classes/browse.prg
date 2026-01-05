@@ -1,5 +1,8 @@
 #include "FiveMac.ch"
 
+#define WM_BRWVALUE    5
+#define WM_BRWCHANGED 18
+
 //----------------------------------------------------------------------------//
 
 CLASS TWBrowse FROM TControl
@@ -114,6 +117,10 @@ CLASS TWBrowse FROM TControl
    METHOD Change() INLINE If( ::bChange != nil, Eval( ::bChange, Self ),)
 
    METHOD Headclick( nHead ) INLINE If( ::bHeadclick != nil, Eval( ::bHeadclick, Self,nHead ),)
+
+   METHOD SetHeadHeight( nHeight ) INLINE BrwSetHeadHeight( ::hWnd, nHeight )
+
+   METHOD GetSelect() INLINE BrwGetSelect( ::hWnd )
 
    METHOD Anclaje( nAutoResize ) INLINE ( ::nAutoResize := nAutoResize, BrwAutoAjust ( ::hWnd, ::nAutoResize ) )
 
@@ -253,8 +260,7 @@ return nil
 
 METHOD GetValue( nCol, nRow ) CLASS TWBrowse
 
-   local nField
-   local cString
+   local nField, cString, nOldRec, uVal
 
    do case
       case ::cAlias == "_EDIT"
@@ -289,9 +295,12 @@ METHOD GetValue( nCol, nRow ) CLASS TWBrowse
            if Select( ::cAlias ) == 0
               return Array( Len( ::aCols ) )
            endif
+            nOldRec = ( ::cAlias )->( RecNo() )
             ( ::cAlias )->( DbGoTop() )
             ( ::cAlias )->( DbSkip( nRow ) )
-           return cValToChar( Eval( ::bLine )[ nCol + 1 ] )
+            uVal    = cValToChar( Eval( ::bLine )[ nCol + 1 ] )
+            ( ::cAlias )->( DbGoto( nOldRec ) )
+            return uVal
    endcase
 
 return nil
@@ -318,16 +327,27 @@ return nil
 
 METHOD SetValue( nCol, nRow, oObj ) CLASS TWBrowse
 
-   do case
-       case ::cAlias == "_INSPECT"
-            if ! Empty( ::bSetValue )
-                   return Eval( ::bSetValue, nRow, nCol, NSStringToString( oObj ) )
-               endif
+   local cVal := NSStringToString( oObj )
 
-         case ::cAlias == "_ARRAY"
-            if ! Empty( ::bSetValue )
-                  return Eval( ::bSetValue, nRow + 1, nCol + 1, NSStringToString( oObj ) )
-               endif
+   do case
+      case ::cAlias == "_INSPECT"
+           if ! Empty( ::bSetValue )
+              ::nArrayAt = nRow + 1
+              Eval( ::bSetValue, nRow, nCol, cVal )
+           endif
+
+      case ::cAlias == "_ARRAY"
+           if ! Empty( ::bSetValue )
+              ::nArrayAt = nRow + 1
+              Eval( ::bSetValue, nRow + 1, nCol + 1, cVal )
+           endif
+
+      case ! Empty( ::cAlias )
+           if Select( ::cAlias ) != 0
+              ( ::cAlias )->( DbGoTop() )
+              ( ::cAlias )->( DbSkip( nRow ) )
+              ( ::cAlias )->( FieldPut( nCol + 1, cVal ) )
+           endif
    endcase
 
 return nil
@@ -354,7 +374,7 @@ return cCode
 
 METHOD HandleEvent( nMsg, hWnd, uParam1, uParam2 ) CLASS TWBrowse
 
-   local oControl := If( hWnd != nil, ::FindControl( hWnd ),)
+   local oControl := Self
 
    do case
       case nMsg == WM_BRWVALUE
@@ -364,6 +384,13 @@ METHOD HandleEvent( nMsg, hWnd, uParam1, uParam2 ) CLASS TWBrowse
                MsgInfo( "oControl is nil" )
             endif
             
+       case nMsg == WM_BRWCHANGED
+               if ! Empty( ::cAlias ) .and. Select( ::cAlias ) > 0
+                  ( ::cAlias )->( DbGoTop() )
+                  ( ::cAlias )->( DbSkip( ::GetSelect() ) )
+               endif
+               return oControl:Change()
+                        
       otherwise
            return super:HandleEvent( nMsg, uParam1, uParam2 )
    endcase

@@ -28,6 +28,7 @@ PRG_OBJS = \
 	./obj/browse.o	\
 	./obj/button.o	\
 	./obj/btnbmp.o	\
+	./obj/brush.o	\
 	./obj/brImage.o	\
 	./obj/capture.o	\
 	./obj/checkbox.o \
@@ -100,6 +101,7 @@ PRG_OBJS = \
 	./obj/webview.o
 
 C_OBJS = ./objc/browses.o	\
+	./objc/brushes.o	\
 	./objc/buttons.o	\
 	./objc/checkboxes.o \
    ./objc/choosefont.o \

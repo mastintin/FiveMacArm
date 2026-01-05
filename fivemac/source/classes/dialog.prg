@@ -13,7 +13,7 @@
 CLASS TDialog FROM TWindow
 
    METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled,;
-               nWidth, nHeight ,lflipped )
+               nWidth, nHeight ,lflipped ,oBrush)
 
    METHOD Activate( bLClicked, bValid, lModeless, lCentered, bInit, bRClicked,;
                     bResized )
@@ -22,7 +22,7 @@ ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, nHeight ,lflipped ) CLASS TDialog
+METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, nHeight ,lflipped ,oBrush ) CLASS TDialog
 
    DEFAULT nTop := 300, nLeft := 300, nBottom := 700, nRight := 800,;
                  cTitle := "FiveMac", lTextured := .f., lPaneled := .f. ,;
@@ -41,6 +41,9 @@ METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, n
         ::SetSize( nWidth, nHeight )
    endif   
 
+   if oBrush != nil
+      ::SetBrush( oBrush)
+   endif
     
    ::aControls = {}
 

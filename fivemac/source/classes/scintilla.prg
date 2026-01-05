@@ -218,6 +218,8 @@ CLASS TScintilla FROM TControl
 
     METHOD InitEdt()
     
+    METHOD IsModify()                    INLINE ! Empty( ::Send( SCI_GETMODIFY ) )
+
     METHOD InsertText( nPos, cText )     INLINE ::Send( SCI_INSERTTEXT, nPos, cText )
 
     METHOD IntelliSense( nChar )
@@ -356,7 +358,7 @@ CLASS TScintilla FROM TControl
 
    METHOD SetTabIndents( nSize )  INLINE ::Send( SCI_SETTABINDENTS, nSize )
 
-  //  METHOD SetText( cText ) INLINE SciSetText( ::hWnd, cText )
+    METHOD SetMyText( cText ) INLINE SciSetText( ::hWnd, cText )
 
    METHOD SetText( cText )        INLINE ::Send( SCI_SETTEXT, 0, cText )
 
