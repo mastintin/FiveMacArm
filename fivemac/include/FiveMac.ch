@@ -95,10 +95,11 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
              [ <textured: TEXTURED> ] ; 
 		         [ <paneled: PANELED> ] ;  
              [ <flipped: FLIPPED> ] ; 
+             [ BRUSH <obrush> ] ;
           => ;
 	           <oDlg> := TDialog():New( <nTop>, <nLeft>, <nBottom>, <nRight>,;
              <cTitle>, [<.textured.>], [<.paneled.>], [<nWidth>], [<nHeight>],;
-             [<.flipped.>] )
+             [<.flipped.>], [<obrush>] )
 
 #xcommand ACTIVATE DIALOG <oDlg> ;
              [ ON [ LEFT ] CLICK <uLClicked> ] ;
@@ -786,5 +787,23 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
              <oPrg> := TProgress():Redefine( <nId>,<oWnd>, [<nPos>] )                       
                  
 //----------------------------------------------------------------------------//
-                            
+
+#xcommand DEFINE BRUSH <oBrush> ;
+             COLOR <nColor> ;
+          => ;
+             <oBrush> := TBrush():New( ,<nColor> )
+
+//--------------------------------------------------------------------------//
+
+#xcommand DEFINE BRUSH <oBrush> ;
+             GRADIENT <aGradient> ;
+          => ;
+             <oBrush> := TBrush():New( ,,<aGradient> )
+
+#xcommand DEFINE BRUSH <oBrush> ;
+             IMAGE <cImage> ;
+          => ;
+             <oBrush> := TBrush():New( <cImage> )
+
+//--------------------------------------------------------------------------//
 #endif

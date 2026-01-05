@@ -698,6 +698,65 @@ HB_FUNC(WNDSETTRANS) {
   [window center];
 }
 
+HB_FUNC(WNDSETBRUSH) {
+  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSString *string = hb_NSSTRING_par(2);
+  NSColor *color = [NSColor
+      colorWithPatternImage:[[NSImage alloc] initWithContentsOfFile:string]];
+
+  if (window) {
+    [window setBackgroundColor:color];
+    [[window contentView] setWantsLayer:YES];
+    [[window contentView] layer].backgroundColor = [color CGColor];
+  }
+}
+
+HB_FUNC(WNDSETBKGCOLOR) // hWnd, r, g, b, alpha
+{
+  NSWindow *window = (NSWindow *)hb_parnl(1);
+
+  if (window) {
+    NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
+                                               green:hb_parnd(3) / 255.0
+                                                blue:hb_parnd(4) / 255.0
+                                               alpha:hb_parnd(5) / 255.0];
+    [window setBackgroundColor:color];
+    [[window contentView] setWantsLayer:YES];
+    [[window contentView] layer].backgroundColor = [color CGColor];
+  }
+}
+
+HB_FUNC(WNDSETGRADIENTCOLOR) // hWnd, r1, g1, b1, r2, g2, b2, angle
+{
+  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSColor *color1 = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
+                                              green:hb_parnd(3) / 255.0
+                                               blue:hb_parnd(4) / 255.0
+                                              alpha:1.0];
+  NSColor *color2 = [NSColor colorWithCalibratedRed:hb_parnd(5) / 255.0
+                                              green:hb_parnd(6) / 255.0
+                                               blue:hb_parnd(7) / 255.0
+                                              alpha:1.0];
+  NSGradient *gradient = [[NSGradient alloc] initWithStartingColor:color1
+                                                       endingColor:color2];
+
+  NSRect frame = [window frame];
+  NSImage *image = [[NSImage alloc] initWithSize:frame.size];
+
+  [image lockFocus];
+  [gradient drawInRect:NSMakeRect(0, 0, frame.size.width, frame.size.height)
+                 angle:hb_parnl(8)];
+  [image unlockFocus];
+
+  NSColor *color = [NSColor colorWithPatternImage:image];
+
+  if (window) {
+    [window setBackgroundColor:color];
+    [[window contentView] setWantsLayer:YES];
+    [[window contentView] layer].backgroundColor = [color CGColor];
+  }
+}
+
 HB_FUNC(WNDSETSHADOW) {
   NSWindow *window = (NSWindow *)hb_parnl(1);
   window.hasShadow = hb_parl(2);
@@ -944,14 +1003,6 @@ HB_FUNC(CONTROLSETFOCUS) {
   NSControl *control = (NSControl *)hb_parnl(1);
   [[control window] makeKeyAndOrderFront:nil];
   [[control window] makeFirstResponder:control];
-}
-
-HB_FUNC(WNDSETRESIZEINDICATOR) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
-  if (HB_ISLOG(2))
-    [window setShowsResizeIndicator:hb_parl(2)];
-
-  hb_retl([window showsResizeIndicator]);
 }
 
 HB_FUNC(GOTONEXTCONTROL) {

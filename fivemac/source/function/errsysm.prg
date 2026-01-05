@@ -38,7 +38,7 @@ static function ErrorDialog( oError ) // --> logical or quits App
    @ 280, 160 SAY ArgsList( oError ) SIZE 300, 70 OF oDlg
    
    @ 282, 362 BUTTON "View error.log" SIZE 120, 25 OF oDlg ;
-      ACTION WinExec( "TextEdit", AppPath() + "/error.log" )
+      ACTION FM_Openfile( AppPath() + "/error.log" )
    
    @ 280,  20 SAY "Called from:" OF oDlg
 

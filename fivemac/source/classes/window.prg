@@ -147,6 +147,15 @@ CLASS TWindow
    
    METHOD SetFocus() INLINE WndSetFocus( ::hWnd )
 
+   METHOD SetBrush( uBrush ) INLINE ;
+          If( ValType( uBrush ) == "O", WndSetColor( ::hWnd, uBrush:hBrush ), WndSetBrush( ::hWnd, uBrush ) )
+
+   METHOD SetBackgroundColor( nColor ) INLINE WndSetBkgColor( ::hWnd, nRgbRed( nColor ), nRgbGreen( nColor ), nRgbBlue( nColor ), 255 )
+   
+   METHOD SetGradient( nColor1, nColor2, nAngle ) INLINE ;
+          WndSetGradientColor( ::hWnd, nRgbRed( nColor1 ), nRgbGreen( nColor1 ), nRgbBlue( nColor1 ),;
+            nRgbRed( nColor2 ), nRgbGreen( nColor2 ), nRgbBlue( nColor2 ), If( nAngle == nil, 270, nAngle ) )
+
    METHOD SetMsgBar( cPrompt ) 
 
    METHOD SetSplash() INLINE WndSetSplash( ::hWnd )
@@ -666,9 +675,9 @@ METHOD HandleEvent( nMsg, nSender, uParam1, uParam2, uParam3, uParam4 ) CLASS TW
 	            oControl:Click()
            endif  
       
-      case nMsg == WM_BRWCHANGED
+      case nMsg == 18 // WM_BRWCHANGED
 	         if oControl != nil
-	            oControl:Change()
+	            oControl:HandleEvent( nMsg, nSender, uParam1, uParam2 )
 	         endif
       case nMsg == WM_BRWDRAWRECT
          if oControl != nil 
