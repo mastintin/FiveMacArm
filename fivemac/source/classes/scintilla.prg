@@ -46,6 +46,7 @@ CLASS TScintilla FROM TControl
    DATA lLinTabs
    DATA aBookMarker    INIT {}
    DATA aMarkerHand      INIT {}
+    DATA nLastPos         INIT 0
 
    DATA lIndicators      INIT .F.
    
@@ -350,6 +351,8 @@ CLASS TScintilla FROM TControl
    
    METHOD SetMBrace()
 
+   METHOD HandleBraceMatch()
+
    METHOD SetReadOnly( lOn )      INLINE ::Send( SCI_SETREADONLY, If( lOn, 1, 0 ), 0 )
 
    METHOD SetSavePoint()          INLINE ::Send( SCI_SETSAVEPOINT )
@@ -469,7 +472,7 @@ return Self
 METHOD SetToggle() CLASS TScintilla
 Local lSw   := .F.
 local nLine := ::GetCurrentLineNumber()
-   msginfo(nLine)
+   // msginfo(nLine)
    if SciGetProp( ::hWnd,SCI_MARKERGET, nLine ) == 0
       ::Send( SCI_MARKERADD, nLine, markerBookmark )
      else
@@ -762,7 +765,7 @@ if ::GetProp( SCI_MARKERGET, nLine ) == 0  //.or.
         lSw := .T.
          msginfo(len(::aBookMarker))
 else
- msginfo("borra")
+ // msginfo("borra")
 ::Send( SCI_MARKERDELETE, nLine, 4 )
     nPos := AScan( ::aBookMarker, nLine + 1 )
     if !Empty( nPos )
@@ -1009,11 +1012,14 @@ METHOD Notify( nType, pScnNotification ) CLASS TScintilla
       case nCode == SCN_CHARADDED
            ::CharAdded( ScnCh( pScnNotification ) )
 
-      case nCode == SCN_UPDATEUI
-           ::HandleBraceMatch()
-           if ::bChange != nil
-              Eval( ::bChange, Self )
-           endif
+       case nCode == SCN_UPDATEUI
+            if ::nLastPos != ::GetCurrentPos()
+               ::nLastPos := ::GetCurrentPos()
+               ::HandleBraceMatch()
+               if ::bChange != nil
+                  Eval( ::bChange, Self )
+               endif
+            endif
 
      case nCode == SCN_MARGINCLICK
 
@@ -1021,10 +1027,9 @@ METHOD Notify( nType, pScnNotification ) CLASS TScintilla
            nLine = ::LineFromPosition( nPos )
            nMargin := ScNMargin( pScnNotification )
 
-if nMargin < 0
-msginfo("yo")
-// ::Send(SCI_TOGGLEFOLD, nLine+1)
-endif
+   if nMargin < 0
+      // ::Send(SCI_TOGGLEFOLD, nLine+1)
+   endif
 
            if nMargin == 2
               //msginfo("yo")
