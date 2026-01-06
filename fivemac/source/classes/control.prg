@@ -54,6 +54,10 @@ CLASS TControl FROM TWindow
    METHOD GetCtrlIndex()  
    
    METHOD SetSize( nWidth, nHeight ) INLINE ViewSetSize( ::hWnd, nWidth, nHeight )
+
+   METHOD Hide() INLINE ViewHide( ::hWnd )
+
+   METHOD Show() INLINE ViewShow( ::hWnd )
       
 ENDCLASS
 
