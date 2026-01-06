@@ -40,8 +40,6 @@ CLASS TScintilla FROM TControl
    DATA cLastFind
    DATA bChange
    DATA oRowItem, oColItem
-   DATA aCopys
-   DATA aKey			AS ARRAY INIT {}
    DATA nSetStyle
    DATA lLinTabs
    DATA aBookMarker    INIT {}
@@ -1233,8 +1231,9 @@ METHOD HandleBraceMatch() CLASS TScintilla
    endif
 
    nPos := ::GetCurrentPos()
-   cChar := Chr( ::GetCharAt( nPos ) )
 
+   // Check character at cursor
+   cChar := Chr( ::GetCharAt( nPos ) )
    if cChar $ "()[]{}" 
       nMatchPos := ::BraceMatch( nPos )
       if nMatchPos != -1
@@ -1245,9 +1244,10 @@ METHOD HandleBraceMatch() CLASS TScintilla
          return nil
       endif
    endif
-   
-   nPos--
-   if nPos >= 0
+
+   // Check character before cursor
+   if nPos > 0
+      nPos--
       cChar := Chr( ::GetCharAt( nPos ) )
       if cChar $ "()[]{}" 
          nMatchPos := ::BraceMatch( nPos )
@@ -1390,8 +1390,6 @@ endif
 
   ::InitEdt()
 
-  ::SetMBrace()
-
 ::SetLinIndent( .t., .f. )
 
 // Number of styles we use with this lexer.
@@ -1429,6 +1427,8 @@ endif
   ::Send( SCI_STYLESETBACK, STYLE_DEFAULT, ::nBackColor )  // Color fondo editor
 
   ::Send( SCI_STYLECLEARALL, 0, 0 )
+
+  ::SetMBrace()
  
    ::Send( SCI_AUTOCSETIGNORECASE, 1, 0 )
    ::Send( SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE, 0 ) // -> 1
