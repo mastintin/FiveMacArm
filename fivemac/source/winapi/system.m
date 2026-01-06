@@ -10,25 +10,25 @@ void MsgAlert(NSString *, NSString *messageText);
 HB_FUNC(APPNAME) {
   NSString *path = [[NSBundle mainBundle] bundlePath];
 
-  hb_retc([path cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([path cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(APPPATH) {
   NSString *path = [[NSBundle mainBundle] bundlePath];
 
-  hb_retc([path cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([path cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(RESPATH) {
   NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
 
-  hb_retc([bundlePath cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([bundlePath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(CURRENTPATH) {
   NSString *currentpath = [[NSFileManager defaultManager] currentDirectoryPath];
 
-  hb_retc([currentpath cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([currentpath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(SETCURRENTPATH) {
@@ -41,50 +41,50 @@ HB_FUNC(PATH) {
   NSString *secondParentPath = [buPath stringByDeletingLastPathComponent];
 
   hb_retc(
-      [secondParentPath cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+      [secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(HOMETPATH) {
   NSURL *homepath =
       [[NSFileManager defaultManager] homeDirectoryForCurrentUser];
   NSString *string = homepath.absoluteString;
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(PARENTPATH) {
   NSString *string = [[[NSString alloc]
       initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
   NSString *secondParentPath = [string stringByDeletingLastPathComponent];
 
   hb_retc(
-      [secondParentPath cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+      [secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(FILENOPATH) {
   NSString *string = [[[NSString alloc]
       initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
   NSString *file = [string lastPathComponent];
 
-  hb_retc([file cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([file cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(LIBRARYPATH) {
   NSString *Userpath = [@"~/Library" stringByExpandingTildeInPath];
 
-  hb_retc([Userpath cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([Userpath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(USERPATH) {
   NSString *Userpath = [@"~" stringByExpandingTildeInPath];
-  hb_retc([Userpath cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([Userpath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(ISFILE) {
   NSString *string = [[[NSString alloc]
       initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
   NSFileManager *filemgr = [NSFileManager defaultManager];
 
   hb_retl(([filemgr fileExistsAtPath:string] == YES));
@@ -93,10 +93,10 @@ HB_FUNC(ISFILE) {
 HB_FUNC(COPYFILETO) {
   NSString *fileini = [[[NSString alloc]
       initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
   NSString *filefin = [[[NSString alloc]
       initWithCString:HB_ISCHAR(2) ? hb_parc(2) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
   NSFileManager *filemgr = [NSFileManager defaultManager];
 
   hb_retl(([filemgr copyItemAtPath:fileini toPath:filefin error:NULL] == YES));
@@ -107,7 +107,7 @@ HB_FUNC(DELETEFILE) {
 
   NSString *string = [[[NSString alloc]
       initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
 
   NSFileManager *filemgr = NSFileManager.defaultManager;
 
@@ -120,7 +120,7 @@ HB_FUNC(DELETEFILE) {
 HB_FUNC(DELETEDIR) {
   NSString *string = [[[NSString alloc]
       initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
   NSFileManager *fManager = NSFileManager.defaultManager;
   BOOL isDir;
   NSString *strfile = [string stringByAppendingString:@"/"];
@@ -323,7 +323,7 @@ HB_FUNC(GETCLASSNAME) // hCtrl
   NSObject *control = (NSObject *)hb_parnl(1);
 
   hb_retc(
-      [[control className] cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+      [[control className] cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(APPTOFROM) {
@@ -432,7 +432,7 @@ HB_FUNC(MOVETOTRASH) {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   NSString *path = [[[NSString alloc]
       initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
   NSURL *originalURL = [[NSURL alloc] initFileURLWithPath:path];
   NSArray *urls = [NSArray arrayWithObject:originalURL];
 
@@ -466,7 +466,7 @@ HB_FUNC(TASKEXEC) {
   for (i = 0; i <= n - 1; i++) {
 
     cArg = [[[NSString alloc] initWithCString:hb_parvc(2, i + 1)
-                                     encoding:NSWindowsCP1252StringEncoding]
+                                     encoding:NSUTF8StringEncoding]
         autorelease];
 
     [arguments addObject:cArg];
@@ -485,7 +485,7 @@ HB_FUNC(TASKEXEC) {
   NSString *string = [[NSString alloc] initWithData:data
                                            encoding:NSUTF8StringEncoding];
   // NSLog( @"woop! got\n%@", string );
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(TASKEXECARRAY) {
@@ -513,7 +513,7 @@ HB_FUNC(TASKEXECARRAY) {
   NSString *string = [[NSString alloc] initWithData:data
                                            encoding:NSUTF8StringEncoding];
   // NSLog( @"woop! got\n%@", string );
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(BUILD) {
@@ -548,7 +548,7 @@ HB_FUNC(BUILD) {
   NSString *string = [[NSString alloc] initWithData:data
                                            encoding:NSUTF8StringEncoding];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(MAKEEXEC) {
@@ -597,13 +597,13 @@ HB_FUNC(MAKEEXEC) {
   NSString *string = [[NSString alloc] initWithData:data
                                            encoding:NSUTF8StringEncoding];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(USERNAME) {
   NSString *userName = NSUserName();
 
-  hb_retc([userName cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([userName cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(WINEXEC) { HB_FUN_MACEXEC(); }
@@ -652,7 +652,7 @@ HB_FUNC(GETCURRENTLANGUAGE) {
   NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
   NSArray *languages = [defaults objectForKey:@"AppleLanguages"];
   NSString *currentLanguage = [languages objectAtIndex:0];
-  hb_retc([currentLanguage cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([currentLanguage cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(GETAPPICON) {
@@ -795,7 +795,7 @@ HB_FUNC(GETMACADDRESS) {
     }
   }
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(GETSDKPATH) {
@@ -817,7 +817,7 @@ HB_FUNC(GETSDKPATH) {
       stringByTrimmingCharactersInSet:[NSCharacterSet
                                           whitespaceAndNewlineCharacterSet]];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 
   [string release];
   [task release];

@@ -91,7 +91,7 @@ HB_FUNC(SEARCHGETGETAUTOSAVE) // hGet --> cText
   SearchGet *get = (SearchGet *)hb_parnl(1);
   NSString *string = [get recentsAutosaveName];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(TBRSEARCHCREATE) {

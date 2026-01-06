@@ -263,7 +263,7 @@ HB_FUNC(CHOOSEFILE) {
     NSString *source =
         [[[[op URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
 
-    hb_retc([source cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+    hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
 }
@@ -307,14 +307,14 @@ HB_FUNC(CHOOSEFOLDER) {
       fileTypes = [[NSMutableArray alloc]
           initWithObjects:types, [types uppercaseString], nil];
 
-    [op setAllowedFileTypes:fileTypes];
+    [op setAllowedContentTypes:fileTypes];
   }
 
   if ([op runModal] == NSModalResponseOK) {
     NSString *source =
         [[[[op URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
 
-    hb_retc([source cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+    hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
 }
@@ -337,7 +337,7 @@ HB_FUNC(SAVEFILE) {
   if ([op runModal] == NSModalResponseOK) {
 
     NSString *source = [[[op URL] path] stringByRemovingPercentEncoding];
-    hb_retc([source cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+    hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
 }
@@ -354,7 +354,7 @@ HB_FUNC(CHOOSEIMAGEFILE) {
     NSString *source =
         [[[[op URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
 
-    hb_retc([source cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+    hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
 }
@@ -455,7 +455,7 @@ HB_FUNC(CLIPBOARDPASTESTRING) {
   NSString *string;
 
   string = [pasteBoard stringForType:NSPasteboardTypeString];
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(CLIPBOARDCLEAR) {
@@ -466,7 +466,7 @@ HB_FUNC(CLIPBOARDCLEAR) {
 HB_FUNC(CLIPBOARDGETNAME) {
   NSPasteboard *pasteBoard = hb_parptr(1);
   NSString *string = pasteBoard.name;
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 //----------------------------------------------------------------------------//
@@ -488,7 +488,7 @@ HB_FUNC(PASTEPASTEBOARDSTRING) {
       declareTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, nil]
              owner:nil];
   string = [pasteBoard stringForType:NSPasteboardTypeString];
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(SCREENTOPASTEBOARD) {

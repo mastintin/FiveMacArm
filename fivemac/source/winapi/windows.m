@@ -571,7 +571,7 @@ HB_FUNC(WNDGETTEXT) {
   else
     string = [window title];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(WNDTOP) {

@@ -7,7 +7,7 @@ HB_FUNC(BTNCREATE) {
   NSString *string = hb_NSSTRING_par(5);
   NSWindow *window = (NSWindow *)hb_parnl(6);
 
-  [button setBezelStyle:NSRoundedBezelStyle];
+  [button setBezelStyle:NSBezelStylePush];
   [button setTitle:string];
 
   [GetView(window) addSubview:button];
@@ -24,7 +24,7 @@ HB_FUNC(RADCREATE) {
   NSString *string = hb_NSSTRING_par(5);
   NSWindow *window = (NSWindow *)hb_parnl(6);
 
-  [radio setButtonType:NSRadioButton];
+  [radio setButtonType:NSButtonTypeRadio];
   [radio setTitle:string];
   [GetView(window) addSubview:radio];
   [radio setAction:@selector(BtnClick:)];
@@ -81,7 +81,7 @@ HB_FUNC(BTNBMPCREATE) {
                                                  hb_parnl(3), hb_parnl(4))];
   NSWindow *window = (NSWindow *)hb_parnl(5);
 
-  [button setBezelStyle:NSRegularSquareBezelStyle];
+  [button setBezelStyle:NSBezelStyleFlexiblePush];
   [button setTitle:@""];
 
   [GetView(window) addSubview:button];
@@ -101,7 +101,7 @@ HB_FUNC(BTNGETTEXT) // hButton --> cText
   NSButton *button = (NSButton *)hb_parnl(1);
   NSString *string = [button title];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(BTNBMPFILE) {

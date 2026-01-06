@@ -145,7 +145,7 @@ HB_FUNC(TBRADDSEPARATOR) {
   ToolBar *toolbar = (ToolBar *)hb_parnl(1);
   NSToolbarItem *item;
 
-  [toolbar insertItemWithItemIdentifier:NSToolbarSeparatorItemIdentifier
+  [toolbar insertItemWithItemIdentifier:NSToolbarSpaceItemIdentifier
                                 atIndex:hb_parnl(2)];
 
   item = [[toolbar items] objectAtIndex:hb_parnl(2)];
@@ -161,27 +161,33 @@ HB_FUNC(TBRITEMSETVIEW) {
 }
 
 HB_FUNC(TBRITEMSETSIZE) {
+  /*   -- deprecated ------
   NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
   NSSize size = [item maxSize];
 
   size.width = hb_parnl(2);
   [item setMaxSize:size];
+  */
 }
 
 HB_FUNC(TBRITEMSETMINSIZE) {
+  /*   -- deprecated ------
   NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
   NSSize size = [item minSize];
 
   size.width = hb_parnl(2);
   [item setMinSize:size];
+  */
 }
 
 HB_FUNC(TBRITEMSETMAXSIZE) {
+  /*   -- deprecated ------
   NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
   NSSize size = [item maxSize];
 
   size.width = hb_parnl(2);
   [item setMaxSize:size];
+  */
 }
 
 HB_FUNC(TBRITEMSETSTANDARDVISPRIORITY) {
@@ -315,8 +321,10 @@ HB_FUNC(TBRADDSEARCH) {
   [item setToolTip:tooltip];
   [item setEnabled:YES];
   [item setView:edit];
+  /* ---- deprecated -----
   [item setMinSize:NSMakeSize(40, NSHeight([edit frame]))];
   [item setMaxSize:NSMakeSize(200, NSHeight([edit frame]))];
+  */
 
   hb_retnl((HB_LONG)item);
 }
@@ -326,7 +334,7 @@ HB_FUNC(TBRSEARCHTEXT) {
   SearchGet *edit = (SearchGet *)[item view];
   NSString *string = [edit stringValue];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(TBRADDCONTROL) {
@@ -345,8 +353,10 @@ HB_FUNC(TBRADDCONTROL) {
   [item setEnabled:YES];
   [view removeFromSuperview];
   [item setView:view];
+  /* ---- deprecated -----
   [item setMinSize:NSMakeSize(40, NSHeight([view frame]))];
   [item setMaxSize:NSMakeSize(200, NSHeight([view frame]))];
+  */
 
   hb_retnl((HB_LONG)item);
 }
@@ -389,8 +399,10 @@ HB_FUNC(TBRADDSEGMENTEDBTN) {
   [item setToolTip:tooltip];
   [item setEnabled:YES];
   [item setView:segment];
+  /* ---- deprecated -----
   [item setMinSize:NSMakeSize(40, NSHeight([segment frame]))];
   [item setMaxSize:NSMakeSize(hb_parnl(6), NSHeight([segment frame]))];
+  */
 
   hb_retnl((HB_LONG)item);
 }

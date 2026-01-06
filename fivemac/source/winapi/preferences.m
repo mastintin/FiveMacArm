@@ -22,7 +22,7 @@ HB_FUNC( GETSTRINGPREFERENCE )
    NSString * key = hb_NSSTRING_par( 2 );
    NSString * cValue = [ preferences objectForKey: key ];
    
-   hb_retc( [ cValue cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+   hb_retc( [ cValue cStringUsingEncoding : NSUTF8StringEncoding ] );
 }
 
 HB_FUNC( SETDEFAULTPREFERENCE )
@@ -49,7 +49,7 @@ HB_FUNC( GETPLISTVALUE )
    //Asignamos un valor a un string, por ejemplo
    NSString * cValue = [ dict objectForKey: key ];
     
-   hb_retc( [ cValue cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+   hb_retc( [ cValue cStringUsingEncoding : NSUTF8StringEncoding ] );
 }
 
 HB_FUNC( SETPLISTVALUE )

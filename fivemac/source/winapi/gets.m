@@ -189,7 +189,7 @@ HB_FUNC( GETSETNUMBER )
 {
     NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
     NSString * string ;
-    string = [ [ [ NSString alloc ] initWithCString: HB_ISCHAR( 2 ) ? hb_parc( 2 ) : "" encoding :  NSWindowsCP1252StringEncoding ] autorelease ];
+    string = [ [ [ NSString alloc ] initWithCString: HB_ISCHAR( 2 ) ? hb_parc( 2 ) : "" encoding :  NSUTF8StringEncoding ] autorelease ];
     
     double numerito = [string doubleValue] ;
     
@@ -220,7 +220,7 @@ HB_FUNC( GETGETTEXT ) // hGet --> cText
    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
    NSString * string = [ get stringValue ];
    
-   hb_retc( [ string cStringUsingEncoding: NSWindowsCP1252StringEncoding ] );
+   hb_retc( [ string cStringUsingEncoding: NSUTF8StringEncoding ] );
 }   
 
 HB_FUNC( GETSETTOEND ) // hGet --> cText
@@ -350,7 +350,7 @@ HB_FUNC( GETCUTSELECTED ) // hGet --> cText
    hb_vmPushLong( ( HB_LONG ) [ get window ] );
    hb_vmPushLong( WM_GETSETVALUE );
    hb_vmPushLong( ( HB_LONG ) get );
-   hb_vmPushString( [ string cStringUsingEncoding: NSWindowsCP1252StringEncoding ], [ string length ] ); 
+   hb_vmPushString( [ string cStringUsingEncoding: NSUTF8StringEncoding ], [ string length ] ); 
    hb_vmDo( 4 );
 
    * obj = hb_NSSTRING_par( -1 );    
@@ -371,7 +371,7 @@ HB_FUNC( GETCUTSELECTED ) // hGet --> cText
     hb_vmPushLong( ( HB_LONG ) [ get window ] );
     hb_vmPushLong( WM_GETPARTEVALUE );
     hb_vmPushLong( ( HB_LONG ) get );
-    hb_vmPushString( [ partial cStringUsingEncoding: NSWindowsCP1252StringEncoding ], [ partial length ] );
+    hb_vmPushString( [ partial cStringUsingEncoding: NSUTF8StringEncoding ], [ partial length ] );
     
     hb_vmDo( 4 );
 
@@ -480,7 +480,7 @@ HB_FUNC( GETGETNUMBERFORMAT ) // hGet --> cText
     NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
     NSNumberFormatter * formatter = [ [get cell] formatter ];
     NSString * string = [ formatter format ];
-        hb_retc( [ string cStringUsingEncoding:   NSWindowsCP1252StringEncoding  ] );
+        hb_retc( [ string cStringUsingEncoding:   NSUTF8StringEncoding  ] );
  }
 
 HB_FUNC( GETSETGROUPSEPARATOR ) // hGet --> cText
@@ -674,7 +674,7 @@ HB_FUNC( GETSETTIMEFORMATMEDIUM )
     hb_vmPushLong( ( HB_LONG ) [ get window ] );
     hb_vmPushLong( WM_GETSETVALUE );
     hb_vmPushLong( ( HB_LONG ) get );
-    hb_vmPushString( [ string cStringUsingEncoding: NSWindowsCP1252StringEncoding ], [ string length ] );
+    hb_vmPushString( [ string cStringUsingEncoding: NSUTF8StringEncoding ], [ string length ] );
     hb_vmDo( 4 );
     
     * obj = hb_NSSTRING_par( -1 );

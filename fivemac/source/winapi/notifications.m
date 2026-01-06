@@ -67,7 +67,7 @@ HB_FUNC(NOTIFYGETTITLE) {
   UNMutableNotificationContent *content =
       (UNMutableNotificationContent *)hb_parnl(1);
   NSString *title = content.title;
-  hb_retc([title cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([title cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(NOTIFYSETINFO) {

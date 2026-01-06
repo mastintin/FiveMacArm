@@ -51,7 +51,7 @@ HB_FUNC( ITUNESQUIT )
 HB_FUNC( ITUNESSONGNAME )
 {
   iTunesApplication * iTunes = ( iTunesApplication *) hb_parnl( 1 );  
-  hb_retc( [ [[iTunes currentTrack] name] cStringUsingEncoding : NSWindowsCP1252StringEncoding ] ); 
+  hb_retc( [ [[iTunes currentTrack] name] cStringUsingEncoding : NSUTF8StringEncoding ] ); 
 }
 
 HB_FUNC( ITUNESGETSONGRATING )
@@ -63,7 +63,7 @@ HB_FUNC( ITUNESGETSONGRATING )
 HB_FUNC( ITUNESGETSONGARTIST )
 {
     iTunesApplication * iTunes = ( iTunesApplication *) hb_parnl( 1 );  
-    hb_retc( [ [[iTunes currentTrack] artist ] cStringUsingEncoding : NSWindowsCP1252StringEncoding ] ); 
+    hb_retc( [ [[iTunes currentTrack] artist ] cStringUsingEncoding : NSUTF8StringEncoding ] ); 
 }
 
 HB_FUNC( ITUNESGETSONGDURATION )
@@ -75,7 +75,7 @@ HB_FUNC( ITUNESGETSONGDURATION )
 HB_FUNC( ITUNESGETSONGLYRICS )
 {
     iTunesApplication * iTunes = ( iTunesApplication *) hb_parnl( 1 );  
-    hb_retc( [ [[iTunes currentTrack] lyrics ] cStringUsingEncoding : NSWindowsCP1252StringEncoding ] ); 
+    hb_retc( [ [[iTunes currentTrack] lyrics ] cStringUsingEncoding : NSUTF8StringEncoding ] ); 
 }
 
 HB_FUNC( ITUNESPLAY )

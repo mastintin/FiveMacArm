@@ -121,7 +121,7 @@ HB_FUNC(IMGGETFILE) {
   NSImageView *image = (NSImageView *)hb_parnl(1);
   NSString *string = [[image image] name];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(IMGGETWIDTH) {
