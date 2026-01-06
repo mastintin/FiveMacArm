@@ -465,16 +465,16 @@ function Preferences()
    DEFINE MULTIVIEW oMulti OF oDlg RESIZED
 
    @ 0,0 MVIEW PROMPT "Fonts & Colors" SIZE 500, 382 TITLE "Fonts & Colors" OF oMulti ;
-         TOOLTIP "Fonts & Colors" IMAGE "ColorPanel" 
+         TOOLTIP "Fonts & Colors" IMAGE ImgSymbols( "paintpalette" ) 
 
    @ 0,0 MVIEW PROMPT "WorkSpace" SIZE 500, 382 TITLE "WorkSpace" OF oMulti ;
-         TOOLTIP "WorkSpace" IMAGE cBmpPath+"WorkSpace2.tiff"
+         TOOLTIP "WorkSpace" IMAGE ImgSymbols( "desktopcomputer" )
 
    @ 0,0 MVIEW PROMPT "Frameworks" SIZE 420, 382 TITLE "Frameworks" OF oMulti ;
-         TOOLTIP "Frameworks" IMAGE  cBmpPath+"Framework.tiff"
+         TOOLTIP "Frameworks" IMAGE  ImgSymbols( "square.stack.3d.up" )
 
    @ 0,0 MVIEW PROMPT "Harbour" SIZE 420, 382 TITLE "Harbour" OF oMulti ;
-   TOOLTIP "Harbour" IMAGE cBmpPath+"Libs.tiff"
+   TOOLTIP "Harbour" IMAGE ImgSymbols( "archivebox" )
 
    oMulti:oToolbar:SetBtnSelected( 1 )
 
@@ -483,7 +483,7 @@ function Preferences()
 
    oTree:bAction = { || ShowColor( oClr, oTree )  }
 
-   oItem = oTree:AddItem( "Colors","ColorPanel" ) //cBmpPath+"Coloring.tiff" )
+   oItem = oTree:AddItem( "Colors", ImgSymbols( "paintpalette" ) )
       oItem:AddItem( "Strings" )
       oItem:AddItem( "Numbers" )
       oItem:AddItem( "Comments" )
@@ -493,7 +493,7 @@ function Preferences()
    oItem = oTree:AddItem( "ToolBar" )
       oItem:AddItem( "Prompts" )
 
-   oItem = oTree:AddItem( "Font","FontPanel") // cBmpPath+"Fonts.tiff"  )
+   oItem = oTree:AddItem( "Font", ImgSymbols( "textformat" ) )
       oItem:AddItem( "Name" )
       oItem:AddItem( "Size" )
 
@@ -513,7 +513,7 @@ function Preferences()
    @ 204, 40 GET oGetIcon VAR cVarIcon OF oMulti:aViews[ 2 ] SIZE 390, 20
    
    @ 204, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
-     FILENAME "RevealFreestanding"  ;
+     FILENAME ImgSymbols( "plus.circle" )  ;
       ACTION ChooseSheetTxtImg(oGetIcon:hwnd,oImg:hWnd ) SIZE 20, 20 STYLE 10
       
    oGetIcon:SetNOSelect()
@@ -522,21 +522,21 @@ function Preferences()
    @ 150, 40 GET oGet1 VAR cVar1 OF oMulti:aViews[ 2 ] SIZE 390, 20
 
    @ 150, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
-      FILENAME "RevealFreestanding"  ;
+      FILENAME ImgSymbols( "folder" )  ;
       ACTION oGet1:opensheet( ParentPath( oGet1:gettext() ) )  SIZE 20, 20 STYLE 10
 
    @ 120, 40 SAY "Harbour Path:" OF oMulti:aViews[ 2 ]
    @ 100, 40 GET oGet2 VAR cVar2 OF oMulti:aViews[ 2 ] SIZE 390, 20
 
    @ 100, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
-      FILENAME "RevealFreestanding"  ;
+      FILENAME ImgSymbols( "folder" )  ;
       ACTION oGet2:opensheet( oGet2:gettext() )  SIZE 20, 20 STYLE 10
   
    @ 70, 40 SAY "SDK Path:" OF oMulti:aViews[ 2 ]
    @ 10, 40 GET oGet3 VAR cVar3 OF oMulti:aViews[ 2 ] SIZE 390, 60
 
    @ 10, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
-      FILENAME "RevealFreestanding"  ;
+      FILENAME ImgSymbols( "folder" )  ;
      ACTION oGet3:opensheet(ParentPath( oGet3:gettext()))  SIZE 20, 60 STYLE 10
 
   //------ controles en vista 3 -----------
@@ -551,15 +551,15 @@ function Preferences()
 
    i = Len( aFrameworks )
    for n = 1 to i
-      oItem2:AddItem( aFrameworks[n],,, cBmpPath + "Framework.tiff" )
+      oItem2:AddItem( aFrameworks[n],,, ImgSymbols( "square.stack.3d.up" ) )
    next
 
    @ 12, 10 BTNBMP oBtn1 OF oMulti:aViews[ 3 ] ;
-      FILENAME "Remove" ;
+      FILENAME ImgSymbols( "minus.circle" ) ;
       ACTION Dellib( oTree2, 1 ) SIZE 30, 30 STYLE 10
 
    @ 12, 39 BTNBMP oBtn2  OF oMulti:aViews[ 3 ]  ;
-      FILENAME "Add" ;
+      FILENAME ImgSymbols( "plus.circle" ) ;
       ACTION DlgAddlib(oTree2,1) SIZE 30, 30 STYLE 10
 
    @ 12, 68 BUTTON "" OF oMulti:aViews[ 3 ] ;
@@ -572,19 +572,19 @@ function Preferences()
 
    oTree4:SetScrollHShow( .F. )
 
-   oItem4 = oTree4:AddItem( "Extra Frameworks" ,"Folder")
+   oItem4 = oTree4:AddItem( "Extra Frameworks" , ImgSymbols( "folder" ) )
 
    i= Len( aExtraFrameworks )
    for n = 1 to i
-      oItem4:AddItem( aExtraFrameworks[ n ],,, cBmpPath + "Framework.tiff" )
+      oItem4:AddItem( aExtraFrameworks[ n ],,, ImgSymbols( "square.stack.3d.up" ) )
    next
 
    @ 12, 200 BTNBMP oBtn5 OF oMulti:aViews[ 3 ] ;
-      FILENAME "Remove" ;
+      FILENAME ImgSymbols( "minus.circle" ) ;
       ACTION Dellib( oTree4, 3 ) SIZE 30, 30 STYLE 10
 
    @ 12, 229 BTNBMP oBtn6 OF oMulti:aViews[ 3 ] ;
-      FILENAME "Add" ;
+      FILENAME ImgSymbols( "plus.circle" ) ;
       ACTION DlgAddlib( oTree4, 3 ) SIZE 30, 30 STYLE 10
 
    @ 12, 258 BUTTON "" OF oMulti:aViews[ 3 ] ;
@@ -599,19 +599,19 @@ function Preferences()
 
    oTree3:SetScrollHShow( .F. )
 
-   oItem3 = oTree3:AddItem( "Harbour Libs" ,"Folder")
+   oItem3 = oTree3:AddItem( "Harbour Libs" , ImgSymbols( "folder" ) )
 
    i = Len( aHarbLibs )
    for n = 1 to i
-      oItem3:AddItem( aHarbLibs[n],,, cBmpPath + "Libs.tiff" )
+      oItem3:AddItem( aHarbLibs[n],,, ImgSymbols( "archivebox" ) )
    next
 
    @ 12, 10 BTNBMP oBtn3 OF oMulti:aViews[ 4 ] ;
-   FILENAME "Remove" ;
+   FILENAME ImgSymbols( "minus.circle" ) ;
    ACTION Dellib( oTree3, 2 ) SIZE 30, 30 STYLE 10
 
    @ 12, 39 BTNBMP oBtn4 OF oMulti:aViews[ 4 ] ;
-      FILENAME "Add" ;
+      FILENAME ImgSymbols( "plus.circle" ) ;
       ACTION DlgAddlib( oTree3, 2 ) SIZE 30, 30 STYLE 10
 
    @ 12, 68 BUTTON "" OF oMulti:aViews[ 4 ] ;
@@ -624,19 +624,19 @@ function Preferences()
 
    oTreeFlag:SetScrollHShow( .F. )
 
-   oItemFlag = oTreeFlag:AddItem( "HarbourFlags" ,"Folder")
+   oItemFlag = oTreeFlag:AddItem( "HarbourFlags" , ImgSymbols( "folder" ) )
 
    i = Len( aHarbourFlags )
    for n = 1 to i
-      oItemFlag:AddItem( aHarbourFlags[ n ],,, "SmartBadge" )
+      oItemFlag:AddItem( aHarbourFlags[ n ],,, ImgSymbols( "flag" ) )
    next
 
    @ 12, 200 BTNBMP oBtndelFlag OF oMulti:aViews[ 4 ] ;
-      FILENAME "Remove" ;
+      FILENAME ImgSymbols( "minus.circle" ) ;
       ACTION Dellib( oTreeFlag, 4 ) SIZE 30, 30 STYLE 10
 
    @ 12, 229 BTNBMP oBtnaddFlag OF oMulti:aViews[ 4 ] ;
-      FILENAME "Add" ;
+      FILENAME ImgSymbols( "plus.circle" ) ;
       ACTION DlgAddlib( oTreeFlag, 4 ) SIZE 30, 30 STYLE 10
 
    @ 12, 258 BUTTON "" OF oMulti:aViews[ 4 ] ;
