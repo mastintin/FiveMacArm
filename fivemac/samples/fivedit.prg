@@ -464,16 +464,16 @@ function Preferences()
  
    DEFINE MULTIVIEW oMulti OF oDlg RESIZED
 
-   @ 0,0 MVIEW PROMPT "Fonts & Colors" SIZE 500, 382 TITLE "Fonts & Colors" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "Fonts & Colors" SIZE 600, 382 TITLE "Fonts & Colors" OF oMulti ;
          TOOLTIP "Fonts & Colors" IMAGE ImgSymbols( "paintpalette" ) 
 
-   @ 0,0 MVIEW PROMPT "WorkSpace" SIZE 500, 382 TITLE "WorkSpace" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "WorkSpace" SIZE 600, 382 TITLE "WorkSpace" OF oMulti ;
          TOOLTIP "WorkSpace" IMAGE ImgSymbols( "desktopcomputer" )
 
-   @ 0,0 MVIEW PROMPT "Frameworks" SIZE 420, 382 TITLE "Frameworks" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "Frameworks" SIZE 600, 382 TITLE "Frameworks" OF oMulti ;
          TOOLTIP "Frameworks" IMAGE  ImgSymbols( "square.stack.3d.up" )
 
-   @ 0,0 MVIEW PROMPT "Harbour" SIZE 420, 382 TITLE "Harbour" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "Harbour" SIZE 600, 382 TITLE "Harbour" OF oMulti ;
    TOOLTIP "Harbour" IMAGE ImgSymbols( "archivebox" )
 
    oMulti:oToolbar:SetBtnSelected( 1 )
