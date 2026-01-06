@@ -240,9 +240,9 @@ static PHB_SYMB symFMH = NULL;
 
   //   NSLog( @"valor kencoding = %i", kencoding );
 
-  string = [[[NSString alloc] initWithCString:HB_ISCHAR(-1) ? hb_parc(-1) : ""
-                                     encoding:NSWindowsCP1252StringEncoding]
-      autorelease];
+  string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(-1) ? hb_parc(-1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
 
   cell = [aTableColumn dataCell];
 
@@ -252,9 +252,9 @@ static PHB_SYMB symFMH = NULL;
 
   else if ([[[aTableColumn dataCell] className]
                isEqual:@"BrwImageAndTextCell"]) {
-    NSString *filename = [[[NSString alloc]
-        initWithCString:hb_parvc(-1, 1)
-               encoding:NSWindowsCP1252StringEncoding] autorelease];
+    NSString *filename =
+        [[[NSString alloc] initWithCString:hb_parvc(-1, 1)
+                                  encoding:NSUTF8StringEncoding] autorelease];
     NSImage *image;
 
     if (hb_parvl(-1, 3)) // Is an app
@@ -264,9 +264,9 @@ static PHB_SYMB symFMH = NULL;
 
     [(BrwImageAndTextCell *)cell setImage:image];
 
-    return [[[NSString alloc] initWithCString:hb_parvc(-1, 2)
-                                     encoding:NSWindowsCP1252StringEncoding]
-        autorelease];
+    return
+        [[[NSString alloc] initWithCString:hb_parvc(-1, 2)
+                                  encoding:NSUTF8StringEncoding] autorelease];
   }
 
   // else

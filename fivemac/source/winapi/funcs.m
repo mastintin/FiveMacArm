@@ -26,7 +26,7 @@ NSString *hb_NSSTRING_par(int iParam) // NSUTF8StringEncoding
 {
   return [[[NSString alloc]
       initWithCString:HB_ISCHAR(iParam) ? hb_parc(iParam) : ""
-             encoding:NSWindowsCP1252StringEncoding] autorelease];
+             encoding:NSUTF8StringEncoding] autorelease];
 }
 
 NSAttributedString *hb_NSASTRING_par(int iParam) {
@@ -51,7 +51,7 @@ HB_FUNC(OSVERSION) {
   NSString *version =
       [[NSProcessInfo processInfo] operatingSystemVersionString];
 
-  hb_retc([version cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([version cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(SDKVERSION) {
