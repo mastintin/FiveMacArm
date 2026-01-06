@@ -19,7 +19,7 @@
 {
    [ NSApp abortModal ];
 
-   hb_retc( [ [ ( newFont ? newFont: font ) displayName ] cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+   hb_retc( [ [ ( newFont ? newFont: font ) displayName ] cStringUsingEncoding : NSUTF8StringEncoding ] );
 }
 @end
 

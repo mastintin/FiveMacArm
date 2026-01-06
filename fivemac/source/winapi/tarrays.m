@@ -35,7 +35,7 @@ HB_FUNC( STRINGARRAYTONSARRAY )
     
     for( i = 0; i <= n - 1; i++ )
     {
-        string =  [ [ [ NSString alloc ] initWithCString: hb_parvc( 2, i )  encoding:  NSWindowsCP1252StringEncoding ] autorelease ];
+        string =  [ [ [ NSString alloc ] initWithCString: hb_parvc( 2, i )  encoding:  NSUTF8StringEncoding ] autorelease ];
         
         [ myarray addObject: string ] ;
         
@@ -103,7 +103,7 @@ HB_FUNC( ARRAYGETOBJINDEX )
    NSMutableArray * myarray = ( NSMutableArray * ) hb_parnl( 1 ); 
    NSString * string  =  [ myarray  objectAtIndex: hb_parni(2) ];
    
-   hb_retc( [ string cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+   hb_retc( [ string cStringUsingEncoding : NSUTF8StringEncoding ] );
 } 
 
 HB_FUNC( ARRAYSETOBJINDEX )

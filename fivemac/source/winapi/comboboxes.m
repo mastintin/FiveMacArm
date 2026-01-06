@@ -110,7 +110,7 @@ HB_FUNC( CBXGETTITLEITEMSELECTED )
 {
   NSPopUpButton * combo = ( NSPopUpButton * ) hb_parnl( 1 );
   NSString * string =  [ combo titleOfSelectedItem ]  ;
-  hb_retc( [ string cStringUsingEncoding: NSWindowsCP1252StringEncoding ] );
+  hb_retc( [ string cStringUsingEncoding: NSUTF8StringEncoding ] );
 }
 
  

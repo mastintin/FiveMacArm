@@ -18,7 +18,7 @@ HB_FUNC(URLPATH) {
   NSURL *name = (NSURL *)hb_parnl(1);
   NSString *source = [[name path] stringByRemovingPercentEncoding];
 
-  hb_retc([source cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(URLPATHEXTENSION) {
@@ -26,7 +26,7 @@ HB_FUNC(URLPATHEXTENSION) {
   NSURL *name = (NSURL *)hb_parnl(1);
   NSString *source = [name pathExtension];
 
-  hb_retc([source cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
 #endif
 }
 

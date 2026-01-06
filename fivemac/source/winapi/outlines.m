@@ -279,7 +279,7 @@ HB_FUNC(OUTLINEGETITEMNAME) {
   MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
   NSString *string = [[outlineView itemAtRow:[outlineView selectedRow]] name];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(OUTLINEGETROWS) {

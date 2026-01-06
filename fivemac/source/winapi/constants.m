@@ -4,7 +4,7 @@
 
 HB_FUNC( NSIMAGENAMEGORIGHTTEMPLATE )
 {
-   hb_retc( [ NSImageNameGoRightTemplate cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+   hb_retc( [ NSImageNameGoRightTemplate cStringUsingEncoding : NSUTF8StringEncoding ] );
 }   
 
 

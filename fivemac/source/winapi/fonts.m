@@ -19,7 +19,7 @@ HB_FUNC( FONTGETNAME )
 {
    NSFont * font = [ NSFont systemFontOfSize: hb_parnl( 1 ) ];
 
-   hb_retc( [ [font displayName ] cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );   
+   hb_retc( [ [font displayName ] cStringUsingEncoding : NSUTF8StringEncoding ] );   
 }
 
 HB_FUNC( FONTISVERTICAL )
@@ -62,5 +62,5 @@ HB_FUNC( FM_AVAILABLEFONTS )
    hb_reta( [ aFonts count ] );
 
    for( i = 0; i < [ aFonts count ]; i++ )
-      hb_storvc( [ ( NSString * ) [ aFonts objectAtIndex: i ] cStringUsingEncoding : NSWindowsCP1252StringEncoding ], -1, i + 1 );
+      hb_storvc( [ ( NSString * ) [ aFonts objectAtIndex: i ] cStringUsingEncoding : NSUTF8StringEncoding ], -1, i + 1 );
 }

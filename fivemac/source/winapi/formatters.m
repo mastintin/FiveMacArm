@@ -81,7 +81,7 @@ HB_FUNC( LOCALEGETNAME )
   NSLocale * locale = ( NSLocale * ) hb_parnl( 1 );
   NSString * language = [ [ NSLocale preferredLanguages] objectAtIndex:0] ;
   NSString * displayNameString = [ locale displayNameForKey:NSLocaleIdentifier value: language ];
-  hb_retc( [ displayNameString cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+  hb_retc( [ displayNameString cStringUsingEncoding : NSUTF8StringEncoding ] );
 }
 
 
@@ -91,7 +91,7 @@ HB_FUNC( LOCALEGETLANGUAGE )
     NSString * code = locale.languageCode;
     NSString * language = [locale localizedStringForLanguageCode:code];
     
-    hb_retc( [ language cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+    hb_retc( [ language cStringUsingEncoding : NSUTF8StringEncoding ] );
 }
 
 
@@ -107,14 +107,14 @@ HB_FUNC( LOCALESETLANGUAGE )
 HB_FUNC( LOCALEGETPREFID )
 {
   NSString * language = [ [  NSLocale preferredLanguages] objectAtIndex:0] ;
-  hb_retc( [ language cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+  hb_retc( [ language cStringUsingEncoding : NSUTF8StringEncoding ] );
 }
 
 HB_FUNC( LOCALEGETMESURESYSTEM )
 {
   NSLocale * locale = ( NSLocale * ) hb_parnl( 1 );
   NSString * string = [ locale objectForKey: NSLocaleMeasurementSystem ]; 
-  hb_retc( [ string cStringUsingEncoding : NSWindowsCP1252StringEncoding ] );
+  hb_retc( [ string cStringUsingEncoding : NSUTF8StringEncoding ] );
 }
 
 HB_FUNC( LOCALEMESUREISMETRIC )

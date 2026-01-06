@@ -27,7 +27,7 @@ HB_FUNC(DATEPICKGETTEXT) {
 
   // NSLog( @"DateString %@", string );
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 /* NSYearMonthDatePickerElementFlag
@@ -124,7 +124,7 @@ HB_FUNC(NSDATETOCDATESHORT) {
   [formatter setDateStyle:NSDateFormatterShortStyle];
   NSString *string = [formatter stringFromDate:date];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(NSDATETOCDATEMEDIUM) {
@@ -133,5 +133,5 @@ HB_FUNC(NSDATETOCDATEMEDIUM) {
   [formatter setDateStyle:NSDateFormatterMediumStyle];
   NSString *string = [formatter stringFromDate:date];
 
-  hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
