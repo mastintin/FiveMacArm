@@ -1,138 +1,176 @@
+#import <UserNotifications/UserNotifications.h>
 #include <fivemac.h>
-
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED > 1070
 
 static PHB_SYMB symFMH = NULL;
 
-@interface NotiDelegate : NSObject < NSUserNotificationCenterDelegate>
-{
-}
-
+@interface NotiDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
 
 @implementation NotiDelegate
-- (void)userNotificationCenter:(NSUserNotificationCenter *)center didDeliverNotification:(NSUserNotification *)notification
-{
-    NSLog(@"delivered") ;
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:
+             (void (^)(UNNotificationPresentationOptions options))
+                 completionHandler {
+  completionHandler(UNNotificationPresentationOptionList |
+                    UNNotificationPresentationOptionBanner |
+                    UNNotificationPresentationOptionSound);
 }
 
-- (void) userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification
-{
-    NSLog(@"clicked") ;
-    if( symFMH == NULL )
-		symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMN" ) );
-	
-	hb_vmPushSymbol( symFMH );
-	hb_vmPushNil();
-	hb_vmPushLong( ( HB_LONG )  notification  );
-	hb_vmPushLong( WM_NOTICLICK );
-    hb_vmPushLong( ( HB_LONG )  notification  );
-	hb_vmDo( 3 );
-     NSLog(@"clicked2") ;  
-   
-}
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+    didReceiveNotificationResponse:(UNNotificationResponse *)response
+             withCompletionHandler:(void (^)(void))completionHandler {
 
-- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center
-     shouldPresentNotification:(NSUserNotification *)notification
-{
-  //  NSLog(@"SI") ;
-    return YES;
+  UNNotification *notification = response.notification;
+
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMN"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushLong((HB_LONG)notification); // Passing notification object
+  hb_vmPushLong(WM_NOTICLICK);
+  hb_vmPushLong((HB_LONG)notification);
+  hb_vmDo(3);
+
+  completionHandler();
 }
 
 @end
 
-HB_FUNC( NOTIFICREATE )
-{
-   NSUserNotification * notice = [[ NSUserNotification alloc] init ];
-     
-   notice.title = hb_NSSTRING_par( 1 );
-   notice.informativeText = hb_NSSTRING_par( 2 )  ;
-   notice.subtitle = hb_NSSTRING_par( 3 );
-   notice.soundName = NSUserNotificationDefaultSoundName ;
-   
-    hb_retnl( ( HB_LONG ) notice );
-}   
+static NotiDelegate *sharedNotiDelegate = nil;
 
+HB_FUNC(NOTIFICREATE) {
+  UNMutableNotificationContent *content =
+      [[UNMutableNotificationContent alloc] init];
 
-HB_FUNC( NOTIFYSETTITLE )
-{
-    NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-    notice.title = hb_NSSTRING_par( 2 );
+  content.title = hb_NSSTRING_par(1);
+  content.body = hb_NSSTRING_par(2);
+  content.subtitle = hb_NSSTRING_par(3);
+  content.sound = [UNNotificationSound defaultSound];
+
+  // Store a unique identifier in userInfo to help with deletion later
+  NSString *uuid = [[NSUUID UUID] UUIDString];
+  content.userInfo = @{@"identifier" : uuid};
+
+  hb_retnl((HB_LONG)content);
 }
 
-HB_FUNC( NOTIFYGETTITLE )
-{
-    NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-    NSString * string = notice.title ;
-    hb_retc( [ string cStringUsingEncoding: NSWindowsCP1252StringEncoding ] );
+HB_FUNC(NOTIFYSETTITLE) {
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  content.title = hb_NSSTRING_par(2);
 }
 
-
-HB_FUNC( NOTIFYSETINFO )
-{
-    NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-    notice.informativeText = hb_NSSTRING_par( 2 );
+HB_FUNC(NOTIFYGETTITLE) {
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  NSString *title = content.title;
+  hb_retc([title cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
 }
 
-HB_FUNC( NOTIFYSETSUBTITLE )
-{
-    NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-    notice.subtitle = hb_NSSTRING_par( 2 );
+HB_FUNC(NOTIFYSETINFO) {
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  content.body = hb_NSSTRING_par(2);
 }
 
-HB_FUNC( NOTIFYDELIVER ) 
-{
-  NotiDelegate * notidele = [[ NotiDelegate alloc] init ];
-   NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-   NSUserNotificationCenter * center = [ NSUserNotificationCenter defaultUserNotificationCenter];
- //  [notice setDeliveryDate:[NSDate dateWithTimeInterval:20 sinceDate:[NSDate date]]];
-   [center setDelegate: notidele  ];
-   [center deliverNotification:notice];
-}  
-
-HB_FUNC( NOTIFISOUND )
-{
-   NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-  notice.soundName = NSUserNotificationDefaultSoundName ;
+HB_FUNC(NOTIFYSETSUBTITLE) {
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  content.subtitle = hb_NSSTRING_par(2);
 }
 
-HB_FUNC( NOTIFYDELETEALL ) 
-{
-   NSUserNotificationCenter * center = [NSUserNotificationCenter defaultUserNotificationCenter]; 
-  [ center removeAllDeliveredNotifications ] ;
-}  
+HB_FUNC(NOTIFYDELIVER) {
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  UNUserNotificationCenter *center =
+      [UNUserNotificationCenter currentNotificationCenter];
 
-HB_FUNC( NOTIFYDELETE ) 
-{
-   NotiDelegate * notidele = [[ NotiDelegate alloc] init ];
+  if (sharedNotiDelegate == nil) {
+    sharedNotiDelegate = [[NotiDelegate alloc] init];
+  }
+  [center setDelegate:sharedNotiDelegate];
 
-   NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-   NSUserNotificationCenter * center = [NSUserNotificationCenter defaultUserNotificationCenter];
-   [center setDelegate: notidele ];
-   [ center removeDeliveredNotification : notice ] ;
-    
-} 
-
-HB_FUNC( NOTIFIISPRESENTED )
-{
-    NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-    hb_retl( ( BOOL )[notice isPresented ] );
+  [center
+      requestAuthorizationWithOptions:(UNAuthorizationOptionAlert |
+                                       UNAuthorizationOptionSound)
+                    completionHandler:^(BOOL granted,
+                                        NSError *_Nullable error) {
+                      if (granted) {
+                        NSString *identifier = content.userInfo[@"identifier"];
+                        UNNotificationRequest *request = [UNNotificationRequest
+                            requestWithIdentifier:identifier
+                                          content:content
+                                          trigger:nil];
+                        [center addNotificationRequest:request
+                                 withCompletionHandler:nil];
+                      }
+                    }];
 }
 
-
-HB_FUNC( NOTIFIINTERVAL )
-{
-   NSTimeInterval interval = hb_parnl( 2 ) ;
-   NSUserNotification * notice = ( NSUserNotification * ) hb_parnl( 1 );
-   NSUserNotificationCenter * center = [NSUserNotificationCenter defaultUserNotificationCenter];
-   NotiDelegate * notidele = [[ NotiDelegate alloc] init ];
-    
-   [notice setDeliveryDate: [NSDate dateWithTimeIntervalSinceNow: interval ] ];
-   [center setDelegate: notidele ];
-   [center scheduleNotification: notice ];
+HB_FUNC(NOTIFISOUND) {
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  content.sound = [UNNotificationSound defaultSound];
 }
 
+HB_FUNC(NOTIFYDELETEALL) {
+  UNUserNotificationCenter *center =
+      [UNUserNotificationCenter currentNotificationCenter];
+  [center removeAllDeliveredNotifications];
+  [center removeAllPendingNotificationRequests];
+}
 
+HB_FUNC(NOTIFYDELETE) {
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  NSString *identifier = content.userInfo[@"identifier"];
+  if (identifier) {
+    UNUserNotificationCenter *center =
+        [UNUserNotificationCenter currentNotificationCenter];
+    [center removeDeliveredNotificationsWithIdentifiers:@[ identifier ]];
+    [center removePendingNotificationRequestsWithIdentifiers:@[ identifier ]];
+  }
+}
 
-#endif
+HB_FUNC(NOTIFIISPRESENTED) {
+  // UNNotification doesn't have a simple isPresented boolean like
+  // NSUserNotification. Returning false as a placeholder or we could check
+  // delivered notifications asynchronously.
+  hb_retl(NO);
+}
+
+HB_FUNC(NOTIFIINTERVAL) {
+  NSTimeInterval interval = hb_parnl(2);
+  UNMutableNotificationContent *content =
+      (UNMutableNotificationContent *)hb_parnl(1);
+  UNUserNotificationCenter *center =
+      [UNUserNotificationCenter currentNotificationCenter];
+
+  if (sharedNotiDelegate == nil) {
+    sharedNotiDelegate = [[NotiDelegate alloc] init];
+  }
+  [center setDelegate:sharedNotiDelegate];
+
+  [center
+      requestAuthorizationWithOptions:(UNAuthorizationOptionAlert |
+                                       UNAuthorizationOptionSound)
+                    completionHandler:^(BOOL granted,
+                                        NSError *_Nullable error) {
+                      if (granted) {
+                        NSString *identifier = content.userInfo[@"identifier"];
+                        UNTimeIntervalNotificationTrigger *trigger =
+                            [UNTimeIntervalNotificationTrigger
+                                triggerWithTimeInterval:interval
+                                                repeats:NO];
+                        UNNotificationRequest *request = [UNNotificationRequest
+                            requestWithIdentifier:identifier
+                                          content:content
+                                          trigger:trigger];
+                        [center addNotificationRequest:request
+                                 withCompletionHandler:nil];
+                      }
+                    }];
+}

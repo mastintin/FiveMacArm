@@ -1,3 +1,4 @@
+#import <QuartzCore/QuartzCore.h>
 #include <fivemac.h>
 
 static PHB_SYMB symFMH = NULL;
@@ -931,7 +932,11 @@ HB_FUNC(BRWSSETCROLLVGRAFITE) {
   NSScrollView *sv = [browse enclosingScrollView];
   NSScroller *scrol = [sv verticalScroller];
 
-  [scrol setControlTint:NSGraphiteControlTint];
+  CIFilter *desaturate = [CIFilter filterWithName:@"CIColorControls"];
+  [desaturate setDefaults];
+  [desaturate setValue:[NSNumber numberWithFloat:0.0]
+                forKey:@"inputSaturation"];
+  [scrol setContentFilters:@[ desaturate ]];
 }
 
 HB_FUNC(BRWSETBKCOLOR) {
@@ -970,5 +975,9 @@ HB_FUNC(BRWSSETCROLLHGRAFITE) {
   NSScrollView *sv = [browse enclosingScrollView];
   NSScroller *scrol = [sv horizontalScroller];
 
-  [scrol setControlTint:NSGraphiteControlTint];
+  CIFilter *desaturate = [CIFilter filterWithName:@"CIColorControls"];
+  [desaturate setDefaults];
+  [desaturate setValue:[NSNumber numberWithFloat:0.0]
+                forKey:@"inputSaturation"];
+  [scrol setContentFilters:@[ desaturate ]];
 }

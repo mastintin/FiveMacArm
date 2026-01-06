@@ -1,3 +1,5 @@
+#import <QuartzCore/QuartzCore.h>
+#import <UserNotifications/UserNotifications.h>
 #include <fivemac.h>
 #import <iTunes.h>
 
@@ -142,46 +144,106 @@ HB_FUNC(CREATEDIR) {
       NSLog(@"Error: Create folder failed %@", cDirName);
 }
 
+NSURL *AppURLFromAppName(NSString *appName) {
+  NSURL *appURL = nil;
+
+  if ([appName isAbsolutePath]) {
+    appURL = [NSURL fileURLWithPath:appName];
+  } else {
+    // First try as Bundle Identifier
+    appURL = [[NSWorkspace sharedWorkspace]
+        URLForApplicationWithBundleIdentifier:appName];
+
+    if (!appURL) {
+      // Try searching in standard locations
+      NSArray *paths = @[
+        @"/Applications", @"/System/Applications",
+        [@"~/Applications" stringByExpandingTildeInPath]
+      ];
+      for (NSString *searchPath in paths) {
+        NSString *fullPath =
+            [searchPath stringByAppendingPathComponent:appName];
+        if (![fullPath hasSuffix:@".app"]) {
+          fullPath = [fullPath stringByAppendingPathExtension:@"app"];
+        }
+        if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath]) {
+          appURL = [NSURL fileURLWithPath:fullPath];
+          break;
+        }
+      }
+    }
+  }
+  return appURL;
+}
+
 HB_FUNC(MACEXEC) {
-  NSWorkspace *workspace;
-
   if (hb_pcount() >= 1) {
-    workspace = [[[NSWorkspace alloc] init] autorelease];
+    NSString *appName = hb_NSSTRING_par(1);
+    NSURL *appURL = AppURLFromAppName(appName);
 
-    if (hb_pcount() == 1)
-      hb_retl([workspace launchApplication:hb_NSSTRING_par(1)]);
+    if (appURL) {
+      NSWorkspaceOpenConfiguration *config =
+          [NSWorkspaceOpenConfiguration configuration];
+      if (hb_pcount() >= 2) {
+        config.arguments = @[ hb_NSSTRING_par(2) ];
+      }
 
-    if (hb_pcount() == 2) {
-      NSURL *url = [NSURL
-          fileURLWithPath:[workspace
-                              fullPathForApplication:hb_NSSTRING_par(1)]];
-      NSArray *arguments = [NSArray arrayWithObjects:hb_NSSTRING_par(2), nil];
-      NSError *error = nil;
-      [workspace
-          launchApplicationAtURL:url
-                         options:NSWorkspaceLaunchDefault
-                   configuration:
-                       [NSDictionary
-                           dictionaryWithObject:arguments
-                                         forKey:
-                                             NSWorkspaceLaunchConfigurationArguments]
-                           error:&error];
-      hb_retl((error == nil));
+      __block BOOL success = NO;
+      dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+
+      [[NSWorkspace sharedWorkspace]
+          openApplicationAtURL:appURL
+                 configuration:config
+             completionHandler:^(NSRunningApplication *_Nullable app,
+                                 NSError *_Nullable error) {
+               success = (error == nil);
+               dispatch_semaphore_signal(semaphore);
+             }];
+
+      // Wait up to 5 seconds for launch to complete
+      dispatch_semaphore_wait(
+          semaphore,
+          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+      hb_retl(success);
+    } else {
+      hb_retl(NO);
     }
   }
 }
 
 HB_FUNC(OPENFILEWITHAPP) {
-  bool lresult = false;
-  NSWorkspace *workspace;
-
   if (hb_pcount() == 2) {
-    workspace = [[[NSWorkspace alloc] init] autorelease];
+    NSString *filePath = hb_NSSTRING_par(1);
+    NSString *appName = hb_NSSTRING_par(2);
 
-    hb_retl([workspace openFile:hb_NSSTRING_par(1)
-                withApplication:hb_NSSTRING_par(2)]);
+    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+    NSURL *appURL = AppURLFromAppName(appName);
+
+    if (fileURL && appURL) {
+      NSWorkspaceOpenConfiguration *config =
+          [NSWorkspaceOpenConfiguration configuration];
+      __block BOOL success = NO;
+      dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+
+      [[NSWorkspace sharedWorkspace]
+                      openURLs:@[ fileURL ]
+          withApplicationAtURL:appURL
+                 configuration:config
+             completionHandler:^(NSRunningApplication *_Nullable app,
+                                 NSError *_Nullable error) {
+               success = (error == nil);
+               dispatch_semaphore_signal(semaphore);
+             }];
+
+      dispatch_semaphore_wait(
+          semaphore,
+          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+      hb_retl(success);
+    } else {
+      hb_retl(NO);
+    }
   } else {
-    hb_retl(lresult);
+    hb_retl(NO);
   }
 }
 
@@ -298,26 +360,55 @@ HB_FUNC(SPOTLITE) {
 HB_FUNC(SYSTEM) { hb_retnl(system(hb_parc(1))); }
 
 HB_FUNC(FM_OPENFILE) {
-
   if (hb_pcount() < 1) {
     hb_retl(NO);
+    return;
   }
+
+  NSString *filePath = hb_NSSTRING_par(1);
+  NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+  if (!fileURL) {
+    hb_retl(NO);
+    return;
+  }
+
+  NSWorkspaceOpenConfiguration *config =
+      [NSWorkspaceOpenConfiguration configuration];
+  __block BOOL success = NO;
+  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
   if (hb_pcount() == 1) {
-    NSLog(@"1");
-
-    NSString *fileName = hb_NSSTRING_par(1);
-    NSWorkspace *theProcess = [[[NSWorkspace alloc] init] autorelease];
-    hb_retl([theProcess openFile:fileName]);
-  }
-
-  if (hb_pcount() == 2) {
-    NSLog(@"2");
-    NSString *fileName = hb_NSSTRING_par(1);
+    [[NSWorkspace sharedWorkspace]
+                  openURL:fileURL
+            configuration:config
+        completionHandler:^(NSRunningApplication *_Nullable app,
+                            NSError *_Nullable error) {
+          success = (error == nil);
+          dispatch_semaphore_signal(semaphore);
+        }];
+  } else if (hb_pcount() == 2) {
     NSString *appName = hb_NSSTRING_par(2);
-    NSWorkspace *theProcess = [[[NSWorkspace alloc] init] autorelease];
-    hb_retl([theProcess openFile:fileName withApplication:appName]);
+    NSURL *appURL = AppURLFromAppName(appName);
+
+    if (appURL) {
+      [[NSWorkspace sharedWorkspace]
+                      openURLs:@[ fileURL ]
+          withApplicationAtURL:appURL
+                 configuration:config
+             completionHandler:^(NSRunningApplication *_Nullable app,
+                                 NSError *_Nullable error) {
+               success = (error == nil);
+               dispatch_semaphore_signal(semaphore);
+             }];
+    } else {
+      hb_retl(NO);
+      return;
+    }
   }
+
+  dispatch_semaphore_wait(
+      semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+  hb_retl(success);
 }
 
 HB_FUNC(MOVETOTRASH2) {
@@ -601,21 +692,30 @@ HB_FUNC(DOCKADDPROGRESS) {
   NSProgressIndicator *progressIndicator = [[NSProgressIndicator alloc]
       initWithFrame:NSMakeRect(0.0f, 0.0f, docTile.size.width, 10.)];
 
-  [progressIndicator setStyle:NSProgressIndicatorBarStyle];
+  [progressIndicator setStyle:NSProgressIndicatorStyleBar];
   [progressIndicator setIndeterminate:NO];
   [iv addSubview:progressIndicator];
-  [progressIndicator setBezeled:YES];
+
+  [progressIndicator setWantsLayer:YES];
+  progressIndicator.layer.borderWidth = 1.0;
+  progressIndicator.layer.borderColor = [[NSColor lightGrayColor] CGColor];
+
   [docTile display];
   hb_retnl((HB_LONG)progressIndicator);
 }
 
-@interface FNotifyDelegate : NSObject <NSUserNotificationCenterDelegate>
+@interface FNotifyDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
 
 @implementation FNotifyDelegate
-- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center
-     shouldPresentNotification:(NSUserNotification *)notification {
-  return YES;
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:
+             (void (^)(UNNotificationPresentationOptions options))
+                 completionHandler {
+  completionHandler(UNNotificationPresentationOptionList |
+                    UNNotificationPresentationOptionBanner |
+                    UNNotificationPresentationOptionSound);
 }
 @end
 
@@ -624,21 +724,46 @@ static FNotifyDelegate *myDelegate = nil;
 HB_FUNC(USERNOTIFICATION) {
   NSString *title = hb_NSSTRING_par(1);
   NSString *info = hb_NSSTRING_par(2);
-  NSUserNotification *notice = [[NSUserNotification alloc] init];
-  notice.title = title;
-  notice.informativeText = info;
-  // notice.userInfo = [NSDictionary
-  // dictionaryWithObjectsAndKeys:listObject.internalObjectID,
-  // @"internalObjectID", nil];
 
-  NSUserNotificationCenter *center =
-      [NSUserNotificationCenter defaultUserNotificationCenter];
+  UNUserNotificationCenter *center =
+      [UNUserNotificationCenter currentNotificationCenter];
 
   if (myDelegate == nil)
     myDelegate = [[FNotifyDelegate alloc] init];
 
   [center setDelegate:myDelegate];
-  [center deliverNotification:notice];
+
+  [center
+      requestAuthorizationWithOptions:(UNAuthorizationOptionAlert |
+                                       UNAuthorizationOptionSound)
+                    completionHandler:^(BOOL granted,
+                                        NSError *_Nullable error) {
+                      if (granted) {
+                        UNMutableNotificationContent *content =
+                            [[UNMutableNotificationContent alloc] init];
+                        content.title = title;
+                        content.body = info;
+                        content.sound = [UNNotificationSound defaultSound];
+
+                        UNTimeIntervalNotificationTrigger *trigger =
+                            [UNTimeIntervalNotificationTrigger
+                                triggerWithTimeInterval:1
+                                                repeats:NO];
+
+                        UNNotificationRequest *request = [UNNotificationRequest
+                            requestWithIdentifier:@"FivemacNotification"
+                                          content:content
+                                          trigger:trigger];
+
+                        [center
+                            addNotificationRequest:request
+                             withCompletionHandler:^(NSError *_Nullable error) {
+                               if (error) {
+                                 NSLog(@"Error adding notification: %@", error);
+                               }
+                             }];
+                      }
+                    }];
 }
 
 HB_FUNC(GETMACADDRESS) {
