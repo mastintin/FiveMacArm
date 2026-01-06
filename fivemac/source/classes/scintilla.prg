@@ -1374,7 +1374,9 @@ endif
  // Lexer type is flagship.
  ::Send( SCI_SETLEXERLANGUAGE, , ::cLexer  )
 
- ::InitEdt()
+  ::InitEdt()
+
+  ::SetMBrace()
 
 ::SetLinIndent( .t., .f. )
 
@@ -1423,12 +1425,6 @@ endif
    ::Send( SCI_SETMARGINLEFT, 0, ::nMargLeft )
    ::Send( SCI_SETMARGINRIGHT, 0, ::nMargRight )
 
-   ::Send( SCI_STYLESETFORE, STYLE_BRACELIGHT, CLR_WHITE )
-   ::Send( SCI_STYLESETBACK, STYLE_BRACELIGHT, RGB( 0, 179, 179 ) )
-
-   ::SetFont( "Courier", 16, .F., .F. )
-   ::Send( SCI_STYLESETFONT, STYLE_BRACELIGHT, "Courier" )
-   ::Send( SCI_STYLESETSIZE, STYLE_BRACELIGHT, 16 )
 
    ::Send(SCI_SETFOLDMARGINCOLOUR,1, rgb(210,210,210) )  // fondo margen
    ::Send(SCI_SETFOLDMARGINHICOLOUR,1, rgb(210,210,210) )  // fondo margen
