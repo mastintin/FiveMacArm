@@ -1,6 +1,8 @@
+#import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 #include <IOKit/IOKitLib.h>
 #import <Quartz/Quartz.h>
+#import <QuartzCore/QuartzCore.h>
 #include <fivemac.h>
 
 #define CGAutorelease(x) (__typeof(x))[NSMakeCollectable(x) autorelease]
@@ -64,16 +66,16 @@ HB_FUNC(SDKVERSION) {
   [task waitUntilExit];
 
   NSData *data = [[outPipe fileHandleForReading] readDataToEndOfFile];
-  NSString *version = [[NSString alloc] initWithData:data
-                                            encoding:NSUTF8StringEncoding];
+  NSString *version_raw = [[NSString alloc] initWithData:data
+                                                encoding:NSUTF8StringEncoding];
 
-  version = [version
+  NSString *version = [version_raw
       stringByTrimmingCharactersInSet:[NSCharacterSet
                                           whitespaceAndNewlineCharacterSet]];
 
   hb_retc([version cStringUsingEncoding:NSUTF8StringEncoding]);
 
-  [version release];
+  [version_raw release];
   [task release];
 }
 
@@ -87,9 +89,31 @@ HB_FUNC(VALIDEMAIL) {
 }
 
 HB_FUNC(SPEAK) {
-  NSSpeechSynthesizer *synth = [[NSSpeechSynthesizer alloc] initWithVoice:nil];
+  static AVSpeechSynthesizer *synth = nil;
+
+  if (synth == nil) {
+    synth = [[AVSpeechSynthesizer alloc] init];
+  }
+
   NSString *string = hb_NSSTRING_par(1);
-  [synth startSpeakingString:string];
+  float rate = hb_parnd(2);
+
+  if (rate == 0) {
+    rate = 0.5; // Default for AVSpeechUtterance (0.0 to 1.0)
+  }
+
+  // AVSpeechUtterance rate is between 0.0 and 1.0
+  // If user passes values like 200 (from previous motor), scale it down
+  if (rate > 1.0) {
+    rate = rate / 400.0; // Scaled to reasonable range
+  }
+
+  AVSpeechUtterance *utterance =
+      [AVSpeechUtterance speechUtteranceWithString:string];
+  utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"es-ES"];
+  utterance.rate = rate;
+
+  [synth speakUtterance:utterance];
 }
 
 HB_FUNC(SLEEP) { [NSThread sleepForTimeInterval:hb_parnl(1) / 1.0]; }
@@ -114,7 +138,7 @@ HB_FUNC(NSSTRINGCANCONVERENCODE) {
 HB_FUNC(GETSERIALNUMBER) {
   NSString *serial = nil;
   io_service_t platformExpert = IOServiceGetMatchingService(
-      kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+      kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
   if (platformExpert) {
     CFTypeRef serialNumberAsCFString = IORegistryEntryCreateCFProperty(
         platformExpert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault,
@@ -125,7 +149,7 @@ HB_FUNC(GETSERIALNUMBER) {
 
     IOObjectRelease(platformExpert);
   }
-  hb_retc([serial cStringUsingEncoding:NSUTF8StringEncoding]);
+  hb_retc(serial ? [serial cStringUsingEncoding:NSUTF8StringEncoding] : "");
 }
 
 HB_FUNC(NSLOG) { NSLog(@"%@", hb_NSSTRING_par(1)); }
@@ -142,18 +166,18 @@ HB_FUNC(FMSAVESCREEN) {
 
   NSString *cCapName = hb_NSSTRING_par(1);
 
-  NSFileManager *fileManager = [NSFileManager defaultManager];
-
   NSArray *aArguments = [NSArray arrayWithObjects:@"-m", @"-P", cCapName, nil];
-  NSTask *captura =
-      [NSTask launchedTaskWithLaunchPath:@"/usr/sbin/screencapture"
-                               arguments:aArguments];
+  NSTask *captura = [[NSTask alloc] init];
+
+  [captura setLaunchPath:@"/usr/sbin/screencapture"];
+  [captura setArguments:aArguments];
 
   NSPipe *pipe = [NSPipe pipe];
   [captura setStandardOutput:pipe];
   [captura setStandardError:pipe];
 
   [captura launch];
+  [captura release];
 
   /*
    static func capture(completionHandler: @escaping ([String]) -> Void) {

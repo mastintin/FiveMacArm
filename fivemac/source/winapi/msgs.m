@@ -256,8 +256,7 @@ HB_FUNC(CHOOSEFILE) {
     } else
       fileTypes = [[NSMutableArray alloc]
           initWithObjects:types, [types uppercaseString], nil];
-
-    [op setAllowedFileTypes:fileTypes];
+    [op setAllowedContentTypes:fileTypes];
   }
 
   if ([op runModal] == NSModalResponseOK) {
@@ -281,6 +280,43 @@ HB_FUNC(CHOOSEFILEURL) {
     hb_retnl((HB_LONG)source);
   } else
     hb_ret();
+}
+
+HB_FUNC(CHOOSEFOLDER) {
+  NSString *types = hb_NSSTRING_par(2);
+  NSOpenPanel *op = [NSOpenPanel openPanel]; //[ [ NSOpenPanel alloc ] init ];
+
+  [op setCanChooseFiles:NO];
+  [op setCanChooseDirectories:YES];
+  [op setPrompt:@"Ok"];
+
+  if (!HB_ISCHAR(1))
+    [op setTitle:@"Please select a folder"];
+  else
+    [op setTitle:hb_NSSTRING_par(1)];
+
+  if (![types isEqualToString:@""]) {
+    NSMutableArray *fileTypes;
+
+    if ([types containsString:@","]) {
+      fileTypes = [[NSMutableArray alloc] init];
+      [fileTypes addObjectsFromArray:[types componentsSeparatedByString:@","]];
+      [fileTypes addObjectsFromArray:[[types uppercaseString]
+                                         componentsSeparatedByString:@","]];
+    } else
+      fileTypes = [[NSMutableArray alloc]
+          initWithObjects:types, [types uppercaseString], nil];
+
+    [op setAllowedFileTypes:fileTypes];
+  }
+
+  if ([op runModal] == NSModalResponseOK) {
+    NSString *source =
+        [[[[op URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
+
+    hb_retc([source cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+  } else
+    hb_retc("");
 }
 
 HB_FUNC(SAVEFILE) {
@@ -312,7 +348,7 @@ HB_FUNC(CHOOSEIMAGEFILE) {
 
   [op setPrompt:@"Ok"];
   [op setMessage:@"Please select a file"];
-  [op setAllowedFileTypes:imageTypes];
+  [op setAllowedContentTypes:imageTypes];
 
   if ([op runModal] == NSModalResponseOK) {
     NSString *source =
@@ -397,7 +433,8 @@ HB_FUNC(CLIPBOARDCOPYPNG) {
   NSDictionary *dict =
       [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:0.5]
                                   forKey:NSImageCompressionFactor];
-  NSData *data = [rep representationUsingType:NSPNGFileType properties:dict];
+  NSData *data = [rep representationUsingType:NSBitmapImageFileTypePNG
+                                   properties:dict];
   bool lResult = [pasteBoard setData:data forType:NSPasteboardTypePNG];
 
   hb_retl(lResult);
@@ -409,7 +446,7 @@ HB_FUNC(CLIPBOARDCOPYSTRING) {
 
   [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString]
                      owner:nil];
-  bool lResult = [pasteBoard setString:string forType:NSStringPboardType];
+  bool lResult = [pasteBoard setString:string forType:NSPasteboardTypeString];
   hb_retl(lResult);
 }
 
@@ -417,7 +454,7 @@ HB_FUNC(CLIPBOARDPASTESTRING) {
   NSPasteboard *pasteBoard = hb_parptr(1);
   NSString *string;
 
-  string = [pasteBoard stringForType:NSStringPboardType];
+  string = [pasteBoard stringForType:NSPasteboardTypeString];
   hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
 }
 
@@ -440,15 +477,16 @@ HB_FUNC(COPYPASTEBOARDSTRING) {
 
   [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString]
                      owner:nil];
-  [pasteBoard setString:string forType:NSStringPboardType];
+  [pasteBoard setString:string forType:NSPasteboardTypeString];
 }
 
 HB_FUNC(PASTEPASTEBOARDSTRING) {
   NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
   NSString *string;
 
-  [pasteBoard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil]
-                     owner:nil];
+  [pasteBoard
+      declareTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, nil]
+             owner:nil];
   string = [pasteBoard stringForType:NSPasteboardTypeString];
   hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
 }
@@ -503,7 +541,7 @@ HB_FUNC(SCREENTOPASTEBOARD) {
       NSDictionary *dict =
           [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:0.5]
                                       forKey:NSImageCompressionFactor];
-      NSData *data = [rep representationUsingType:NSPNGFileType
+      NSData *data = [rep representationUsingType:NSBitmapImageFileTypePNG
                                        properties:dict];
       BOOL success = [pasteBoard setData:data forType:NSPasteboardTypePNG];
 

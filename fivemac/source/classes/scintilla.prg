@@ -520,7 +520,7 @@ return nil
 METHOD SetColor( nClrText, nClrPane, lIni ) CLASS TScintilla
 
 local x
-
+DEFAULT lIni := .F.
 
  if !empty(nClrText)
    :: nTextColor := nClrText
