@@ -1030,16 +1030,11 @@ METHOD Notify( nType, pScnNotification ) CLASS TScintilla
    endif
 
            if nMargin == 2
-              //msginfo("yo")
-             // ::Send(SCI_TOGGLEFOLD, nLine+1)
+              ::Send( SCI_TOGGLEFOLD, nLine )
            endif
            if nMargin == 0
               ::GotoPos( nPos )
               ::SetToggleMark()
-
-           endif
-           if nMargin == 1
-              // ::GotoPos( nPos )
            endif
 
 
