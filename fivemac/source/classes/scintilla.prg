@@ -84,7 +84,7 @@ CLASS TScintilla FROM TControl
 
    METHOD BraceBadLight( nPos )                INLINE ::Send( SCI_BRACEBADLIGHT, nPos )
    METHOD BraceHighLight( nPos1, nPos2 )       INLINE ::Send( SCI_BRACEHIGHLIGHT, nPos1, nPos2 )
-   METHOD BraceMatch( nPos )                   INLINE ::Send( SCI_BRACEMATCH, nPos )
+   METHOD BraceMatch( nPos )                   INLINE SciGetProp( ::hWnd, SCI_BRACEMATCH, nPos )
 
    METHOD CallTipCancel()                      INLINE ::Send( SCI_CALLTIPCANCEL )
 
