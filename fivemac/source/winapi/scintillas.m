@@ -189,7 +189,7 @@ HB_FUNC(SCISEND) {
 
   hb_retnl([sv
       getGeneralProperty:hb_parnl(2)
-               parameter:hb_parnl(3)
+               parameter:HB_ISCHAR(3) ? (long)hb_parc(3) : hb_parnl(3)
                    extra:HB_ISCHAR(4) ? (long)hb_parc(4) : hb_parnl(4)]);
 }
 
@@ -371,7 +371,7 @@ HB_FUNC(SCIPASTE) {
   if (copiedItems != nil) {
     NSString *string = [copiedItems objectAtIndex:0];
 
-    hb_retc([string cStringUsingEncoding:NSWindowsCP1252StringEncoding]);
+    hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_ret();
 #endif
