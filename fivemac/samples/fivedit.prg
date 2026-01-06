@@ -10,6 +10,7 @@ static aFunLines := {}, oFunList
 static oTree, oPrgItem, oChItem, oMItem, cBmpPath
 static lSplit1, lSplit2, lSplit3
 static cDbfPath, popoverMas
+static cFontName := "Monaco", nFontSize := 14
 
 extern dbfcdx, DBCloseArea, DbUseArea, DbGoTo, OrdSetFocus
 
@@ -176,7 +177,7 @@ function BuildEditor()
    // oEditor:Send( 2276, 1, 0 ) // SCI_SETSCROLLWIDTH, 1
 
    oEditor:bChange = { || EditorChange() }
-   oEditor:SetFont( "Monaco", 14 )
+   oEditor:SetFont( cFontName, nFontSize )
    oEditor:SetColor( , nRgb( 252, 252, 252 ) , .t. )
 
    AAdd( aEditors, oEditor )
@@ -198,6 +199,18 @@ function BuildPreferences()
 
    CreatePlistHarblib()
    CreatePlistFrameWorks()
+
+   cFontName := GetPlistValue( cPrefFile, "FontName" )
+   if Empty( cFontName )
+      cFontName := "Monaco"
+      SetPlistValue( cPrefFile, "FontName", cFontName, .T. )
+   endif
+
+   nFontSize := Val( GetPlistValue( cPrefFile, "FontSize" ) )
+   if nFontSize == 0
+      nFontSize := 14
+      SetPlistValue( cPrefFile, "FontSize", LTrim( Str( nFontSize ) ), .T. )
+   endif
 
 return nil
 
