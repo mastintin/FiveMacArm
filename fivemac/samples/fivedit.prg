@@ -236,18 +236,6 @@ return nil
 
 function EditorChange()
 
-   local nPos := oEditor:GetCurrentPos(), nAt
-
-   if Chr( oEditor:GetCharAt( nPos ) ) $ "([{}])"
-      if ( nAt := oEditor:BraceMatch( nPos ) ) != -1
-         oEditor:BraceHighlight( nPos, nAt )
-      else
-         oEditor:BraceBadLight( nPos, nAt )
-      endif
-   else
-      oEditor:BraceBadLight( -1 )
-   endif
-
    if oMsgBar != nil
       oMsgBar:SetText( "FiveMac IDE " + ;
                        " Row: " + AllTrim( Str( oEditor:nLine() ) ) + ;
@@ -464,16 +452,16 @@ function Preferences()
  
    DEFINE MULTIVIEW oMulti OF oDlg RESIZED
 
-   @ 0,0 MVIEW PROMPT "Fonts & Colors" SIZE 600, 382 TITLE "Fonts & Colors" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "Fonts & Colors" SIZE 700, 382 TITLE "Fonts & Colors" OF oMulti ;
          TOOLTIP "Fonts & Colors" IMAGE ImgSymbols( "paintpalette" ) 
 
-   @ 0,0 MVIEW PROMPT "WorkSpace" SIZE 600, 382 TITLE "WorkSpace" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "WorkSpace" SIZE 700, 382 TITLE "WorkSpace" OF oMulti ;
          TOOLTIP "WorkSpace" IMAGE ImgSymbols( "desktopcomputer" )
 
-   @ 0,0 MVIEW PROMPT "Frameworks" SIZE 600, 382 TITLE "Frameworks" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "Frameworks" SIZE 700, 382 TITLE "Frameworks" OF oMulti ;
          TOOLTIP "Frameworks" IMAGE  ImgSymbols( "square.stack.3d.up" )
 
-   @ 0,0 MVIEW PROMPT "Harbour" SIZE 600, 382 TITLE "Harbour" OF oMulti ;
+   @ 0,0 MVIEW PROMPT "Harbour" SIZE 700, 382 TITLE "Harbour" OF oMulti ;
    TOOLTIP "Harbour" IMAGE ImgSymbols( "archivebox" )
 
    oMulti:oToolbar:SetBtnSelected( 1 )
@@ -505,44 +493,46 @@ function Preferences()
 
    //------ controles en segunda vista ------------
 
-   @ 224, 40 SAY "Icon app:" OF oMulti:aViews[ 2 ]
-
-   @ 230, 160 IMAGE oImg OF oMulti:aViews[ 2 ] SIZE 130, 130 FILENAME cVarIcon
+   @ 230, 280 IMAGE oImg OF oMulti:aViews[ 2 ] SIZE 130, 130 FILENAME cVarIcon
        oImg:setFrame()
 
-   @ 204, 40 GET oGetIcon VAR cVarIcon OF oMulti:aViews[ 2 ] SIZE 390, 20
+   @ 224, 40 SAY "App Settings" OF oMulti:aViews[ 2 ]
+
+   @ 204, 40 GET oGetIcon VAR cVarIcon OF oMulti:aViews[ 2 ] SIZE 580, 20
    
-   @ 204, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
+   @ 204, 630  BTNBMP OF oMulti:aViews[ 2 ]  ;
      FILENAME ImgSymbols( "plus.circle" )  ;
-      ACTION ChooseSheetTxtImg(oGetIcon:hwnd,oImg:hWnd ) SIZE 20, 20 STYLE 10
+      ACTION ChooseSheetTxtImg(oGetIcon:hwnd,oImg:hWnd ) SIZE 30, 30 STYLE 10
       
    oGetIcon:SetNOSelect()
 
-   @ 170, 40 SAY "Fivemac Path:" OF oMulti:aViews[ 2 ]
-   @ 150, 40 GET oGet1 VAR cVar1 OF oMulti:aViews[ 2 ] SIZE 390, 20
+   @ 175, 40 SAY "Configuration Paths" OF oMulti:aViews[ 2 ]
 
-   @ 150, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
+   @ 150, 40 SAY "Fivemac Path:" OF oMulti:aViews[ 2 ]
+   @ 130, 40 GET oGet1 VAR cVar1 OF oMulti:aViews[ 2 ] SIZE 580, 20
+
+   @ 130, 630  BTNBMP OF oMulti:aViews[ 2 ]  ;
       FILENAME ImgSymbols( "folder" )  ;
-      ACTION oGet1:opensheet( ParentPath( oGet1:gettext() ) )  SIZE 20, 20 STYLE 10
+      ACTION oGet1:opensheet( ParentPath( oGet1:gettext() ) )  SIZE 30, 30 STYLE 10
 
-   @ 120, 40 SAY "Harbour Path:" OF oMulti:aViews[ 2 ]
-   @ 100, 40 GET oGet2 VAR cVar2 OF oMulti:aViews[ 2 ] SIZE 390, 20
+   @ 95, 40 SAY "Harbour Path:" OF oMulti:aViews[ 2 ]
+   @ 75, 40 GET oGet2 VAR cVar2 OF oMulti:aViews[ 2 ] SIZE 580, 20
 
-   @ 100, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
+   @ 75, 630  BTNBMP OF oMulti:aViews[ 2 ]  ;
       FILENAME ImgSymbols( "folder" )  ;
-      ACTION oGet2:opensheet( oGet2:gettext() )  SIZE 20, 20 STYLE 10
+      ACTION oGet2:opensheet( oGet2:gettext() )  SIZE 30, 30 STYLE 10
   
-   @ 70, 40 SAY "SDK Path:" OF oMulti:aViews[ 2 ]
-   @ 10, 40 GET oGet3 VAR cVar3 OF oMulti:aViews[ 2 ] SIZE 390, 60
+   @ 40, 40 SAY "SDK Path:" OF oMulti:aViews[ 2 ]
+   @ 10, 40 GET oGet3 VAR cVar3 OF oMulti:aViews[ 2 ] SIZE 580, 25
 
-   @ 10, 440  BTNBMP OF oMulti:aViews[ 2 ]  ;
+   @ 10, 630  BTNBMP OF oMulti:aViews[ 2 ]  ;
       FILENAME ImgSymbols( "folder" )  ;
-     ACTION oGet3:opensheet(ParentPath( oGet3:gettext()))  SIZE 20, 60 STYLE 10
+     ACTION oGet3:opensheet(ParentPath( oGet3:gettext()))  SIZE 30, 30 STYLE 10
 
   //------ controles en vista 3 -----------
 
    @ 40, 10 TREE oTree2 TITLE "Frameworks" ;
-      SIZE 180, 340 OF oMulti:aViews[ 3 ]
+      SIZE 300, 340 OF oMulti:aViews[ 3 ]
 
    oTree2:SetPijama( .T. )
    oTree2:SetScrollHShow( .F. )
@@ -565,8 +555,8 @@ function Preferences()
    @ 12, 68 BUTTON "" OF oMulti:aViews[ 3 ] ;
       ACTION .T. SIZE 122, 30 STYLE 10 TYPE 10
 
-   @ 40, 200 TREE oTree4 TITLE "Extra Frameworks" ;
-      SIZE 180, 340 OF oMulti:aViews[ 3 ]
+   @ 40, 340 TREE oTree4 TITLE "Extra Frameworks" ;
+      SIZE 300, 340 OF oMulti:aViews[ 3 ]
 
    oTree4:SetPijama( .T. )
 
@@ -579,21 +569,21 @@ function Preferences()
       oItem4:AddItem( aExtraFrameworks[ n ],,, ImgSymbols( "square.stack.3d.up" ) )
    next
 
-   @ 12, 200 BTNBMP oBtn5 OF oMulti:aViews[ 3 ] ;
+   @ 12, 340 BTNBMP oBtn5 OF oMulti:aViews[ 3 ] ;
       FILENAME ImgSymbols( "minus.circle" ) ;
       ACTION Dellib( oTree4, 3 ) SIZE 30, 30 STYLE 10
 
-   @ 12, 229 BTNBMP oBtn6 OF oMulti:aViews[ 3 ] ;
+   @ 12, 369 BTNBMP oBtn6 OF oMulti:aViews[ 3 ] ;
       FILENAME ImgSymbols( "plus.circle" ) ;
       ACTION DlgAddlib( oTree4, 3 ) SIZE 30, 30 STYLE 10
 
-   @ 12, 258 BUTTON "" OF oMulti:aViews[ 3 ] ;
+   @ 12, 398 BUTTON "" OF oMulti:aViews[ 3 ] ;
       ACTION .T. SIZE 122, 30 STYLE 10 TYPE 10
 
    //------ controles en vista 4 -----------
 
    @ 40, 10 TREE oTree3 TITLE "Harbour Libs" ;
-     SIZE 180, 340 OF oMulti:aViews[ 4 ]
+     SIZE 300, 340 OF oMulti:aViews[ 4 ]
 
    oTree3:SetPijama( .T. )
 
@@ -617,8 +607,8 @@ function Preferences()
    @ 12, 68 BUTTON "" OF oMulti:aViews[ 4 ] ;
       ACTION .T. SIZE 122, 30 STYLE 10 TYPE 10
 
-   @ 40, 200 TREE oTreeFlag TITLE "HarbourFlags";
-      SIZE 180, 340 OF oMulti:aViews[ 4 ]
+   @ 40, 340 TREE oTreeFlag TITLE "HarbourFlags";
+      SIZE 300, 340 OF oMulti:aViews[ 4 ]
 
    oTreeFlag:SetPijama( .T. )
 
@@ -631,15 +621,15 @@ function Preferences()
       oItemFlag:AddItem( aHarbourFlags[ n ],,, ImgSymbols( "flag" ) )
    next
 
-   @ 12, 200 BTNBMP oBtndelFlag OF oMulti:aViews[ 4 ] ;
+   @ 12, 340 BTNBMP oBtndelFlag OF oMulti:aViews[ 4 ] ;
       FILENAME ImgSymbols( "minus.circle" ) ;
       ACTION Dellib( oTreeFlag, 4 ) SIZE 30, 30 STYLE 10
 
-   @ 12, 229 BTNBMP oBtnaddFlag OF oMulti:aViews[ 4 ] ;
+   @ 12, 369 BTNBMP oBtnaddFlag OF oMulti:aViews[ 4 ] ;
       FILENAME ImgSymbols( "plus.circle" ) ;
       ACTION DlgAddlib( oTreeFlag, 4 ) SIZE 30, 30 STYLE 10
 
-   @ 12, 258 BUTTON "" OF oMulti:aViews[ 4 ] ;
+   @ 12, 398 BUTTON "" OF oMulti:aViews[ 4 ] ;
       ACTION .T. SIZE 122, 30 STYLE 10 TYPE 10
 
    //------ controles en vista 5 -----------
@@ -1035,12 +1025,12 @@ function BuildMenu()
    MENU oMenu
       MENUITEM "SciEdit"
       MENU
-         MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2012",;
+         MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2026",;
                                               "FiveMac IDE", "About" )
          SEPARATOR
          MENUITEM "Preferences..." ACCELERATOR "," ACTION Preferences()
          SEPARATOR
-         MENUITEM "Exit" ACCELERATOR "q" ACTION Exit() IMAGE "exit2.png(20x20)"
+         MENUITEM "Exit" ACCELERATOR "q" ACTION Exit() IMAGE ImgSymbols( "power.circle", "Exit" ) 
       ENDMENU
 
       MENUITEM "File"
