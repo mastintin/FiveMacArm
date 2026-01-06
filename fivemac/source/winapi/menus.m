@@ -79,42 +79,66 @@ HB_FUNC(MNUGETITEMINDEX) {
 
 HB_FUNC(MNUITEMSETIMAGE) {
   NSMenuItem *item = (NSMenuItem *)hb_parnl(1);
-  NSString *string = hb_NSSTRING_par(2);
-  NSFileManager *filemgr = [NSFileManager defaultManager];
+  NSImage *image = nil;
 
-  NSImage *Image;
+  if (HB_ISNUM(2)) {
+    image = (NSImage *)hb_parnl(2);
+  } else {
+    NSString *string = hb_NSSTRING_par(2);
+    NSFileManager *filemgr = [NSFileManager defaultManager];
 
-  if ([filemgr fileExistsAtPath:string])
-    Image = [[NSImage alloc] initWithContentsOfFile:string];
-  else
-    Image = ImgTemplate(string);
+    if ([filemgr fileExistsAtPath:string])
+      image = [[[NSImage alloc] initWithContentsOfFile:string] autorelease];
+    else
+      image = ImgTemplate(string);
+  }
 
-  ImgResize(Image, hb_parnl(3), hb_parnl(4));
+  if (image) {
+    if (hb_parnl(3) > 0)
+      ImgResize(image, hb_parnl(3), hb_parnl(4));
 
-  [item setImage:Image];
+    [item setImage:image];
+  }
 }
 
 HB_FUNC(MNUITEMSETONIMAGE) {
   NSMenuItem *item = (NSMenuItem *)hb_parnl(1);
-  NSString *string = hb_NSSTRING_par(2);
-  NSFileManager *filemgr = [NSFileManager defaultManager];
+  NSImage *image = nil;
 
-  if ([filemgr fileExistsAtPath:string])
-    [item setOnStateImage:[[NSImage alloc] initWithContentsOfFile:string]];
-  else
-    [item setOnStateImage:ImgTemplate(string)];
+  if (HB_ISNUM(2)) {
+    image = (NSImage *)hb_parnl(2);
+  } else {
+    NSString *string = hb_NSSTRING_par(2);
+    NSFileManager *filemgr = [NSFileManager defaultManager];
+
+    if ([filemgr fileExistsAtPath:string])
+      image = [[[NSImage alloc] initWithContentsOfFile:string] autorelease];
+    else
+      image = ImgTemplate(string);
+  }
+
+  if (image)
+    [item setOnStateImage:image];
 }
 
 HB_FUNC(MNUITEMSETOFFIMAGE) {
   NSMenuItem *item = (NSMenuItem *)hb_parnl(1);
-  NSString *string = hb_NSSTRING_par(2);
+  NSImage *image = nil;
 
-  NSFileManager *filemgr = [NSFileManager defaultManager];
+  if (HB_ISNUM(2)) {
+    image = (NSImage *)hb_parnl(2);
+  } else {
+    NSString *string = hb_NSSTRING_par(2);
+    NSFileManager *filemgr = [NSFileManager defaultManager];
 
-  if ([filemgr fileExistsAtPath:string])
-    [item setOffStateImage:[[NSImage alloc] initWithContentsOfFile:string]];
-  else
-    [item setOffStateImage:ImgTemplate(string)];
+    if ([filemgr fileExistsAtPath:string])
+      image = [[[NSImage alloc] initWithContentsOfFile:string] autorelease];
+    else
+      image = ImgTemplate(string);
+  }
+
+  if (image)
+    [item setOffStateImage:image];
 }
 
 HB_FUNC(MNUITEMSETTOOLTIP) {

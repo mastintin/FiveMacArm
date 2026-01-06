@@ -32,14 +32,15 @@ local aSize
    aSize := ParseSize( @cImage, aSize )
 
    if !Empty( cImage )
-        if !file( cImage )
-           if file( ResPath() + "/bitmaps/"+ cImage )
-              cImage := ResPath() + "/bitmaps/"+ cImage
-            endif
-        endif
-        ::cImage  = cImage
-        ::SetImage( cImage, aSize )
-
+      if ValType( cImage ) == "C"
+         if !file( cImage )
+            if file( ResPath() + "/bitmaps/"+ cImage )
+               cImage := ResPath() + "/bitmaps/"+ cImage
+             endif
+         endif
+      endif
+      ::cImage  = cImage
+      ::SetImage( cImage, aSize )
    endif
 
    if !Empty(cTooltip)
