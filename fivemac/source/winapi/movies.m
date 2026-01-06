@@ -19,7 +19,6 @@ void MsgAlert(NSString *, NSString *messageText);
 #import <AVFoundation/AVCaptureOutput.h>
 #import <Foundation/Foundation.h>
 
-
 @interface RecordingDelegate : NSObject <AVCaptureFileOutputDelegate,
                                          AVCaptureFileOutputRecordingDelegate>
 @end
@@ -402,40 +401,57 @@ HB_FUNC(AVTRIMMMOVIE) {
       if (result == AVPlayerViewTrimOKButton) {
 
         AVAsset *asset = vista.player.currentItem.asset;
-        NSArray *compatiblePresets =
-            [AVAssetExportSession exportPresetsCompatibleWithAsset:asset];
+        NSString *preset = AVAssetExportPresetAppleM4A;
+        AVFileType outputFileType = AVFileTypeQuickTimeMovie;
 
-        if ([compatiblePresets containsObject:AVAssetExportPresetAppleM4A]) {
+        [AVAssetExportSession
+            determineCompatibilityOfExportPreset:preset
+                                       withAsset:asset
+                                  outputFileType:outputFileType
+                               completionHandler:^(BOOL compatible) {
+                                 if (compatible) {
 
-          AVAssetExportSession *exportSession = [[AVAssetExportSession alloc]
-              initWithAsset:asset
-                 presetName:AVAssetExportPresetAppleM4A];
+                                   AVAssetExportSession *exportSession =
+                                       [[AVAssetExportSession alloc]
+                                           initWithAsset:asset
+                                              presetName:preset];
 
-          exportSession.outputURL = [NSURL fileURLWithPath:string];
+                                   exportSession.outputURL =
+                                       [NSURL fileURLWithPath:string];
 
-          exportSession.outputFileType = AVFileTypeQuickTimeMovie;
+                                   exportSession.outputFileType =
+                                       outputFileType;
 
-          // Get trim in and out points.
-          CMTime inPoint = [vista.player.currentItem reversePlaybackEndTime];
-          CMTime outPoint = [vista.player.currentItem forwardPlaybackEndTime];
-          // Set time range on asset export session.
-          CMTimeRange timeRange = CMTimeRangeFromTimeToTime(inPoint, outPoint);
+                                   // Get trim in and out points.
+                                   CMTime inPoint = vista.player.currentItem
+                                                        .reversePlaybackEndTime;
+                                   CMTime outPoint =
+                                       vista.player.currentItem
+                                           .forwardPlaybackEndTime;
+                                   // Set time range on asset export session.
+                                   CMTimeRange timeRange =
+                                       CMTimeRangeFromTimeToTime(inPoint,
+                                                                 outPoint);
 
-          [exportSession setTimeRange:timeRange];
+                                   [exportSession setTimeRange:timeRange];
 
-          [exportSession exportAsynchronouslyWithCompletionHandler:^() {
-            switch (exportSession.status) {
-            case AVAssetExportSessionStatusCompleted:
-              NSLog(@"It's done...hallelujah");
-              break;
+                                   [exportSession
+                                       exportAsynchronouslyWithCompletionHandler:
+                                           ^() {
+                                             if (exportSession.status ==
+                                                 AVAssetExportSessionStatusCompleted) {
+                                               NSLog(@"It's done...hallelujah");
+                                             }
+                                             [exportSession release];
+                                           }];
 
-            default:
-              break;
-            }
-          }];
-
-        } else
-          MsgAlert(@"3", @"Alert");
+                                 } else {
+                                   dispatch_async(dispatch_get_main_queue(), ^{
+                                     MsgAlert(@"Export preset not compatible",
+                                              @"Alert");
+                                   });
+                                 }
+                               }];
 
       } else if (result == AVPlayerViewTrimCancelButton) {
       }
