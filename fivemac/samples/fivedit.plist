@@ -8,6 +8,10 @@
 	<array>
 		<string>Scintilla</string>
 	</array>
+	<key>FontName</key>
+	<string>Monaco</string>
+	<key>FontSize</key>
+	<string>16</string>
 	<key>FrameWorks</key>
 	<array>
 		<string>Cocoa</string>
