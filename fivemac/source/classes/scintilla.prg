@@ -83,7 +83,7 @@ CLASS TScintilla FROM TControl
    METHOD BookmarkClearAll()
    METHOD BookmarkNext( lForwardScan, lSelect )
 
-   METHOD BraceBadLight( nPos1, nPos2 )        INLINE ::Send( SCI_BRACEBADLIGHT, nPos1, nPos2 )
+   METHOD BraceBadLight( nPos )                INLINE ::Send( SCI_BRACEBADLIGHT, nPos )
    METHOD BraceHighLight( nPos1, nPos2 )       INLINE ::Send( SCI_BRACEHIGHLIGHT, nPos1, nPos2 )
    METHOD BraceMatch( nPos )                   INLINE ::Send( SCI_BRACEMATCH, nPos )
 
@@ -1010,6 +1010,7 @@ METHOD Notify( nType, pScnNotification ) CLASS TScintilla
            ::CharAdded( ScnCh( pScnNotification ) )
 
       case nCode == SCN_UPDATEUI
+           ::HandleBraceMatch()
            if ::bChange != nil
               Eval( ::bChange, Self )
            endif
@@ -1209,14 +1210,46 @@ return nil
 
 METHOD SetMBrace() CLASS TScintilla
 
-   ::Send( SCI_STYLESETFORE, STYLE_BRACELIGHT, ::cCBraces[ 1 ] ) //YELLOW
-   ::Send( SCI_STYLESETBACK, STYLE_BRACELIGHT, ::cCBraces[ 2 ] ) //::nCaretBackColor )
-   ::Send( SCI_STYLESETFORE, STYLE_BRACEBAD, ::cCBraceBad[ 1 ] ) //CLR_HRED )
-   ::Send( SCI_STYLESETBACK, STYLE_BRACEBAD, ::cCBraceBad[ 2 ] ) //::nCaretBackColor )
-   //::Send( SCI_BRACEHIGHLIGHTINDICATOR, 1, 1 )
-   //::Send( SCI_BRACEBADLIGHTINDICATOR, 1, 1 )
+   ::Send( SCI_STYLESETFORE, STYLE_BRACELIGHT, ::cCBraces[ 1 ] )
+   ::Send( SCI_STYLESETBACK, STYLE_BRACELIGHT, ::cCBraces[ 2 ] )
+   ::Send( SCI_STYLESETFORE, STYLE_BRACEBAD, ::cCBraceBad[ 1 ] )
+   ::Send( SCI_STYLESETBACK, STYLE_BRACEBAD, ::cCBraceBad[ 2 ] )
 
 Return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD HandleBraceMatch() CLASS TScintilla
+
+   local nPos := ::GetCurrentPos()
+   local nMatchPos
+   local cChar
+
+   cChar := Chr( ::GetCharAt( nPos ) )
+
+   if cChar $ "()[]{}" 
+      nMatchPos := ::BraceMatch( nPos )
+      if nMatchPos != -1
+         ::BraceHighlight( nPos, nMatchPos )
+      else
+         ::BraceBadLight( nPos )
+      endif
+   else
+      nPos--
+      cChar := Chr( ::GetCharAt( nPos ) )
+      if cChar $ "()[]{}" 
+         nMatchPos := ::BraceMatch( nPos )
+         if nMatchPos != -1
+            ::BraceHighlight( nPos, nMatchPos )
+         else
+            ::BraceBadLight( nPos )
+         endif
+      else
+         ::BraceHighlight( -1, -1 )
+      endif
+   endif
+
+return nil
 
 //----------------------------------------------------------------------------//
 
