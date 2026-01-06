@@ -176,6 +176,7 @@ function BuildEditor()
    // oEditor:Send( 2276, 1, 0 ) // SCI_SETSCROLLWIDTH, 1
 
    oEditor:bChange = { || EditorChange() }
+   oEditor:SetFont( "Monaco", 14 )
    oEditor:SetColor( , nRgb( 252, 252, 252 ) , .t. )
 
    AAdd( aEditors, oEditor )
