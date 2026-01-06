@@ -1378,8 +1378,8 @@ if !Empty( ::cListFuncs )
     KeyWords0  := lower( ::cListFuncs )
     KeyWords1  := cCad2 + cCad3
     else
-    KeyWords0  := cCad2
-    KeyWords1  := cCad3
+    KeyWords0  := cCad2 + cCad3
+    KeyWords1  := ""
 endif
 
  KeyWords2  := cCad0
