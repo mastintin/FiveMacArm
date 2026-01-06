@@ -200,7 +200,7 @@ function BuildPreferences()
    CreatePlistHarblib()
    CreatePlistFrameWorks()
 
-   cFontName := GetPlistValue( cPrefFile, "FontName" )
+   cFontName := AllTrim( GetPlistValue( cPrefFile, "FontName" ) )
    if Empty( cFontName )
       cFontName := "Monaco"
       SetPlistValue( cPrefFile, "FontName", cFontName, .T. )
@@ -463,9 +463,10 @@ function Preferences()
 
    local i, n, obtn1, oBtn2, obtn3, obtn4, obtn8, oBtn5, oBtn6
    local oBtnaddFlag,oBtndelFlag
+   local oCbxFont, oGetSize, oSayFont, oSaySize, oBtnSize
+   local aFonts := FM_availableFonts()
 
-   ? cStringColor
-
+  
    DEFINE DIALOG oDlg TITLE "Preferences"
  
    DEFINE MULTIVIEW oMulti OF oDlg RESIZED
@@ -487,7 +488,7 @@ function Preferences()
    @ 1, 1 TREE oTree TITLE "Categories" ;
       SIZE 180, 380 OF oMulti:aViews[ 1 ]
 
-   oTree:bAction = { || ShowColor( oClr, oTree )  }
+   oTree:bAction = { || ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize ) }
 
    oItem = oTree:AddItem( "Colors", ImgSymbols( "paintpalette" ) )
       oItem:AddItem( "Strings" )
@@ -500,14 +501,28 @@ function Preferences()
       oItem:AddItem( "Prompts" )
 
    oItem = oTree:AddItem( "Font", ImgSymbols( "textformat" ) )
-      oItem:AddItem( "Name" )
-      oItem:AddItem( "Size" )
-
+      oItem:AddItem( "Name-Size" )
+   
     oTree:Select( oTree:GetItemByName( "Strings" ))
     oTree:refresh()
 
    @ 300, 260 COLORWELL oClr SIZE 100, 30 OF oMulti:aViews[ 1 ] ;
       ON CHANGE SetEditorColor( oTree:GetSelect():cName, oClr:GetColor() )
+
+   @ 125, 220 SAY oSayFont PROMPT "Font Name:" OF oMulti:aViews[ 1 ]
+   @ 100, 220 COMBOBOX oCbxFont VAR cFontName ITEMS aFonts SIZE 200, 25 OF oMulti:aViews[ 1 ] ;
+      ON CHANGE ( SetPlistValue( cPrefFile, "FontName", cFontName, .T. ), UpdateEditorsFont() )
+
+   @ 125, 440 SAY oSaySize PROMPT "Font Size:" OF oMulti:aViews[ 1 ]
+   @ 100, 440 GET oGetSize VAR nFontSize SIZE 60, 25 OF oMulti:aViews[ 1 ] ;
+      ON CHANGE ( SetPlistValue( cPrefFile, "FontSize", LTrim( Str( nFontSize ) ), .T. ), UpdateEditorsFont() )
+   
+ 
+   if oCbxFont != nil; oCbxFont:Hide(); endif
+   if oGetSize != nil; oGetSize:Hide(); endif
+   if oSayFont != nil; oSayFont:Hide(); endif
+   if oSaySize != nil; oSaySize:Hide(); endif
+
 
    //------ controles en segunda vista ------------
 
@@ -655,13 +670,14 @@ function Preferences()
    oMulti:setView( 1 )
 
    ACTIVATE DIALOG oDlg CENTERED ;
-      ON INIT ( oTree:Rebuild(), oTree:ExpandAll(),;
-                oTree2:Rebuild(), oTree2:ExpandAll(),;
-                oTree3:Rebuild(), oTree3:ExpandAll(),;
-                oTree4:Rebuild(), oTree4:ExpandAll(),;
-               oTreeFlag:Rebuild(), oTreeFlag:ExpandAll(),;
-               oTree:Select( oTree:GetItemByName( "Strings" )),;
-               oTree:refresh() ) 
+      ON INIT ( if( ( n := AScan( aFonts, cFontName ) ) > 0, oCbxFont:Select( n ), ), ;
+              ( oTree:Rebuild(), oTree:ExpandAll() ) ,;
+              oTree2:Rebuild(), oTree2:ExpandAll(),;
+              oTree3:Rebuild(), oTree3:ExpandAll(),;
+              oTree4:Rebuild(), oTree4:ExpandAll(),;
+              oTreeFlag:Rebuild(), oTreeFlag:ExpandAll(),;
+              oTree:Select( oTree:GetItemByName( "Strings" )),;
+              oTree:refresh() ) 
 
    if ! ( cVar1 == GetPlistValue( cPrefFile, "PathFiveMac" ) )
       SetPlistValue( cPrefFile, "PathFiveMac", cVar1, .T. )
@@ -686,6 +702,9 @@ function Preferences()
     SetPlistValue( cPrefFile, "Color-Strings", 1234, .T. )
 
 return nil
+
+
+
 
 //----------------------------------------------------------------------------//
 
@@ -810,22 +829,59 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function ShowColor( oClr, oTree )
+function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize )
 
    local oItem := oTree:GetSelect(), cName
 
-   if oItem != nil
+   if oItem != nil .and. oClr != nil
       cName = oItem:cName
 
       if cName $ "Strings,Numbers,Comments,Harbour,FiveMac"
+         oClr:Show()
          oClr:SetColor( oEditor:GetTextColor( cName ) )
+         if oCbxFont != nil; oCbxFont:Hide(); endif
+         if oGetSize != nil; oGetSize:Hide(); endif
+         if oSayFont != nil; oSayFont:Hide(); endif
+         if oSaySize != nil; oSaySize:Hide(); endif
+      elseif cItemInTree( oItem, "Name-Size" )
+         oClr:Hide()
+         if oCbxFont != nil; oCbxFont:Show(); endif
+         if oGetSize != nil; oGetSize:Show(); endif
+         if oSayFont != nil; oSayFont:Show(); endif
+         if oSaySize != nil; oSaySize:Show(); endif
       else
-         oClr:SetColor( CLR_WHITE )
+         oClr:Hide()
+         if oCbxFont != nil; oCbxFont:Hide(); endif
+         if oGetSize != nil; oGetSize:Hide(); endif
+         if oSayFont != nil; oSayFont:Hide(); endif
+         if oSaySize != nil; oSaySize:Hide(); endif
       endif
 
    endif
 
 return nil
+
+//----------------------------------------------------------------------------//
+
+function UpdateEditorsFont()
+   local oEditor
+   for each oEditor in aEditors
+      oEditor:SetFont( cFontName, nFontSize )
+   next
+return nil
+
+//----------------------------------------------------------------------------//
+
+function cItemInTree( oItem, cName )
+   local lFound := .f.
+   while oItem != nil
+      if oItem:cName == cName
+         lFound := .t.
+         exit
+      endif
+      oItem = oItem:oParent
+   enddo
+return lFound
 
 //----------------------------------------------------------------------------//
 

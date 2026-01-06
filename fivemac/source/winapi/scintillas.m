@@ -188,9 +188,9 @@ HB_FUNC(SCISEND) {
   ScintillaView *sv = (ScintillaView *)hb_parnl(1);
 
   hb_retnl([sv
-      setGeneralProperty:hb_parnl(2)
+      getGeneralProperty:hb_parnl(2)
                parameter:hb_parnl(3)
-                   value:HB_ISCHAR(4) ? (long)hb_parc(4) : hb_parnl(4)]);
+                   extra:HB_ISCHAR(4) ? (long)hb_parc(4) : hb_parnl(4)]);
 }
 
 HB_FUNC(SCISETCOLORPROP) {
