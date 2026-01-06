@@ -1221,33 +1221,42 @@ Return nil
 
 METHOD HandleBraceMatch() CLASS TScintilla
 
-   local nPos := ::GetCurrentPos()
-   local nMatchPos
-   local cChar
+   local nPos, nMatchPos, cChar
 
+   if ::hWnd == 0
+      return nil
+   endif
+
+   nPos := ::GetCurrentPos()
    cChar := Chr( ::GetCharAt( nPos ) )
 
    if cChar $ "()[]{}" 
       nMatchPos := ::BraceMatch( nPos )
       if nMatchPos != -1
          ::BraceHighlight( nPos, nMatchPos )
+         return nil
       else
          ::BraceBadLight( nPos )
+         return nil
       endif
-   else
-      nPos--
+   endif
+   
+   nPos--
+   if nPos >= 0
       cChar := Chr( ::GetCharAt( nPos ) )
       if cChar $ "()[]{}" 
          nMatchPos := ::BraceMatch( nPos )
          if nMatchPos != -1
             ::BraceHighlight( nPos, nMatchPos )
+            return nil
          else
             ::BraceBadLight( nPos )
+            return nil
          endif
-      else
-         ::BraceHighlight( -1, -1 )
       endif
    endif
+
+   ::BraceHighlight( -1, -1 )
 
 return nil
 

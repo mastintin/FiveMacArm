@@ -236,6 +236,10 @@ return nil
 
 function EditorChange()
 
+   if oEditor == nil
+      return nil
+   endif
+
    if oMsgBar != nil
       oMsgBar:SetText( "FiveMac IDE " + ;
                        " Row: " + AllTrim( Str( oEditor:nLine() ) ) + ;
