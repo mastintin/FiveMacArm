@@ -20,6 +20,8 @@ function ImgPath()
    endif
 
    if ! lInit   
+      // Default auto-copy behavior disabled to support smart bundling (only used images)
+      /* 
       aFiles = Directory( cImgPath + "*" )
       for n = 1 to Len( aFiles )
          if ! File( ResPath() + "/bitmaps/" + aFiles[ n ][ 1 ] )
@@ -27,6 +29,7 @@ function ImgPath()
                         ResPath() + "/bitmaps/" + aFiles[ n ][ 1 ] )
          endif               
       next
+      */
       lInit = .T. 
    endif   
   
