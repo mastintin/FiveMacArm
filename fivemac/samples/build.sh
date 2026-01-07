@@ -87,36 +87,32 @@ fi
 mkdir -p "$APPName.app/Contents/Resources/bitmaps"
 
 echo "Smart bundling images..."
-# Find all quoted strings ending in common image extensions across ALL Prg files
-IMAGES=$(grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" $PRG_FILES | tr -d '"' | sort | uniq)
+count=0
 
-if [ -z "$IMAGES" ]; then
-    echo "  No explicit image references found in source files"
-else
-    count=0
-    for img in $IMAGES; do
-        # Extract filename only in case grep returns File:match format (though -o usually avoids this, with multiple files grep adds filename:)
-        # Actually with multiple files grep -o outputs "filename:match". We need to handle that.
-        # simpler: cat all files and grep.
-        if [ -f "./../bitmaps/$img" ]; then
-            cp "./../bitmaps/$img" "$APPName.app/Contents/Resources/bitmaps/"
+# Iterate through all files in the global bitmaps directory
+for imgfile in ./../bitmaps/*; do
+    if [ -f "$imgfile" ]; then
+        filename=$(basename "$imgfile")
+        base="${filename%.*}"
+        
+        # Check if the filename OR the basename (without extension) appears in the source code (case-insensitive)
+        # We look for the string surrounded by quotes to avoid false positives on variable names
+        # We cat all PRG files to search them all at once
+        if cat $PRG_FILES | grep -i -q -E "\"${filename}\"|\"${base}\"|'${filename}'|'${base}'"; then
+            cp "$imgfile" "$APPName.app/Contents/Resources/bitmaps/"
             ((count++))
         fi
-    done
-    
-    # Retry with cat if count is 0, to handle grep output format difference
-    if [ $count -eq 0 ]; then
-       IMAGES=$(cat $PRG_FILES | grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" | tr -d '"' | sort | uniq)
-       for img in $IMAGES; do
-          if [ -f "./../bitmaps/$img" ]; then
-             cp "./../bitmaps/$img" "$APPName.app/Contents/Resources/bitmaps/"
-             ((count++))
-          fi
-       done
     fi
+done
 
+if [ $count -eq 0 ]; then
+    echo "  No detailed image references found (checked filenames and basenames)."
+else
     echo "  Bundled $count images."
 fi
+
+# Fallback/Legacy: If you want to copy ALL bitmaps, uncomment the line below:
+# cp -R ./../bitmaps $APPName.app/Contents/Resources/
 
 # Fallback/Legacy: If you want to copy ALL bitmaps, uncomment the line below:
 # cp -R ./../bitmaps $APPName.app/Contents/Resources/
