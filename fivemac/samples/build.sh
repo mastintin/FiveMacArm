@@ -62,11 +62,32 @@ if [ ! -d $1.app/Contents/Resources ]; then
    cp ./../icons/fivetech.icns $1.app/Contents/Resources/
 fi 
 
-# Always copy bitmaps to ensure they are up to date
+# Smart Copy: Only copy images referenced in the source code
+# First, clean existing bitmaps to ensure we don't keep unused ones from previous builds
 if [ -d "$1.app/Contents/Resources/bitmaps" ]; then
    rm -rf "$1.app/Contents/Resources/bitmaps"
 fi
-cp -R ./../bitmaps $1.app/Contents/Resources/
+mkdir -p "$1.app/Contents/Resources/bitmaps"
+
+echo "Smart bundling images..."
+# Find all quoted strings ending in common image extensions
+IMAGES=$(grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" "$1.prg" | tr -d '"' | sort | uniq)
+
+if [ -z "$IMAGES" ]; then
+    echo "  No explicit image references found in $1.prg"
+else
+    count=0
+    for img in $IMAGES; do
+        if [ -f "./../bitmaps/$img" ]; then
+            cp "./../bitmaps/$img" "$1.app/Contents/Resources/bitmaps/"
+            ((count++))
+        fi
+    done
+    echo "  Bundled $count images."
+fi
+
+# Fallback/Legacy: If you want to copy ALL bitmaps, uncomment the line below:
+# cp -R ./../bitmaps $1.app/Contents/Resources/
 
 if [ ! -d $1.app/Contents/frameworks ]; then
    mkdir $1.app/Contents/frameworks
