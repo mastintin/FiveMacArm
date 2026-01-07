@@ -84,6 +84,13 @@ HB_FUNC(SEGMENTSETIMAGESCALING) {
                 forSegment:hb_parnl(2)];
 }
 
+HB_FUNC(SEGMENTSETNSIMAGE) {
+  NSSegmentedControl *segment = (NSSegmentedControl *)hb_parnll(1);
+  NSImage *image = (NSImage *)hb_parnll(2);
+
+  [segment setImage:image forSegment:hb_parnl(3)];
+}
+
 HB_FUNC(SEGMENTSETMENU) {
   NSSegmentedControl *segment = (NSSegmentedControl *)hb_parnll(1);
   NSMenu *menu = (NSMenu *)hb_parnll(2);

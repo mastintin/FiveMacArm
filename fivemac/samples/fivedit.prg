@@ -753,36 +753,27 @@ function DlgAddlib( oTree, ntipo )
       cTitle:= "Add Flag"
    endif
 
-   DEFINE DIALOG oDlg TITLE cTitle ;
-      FROM 220, 350 TO 340, 690
-
-   @ 69, 37 SAY cTitle OF oDlg SIZE 150, 17
-
-   @ 67, 108 GET oGet VAR cLib OF oDlg SIZE 192, 22
+   
+  // @ 67, 108 GET oGet VAR cLib OF oDlg SIZE 192, 22
    
    if nTipo == 1
       
       cVar := oPlist:GetItemByName( "PathSDK" )
       cVar += "/System/Library/Frameworks/"
-      
-      @ 67, 306 BTNBMP OF oDlg  ;
-      FILENAME "RevealFreestanding"  ;
-      ACTION ( cGetNombreRecortado( oGet:opensheet( cVar ), oGet ) ) SIZE 22, 22 STYLE 10
-      
+      cVar := CHOOSESHEETTEXT( cVar )
+      cLib := cNombreRecortado( cVar )
+  
    endif
 
-   @ 20, 218 BUTTON "OK" OF oDlg ACTION oDlg:End()
-
-   ACTIVATE DIALOG oDlg CENTERED
-
+  
    if !Empty( cLib )
 
       oNode = oTree:oNode:aNodes[ 1 ]
 
        if nTipo == 2
-          cBmp = cBmpPath + "Libs.tiff"
+          cBmp =  ImgSymbols( "square.stack.3d.up")
        elseif nTipo == 1
-          cBmp = cBmpPath + "Framework.tiff"
+          cBmp = ImgSymbols( "square.stack.3d.up")
        endif
 
        oNode:AddItem( cLib,,, cBmp )
@@ -806,14 +797,15 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-static function cGetNombreRecortado( cfile , oGet )
+static function cNombreRecortado( cFile  )
 
    if ! Empty( cFile )
       if Right( cFile, 1 ) == "/"
          cFile = Left( cFile, Len( cFile ) - 1 )
       endif
-      oGet:setText( cFileNoext( cFilenopath( cfile ) ) )
-      oGet:assign()
+      Return ( cFileNoext( cFilenopath( cfile ) ) )
+   else
+      Return " "      
    endif
    
 return nil
@@ -1075,7 +1067,7 @@ function BuildButtonBar()
    @ 0, 0 SEGMENTBTN oSeg OF oWnd SIZE 290, 40 ;
       ACTION SelectionSegmentos( oSeg ) ;
       ITEMS { "", "", "" } ;
-      IMAGES { cBmpPath + "ideleft.tiff", cBmpPath + "idebottom.tiff" , cBmpPath + "ideright.tiff"  } ;
+      IMAGES { ImgSymbols("sidebar.left", "Navigator"), ImgSymbols("rectangle.bottom.third.inset.filled", "Debug"), ImgSymbols("sidebar.right", "Inspector") } ;
       STYLE 5 ;
       TRACKING 1 ;
       AUTORESIZE 1
