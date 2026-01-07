@@ -809,6 +809,9 @@ return nil
 static function cGetNombreRecortado( cfile , oGet )
 
    if ! Empty( cFile )
+      if Right( cFile, 1 ) == "/"
+         cFile = Left( cFile, Len( cFile ) - 1 )
+      endif
       oGet:setText( cFileNoext( cFilenopath( cfile ) ) )
       oGet:assign()
    endif
