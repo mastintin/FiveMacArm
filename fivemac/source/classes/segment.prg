@@ -26,9 +26,12 @@ CLASS TSegment FROM TControl
    METHOD SetEnabled( lEnabled, nSegment ) INLINE ;
           SegmentSetEnabled( ::hWnd, lEnabled, nSegment - 1 )
    
-   METHOD SetImg( cFileImg, nSegment ) INLINE If( File( cFileImg ),;
+   METHOD SetImg( cFileImg, nSegment ) INLINE If( ValType( cFileImg ) == "N",;
+          ( SegmentSetNSImage( ::hWnd, cFileImg, nSegment - 1 ),;
+            SegmentSetImageScaling( ::hWnd, nSegment - 1 ) ),;
+          If( File( cFileImg ),;
           ( SegmentSetImage( ::hWnd, cFileImg, nSegment - 1 ),;
-            SegmentSetImageScaling( ::hWnd, nSegment - 1 ) ), )
+            SegmentSetImageScaling( ::hWnd, nSegment - 1 ) ), ) )
 
    METHOD SetTracking(nTrack) INLINE SegmentSetTrack(::hWnd,nTrack)
 
