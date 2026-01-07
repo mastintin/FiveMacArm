@@ -40,8 +40,7 @@ HB_FUNC(PATH) {
   NSString *buPath = [[NSBundle mainBundle] bundlePath];
   NSString *secondParentPath = [buPath stringByDeletingLastPathComponent];
 
-  hb_retc(
-      [secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
+  hb_retc([secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(HOMETPATH) {
@@ -52,19 +51,18 @@ HB_FUNC(HOMETPATH) {
 }
 
 HB_FUNC(PARENTPATH) {
-  NSString *string = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  NSString *string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
   NSString *secondParentPath = [string stringByDeletingLastPathComponent];
 
-  hb_retc(
-      [secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
+  hb_retc([secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(FILENOPATH) {
-  NSString *string = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  NSString *string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
   NSString *file = [string lastPathComponent];
 
   hb_retc([file cStringUsingEncoding:NSUTF8StringEncoding]);
@@ -82,21 +80,21 @@ HB_FUNC(USERPATH) {
 }
 
 HB_FUNC(ISFILE) {
-  NSString *string = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  NSString *string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
   NSFileManager *filemgr = [NSFileManager defaultManager];
 
   hb_retl(([filemgr fileExistsAtPath:string] == YES));
 }
 
 HB_FUNC(COPYFILETO) {
-  NSString *fileini = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
-  NSString *filefin = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(2) ? hb_parc(2) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  NSString *fileini =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
+  NSString *filefin =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(2) ? hb_parc(2) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
   NSFileManager *filemgr = [NSFileManager defaultManager];
 
   hb_retl(([filemgr copyItemAtPath:fileini toPath:filefin error:NULL] == YES));
@@ -105,9 +103,9 @@ HB_FUNC(COPYFILETO) {
 HB_FUNC(DELETEFILE) {
   bool lresult = false;
 
-  NSString *string = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  NSString *string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
 
   NSFileManager *filemgr = NSFileManager.defaultManager;
 
@@ -118,9 +116,9 @@ HB_FUNC(DELETEFILE) {
 }
 
 HB_FUNC(DELETEDIR) {
-  NSString *string = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  NSString *string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
   NSFileManager *fManager = NSFileManager.defaultManager;
   BOOL isDir;
   NSString *strfile = [string stringByAppendingString:@"/"];
@@ -320,10 +318,9 @@ HB_FUNC(ISDOCKHIDDEN) {
 
 HB_FUNC(GETCLASSNAME) // hCtrl
 {
-  NSObject *control = (NSObject *)hb_parnl(1);
+  NSObject *control = (NSObject *)hb_parnll(1);
 
-  hb_retc(
-      [[control className] cStringUsingEncoding:NSUTF8StringEncoding]);
+  hb_retc([[control className] cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(APPTOFROM) {
@@ -430,9 +427,9 @@ HB_FUNC(MOVETOTRASH2) {
 
 HB_FUNC(MOVETOTRASH) {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-  NSString *path = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  NSString *path =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
   NSURL *originalURL = [[NSURL alloc] initFileURLWithPath:path];
   NSArray *urls = [NSArray arrayWithObject:originalURL];
 
@@ -465,9 +462,9 @@ HB_FUNC(TASKEXEC) {
 
   for (i = 0; i <= n - 1; i++) {
 
-    cArg = [[[NSString alloc] initWithCString:hb_parvc(2, i + 1)
-                                     encoding:NSUTF8StringEncoding]
-        autorelease];
+    cArg =
+        [[[NSString alloc] initWithCString:hb_parvc(2, i + 1)
+                                  encoding:NSUTF8StringEncoding] autorelease];
 
     [arguments addObject:cArg];
   }
@@ -499,7 +496,7 @@ HB_FUNC(TASKEXECARRAY) {
 
   [task setLaunchPath:comando];
 
-  NSArray *arguments = (NSArray *)hb_parnl(2);
+  NSArray *arguments = (NSArray *)hb_parnll(2);
   [task setArguments:arguments];
 
   NSPipe *pipe = [NSPipe pipe];
@@ -657,17 +654,17 @@ HB_FUNC(GETCURRENTLANGUAGE) {
 
 HB_FUNC(GETAPPICON) {
   NSImage *image = [NSApp applicationIconImage];
-  hb_retnl((HB_LONG)image);
+  hb_retnll((HB_LONGLONG)image);
 }
 
 HB_FUNC(SETAPPICON) {
-  NSImage *image = (NSImage *)hb_parnl(1);
+  NSImage *image = (NSImage *)hb_parnll(1);
   [NSApp setApplicationIconImage:image];
 }
 
 HB_FUNC(DOCKGET) {
   NSDockTile *docTile = [NSApp dockTile];
-  hb_retnl((HB_LONG)docTile);
+  hb_retnll((HB_LONGLONG)docTile);
 }
 
 HB_FUNC(APPISACTIVE) { hb_retl([NSApp isActive]); }
@@ -680,7 +677,7 @@ HB_FUNC(DOCKDISPLAY) { [[NSApp dockTile] display]; }
 
 HB_FUNC(DOCKSETIMAGE) {
   NSDockTile *docTile = [NSApp dockTile];
-  NSImage *image = (NSImage *)hb_parnl(1);
+  NSImage *image = (NSImage *)hb_parnll(1);
   NSImageView *iv = [[NSImageView alloc] init];
   [iv setImage:image];
   [docTile setContentView:iv];
@@ -701,7 +698,7 @@ HB_FUNC(DOCKADDPROGRESS) {
   progressIndicator.layer.borderColor = [[NSColor lightGrayColor] CGColor];
 
   [docTile display];
-  hb_retnl((HB_LONG)progressIndicator);
+  hb_retnll((HB_LONGLONG)progressIndicator);
 }
 
 @interface FNotifyDelegate : NSObject <UNUserNotificationCenterDelegate>

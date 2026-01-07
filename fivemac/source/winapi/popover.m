@@ -129,7 +129,7 @@
 //----------------------------------------------------------//
 
 HB_FUNC(SHOWPOPOVER) {
-  NSControl *theInput = (NSControl *)hb_parnl(1);
+  NSControl *theInput = (NSControl *)hb_parnll(1);
   NSString *mystring = hb_NSSTRING_par(2);
   NSPopover *popover = [[NSPopover alloc] init];
   [popover showRelativeToRect:[theInput frame]
@@ -138,12 +138,12 @@ HB_FUNC(SHOWPOPOVER) {
                        string:mystring
                      maxWidth:250.0];
 
-  hb_retnl((HB_LONG)popover);
+  hb_retnll((HB_LONGLONG)popover);
 }
 
 HB_FUNC(SHOWWINPOPOVER) {
-  NSControl *theInput = (NSControl *)hb_parnl(1);
-  NSWindow *window = (NSWindow *)hb_parnl(2);
+  NSControl *theInput = (NSControl *)hb_parnll(1);
+  NSWindow *window = (NSWindow *)hb_parnll(2);
   NSPopover *popover = [[NSPopover alloc] init];
 
   [popover
@@ -153,17 +153,17 @@ HB_FUNC(SHOWWINPOPOVER) {
                      window:window
                    maxWidth:250.0];
 
-  hb_retnl((HB_LONG)popover);
+  hb_retnll((HB_LONGLONG)popover);
 }
 
 HB_FUNC(CLOSEPOPOVER) {
-  NSPopover *popover = (NSPopover *)hb_parnl(1);
+  NSPopover *popover = (NSPopover *)hb_parnll(1);
 
   [popover close];
 }
 
 HB_FUNC(SETPOPOVERAPPERANCE) {
-  NSPopover *popover = (NSPopover *)hb_parnl(1);
+  NSPopover *popover = (NSPopover *)hb_parnll(1);
   int nAparence = hb_parni(2);
 
   switch (nAparence) {

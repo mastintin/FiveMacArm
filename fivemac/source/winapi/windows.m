@@ -59,7 +59,7 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_WNDVALID);
   hb_vmDo(2);
 
@@ -82,7 +82,7 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_WHEN);
   hb_vmDo(2);
 
@@ -104,9 +104,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_LOSTFOCUS);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmDo(3);
 }
 
@@ -123,9 +123,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_GETFOCUS);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmDo(3);
 }
 
@@ -135,7 +135,7 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_PAINT);
   hb_vmDo(2);
 }
@@ -148,9 +148,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_LBUTTONDOWN);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -181,9 +181,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_LBUTTONUP);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -197,9 +197,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_RBUTTONDOWN);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -218,9 +218,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_MOUSEMOVED);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -239,9 +239,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_MOUSEMOVED);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -263,9 +263,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_KEYDOWN);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(unichar);
   hb_vmDo(4);
 
@@ -302,9 +302,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_RESIZE);
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmDo(3);
 }
 
@@ -314,9 +314,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_MENUITEM);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -327,9 +327,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_BTNCLICK);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -340,9 +340,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_BRWDBLCLICK);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -352,9 +352,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_CBXCHANGE);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -365,9 +365,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_CHKCLICK);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -377,9 +377,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_CLRCHANGE);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -390,9 +390,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_TBRCLICK);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -402,9 +402,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_TIMER);
-  hb_vmPushLong((HB_LONG)timer);
+  hb_vmPushNumInt((HB_LONGLONG)timer);
   hb_vmDo(3);
 }
 
@@ -415,9 +415,9 @@ void CocoaInit(void);
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_SLIDERCHANGE);
-  hb_vmPushLong((HB_LONG)sender);
+  hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -458,11 +458,11 @@ HB_FUNC(WNDCREATE) {
   [window makeFirstResponder:view];
   [window setAcceptsMouseMovedEvents:YES];
 
-  hb_retnl((HB_LONG)window);
+  hb_retnll((HB_LONGLONG)window);
 }
 
 HB_FUNC(WNDRUN) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window makeKeyAndOrderFront:nil];
 
@@ -482,28 +482,28 @@ HB_FUNC(WNDSAY) {
 }
 
 HB_FUNC(WNDSETFOCUS) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window makeKeyAndOrderFront:nil];
 }
 
-HB_FUNC(GETFOCUS) { hb_retnl((HB_LONG)[NSView focusView]); }
+HB_FUNC(GETFOCUS) { hb_retnll((HB_LONGLONG)[NSView focusView]); }
 
 HB_FUNC(WNDSETFONT) {
-  NSControl *view = (NSControl *)hb_parnl(1);
+  NSControl *view = (NSControl *)hb_parnll(1);
   NSString *name = hb_NSSTRING_par(2);
 
   [view setFont:[[NSFont fontWithName:name size:hb_parnl(3)] autorelease]];
 }
 
 HB_FUNC(WNDCLOSE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window performClose:nil];
 }
 
 HB_FUNC(WNDDESIGN) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   View *view = [window contentView];
 
   hb_retl(view->bDesign);
@@ -513,7 +513,7 @@ HB_FUNC(WNDDESIGN) {
 }
 
 HB_FUNC(WNDHITTEST) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   View *view = [window contentView];
   NSPoint aPoint;
   BOOL bDesign = view->bDesign;
@@ -528,42 +528,42 @@ HB_FUNC(WNDHITTEST) {
   if ([[ctrl class] isSubclassOfClass:[NSScrollView class]])
     ctrl = [((NSScrollView *)ctrl) documentView];
 
-  hb_retnl((long)ctrl);
+  hb_retnll((HB_LONGLONG)ctrl);
   view->bDesign = bDesign;
 }
 
 HB_FUNC(WNDICONIZE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window performMiniaturize:nil];
 }
 
 HB_FUNC(WNDMAXIMIZE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window performZoom:nil];
 }
 
 HB_FUNC(WNDSETHIDEONDEACTIVATE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   window.hidesOnDeactivate = hb_parl(2);
 }
 
 HB_FUNC(WNDREFRESH) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window update];
 }
 
 HB_FUNC(WNDSETTEXT) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
   [window setTitle:string];
 }
 
 HB_FUNC(WNDGETTEXT) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSString *string;
 
   if ([window isKindOfClass:[NSControl class]])
@@ -575,7 +575,7 @@ HB_FUNC(WNDGETTEXT) {
 }
 
 HB_FUNC(WNDTOP) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   if ([[window class] isSubclassOfClass:[NSTableView class]]) {
@@ -599,7 +599,7 @@ HB_FUNC(WNDTOP) {
 }
 
 HB_FUNC(WNDLEFT) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   if ([[window class] isSubclassOfClass:[NSTableView class]]) {
@@ -622,7 +622,7 @@ HB_FUNC(WNDLEFT) {
 }
 
 HB_FUNC(WNDWIDTH) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   if ([[window class] isSubclassOfClass:[NSTableView class]]) {
@@ -645,7 +645,7 @@ HB_FUNC(WNDWIDTH) {
 }
 
 HB_FUNC(WNDHEIGHT) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   if ([[window class] isSubclassOfClass:[NSTableView class]]) {
@@ -668,7 +668,7 @@ HB_FUNC(WNDHEIGHT) {
 }
 
 HB_FUNC(WNDCENTER) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window center];
 }
@@ -676,13 +676,13 @@ HB_FUNC(WNDCENTER) {
 HB_FUNC(WNDFULLSCREEN) {
 // Check for Lion, Mountain Lion
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 #endif
 }
 
 HB_FUNC(WNDSETSPLASH) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window setOpaque:NO];
   [window setBackgroundColor:[NSColor colorWithDeviceWhite:1.0 alpha:0.0]];
@@ -692,14 +692,14 @@ HB_FUNC(WNDSETSPLASH) {
 }
 
 HB_FUNC(WNDSETTRANS) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window setAlphaValue:hb_parnd(2)];
   [window center];
 }
 
 HB_FUNC(WNDSETBRUSH) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
   NSColor *color = [NSColor
       colorWithPatternImage:[[NSImage alloc] initWithContentsOfFile:string]];
@@ -713,7 +713,7 @@ HB_FUNC(WNDSETBRUSH) {
 
 HB_FUNC(WNDSETBKGCOLOR) // hWnd, r, g, b, alpha
 {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   if (window) {
     NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
@@ -728,7 +728,7 @@ HB_FUNC(WNDSETBKGCOLOR) // hWnd, r, g, b, alpha
 
 HB_FUNC(WNDSETGRADIENTCOLOR) // hWnd, r1, g1, b1, r2, g2, b2, angle
 {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSColor *color1 = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
                                               green:hb_parnd(3) / 255.0
                                                blue:hb_parnd(4) / 255.0
@@ -758,18 +758,18 @@ HB_FUNC(WNDSETGRADIENTCOLOR) // hWnd, r1, g1, b1, r2, g2, b2, angle
 }
 
 HB_FUNC(WNDSETSHADOW) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   window.hasShadow = hb_parl(2);
 }
 
 HB_FUNC(WNDDESTROY) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window close];
 }
 
 HB_FUNC(WNDFADEOUT) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   float alpha = 1.0;
   int x;
   [window setAlphaValue:alpha];
@@ -782,7 +782,7 @@ HB_FUNC(WNDFADEOUT) {
 }
 
 HB_FUNC(WNDFADEIN) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   float alpha = 0.0;
   int x;
   [window setAlphaValue:alpha];
@@ -795,14 +795,14 @@ HB_FUNC(WNDFADEIN) {
 }
 
 HB_FUNC(WNDHIDE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window orderOut:window];
 }
 
 HB_FUNC(WNDSHOW) // hWnd
 {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window makeKeyAndOrderFront:window];
   [NSApp activateIgnoringOtherApps:YES];
@@ -821,7 +821,7 @@ HB_FUNC(WNDENABLE) // hWnd [, lOnOff ] --> lOnOff
 }
 
 HB_FUNC(WNDSETMSGBAR) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window setAutorecalculatesContentBorderThickness:YES forEdge:NSMinYEdge];
   [window setContentBorderThickness:(hb_parnl(2) / 1.0) forEdge:NSMinYEdge];
@@ -869,15 +869,15 @@ HB_FUNC(FLDCREATE) {
   NSTabView *folder =
       [[NSTabView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                   hb_parnl(3), hb_parnl(4))];
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
 
   [GetView(window) addSubview:folder];
 
-  hb_retnl((HB_LONG)folder);
+  hb_retnll((HB_LONGLONG)folder);
 }
 
 HB_FUNC(FLDADDITEM) {
-  NSTabView *folder = (NSTabView *)hb_parnl(1);
+  NSTabView *folder = (NSTabView *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
   NSTabViewItem *item = [[NSTabViewItem alloc] initWithIdentifier:string];
   View *view = [[View alloc] initWithFrame:[folder contentRect]];
@@ -886,20 +886,20 @@ HB_FUNC(FLDADDITEM) {
   [folder addTabViewItem:item];
   [item setView:view];
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(CTLSETNEXTKEYVIEW) // hControl1, hControl2
 {
-  NSControl *control1 = (NSControl *)hb_parnl(1);
-  NSControl *control2 = (NSControl *)hb_parnl(2);
+  NSControl *control1 = (NSControl *)hb_parnll(1);
+  NSControl *control2 = (NSControl *)hb_parnll(2);
 
   [control1 setNextKeyView:control2];
 }
 
 HB_FUNC(WINSIZECHANGE) // HControl ,nHeight,nWidth
 {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   CGFloat sizeyChange = hb_parnl(2);
@@ -913,7 +913,7 @@ HB_FUNC(WINSIZECHANGE) // HControl ,nHeight,nWidth
 }
 
 HB_FUNC(WNDSETPOS) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   if ([[window class] isSubclassOfClass:[NSTableView class]]) {
@@ -937,7 +937,7 @@ HB_FUNC(WNDSETPOS) {
 }
 
 HB_FUNC(WINSETSIZE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
   CGFloat nWidth = hb_parnl(2);
   CGFloat nHeight = hb_parnl(3);
@@ -951,7 +951,7 @@ HB_FUNC(WINSETSIZE) {
 
 HB_FUNC(WINSETSIZECHANGE) // HControl ,nHeight,nWidth
 {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   CGFloat sizeyChange = hb_parnl(2);
@@ -968,7 +968,7 @@ HB_FUNC(WINSETSIZECHANGE) // HControl ,nHeight,nWidth
 }
 
 HB_FUNC(WINHEIGHTCHANGE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   // The extra +14 accounts for the space between the box and its neighboring
@@ -984,7 +984,7 @@ HB_FUNC(WINHEIGHTCHANGE) {
 }
 
 HB_FUNC(WINWIDTHCHANGE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
   // The extra +14 accounts for the space between the box and its neighboring
@@ -1000,13 +1000,13 @@ HB_FUNC(WINWIDTHCHANGE) {
 }
 
 HB_FUNC(CONTROLSETFOCUS) {
-  NSControl *control = (NSControl *)hb_parnl(1);
+  NSControl *control = (NSControl *)hb_parnll(1);
   [[control window] makeKeyAndOrderFront:nil];
   [[control window] makeFirstResponder:control];
 }
 
 HB_FUNC(GOTONEXTCONTROL) {
-  NSControl *control = (NSControl *)hb_parnl(1);
+  NSControl *control = (NSControl *)hb_parnll(1);
 
   if ([[control window] firstResponder] == control) {
     [[control window] selectNextKeyView:control];
@@ -1014,29 +1014,29 @@ HB_FUNC(GOTONEXTCONTROL) {
 }
 
 HB_FUNC(SETAUTORESIZESSUBVIEWS) {
-  NSView *view = (NSView *)hb_parnl(1);
+  NSView *view = (NSView *)hb_parnll(1);
 
   [view setAutoresizesSubviews:hb_parl(2)];
 }
 
 HB_FUNC(WNDSETSUBVIEW) {
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
   NSView *view =
       [[NSView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                hb_parnl(3), hb_parnl(4))];
 
   [GetView(window) addSubview:view];
 
-  hb_retnl((HB_LONG)view);
+  hb_retnll((HB_LONGLONG)view);
 }
 
 HB_FUNC(WINDOWISFLIPPED) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   hb_retl([[window contentView] isFlipped]);
 }
 
 HB_FUNC(WINDOWPRINT) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   [[window contentView] print:window];
 }

@@ -2,629 +2,596 @@
 
 static PHB_SYMB symFMH = NULL;
 
-void MsgAlert( NSString *, NSString * messageText );
+void MsgAlert(NSString *, NSString *messageText);
 
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1060	
-   @interface Get : NSTextField
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1060
+@interface Get : NSTextField
 #else
-   @interface Get : NSTextField <NSTextFieldDelegate>
+@interface Get : NSTextField <NSTextFieldDelegate>
 #endif
 {
 }
-- ( BOOL ) textShouldEndEditing : ( NSText * ) text;
-- ( void ) controlTextDidChange : ( NSNotification * ) aNotification;
-- ( void ) controlTextDidEndEditing:(NSNotification *) aNotification;
-- (BOOL)   acceptsFirstResponder;
-- ( void ) keyUp : ( NSEvent * ) theEvent;
-- (BOOL) performKeyEquivalent: (NSEvent*) theEvent ;
+- (BOOL)textShouldEndEditing:(NSText *)text;
+- (void)controlTextDidChange:(NSNotification *)aNotification;
+- (void)controlTextDidEndEditing:(NSNotification *)aNotification;
+- (BOOL)acceptsFirstResponder;
+- (void)keyUp:(NSEvent *)theEvent;
+- (BOOL)performKeyEquivalent:(NSEvent *)theEvent;
 @end
 
 @implementation Get
-- ( BOOL ) textShouldEndEditing : ( NSText * ) text
-{
-   if( symFMH == NULL )
-      symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-   
-   hb_vmPushSymbol( symFMH );
-   hb_vmPushNil();
-   hb_vmPushLong( ( HB_LONG ) [ self window ] );
-   hb_vmPushLong( WM_GETVALID );
-   hb_vmPushLong( ( HB_LONG ) self );
-   hb_vmDo( 3 );
+- (BOOL)textShouldEndEditing:(NSText *)text {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
 
- //NSLog( @"The contents of the text field end" );
-    
-   return hb_parl( -1 );	
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(WM_GETVALID);
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmDo(3);
+
+  // NSLog( @"The contents of the text field end" );
+
+  return hb_parl(-1);
 }
 
-- ( void ) controlTextDidEndEditing : ( NSNotification * ) aNotification
-    {
-        if( symFMH == NULL )
-        symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-        
-        hb_vmPushSymbol( symFMH );
-        hb_vmPushNil();
-        hb_vmPushLong( ( HB_LONG ) [ self window ] );
-        hb_vmPushLong( WM_GETLOSTFOCUS );
-        hb_vmPushLong( ( HB_LONG ) self );
-        hb_vmDo( 3 );
-        
-        //NSLog( @"The contents of the text field end" );
-        
-        TRUE ;
+- (void)controlTextDidEndEditing:(NSNotification *)aNotification {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(WM_GETLOSTFOCUS);
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmDo(3);
+
+  // NSLog( @"The contents of the text field end" );
+
+  TRUE;
+}
+
+- (void)controlTextDidChange:(NSNotification *)aNotification {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(WM_GETCHANGED);
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmDo(3);
+
+  // NSLog( @"The contents of the text field changed" );
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)theEvent {
+  BOOL handled = NO;
+  if (([theEvent modifierFlags] &
+       NSEventModifierFlagDeviceIndependentFlagsMask) ==
+      NSEventModifierFlagCommand) {
+    NSString *keyChars = [theEvent charactersIgnoringModifiers];
+
+    NSRange range = [[self currentEditor] selectedRange];
+    bool hasSelection = (range.length > 0);
+
+    handled = YES;
+
+    NSResponder *responder = [[self window] firstResponder];
+
+    if ((responder != nil) && [responder isKindOfClass:[NSTextView class]]) {
+
+      NSTextView *textView = (NSTextView *)responder;
+
+      if ([keyChars isEqual:@"a"])
+        [textView selectAll:self];
+      else if (hasSelection && [keyChars isEqual:@"x"])
+        [textView cut:self];
+      else if (hasSelection && [keyChars isEqual:@"c"])
+        [textView copy:self];
+      else if ([keyChars isEqual:@"v"])
+        [textView paste:self];
+      else if ([keyChars isEqual:@"z"])
+        [[textView undoManager] undo];
+      else if ([keyChars isEqual:@"y"])
+        [[textView undoManager] redo];
+
+      else
+        handled = NO;
     }
-    
-- ( void ) controlTextDidChange : ( NSNotification * ) aNotification
-{
-   if( symFMH == NULL )
-      symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-   
-   hb_vmPushSymbol( symFMH );
-   hb_vmPushNil();
-   hb_vmPushLong( ( HB_LONG ) [ self window ] );
-   hb_vmPushLong( WM_GETCHANGED );
-   hb_vmPushLong( ( HB_LONG ) self );
-   hb_vmDo( 3 );
-   
-   // NSLog( @"The contents of the text field changed" );
+  }
+  return handled || [super performKeyEquivalent:theEvent];
 }
 
+- (void)keyUp:(NSEvent *)theEvent {
+  //  NSLog(@"Pressed key in NStextField!");
+  // unsigned int flags = [ theEvent modifierFlags ];
 
-- (BOOL) performKeyEquivalent: (NSEvent*) theEvent
-{
-    BOOL handled = NO;
-    if( ([theEvent modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask )
-       == NSEventModifierFlagCommand ) {
-        NSString* keyChars = [theEvent charactersIgnoringModifiers];
-        
-        NSRange range = [[ self currentEditor ] selectedRange];
-        bool hasSelection = (range.length > 0);
-        
-        handled = YES;
-        
-        NSResponder * responder = [[self window] firstResponder];
-       
-        
-        if ((responder != nil) && [responder isKindOfClass:[NSTextView class]])
-        {
-        
-         NSTextView * textView = (NSTextView *)responder;
-            
-        if( [keyChars isEqual: @"a"])
-               [ textView  selectAll:  self  ];
-        else if( hasSelection && [keyChars isEqual: @"x"])
-            [ textView   cut: self ];
-        else if( hasSelection && [keyChars isEqual: @"c"])
-             [ textView copy: self ];
-        else if( [keyChars isEqual: @"v"])
-             [ textView  paste: self ];
-        else if( [keyChars isEqual: @"z"])
-             [[textView undoManager] undo];
-        else if( [keyChars isEqual: @"y"])
-            [[textView undoManager] redo];
-            
-            
-        else
-            handled = NO;
-    }
-    }
-    return handled || [super performKeyEquivalent: theEvent];
+  NSString *key = [theEvent characters];
+  int unichar = [key characterAtIndex:0];
+
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(WM_KEYDOWN);
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushLong(unichar);
+  hb_vmDo(4);
+
+  //  if( hb_parnl( -1 ) != 1 )
+  //     [ super keyDown: theEvent ];
 }
 
-- ( void ) keyUp : ( NSEvent * ) theEvent
-{
-   //  NSLog(@"Pressed key in NStextField!");
- // unsigned int flags = [ theEvent modifierFlags ];
-    
-   NSString * key = [ theEvent characters ];
-   int unichar = [ key characterAtIndex: 0 ];
-  
-   if( symFMH == NULL )
-      symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-    
-   hb_vmPushSymbol( symFMH );
-   hb_vmPushNil();
-   hb_vmPushLong( ( HB_LONG ) [ self window ]  );
-   hb_vmPushLong( WM_KEYDOWN );
-   hb_vmPushLong( ( HB_LONG ) self );
-   hb_vmPushLong( unichar );
-   hb_vmDo( 4 );
-    
-   //  if( hb_parnl( -1 ) != 1 )
-   //     [ super keyDown: theEvent ];
-}
+- (BOOL)acceptsFirstResponder {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
 
-- ( BOOL ) acceptsFirstResponder
-{
-   if( symFMH == NULL )
-        symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-    
-   hb_vmPushSymbol( symFMH );
-   hb_vmPushNil();
-   hb_vmPushLong( ( HB_LONG ) [ self window ] );
-   hb_vmPushLong( WM_WHEN );
-   hb_vmPushLong( ( HB_LONG ) self );
-   hb_vmDo( 3 );
-    
-   if( HB_ISLOG( -1 ) )
-      return hb_parl( -1 );
-   else
-      return TRUE;
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(WM_WHEN);
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmDo(3);
+
+  if (HB_ISLOG(-1))
+    return hb_parl(-1);
+  else
+    return TRUE;
 }
 
 @end
 
-HB_FUNC( GETCREATE ) 
-{
-   Get * edit = [ [ Get alloc ] 
- 			  initWithFrame : NSMakeRect( hb_parnl( 2 ), hb_parnl( 1 ), hb_parnl( 3 ), hb_parnl( 4 ) ) ];
-   NSWindow * window = ( NSWindow * ) hb_parnl( 5 );
+HB_FUNC(GETCREATE) {
+  Get *edit = [[Get alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
+                                                    hb_parnl(3), hb_parnl(4))];
+  NSWindow *window = (NSWindow *)hb_parnll(5);
 
-   [ GetView( window ) addSubview : edit ];
-   [ edit setDelegate: edit ];
-   
-   hb_retnl( ( HB_LONG ) edit );
-}   
+  [GetView(window) addSubview:edit];
+  [edit setDelegate:edit];
 
-HB_FUNC( GETRESCREATE ) 
-{
-   NSWindow * window = ( NSWindow * ) hb_parnl( 1 );
-   Get * edit  = ( Get * ) [ GetView( window ) viewWithTag: hb_parnl( 2 ) ];
-    
-   [ edit setDelegate: edit ];
-    
- 	 hb_retnl( ( HB_LONG ) edit );	 			
-}  
+  hb_retnll((HB_LONGLONG)edit);
+}
 
-HB_FUNC( GETSETTEXT )
-{
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSString * string =  hb_NSSTRING_par( 2 ) ;
-  
-  [ get setStringValue: string ];
-} 
+HB_FUNC(GETRESCREATE) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  Get *edit = (Get *)[GetView(window) viewWithTag:hb_parnl(2)];
 
-HB_FUNC( GETSETNUMBER )
-{
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSString * string ;
-    string = [ [ [ NSString alloc ] initWithCString: HB_ISCHAR( 2 ) ? hb_parc( 2 ) : "" encoding :  NSUTF8StringEncoding ] autorelease ];
-    
-    double numerito = [string doubleValue] ;
-    
-    NSNumberFormatter * formato = [[NSNumberFormatter alloc] init];
-   
-    [formato setFormatterBehavior:NSNumberFormatterBehavior10_4];
-    [formato setGroupingSeparator : @"."];
-    [formato setDecimalSeparator:@","];
-    [formato setGroupingSize:3];
-    [formato setMaximumFractionDigits:2];
-    [formato setMinimumFractionDigits:2];
-    [formato setNumberStyle: NSNumberFormatterDecimalStyle];
-    [formato setGeneratesDecimalNumbers:YES];
-    
-    
-    [ [ get cell ] setFormatter: formato ];
-   
-    [ get setDoubleValue: numerito ];
-    
+  [edit setDelegate:edit];
+
+  hb_retnll((HB_LONGLONG)edit);
+}
+
+HB_FUNC(GETSETTEXT) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSString *string = hb_NSSTRING_par(2);
+
+  [get setStringValue:string];
+}
+
+HB_FUNC(GETSETNUMBER) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSString *string;
+  string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(2) ? hb_parc(2) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
+
+  double numerito = [string doubleValue];
+
+  NSNumberFormatter *formato = [[NSNumberFormatter alloc] init];
+
+  [formato setFormatterBehavior:NSNumberFormatterBehavior10_4];
+  [formato setGroupingSeparator:@"."];
+  [formato setDecimalSeparator:@","];
+  [formato setGroupingSize:3];
+  [formato setMaximumFractionDigits:2];
+  [formato setMinimumFractionDigits:2];
+  [formato setNumberStyle:NSNumberFormatterDecimalStyle];
+  [formato setGeneratesDecimalNumbers:YES];
+
+  [[get cell] setFormatter:formato];
+
+  [get setDoubleValue:numerito];
+
   //  [get setStringValue : string] ;
-
 }
 
-
-
-HB_FUNC( GETGETTEXT ) // hGet --> cText
+HB_FUNC(GETGETTEXT) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSString * string = [ get stringValue ];
-   
-   hb_retc( [ string cStringUsingEncoding: NSUTF8StringEncoding ] );
-}   
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSString *string = [get stringValue];
 
-HB_FUNC( GETSETTOEND ) // hGet --> cText
-{
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = { [[get stringValue ] length], 0 };
-   
-   [ [ get currentEditor ] setSelectedRange: range ];
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
-HB_FUNC( GETGETPOS ) // hGet --> cText
+HB_FUNC(GETSETTOEND) // hGet --> cText
 {
-   #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070	
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = [ [ get currentEditor ] selectedRange ];
-   
-   hb_retni( range.location );
-   #endif
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = {[[get stringValue] length], 0};
+
+  [[get currentEditor] setSelectedRange:range];
 }
 
-HB_FUNC( GETGETENDSELPOS ) // hGet --> cText
+HB_FUNC(GETGETPOS) // hGet --> cText
 {
-   #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070	
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = [ [ get currentEditor ] selectedRange ];
-   
-   hb_retni( range.location + range.length );
-   #endif
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = [[get currentEditor] selectedRange];
+
+  hb_retni(range.location);
+#endif
 }
 
-HB_FUNC( GETSETTOSTART ) // hGet --> cText
+HB_FUNC(GETGETENDSELPOS) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = { 0, 0 };
-   
-   [ [ get currentEditor ] setSelectedRange: range ];
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = [[get currentEditor] selectedRange];
+
+  hb_retni(range.location + range.length);
+#endif
 }
 
-HB_FUNC( GETSETTO ) // hGet --> cText
+HB_FUNC(GETSETTOSTART) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = { hb_parni( 2 ), 0 };
-   
-   [ [ get currentEditor ] setSelectedRange: range ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = {0, 0};
+
+  [[get currentEditor] setSelectedRange:range];
 }
 
-HB_FUNC( GETSETSELRANGE ) // hGet --> cText
+HB_FUNC(GETSETTO) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = { hb_parni( 2 ), hb_parni( 3 ) };
-   
-   [ [ get currentEditor ] setSelectedRange: range ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = {hb_parni(2), 0};
+
+  [[get currentEditor] setSelectedRange:range];
 }
 
-HB_FUNC( GETSETSELALL ) // hGet --> cText
+HB_FUNC(GETSETSELRANGE) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = { 0, [ [ get stringValue ] length ] };
-   
-   [ [ get currentEditor ] setSelectedRange: range ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = {hb_parni(2), hb_parni(3)};
+
+  [[get currentEditor] setSelectedRange:range];
 }
 
-HB_FUNC( GETDELSELECTED ) // hGet --> cText
+HB_FUNC(GETSETSELALL) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = {0, [[get stringValue] length]};
 
-   [ [ get currentEditor ] delete: nil ];
+  [[get currentEditor] setSelectedRange:range];
 }
 
-HB_FUNC( GETCOPYSELECTED ) // hGet --> cText
+HB_FUNC(GETDELSELECTED) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   
-   [ [ get currentEditor ] copy: nil ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+
+  [[get currentEditor] delete:nil];
 }
 
-HB_FUNC( GETPASTEIN ) // hGet --> cText
+HB_FUNC(GETCOPYSELECTED) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSRange range = { hb_parni( 2 ), 0 };
-   
-   [ [ get currentEditor ] setSelectedRange: range ];
-   [ [ get currentEditor ] paste: nil ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+
+  [[get currentEditor] copy:nil];
 }
 
-HB_FUNC( GETCUTSELECTED ) // hGet --> cText
+HB_FUNC(GETPASTEIN) // hGet --> cText
 {
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   
-   [ [ get currentEditor] cut: nil ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSRange range = {hb_parni(2), 0};
+
+  [[get currentEditor] setSelectedRange:range];
+  [[get currentEditor] paste:nil];
 }
 
-@interface NSHarbourFormatter : NSFormatter
+HB_FUNC(GETCUTSELECTED) // hGet --> cText
 {
-   @public NSTextField * get;	
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+
+  [[get currentEditor] cut:nil];
 }
-- ( NSString * ) stringForObjectValue: ( id ) anObject;
-- ( BOOL ) getObjectValue: ( id * ) anObject forString: ( NSString * ) string 
-	errorDescription: ( NSString ** ) error;	
+
+@interface NSHarbourFormatter : NSFormatter {
+@public
+  NSTextField *get;
+}
+- (NSString *)stringForObjectValue:(id)anObject;
+- (BOOL)getObjectValue:(id *)anObject
+             forString:(NSString *)string
+      errorDescription:(NSString **)error;
 @end
 
 @implementation NSHarbourFormatter
 
-- ( NSString * ) stringForObjectValue: ( id ) obj 
-{
-   if( symFMH == NULL )
-       symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-    
-   hb_vmPushSymbol( symFMH );
-   hb_vmPushNil();
-   hb_vmPushLong( ( HB_LONG ) [ get window ] );
-   hb_vmPushLong( WM_GETGETSTRING );
-   hb_vmPushLong( ( HB_LONG ) get );
-   hb_vmDo( 3 );
-       
-   return hb_NSSTRING_par( -1 );
+- (NSString *)stringForObjectValue:(id)obj {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[get window]);
+  hb_vmPushLong(WM_GETGETSTRING);
+  hb_vmPushNumInt((HB_LONGLONG)get);
+  hb_vmDo(3);
+
+  return hb_NSSTRING_par(-1);
 }
 
-- ( BOOL ) getObjectValue: ( id * ) obj forString: ( NSString * ) string 
-	         errorDescription: ( NSString ** ) error 
-{
-   if( symFMH == NULL )
-       symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-    
-   hb_vmPushSymbol( symFMH );
-   hb_vmPushNil();
-   hb_vmPushLong( ( HB_LONG ) [ get window ] );
-   hb_vmPushLong( WM_GETSETVALUE );
-   hb_vmPushLong( ( HB_LONG ) get );
-   hb_vmPushString( [ string cStringUsingEncoding: NSUTF8StringEncoding ], [ string length ] ); 
-   hb_vmDo( 4 );
+- (BOOL)getObjectValue:(id *)obj
+             forString:(NSString *)string
+      errorDescription:(NSString **)error {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
 
-   * obj = hb_NSSTRING_par( -1 );    
-       
-   return TRUE;
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[get window]);
+  hb_vmPushLong(WM_GETSETVALUE);
+  hb_vmPushNumInt((HB_LONGLONG)get);
+  hb_vmPushString([string cStringUsingEncoding:NSUTF8StringEncoding],
+                  [string length]);
+  hb_vmDo(4);
+
+  *obj = hb_NSSTRING_par(-1);
+
+  return TRUE;
 }
 
-
-- (BOOL) isPartialStringValid : (NSString*) partial newEditingString: (NSString**) newString
-              errorDescription: (NSString**) errorString;
+- (BOOL)isPartialStringValid:(NSString *)partial
+            newEditingString:(NSString **)newString
+            errorDescription:(NSString **)errorString;
 {
-    
-    if( symFMH == NULL )
-        symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-    
-    hb_vmPushSymbol( symFMH );
-    hb_vmPushNil();
-    hb_vmPushLong( ( HB_LONG ) [ get window ] );
-    hb_vmPushLong( WM_GETPARTEVALUE );
-    hb_vmPushLong( ( HB_LONG ) get );
-    hb_vmPushString( [ partial cStringUsingEncoding: NSUTF8StringEncoding ], [ partial length ] );
-    
-    hb_vmDo( 4 );
 
-    BOOL lResult = YES;
-    
-    if (HB_ISCHAR( -1 )) {
-        *newString = hb_NSSTRING_par( -1 ) ;
-        lResult = FALSE ;
-     }
-     else {
-           if ( HB_ISLOG( -1 ) )
-           {
-             *newString = NULL ;
-               
-             if ( hb_parl( -1 )  ) {
-                 lResult = YES ;
-             }
-             else {
-                 NSBeep();
-                 lResult = NO ;
-             }
-           }
-        }
-    return lResult ;
- }
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
 
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[get window]);
+  hb_vmPushLong(WM_GETPARTEVALUE);
+  hb_vmPushNumInt((HB_LONGLONG)get);
+  hb_vmPushString([partial cStringUsingEncoding:NSUTF8StringEncoding],
+                  [partial length]);
 
+  hb_vmDo(4);
+
+  BOOL lResult = YES;
+
+  if (HB_ISCHAR(-1)) {
+    *newString = hb_NSSTRING_par(-1);
+    lResult = FALSE;
+  } else {
+    if (HB_ISLOG(-1)) {
+      *newString = NULL;
+
+      if (hb_parl(-1)) {
+        lResult = YES;
+      } else {
+        NSBeep();
+        lResult = NO;
+      }
+    }
+  }
+  return lResult;
+}
 
 @end
 
-HB_FUNC( GETSETPLACEHOLDER )
-{
- NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
- NSString * placeHolder = hb_NSSTRING_par( 2 );
- [ [ get cell] setPlaceholderString: placeHolder ];
- }
-
-
-HB_FUNC( GETSETPICTURE ) 
-{
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSHarbourFormatter * formatter = [ [ [ NSHarbourFormatter alloc ] init ] autorelease ];	
-
-   formatter->get = get;
-   
-   [ [ get cell ] setFormatter: formatter ];
-}  
-
-HB_FUNC( GETSETCURRENCY ) // hGet --> cText
-{
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSNumberFormatter * formatter = [ [ [ NSNumberFormatter alloc ] init ]
-                                     autorelease ];
-    [ formatter setNumberStyle: NSNumberFormatterCurrencyStyle  ];
-    [ [ get cell ] setFormatter: formatter ];
+HB_FUNC(GETSETPLACEHOLDER) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSString *placeHolder = hb_NSSTRING_par(2);
+  [[get cell] setPlaceholderString:placeHolder];
 }
 
+HB_FUNC(GETSETPICTURE) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSHarbourFormatter *formatter =
+      [[[NSHarbourFormatter alloc] init] autorelease];
 
-HB_FUNC( GETSETNUMERIC ) // hGet --> cText
-{
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSNumberFormatter * formatter = [ [ NSNumberFormatter alloc ] init ] ;
-   [ formatter setNumberStyle: NSNumberFormatterNoStyle ];
-   [ [ get cell ] setFormatter: formatter ];
-}  
+  formatter->get = get;
 
-HB_FUNC( GETSETNUMMAX ) // hGet --> cText
-{
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSNumberFormatter * formatter = [ [get cell ] formatter ];
-    
-   [ formatter setMaximum: [ NSNumber numberWithInt: hb_parni( 2 ) ] ];
-   [ [get cell ] setFormatter: formatter ];
-}  
-
-
-HB_FUNC( GETSETNUMMIN ) // hGet --> cText
-{
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSNumberFormatter * formatter = [ [get cell ] formatter ];
-    
-   [formatter setMinimum: [ NSNumber numberWithInt: hb_parni( 2 ) ] ];
-   [ [get cell ] setFormatter: formatter ];
-}  
-
-HB_FUNC( GETSETDECMAX ) // hGet --> cText
-{
-   NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-   NSNumberFormatter * formatter = [ [get cell] formatter ];
-    
-   [ formatter setMaximumFractionDigits: ( NSUInteger ) [ NSNumber numberWithInt: hb_parni( 2 ) ] ];
-   [ [get cell ]setFormatter: formatter ];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( GETSETNUMBERFORMAT ) // hGet --> cText
+HB_FUNC(GETSETCURRENCY) // hGet --> cText
 {
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSNumberFormatter * formatter = [ [get cell] formatter ];
-    NSString * string = [ [ [ NSString alloc ] initWithCString: HB_ISCHAR( 2 ) ? hb_parc( 2 ) : "" encoding : NSUTF8StringEncoding ] autorelease ];
-    [ formatter setFormat: string  ];
-    [ [get cell] setFormatter: formatter ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[[NSNumberFormatter alloc] init] autorelease];
+  [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( GETGETNUMBERFORMAT ) // hGet --> cText
+HB_FUNC(GETSETNUMERIC) // hGet --> cText
 {
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSNumberFormatter * formatter = [ [get cell] formatter ];
-    NSString * string = [ formatter format ];
-        hb_retc( [ string cStringUsingEncoding:   NSUTF8StringEncoding  ] );
- }
-
-HB_FUNC( GETSETGROUPSEPARATOR ) // hGet --> cText
-{
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSNumberFormatter * formatter = [ [get cell ] formatter ];
-    NSString * string = [ [ [ NSString alloc ] initWithCString: HB_ISCHAR( 2 ) ? hb_parc( 2 ) : "" encoding : NSUTF8StringEncoding ] autorelease ];
-    [ formatter setGroupingSeparator: string  ];
-    [ [get cell] setFormatter: formatter ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
+  [formatter setNumberStyle:NSNumberFormatterNoStyle];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( GETSETGROUPSIZE ) // hGet --> cText
+HB_FUNC(GETSETNUMMAX) // hGet --> cText
 {
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSNumberFormatter * formatter = [ [get cell ] formatter ];
-   [ formatter setGroupingSize: hb_parni(2)  ];
-    [ [get cell ] setFormatter: formatter ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+
+  [formatter setMaximum:[NSNumber numberWithInt:hb_parni(2)]];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( GETSETGROUPUSES ) // hGet --> cText
+HB_FUNC(GETSETNUMMIN) // hGet --> cText
 {
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSNumberFormatter * formatter = [ [get cell ] formatter ];
-    [ formatter  setUsesGroupingSeparator : YES ];
-    [ [get cell ] setFormatter: formatter ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+
+  [formatter setMinimum:[NSNumber numberWithInt:hb_parni(2)]];
+  [[get cell] setFormatter:formatter];
 }
 
-
-HB_FUNC( TXTAUTOAJUST )
+HB_FUNC(GETSETDECMAX) // hGet --> cText
 {
-   NSTextField * texto = ( NSTextField * ) hb_parnl( 1 );
-	 
-	 [ texto setAutoresizingMask: hb_parnl( 2 )  ];	
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+
+  [formatter setMaximumFractionDigits:(NSUInteger)
+                                          [NSNumber numberWithInt:hb_parni(2)]];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( TXTSETFOCUS )
+HB_FUNC(GETSETNUMBERFORMAT) // hGet --> cText
 {
-   NSWindow * window = ( NSWindow * ) hb_parnl( 1 ); 
-   NSTextField * texto = ( NSTextField * ) hb_parnl( 2 );
-   
-   [ window makeFirstResponder: texto ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+  NSString *string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(2) ? hb_parc(2) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
+  [formatter setFormat:string];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( ISCOMMANDKEYPRESSED )
+HB_FUNC(GETGETNUMBERFORMAT) // hGet --> cText
 {
-    hb_retl( (([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagCommand ) == NSEventModifierFlagCommand) );
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+  NSString *string = [formatter format];
+  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
-
-HB_FUNC( ISSHIFFKEYPRESSED )
-{ 
-    hb_retl( ( ( [ [NSApp currentEvent] modifierFlags] & NSEventModifierFlagShift  ) == NSEventModifierFlagShift )) ;
-}  
-
-HB_FUNC( ISOPTIONKEYPRESSED )
-{ 
-    hb_retl(  ( ( [ [NSApp currentEvent] modifierFlags] & NSEventModifierFlagOption ) == NSEventModifierFlagOption ) )  ;
-}
-
-HB_FUNC( ISCONTROLKEYPRESSED )
-{ 
-    hb_retl(  ( ( [ [NSApp currentEvent] modifierFlags] & NSEventModifierFlagControl ) == NSEventModifierFlagControl ) )  ;
-}
-
-HB_FUNC( CHOOSESHEETTXT )
+HB_FUNC(GETSETGROUPSEPARATOR) // hGet --> cText
 {
-   #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060	
-    NSTextField * texto = ( NSTextField * ) hb_parnl( 1 );
-    NSString * string = hb_NSSTRING_par( 2 );
-      
-    NSOpenPanel* panel = [NSOpenPanel openPanel];
-    
-    if( [ string length ] != 0 )
-    {   
-       [ panel setDirectoryURL: [ NSURL fileURLWithPath: string ] ];
-    }
-    
-    panel.canChooseDirectories = YES ;
-    panel.message = @"Importe Texto" ;
-    if  ( panel.runModal == NSModalResponseOK )
-       {
-        NSString *source =  [[[[panel URLs] objectAtIndex:0]  path]
-                             stringByRemovingPercentEncoding ];
-        
-        [ texto setStringValue : source ];
-        
-    }
-    
-/*
- 
-    [ panel setCanChooseDirectories: YES ];
-    [ panel setMessage:@"Importe el Archivo"];
-    [ panel beginSheetModalForWindow: [ texto window ] completionHandler:^(NSInteger result){
-        if (result == NSModalResponseOK )
-        {
-            NSString *source =  [[[[panel URLs] objectAtIndex:0]  path]
-                                  stringByRemovingPercentEncoding ];
-            
-            [ texto setStringValue : source ];
-            
-        } } ];
- */
- 
-   #endif
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+  NSString *string =
+      [[[NSString alloc] initWithCString:HB_ISCHAR(2) ? hb_parc(2) : ""
+                                encoding:NSUTF8StringEncoding] autorelease];
+  [formatter setGroupingSeparator:string];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( GETSETFORMATTER )
+HB_FUNC(GETSETGROUPSIZE) // hGet --> cText
 {
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSFormatter *formatter =( NSFormatter * ) hb_parnl( 2 );
-     [ [get cell] setFormatter: formatter ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+  [formatter setGroupingSize:hb_parni(2)];
+  [[get cell] setFormatter:formatter];
 }
 
-
-HB_FUNC( GETSETDATEFORMATSHORT )
+HB_FUNC(GETSETGROUPUSES) // hGet --> cText
 {
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setDateStyle:NSDateFormatterShortStyle];
-    [ [get cell] setFormatter: formatter ];
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSNumberFormatter *formatter = [[get cell] formatter];
+  [formatter setUsesGroupingSeparator:YES];
+  [[get cell] setFormatter:formatter];
 }
 
-HB_FUNC( GETSETDATEFORMATMEDIUM )
-{
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSDateFormatter *formatter =  [[[NSDateFormatter alloc] init ] autorelease ];
-    [formatter setDateStyle:NSDateFormatterMediumStyle];
-    [ [get cell] setFormatter: formatter ];
+HB_FUNC(TXTAUTOAJUST) {
+  NSTextField *texto = (NSTextField *)hb_parnll(1);
+
+  [texto setAutoresizingMask:hb_parnl(2)];
 }
 
-HB_FUNC( GETSETTIMEFORMATSHORT )
-{
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setTimeStyle:NSDateFormatterShortStyle];
-    [ [get cell] setFormatter: formatter ];
+HB_FUNC(TXTSETFOCUS) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  NSTextField *texto = (NSTextField *)hb_parnll(2);
+
+  [window makeFirstResponder:texto];
 }
 
-HB_FUNC( GETSETTIMEFORMATMEDIUM )
-{
-    NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setTimeStyle:NSDateFormatterMediumStyle];
-    [ [get cell] setFormatter: formatter ];
+HB_FUNC(ISCOMMANDKEYPRESSED) {
+  hb_retl((([[NSApp currentEvent] modifierFlags] &
+            NSEventModifierFlagCommand) == NSEventModifierFlagCommand));
+}
+
+HB_FUNC(ISSHIFFKEYPRESSED) {
+  hb_retl((([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagShift) ==
+           NSEventModifierFlagShift));
+}
+
+HB_FUNC(ISOPTIONKEYPRESSED) {
+  hb_retl((([[NSApp currentEvent] modifierFlags] & NSEventModifierFlagOption) ==
+           NSEventModifierFlagOption));
+}
+
+HB_FUNC(ISCONTROLKEYPRESSED) {
+  hb_retl((([[NSApp currentEvent] modifierFlags] &
+            NSEventModifierFlagControl) == NSEventModifierFlagControl));
+}
+
+HB_FUNC(CHOOSESHEETTXT) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+  NSTextField *texto = (NSTextField *)hb_parnll(1);
+  NSString *string = hb_NSSTRING_par(2);
+
+  NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+  if ([string length] != 0) {
+    [panel setDirectoryURL:[NSURL fileURLWithPath:string]];
+  }
+
+  panel.canChooseDirectories = YES;
+  panel.message = @"Importe Texto";
+  if (panel.runModal == NSModalResponseOK) {
+    NSString *source =
+        [[[[panel URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
+
+    [texto setStringValue:source];
+  }
+
+  /*
+
+      [ panel setCanChooseDirectories: YES ];
+      [ panel setMessage:@"Importe el Archivo"];
+      [ panel beginSheetModalForWindow: [ texto window ]
+     completionHandler:^(NSInteger result){ if (result == NSModalResponseOK )
+          {
+              NSString *source =  [[[[panel URLs] objectAtIndex:0]  path]
+                                    stringByRemovingPercentEncoding ];
+
+              [ texto setStringValue : source ];
+
+          } } ];
+   */
+
+#endif
+}
+
+HB_FUNC(GETSETFORMATTER) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSFormatter *formatter = (NSFormatter *)hb_parnll(2);
+  [[get cell] setFormatter:formatter];
+}
+
+HB_FUNC(GETSETDATEFORMATSHORT) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+  [formatter setDateStyle:NSDateFormatterShortStyle];
+  [[get cell] setFormatter:formatter];
+}
+
+HB_FUNC(GETSETDATEFORMATMEDIUM) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSDateFormatter *formatter = [[[NSDateFormatter alloc] init] autorelease];
+  [formatter setDateStyle:NSDateFormatterMediumStyle];
+  [[get cell] setFormatter:formatter];
+}
+
+HB_FUNC(GETSETTIMEFORMATSHORT) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+  [formatter setTimeStyle:NSDateFormatterShortStyle];
+  [[get cell] setFormatter:formatter];
+}
+
+HB_FUNC(GETSETTIMEFORMATMEDIUM) {
+  NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+  [formatter setTimeStyle:NSDateFormatterMediumStyle];
+  [[get cell] setFormatter:formatter];
 }
 
 //----------------------------------------------------------------------------//
@@ -646,41 +613,41 @@ HB_FUNC( GETSETTIMEFORMATMEDIUM )
 - ( NSString * ) stringForObjectValue: ( id ) obj
 
 {
-  
+
     if( symFMH == NULL )
         symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-    
+
     hb_vmPushSymbol( symFMH );
     hb_vmPushNil();
     hb_vmPushLong( ( HB_LONG ) [ get window ] );
     hb_vmPushLong( WM_GETGETSTRING );
     hb_vmPushLong( ( HB_LONG ) get );
     hb_vmDo( 3 );
-    
+
     return hb_NSSTRING_par( -1 );
-    
+
 }
 
 
 - ( BOOL ) getObjectValue: ( id * ) obj forString: ( NSString * ) string
          errorDescription: ( NSString ** ) error
 {
- 
+
     if( symFMH == NULL )
         symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMO" ) );
-    
+
     hb_vmPushSymbol( symFMH );
     hb_vmPushNil();
     hb_vmPushLong( ( HB_LONG ) [ get window ] );
     hb_vmPushLong( WM_GETSETVALUE );
     hb_vmPushLong( ( HB_LONG ) get );
-    hb_vmPushString( [ string cStringUsingEncoding: NSUTF8StringEncoding ], [ string length ] );
-    hb_vmDo( 4 );
-    
+    hb_vmPushString( [ string cStringUsingEncoding: NSUTF8StringEncoding ], [
+string length ] ); hb_vmDo( 4 );
+
     * obj = hb_NSSTRING_par( -1 );
-    
+
     return YES;
-    
+
 }
 
 
@@ -689,24 +656,25 @@ HB_FUNC( GETSETTIMEFORMATMEDIUM )
               originalString:(NSString *)origString
        originalSelectedRange:(NSRange)origSelRange
             errorDescription:(NSString **)error {
-  
+
     int total;
     NSRange inRange;
     NSCharacterSet *allowedChars;
-    
+
     // Check Original String for Decimal
     NSArray * array = [*partialStringPtr componentsSeparatedByString:@"."];
     total = [array count] -1;
-    
-    
+
+
     if (total > 1) {
-        
+
         // Decimal place already exists
-        allowedChars = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet];
-    } else {
-        allowedChars = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789."] invertedSet];
+        allowedChars = [[NSCharacterSet
+characterSetWithCharactersInString:@"0123456789"] invertedSet]; } else {
+        allowedChars = [[NSCharacterSet
+characterSetWithCharactersInString:@"0123456789."] invertedSet];
     }
-    
+
     inRange = [*partialStringPtr rangeOfCharacterFromSet:allowedChars];
     if(inRange.location != NSNotFound)
     {
@@ -728,8 +696,9 @@ HB_FUNC( GETSETTIMEFORMATMEDIUM )
 HB_FUNC( NGETSETNUMBERFORMAT ) // hGet --> cText
 {
     NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    NSOnlyNumFormatter * formatter  = [[[ NSOnlyNumFormatter alloc] init] autorelease];
-    
+    NSOnlyNumFormatter * formatter  = [[[ NSOnlyNumFormatter alloc] init]
+autorelease];
+
         [  get setFormatter: formatter ];
 }
 
@@ -737,15 +706,16 @@ HB_FUNC( NGETSETNUMBERFORMAT ) // hGet --> cText
 HB_FUNC( NGETSETDECIFORMAT ) // hGet --> cText
 {
     NSTextField * get = ( NSTextField * ) hb_parnl( 1 );
-    
- //   NSUInteger decimales =  ( NSUInteger )  [ NSNumber numberWithInt: hb_parni( 2 ) ] ;
-    
-   NSOnlyNumFormatter * formatter  = [[[ NSOnlyNumFormatter alloc] init] autorelease];
-    
+
+ //   NSUInteger decimales =  ( NSUInteger )  [ NSNumber numberWithInt:
+hb_parni( 2 ) ] ;
+
+   NSOnlyNumFormatter * formatter  = [[[ NSOnlyNumFormatter alloc] init]
+autorelease];
+
          formatter->get = get;
     [  get setFormatter: formatter ];
-    
+
 }
 
 */
-

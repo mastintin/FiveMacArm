@@ -68,7 +68,7 @@
 @end
 
 HB_FUNC(TBRCREATE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSString *identifier = hb_NSSTRING_par(2);
 
   ToolBar *toolbar =
@@ -93,18 +93,18 @@ HB_FUNC(TBRCREATE) {
   [toolbar setDelegate:toolbar];
   [window setToolbar:toolbar];
 
-  hb_retnl((HB_LONG)toolbar);
+  hb_retnll((HB_LONGLONG)toolbar);
 }
 
 HB_FUNC(TBRFROMWND) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSToolbar *tool = (NSToolbar *)[window toolbar];
 
-  return hb_retnl((HB_LONG)tool);
+  return hb_retnll((HB_LONGLONG)tool);
 }
 
 HB_FUNC(TBRADDITEM) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   NSString *label = hb_NSSTRING_par(2);
   NSString *tooltip = hb_NSSTRING_par(4);
 
@@ -113,7 +113,7 @@ HB_FUNC(TBRADDITEM) {
   NSImage *Image = nil;
 
   if (HB_ISNUM(5)) {
-    Image = (NSImage *)hb_parnl(5);
+    Image = (NSImage *)hb_parnll(5);
   } else {
     NSString *filename = hb_NSSTRING_par(5);
 
@@ -138,11 +138,11 @@ HB_FUNC(TBRADDITEM) {
 
   [item setEnabled:YES];
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(TBRADDSEPARATOR) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   NSToolbarItem *item;
 
   [toolbar insertItemWithItemIdentifier:NSToolbarSpaceItemIdentifier
@@ -150,14 +150,14 @@ HB_FUNC(TBRADDSEPARATOR) {
 
   item = [[toolbar items] objectAtIndex:hb_parnl(2)];
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 //-------------------------------------------------------
 
 HB_FUNC(TBRITEMSETVIEW) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
 
-  [item setView:(NSView *)hb_parnl(2)];
+  [item setView:(NSView *)hb_parnll(2)];
 }
 
 HB_FUNC(TBRITEMSETSIZE) {
@@ -191,28 +191,28 @@ HB_FUNC(TBRITEMSETMAXSIZE) {
 }
 
 HB_FUNC(TBRITEMSETSTANDARDVISPRIORITY) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   [item setVisibilityPriority:NSToolbarItemVisibilityPriorityStandard];
 }
 
 HB_FUNC(TBRITEMSETLOWVISPRIORITY) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   [item setVisibilityPriority:NSToolbarItemVisibilityPriorityLow];
 }
 
 HB_FUNC(TBRITEMSETHIGHVISPRIORITY) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   [item setVisibilityPriority:NSToolbarItemVisibilityPriorityHigh];
 }
 
 HB_FUNC(TBRITEMSETUSERVISPRIORITY) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   [item setVisibilityPriority:NSToolbarItemVisibilityPriorityUser];
 }
 
 HB_FUNC(TBRADDPRINT) {
 
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
 
   NSToolbarItem *item;
 
@@ -220,12 +220,12 @@ HB_FUNC(TBRADDPRINT) {
                                 atIndex:hb_parnl(2)];
   item = [[toolbar items] objectAtIndex:hb_parnl(2)];
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(TBRADDSPACEFLEX) {
 
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
 
   NSToolbarItem *item;
 
@@ -233,85 +233,85 @@ HB_FUNC(TBRADDSPACEFLEX) {
                                 atIndex:hb_parnl(2)];
   item = [[toolbar items] objectAtIndex:hb_parnl(2)];
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(TBRGETITEM) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   NSToolbarItem *item = [[toolbar items] objectAtIndex:hb_parnl(2)];
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(TBRITEMSCOUNT) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
 
   hb_retnl((HB_LONG)[[toolbar items] count]);
 }
 
 HB_FUNC(TBRADDSPACE) {
 
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   NSToolbarItem *item;
 
   [toolbar insertItemWithItemIdentifier:NSToolbarSpaceItemIdentifier
                                 atIndex:hb_parnl(2)];
   item = [[toolbar items] objectAtIndex:hb_parnl(2)];
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(TBRCHANGEITEMLABEL) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   NSString *label = hb_NSSTRING_par(2);
 
   [item setLabel:label];
 }
 
 HB_FUNC(TBRCHANGEITEMTOOLTIP) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   NSString *cToolTip = hb_NSSTRING_par(2);
 
   [item setToolTip:cToolTip];
 }
 
 HB_FUNC(TBRITEMDISABLE) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   [item setEnabled:NO];
 }
 
 HB_FUNC(TBRITEMENABLE) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   [item setEnabled:YES];
 }
 
 HB_FUNC(TBSETMODELABEL) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   [toolbar setDisplayMode:NSToolbarDisplayModeLabelOnly];
 }
 
 HB_FUNC(TBSETMODEICOLBL) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   [toolbar setDisplayMode:NSToolbarDisplayModeIconAndLabel];
 }
 
 HB_FUNC(TBSETMODEICO) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   [toolbar setDisplayMode:NSToolbarDisplayModeIconOnly];
 }
 
 HB_FUNC(TBSETMODEDEFAULT) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   [toolbar setDisplayMode:NSToolbarDisplayModeDefault];
 }
 
 HB_FUNC(TBRADDSEARCH) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   NSString *label = hb_NSSTRING_par(2);
   NSString *tooltip = hb_NSSTRING_par(4);
 
   NSToolbarItem *item;
-  SearchGet *edit = (SearchGet *)hb_parnl(5);
+  SearchGet *edit = (SearchGet *)hb_parnll(5);
 
   [toolbar insertItemWithItemIdentifier:@"Buscador" atIndex:hb_parnl(3)];
   item = [[toolbar items] objectAtIndex:hb_parnl(3)];
@@ -321,16 +321,12 @@ HB_FUNC(TBRADDSEARCH) {
   [item setToolTip:tooltip];
   [item setEnabled:YES];
   [item setView:edit];
-  /* ---- deprecated -----
-  [item setMinSize:NSMakeSize(40, NSHeight([edit frame]))];
-  [item setMaxSize:NSMakeSize(200, NSHeight([edit frame]))];
-  */
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(TBRSEARCHTEXT) {
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(1);
   SearchGet *edit = (SearchGet *)[item view];
   NSString *string = [edit stringValue];
 
@@ -338,11 +334,11 @@ HB_FUNC(TBRSEARCHTEXT) {
 }
 
 HB_FUNC(TBRADDCONTROL) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   NSString *label = hb_NSSTRING_par(3);
   NSString *tooltip = hb_NSSTRING_par(4);
   NSToolbarItem *item;
-  NSView *view = (NSView *)hb_parnl(2);
+  NSView *view = (NSView *)hb_parnll(2);
 
   [toolbar insertItemWithItemIdentifier:@"ctrl" atIndex:hb_parnl(5)];
   item = [[toolbar items] objectAtIndex:hb_parnl(5)];
@@ -353,16 +349,12 @@ HB_FUNC(TBRADDCONTROL) {
   [item setEnabled:YES];
   [view removeFromSuperview];
   [item setView:view];
-  /* ---- deprecated -----
-  [item setMinSize:NSMakeSize(40, NSHeight([view frame]))];
-  [item setMaxSize:NSMakeSize(200, NSHeight([view frame]))];
-  */
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }
 
 HB_FUNC(TBRHEIGHT) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect windowFrame = [NSWindow contentRectForFrameRect:[window frame]
                                                styleMask:[window styleMask]];
 
@@ -370,26 +362,26 @@ HB_FUNC(TBRHEIGHT) {
 }
 
 HB_FUNC(TBRITEMSELECTED) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(2);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(2);
 
   [toolbar setSelectedItemIdentifier:[item itemIdentifier]];
 }
 
 HB_FUNC(TBRITEMSELECTABLE) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
-  NSToolbarItem *item = (NSToolbarItem *)hb_parnl(2);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
+  NSToolbarItem *item = (NSToolbarItem *)hb_parnll(2);
 
   [toolbar addselectable:item];
 }
 
 HB_FUNC(TBRADDSEGMENTEDBTN) {
-  ToolBar *toolbar = (ToolBar *)hb_parnl(1);
+  ToolBar *toolbar = (ToolBar *)hb_parnll(1);
   NSString *label = hb_NSSTRING_par(2);
   NSString *tooltip = hb_NSSTRING_par(4);
 
   NSToolbarItem *item;
-  NSSegmentedControl *segment = (NSSegmentedControl *)hb_parnl(5);
+  NSSegmentedControl *segment = (NSSegmentedControl *)hb_parnll(5);
 
   [toolbar insertItemWithItemIdentifier:label atIndex:hb_parnl(3)];
   item = [[toolbar items] objectAtIndex:hb_parnl(3)];
@@ -399,10 +391,6 @@ HB_FUNC(TBRADDSEGMENTEDBTN) {
   [item setToolTip:tooltip];
   [item setEnabled:YES];
   [item setView:segment];
-  /* ---- deprecated -----
-  [item setMinSize:NSMakeSize(40, NSHeight([segment frame]))];
-  [item setMaxSize:NSMakeSize(hb_parnl(6), NSHeight([segment frame]))];
-  */
 
-  hb_retnl((HB_LONG)item);
+  hb_retnll((HB_LONGLONG)item);
 }

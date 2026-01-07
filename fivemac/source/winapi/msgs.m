@@ -1,5 +1,6 @@
 #import "Quartz/Quartz.h"
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #include <fivemac.h>
 
 NSAutoreleasePool *pool;
@@ -246,17 +247,27 @@ HB_FUNC(CHOOSEFILE) {
     [op setTitle:hb_NSSTRING_par(1)];
 
   if (![types isEqualToString:@""]) {
-    NSMutableArray *fileTypes;
+    NSMutableArray *allowedTypes = [NSMutableArray array];
+    NSArray *extensions;
 
     if ([types containsString:@","]) {
-      fileTypes = [[NSMutableArray alloc] init];
-      [fileTypes addObjectsFromArray:[types componentsSeparatedByString:@","]];
-      [fileTypes addObjectsFromArray:[[types uppercaseString]
-                                         componentsSeparatedByString:@","]];
-    } else
-      fileTypes = [[NSMutableArray alloc]
-          initWithObjects:types, [types uppercaseString], nil];
-    [op setAllowedContentTypes:fileTypes];
+      extensions = [types componentsSeparatedByString:@","];
+    } else {
+      extensions = @[ types ];
+    }
+
+    for (NSString *ext in extensions) {
+      if (@available(macOS 11.0, *)) {
+        UTType *type = [UTType typeWithFilenameExtension:ext];
+        if (type) {
+          [allowedTypes addObject:type];
+        }
+      }
+    }
+
+    if (@available(macOS 11.0, *)) {
+      [op setAllowedContentTypes:allowedTypes];
+    }
   }
 
   if ([op runModal] == NSModalResponseOK) {
@@ -277,7 +288,7 @@ HB_FUNC(CHOOSEFILEURL) {
 
   if ([op runModal] == NSModalResponseOK) {
     source = [[op URLs] objectAtIndex:0];
-    hb_retnl((HB_LONG)source);
+    hb_retnll((HB_LONGLONG)source);
   } else
     hb_ret();
 }
@@ -296,18 +307,27 @@ HB_FUNC(CHOOSEFOLDER) {
     [op setTitle:hb_NSSTRING_par(1)];
 
   if (![types isEqualToString:@""]) {
-    NSMutableArray *fileTypes;
+    NSMutableArray *allowedTypes = [NSMutableArray array];
+    NSArray *extensions;
 
     if ([types containsString:@","]) {
-      fileTypes = [[NSMutableArray alloc] init];
-      [fileTypes addObjectsFromArray:[types componentsSeparatedByString:@","]];
-      [fileTypes addObjectsFromArray:[[types uppercaseString]
-                                         componentsSeparatedByString:@","]];
-    } else
-      fileTypes = [[NSMutableArray alloc]
-          initWithObjects:types, [types uppercaseString], nil];
+      extensions = [types componentsSeparatedByString:@","];
+    } else {
+      extensions = @[ types ];
+    }
 
-    [op setAllowedContentTypes:fileTypes];
+    for (NSString *ext in extensions) {
+      if (@available(macOS 11.0, *)) {
+        UTType *type = [UTType typeWithFilenameExtension:ext];
+        if (type) {
+          [allowedTypes addObject:type];
+        }
+      }
+    }
+
+    if (@available(macOS 11.0, *)) {
+      [op setAllowedContentTypes:allowedTypes];
+    }
   }
 
   if ([op runModal] == NSModalResponseOK) {
@@ -361,8 +381,8 @@ HB_FUNC(CHOOSEIMAGEFILE) {
 
 HB_FUNC(CHOOSESHEETTXTIMG) {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-  NSTextField *texto = (NSTextField *)hb_parnl(1);
-  NSImageView *vista = (NSImageView *)hb_parnl(2);
+  NSTextField *texto = (NSTextField *)hb_parnll(1);
+  NSImageView *vista = (NSImageView *)hb_parnll(2);
   NSOpenPanel *panel = [NSOpenPanel openPanel];
 
   [panel setDirectoryURL:[NSURL fileURLWithPath:[texto stringValue]]];
@@ -392,11 +412,11 @@ HB_FUNC(CHOOSESHEETTXTIMG) {
 
 HB_FUNC(CLIPBOARDNEW) {
   NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-  hb_retptr(pasteBoard);
+  hb_retnll((HB_LONGLONG)pasteBoard);
 }
 
 HB_FUNC(SETCLIPBOARDDATA) {
-  NSPasteboard *pasteBoard = hb_parptr(1);
+  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
   int iType = hb_parnl(2);
 
   [pasteBoard clearContents];
@@ -425,8 +445,8 @@ HB_FUNC(SETCLIPBOARDDATA) {
 }
 
 HB_FUNC(CLIPBOARDCOPYPNG) {
-  NSPasteboard *pasteBoard = hb_parptr(1);
-  NSImage *image = (NSImage *)hb_parnl(2);
+  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
+  NSImage *image = (NSImage *)hb_parnll(2);
   CGImageRef CGImage = [image CGImageForProposedRect:nil context:nil hints:nil];
   NSBitmapImageRep *rep =
       [[[NSBitmapImageRep alloc] initWithCGImage:CGImage] autorelease];
@@ -441,7 +461,7 @@ HB_FUNC(CLIPBOARDCOPYPNG) {
 }
 
 HB_FUNC(CLIPBOARDCOPYSTRING) {
-  NSPasteboard *pasteBoard = hb_parptr(1);
+  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
   [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString]
@@ -451,7 +471,7 @@ HB_FUNC(CLIPBOARDCOPYSTRING) {
 }
 
 HB_FUNC(CLIPBOARDPASTESTRING) {
-  NSPasteboard *pasteBoard = hb_parptr(1);
+  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
   NSString *string;
 
   string = [pasteBoard stringForType:NSPasteboardTypeString];
@@ -459,12 +479,12 @@ HB_FUNC(CLIPBOARDPASTESTRING) {
 }
 
 HB_FUNC(CLIPBOARDCLEAR) {
-  NSPasteboard *pasteBoard = hb_parptr(1);
+  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
   [pasteBoard clearContents];
 }
 
 HB_FUNC(CLIPBOARDGETNAME) {
-  NSPasteboard *pasteBoard = hb_parptr(1);
+  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
   NSString *string = pasteBoard.name;
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
@@ -535,7 +555,7 @@ HB_FUNC(SCREENTOPASTEBOARD) {
         sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
 
     if (capturedImage) {
-      NSPasteboard *pasteBoard = hb_parptr(1);
+      NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
       NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc]
           initWithCGImage:capturedImage] autorelease];
       NSDictionary *dict =

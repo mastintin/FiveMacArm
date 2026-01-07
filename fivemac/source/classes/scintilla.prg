@@ -457,6 +457,7 @@ METHOD New( nTop, nLeft, nBottom, nRight, oWnd , cLex ) CLASS TScintilla
     ::lFolding    := .t.
     
     ::cLexer   := cLex
+    ::nMargLeft := 4
 
     ::Setup()
     ::brclicked:= { ||  msginfo("rclick")    }
@@ -1086,7 +1087,7 @@ METHOD InitEdt() CLASS TScintilla
     
     local oCrs
     
-    ::nMargLeft     := 4
+    //::nMargLeft     := 4
     ::nMargRight    := 4
     ::nSpacLin      := 2
     
@@ -1381,7 +1382,8 @@ endif
 
 
  // Lexer type is flagship.
- ::Send( SCI_SETLEXERLANGUAGE, , ::cLexer  )
+ ::Send( SCI_SETLEXERLANGUAGE, 0, ::cLexer  )
+ //ScintillaDebugLog( "Lexer Name: " + ::cLexer + " Lexer ID: " + Str( ::GetLexer() ) )
 
   ::InitEdt()
 

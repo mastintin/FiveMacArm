@@ -2,7 +2,7 @@
 #include <hbapiitm.h>
 
 HB_FUNC(VIEWSETAUTORESIZE) {
-  NSView *view = (NSView *)hb_parnl(1);
+  NSView *view = (NSView *)hb_parnll(1);
 
   if ([[view class] isSubclassOfClass:[NSTableView class]])
     view = [view enclosingScrollView];
@@ -11,7 +11,7 @@ HB_FUNC(VIEWSETAUTORESIZE) {
 }
 
 HB_FUNC(VIEWAUTORESIZE) {
-  NSView *view = (NSView *)hb_parnl(1);
+  NSView *view = (NSView *)hb_parnll(1);
 
   if ([[view class] isSubclassOfClass:[NSTableView class]])
     view = [view enclosingScrollView];
@@ -20,39 +20,39 @@ HB_FUNC(VIEWAUTORESIZE) {
 }
 
 HB_FUNC(VIEWSETBACKCOLOR) {
-  NSView *view = (NSView *)hb_parnl(1);
-  NSColor *color = (NSColor *)hb_parnl(2);
+  NSView *view = (NSView *)hb_parnll(1);
+  NSColor *color = (NSColor *)hb_parnll(2);
   view.layer.backgroundColor = color.CGColor;
   //   [  view setBackgroundColor: color ];
 }
 
 HB_FUNC(VIEWSETSIZE) {
-  NSView *view = (NSView *)hb_parnl(1);
+  NSView *view = (NSView *)hb_parnll(1);
 
   [view setFrameSize:NSMakeSize(hb_parnl(2), hb_parnl(3))];
 }
 
 HB_FUNC(VIEWHIDE) {
-  NSView *window = (NSView *)hb_parnl(1);
+  NSView *window = (NSView *)hb_parnll(1);
 
   [window setHidden:YES];
 }
 
 HB_FUNC(VIEWSHOW) {
-  NSView *window = (NSView *)hb_parnl(1);
+  NSView *window = (NSView *)hb_parnll(1);
 
   [window setHidden:NO];
 }
 
 HB_FUNC(VIEWSETTOOLTIP) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
   [(NSView *)window setToolTip:string];
 }
 
 HB_FUNC(VIEWEND) {
-  NSView *view = (NSView *)hb_parnl(1);
+  NSView *view = (NSView *)hb_parnll(1);
 
   if ([[view class] isSubclassOfClass:[NSTableView class]])
     view = [view enclosingScrollView];
@@ -61,7 +61,7 @@ HB_FUNC(VIEWEND) {
 }
 
 HB_FUNC(OSCONTROLGETSIZE) {
-  NSView *object = (NSView *)hb_parnl(1);
+  NSView *object = (NSView *)hb_parnll(1);
   CGFloat width = 0.0, height = 0.0;
 
   if (object) {

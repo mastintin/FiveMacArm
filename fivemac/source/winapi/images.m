@@ -22,9 +22,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_LBUTTONDOWN);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -38,9 +38,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_LBUTTONUP);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -65,15 +65,15 @@ HB_FUNC(IMGCREATE) // hWnd
   ImageView *image =
       [[ImageView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                   hb_parnl(3), hb_parnl(4))];
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
 
   [GetView(window) addSubview:image];
 
-  hb_retnl((HB_LONG)image);
+  hb_retnll((HB_LONGLONG)image);
 }
 
 HB_FUNC(IMGSETFILE) {
-  NSImageView *image = (NSImageView *)hb_parnl(1);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
   [image setImage:[[NSImage alloc] initWithContentsOfFile:string]];
@@ -84,8 +84,8 @@ HB_FUNC(IMGSETFILE) {
 }
 
 HB_FUNC(IMGSETNSIMAGE) {
-  NSImageView *image = (NSImageView *)hb_parnl(1);
-  NSImage *hImg = (NSImage *)hb_parnl(2);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
+  NSImage *hImg = (NSImage *)hb_parnll(2);
 
   [image setImage:hImg];
 }
@@ -101,7 +101,7 @@ HB_FUNC(NSIMAGEFROMNAME) {
   else
     image = ImgTemplate(string);
 
-  hb_retnl((HB_LONG)image);
+  hb_retnll((HB_LONGLONG)image);
 }
 
 HB_FUNC(IMGSYMBOLS) {
@@ -110,15 +110,15 @@ HB_FUNC(IMGSYMBOLS) {
   NSImage *img = [NSImage imageWithSystemSymbolName:name
                            accessibilityDescription:descrip];
 
-  hb_retnl((HB_LONG)img);
+  hb_retnll((HB_LONGLONG)img);
 }
 
 HB_FUNC(IMGNAMED) {
-  hb_retnl((HB_LONG)[NSImage imageNamed:hb_NSSTRING_par(1)]);
+  hb_retnll((HB_LONGLONG)[NSImage imageNamed:hb_NSSTRING_par(1)]);
 }
 
 HB_FUNC(IMGGETFILE) {
-  NSImageView *image = (NSImageView *)hb_parnl(1);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
   NSString *string = [[image image] name];
 
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
@@ -126,7 +126,7 @@ HB_FUNC(IMGGETFILE) {
 
 HB_FUNC(IMGGETWIDTH) {
 
-  NSImageView *image = (NSImageView *)hb_parnl(1);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
   NSImageRep *rep = [[[image image] representations] objectAtIndex:0];
 
   hb_retnl(rep.pixelsWide);
@@ -134,14 +134,14 @@ HB_FUNC(IMGGETWIDTH) {
 
 HB_FUNC(IMGGETHEIGHT) {
 
-  NSImageView *image = (NSImageView *)hb_parnl(1);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
   NSImageRep *rep = [[[image image] representations] objectAtIndex:0];
 
   hb_retnl(rep.pixelsHigh);
 }
 
 HB_FUNC(IMGSETFRAME) {
-  NSImageView *image = (NSImageView *)hb_parnl(1);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
 
   [[image animator] setImageFrameStyle:hb_parni(2)];
 
@@ -149,14 +149,14 @@ HB_FUNC(IMGSETFRAME) {
 }
 
 HB_FUNC(IMGSETSCALING) {
-  NSImageView *image = (NSImageView *)hb_parnl(1);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
 
   [image setImageScaling:hb_parni(2)];
 }
 
 HB_FUNC(IMGSETRESFILE) // Read image from the app resources folder
 {
-  NSImageView *image = (NSImageView *)hb_parnl(1);
+  NSImageView *image = (NSImageView *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
   NSString *myImagePath =
       [[[NSBundle mainBundle] resourcePath] stringByAppendingString:string];
@@ -166,7 +166,7 @@ HB_FUNC(IMGSETRESFILE) // Read image from the app resources folder
 
 HB_FUNC(CHOOSESHEETIMAGE) {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-  NSImageView *vista = (NSImageView *)hb_parnl(1);
+  NSImageView *vista = (NSImageView *)hb_parnll(1);
   NSOpenPanel *panel = [NSOpenPanel openPanel];
 
   [panel setMessage:@"Import the file"];
@@ -189,7 +189,7 @@ HB_FUNC(CHOOSESHEETIMAGE) {
 }
 
 HB_FUNC(NEWRESIZEIMAGE) {
-  NSImageView *vista = (NSImageView *)hb_parnl(1);
+  NSImageView *vista = (NSImageView *)hb_parnll(1);
   NSString *fileName = hb_NSSTRING_par(2);
 
   NSSize newSize;
@@ -236,19 +236,19 @@ HB_FUNC(NEWRESIZEIMAGE) {
 }
 
 HB_FUNC(RESIZEIMAGE) {
-  NSImageView *vista = (NSImageView *)hb_parnl(1);
+  NSImageView *vista = (NSImageView *)hb_parnll(1);
   NSImage *image = [vista image];
   ImgResize(image, hb_parni(2), hb_parni(3));
 }
 
 HB_FUNC(RESIZENSIMAGE) {
-  NSImage *image = (NSImage *)hb_parnl(1);
+  NSImage *image = (NSImage *)hb_parnll(1);
   ImgResize(image, hb_parni(2), hb_parni(3));
 }
 
 HB_FUNC(SIZEWIDTHIMAGE) {
 
-  NSImageView *vista = (NSImageView *)hb_parnl(1);
+  NSImageView *vista = (NSImageView *)hb_parnll(1);
 
   NSImage *sourceImage = [vista image];
   NSData *imageData = [sourceImage TIFFRepresentation];
@@ -262,7 +262,7 @@ HB_FUNC(SIZEWIDTHIMAGE) {
 
 HB_FUNC(SIZEHEIGHTIMAGE) {
 
-  NSImageView *vista = (NSImageView *)hb_parnl(1);
+  NSImageView *vista = (NSImageView *)hb_parnll(1);
   //  NSString * fileName = hb_NSSTRING_par( 2 );
 
   NSImage *sourceImage = [vista image];
@@ -276,27 +276,27 @@ HB_FUNC(SIZEHEIGHTIMAGE) {
 }
 
 HB_FUNC(NSIMAGEFROMIMAGEVIEW) {
-  NSImageView *vista = (NSImageView *)hb_parnl(1);
+  NSImageView *vista = (NSImageView *)hb_parnll(1);
   NSImage *sourceImage = [vista image];
-  hb_retnl((HB_LONG)sourceImage);
+  hb_retnll((HB_LONGLONG)sourceImage);
 }
 
 HB_FUNC(NSIMGFROMFILE) {
   NSString *fileName = hb_NSSTRING_par(1);
   NSImage *image = [[NSImage alloc] initWithContentsOfFile:fileName];
-  hb_retnl((HB_LONG)image);
+  hb_retnll((HB_LONGLONG)image);
 }
 
 HB_FUNC(NSIMGGETWIDTH) {
 
-  NSImage *image = (NSImage *)hb_parnl(1);
+  NSImage *image = (NSImage *)hb_parnll(1);
   NSImageRep *rep = [[image representations] objectAtIndex:0];
 
   hb_retnl(rep.pixelsWide);
 }
 
 HB_FUNC(NSIMGGETHEIGHT) {
-  NSImage *image = (NSImage *)hb_parnl(1);
+  NSImage *image = (NSImage *)hb_parnll(1);
   NSImageRep *rep = [[image representations] objectAtIndex:0];
 
   hb_retnl(rep.pixelsHigh);

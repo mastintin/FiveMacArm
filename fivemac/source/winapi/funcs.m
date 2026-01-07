@@ -119,7 +119,7 @@ HB_FUNC(SPEAK) {
 HB_FUNC(SLEEP) { [NSThread sleepForTimeInterval:hb_parnl(1) / 1.0]; }
 
 HB_FUNC(NSSTRINGTOSTRING) {
-  NSString *string = (NSString *)hb_parnl(1);
+  NSString *string = (NSString *)hb_parnll(1);
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
@@ -127,11 +127,11 @@ HB_FUNC(STRINGTONSTRING) {
   NSString *string =
       [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
                                 encoding:hb_parnl(2)] autorelease];
-  hb_retnl((HB_LONG)string);
+  hb_retnll((HB_LONGLONG)string);
 }
 
 HB_FUNC(NSSTRINGCANCONVERENCODE) {
-  NSString *string = (NSString *)hb_parnl(1);
+  NSString *string = (NSString *)hb_parnll(1);
   hb_retl([string canBeConvertedToEncoding:hb_parnl(2)]);
 }
 
@@ -399,7 +399,7 @@ HB_FUNC( ANIMASHAKE )
 {
   // conseguinmos el frame a animar
 
-  NSWindow * window = ( NSWindow * ) hb_parnl( 1 );
+  NSWindow * window = ( NSWindow * ) hb_parnll( 1 );
   NSRect frame = [ window frame ];
 
   int   numberOfShakes  = hb_parni( 2 );

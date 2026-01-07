@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #include <fivemac.h>
 
-
 @interface ImageAndTextCell : NSTextFieldCell {
 @private
   NSImage *image;
@@ -189,7 +188,7 @@
 //----------------------------------------------------------------------------------
 
 HB_FUNC(OUTLINECREATE) {
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
   NSScrollView *sv =
       [[NSScrollView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                      hb_parnl(3), hb_parnl(4))];
@@ -241,11 +240,11 @@ HB_FUNC(OUTLINECREATE) {
   [outlineView setAction:@selector(BtnClick:)];
   [outlineView reloadData];
 
-  hb_retnl((HB_LONG)outlineView);
+  hb_retnll((HB_LONGLONG)outlineView);
 }
 
 HB_FUNC(CREATEOUTLINERESOURCES) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   MOutlineView *outlineView =
       (MOutlineView *)[GetView(window) viewWithTag:hb_parnl(2)];
   MDataSource *data = [[MDataSource alloc] init];
@@ -262,12 +261,12 @@ HB_FUNC(CREATEOUTLINERESOURCES) {
   [outlineView setAction:@selector(BtnClick:)];
   [outlineView reloadData];
 
-  hb_retnl((HB_LONG)outlineView);
+  hb_retnll((HB_LONGLONG)outlineView);
 }
 
 HB_FUNC(OUTLINESELECTORSTYLE) // oBrw:hWnd, nHightLightStyle
 {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   if (hb_parl(2))
     [outlineView setSelectionHighlightStyle:1];
@@ -276,54 +275,54 @@ HB_FUNC(OUTLINESELECTORSTYLE) // oBrw:hWnd, nHightLightStyle
 }
 
 HB_FUNC(OUTLINEGETITEMNAME) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
   NSString *string = [[outlineView itemAtRow:[outlineView selectedRow]] name];
 
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(OUTLINEGETROWS) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
-  hb_retnl([outlineView numberOfRows]);
+  hb_retnll((HB_LONGLONG)[outlineView numberOfRows]);
 }
 
 HB_FUNC(OUTLINEGETITEM) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
-  hb_retnl((HB_LONG)[outlineView itemAtRow:[outlineView selectedRow]]);
+  hb_retnll((HB_LONGLONG)[outlineView itemAtRow:[outlineView selectedRow]]);
 }
 
 HB_FUNC(OUTLINEITEMATROW) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
-  hb_retnl((HB_LONG)[outlineView itemAtRow:hb_parnl(2)]);
+  hb_retnll((HB_LONGLONG)[outlineView itemAtRow:hb_parnl(2)]);
 }
 
 HB_FUNC(OUTLINESETITEM) // oBrw:hWnd, nindex
 {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   [outlineView selectRowIndexes:[NSIndexSet indexSetWithIndex:hb_parnl(2)]
            byExtendingSelection:NO];
 }
 
 HB_FUNC(OUTLINESETROOTNODE) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
-  Node *rootNode = (Node *)hb_parnl(2);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
+  Node *rootNode = (Node *)hb_parnll(2);
 
   [((MDataSource *)[outlineView dataSource]) setRootNode:rootNode];
   [outlineView reloadData];
 }
 
 HB_FUNC(OUTLINESETDISCLO) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   [((MDataSource *)[outlineView dataSource]) SetDisclo:hb_parl(2)];
 }
 
 HB_FUNC(OUTLINESETHEADERTITLE) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
   NSTableColumn *col = [outlineView outlineTableColumn];
 
@@ -331,82 +330,82 @@ HB_FUNC(OUTLINESETHEADERTITLE) {
 }
 
 HB_FUNC(OUTLINESETBACKCOLOR) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
-  NSColor *color = (NSColor *)hb_parnl(2);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
+  NSColor *color = (NSColor *)hb_parnll(2);
   [outlineView setBackgroundColor:color];
 }
 
 HB_FUNC(OUTLINESETALTERNATECOLOR) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   [outlineView setUsesAlternatingRowBackgroundColors:hb_parl(2)];
 }
 
 HB_FUNC(OUTLINESETNOHEAD) // hTableView
 {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
   NSTableHeaderView *backhead = [outlineView headerView];
 
   [outlineView setHeaderView:NULL];
 
-  hb_retnl((HB_LONG)backhead);
+  hb_retnll((HB_LONGLONG)backhead);
 }
 
 HB_FUNC(OUTLINESHOWHEAD) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
   NSTableHeaderView *backhead = [outlineView headerView];
-  NSTableHeaderView *head = (NSTableHeaderView *)hb_parnl(2);
+  NSTableHeaderView *head = (NSTableHeaderView *)hb_parnll(2);
 
   if (hb_parl(3))
     [outlineView setHeaderView:head];
   else
     [outlineView setHeaderView:NULL];
 
-  hb_retnl((HB_LONG)backhead);
+  hb_retnll((HB_LONGLONG)backhead);
 }
 
 HB_FUNC(OUTLINEREFRESH) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   [outlineView reloadData];
 }
 
 HB_FUNC(OUTLINEROWFORITEM) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
-  hb_retnl([outlineView rowForItem:(id)hb_parnl(2)]);
+  hb_retnll((HB_LONGLONG)[outlineView rowForItem:(id)hb_parnll(2)]);
 }
 
 HB_FUNC(OUTLINEEXPANDALL) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   [outlineView expandItem:nil expandChildren:YES];
 }
 
 HB_FUNC(OUTLINEAUTORESIZECOLUMN) // hTableView
 {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   [outlineView setAutoresizesOutlineColumn:hb_parl(2)];
 }
 
 HB_FUNC(OUTLINESETCOLWIDTH) // hTableView, nColumn, nWidth
 {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
 
   [[outlineView outlineTableColumn] setWidth:hb_parnl(2)];
   [outlineView reloadData];
 }
 
 HB_FUNC(OUTLINESCROLLHSHOW) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
   NSScrollView *sv = [outlineView enclosingScrollView];
 
   [sv setHasHorizontalScroller:hb_parl(2)];
 }
 
 HB_FUNC(OUTLINESCROLLVSHOW) {
-  MOutlineView *outlineView = (MOutlineView *)hb_parnl(1);
+  MOutlineView *outlineView = (MOutlineView *)hb_parnll(1);
   NSScrollView *sv = [outlineView enclosingScrollView];
 
   [sv setHasVerticalScroller:hb_parl(2)];
@@ -415,18 +414,18 @@ HB_FUNC(OUTLINESCROLLVSHOW) {
 HB_FUNC(NODEROOTCREATE) {
   Node *rootNode = [[Node alloc] init];
 
-  hb_retnl((HB_LONG)rootNode);
+  hb_retnll((HB_LONGLONG)rootNode);
 }
 
 HB_FUNC(NODECREATE) {
   NSString *string = hb_NSSTRING_par(2);
-  Node *parentNode = (Node *)hb_parnl(1);
+  Node *parentNode = (Node *)hb_parnll(1);
   Node *newNode1 = [[Node alloc] init];
 
   newNode1.name = string;
 
   if (HB_ISNUM(4))
-    newNode1.bmp = (NSImage *)hb_parnl(4);
+    newNode1.bmp = (NSImage *)hb_parnll(4);
   else
     newNode1.bmp = hb_NSSTRING_par(4);
 
@@ -435,5 +434,5 @@ HB_FUNC(NODECREATE) {
   [parentNode.children addObject:newNode1];
   [newNode1 release];
 
-  hb_retnl((HB_LONG)newNode1);
+  hb_retnll((HB_LONGLONG)newNode1);
 }

@@ -168,13 +168,17 @@ function BuildEditor()
       oEditor:RemoveFromSuperview()
    endif
 
-   oEditor = TScintilla():New( 0, 0, oSplitH:aViews[ 1 ]:nWidth,;
-                               oSplitH:aViews[ 1 ]:nHeight - 7, oSplitH:aViews[ 1 ] )
+   oEditor = TScintilla():New( 0, 0, oSplitH:aViews[ 1 ]:nWidth  ,;
+                               oSplitH:aViews[ 1 ]:nHeight - 7, oSplitH:aViews[ 1 ]  )
+
    oEditor:nAutoResize = 18
    oEditor:Send( 2130, 0, 0 ) // SCI_SETHSCROLLBAR, 0
    oEditor:Send( 2268, 1, 0 ) // SCI_SETWRAPMODE, SC_WRAP_WORD
    
    // oEditor:Send( 2276, 1, 0 ) // SCI_SETSCROLLWIDTH, 1
+
+   oEditor:nMargLeft:= 40
+   oEditor:Send( SCI_SETMARGINLEFT, 0, oEditor:nMargLeft )
 
    oEditor:bChange = { || EditorChange() }
    oEditor:SetFont( cFontName, nFontSize )

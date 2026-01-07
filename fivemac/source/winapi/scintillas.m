@@ -86,18 +86,18 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
   if (wParam == 0) {
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushLong((HB_LONG)[sv window]);
+    hb_vmPushNumInt((HB_LONGLONG)[sv window]);
     hb_vmPushLong(WM_SCINOTIFY);
-    hb_vmPushLong((HB_LONG)sv);
+    hb_vmPushNumInt((HB_LONGLONG)sv);
     hb_vmPushLong((HB_LONG)wParam);
     hb_vmPushLong((HB_LONG)lParam);
     hb_vmDo(5);
   } else {
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushLong((HB_LONG)[sv window]);
+    hb_vmPushNumInt((HB_LONGLONG)[sv window]);
     hb_vmPushLong(WM_COMMAND);
-    hb_vmPushLong((HB_LONG)sv);
+    hb_vmPushNumInt((HB_LONGLONG)sv);
     hb_vmPushLong((HB_LONG)wParam);
     hb_vmPushLong((HB_LONG)lParam);
     hb_vmDo(5);
@@ -127,20 +127,20 @@ HB_FUNC(SCICREATE) {
 
   NSRect newFrame =
       NSMakeRect(hb_parnl(2), hb_parnl(1), hb_parnl(3), hb_parnl(4));
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
   ScintillaView *sv =
       [[[ScintillaView alloc] initWithFrame:newFrame] autorelease];
   [GetView(window) addSubview:sv];
 
   [sv registerNotifyCallback:(id)sv value:NotifyFunc];
 
-  hb_retnl((HB_LONG)sv);
+  hb_retnll((HB_LONGLONG)sv);
 }
 
 HB_FUNC(SCIFINDTEXT) {
   bool lresult;
 
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
 
   [sv setGeneralProperty:SCI_SEARCHANCHOR parameter:0 value:0];
 
@@ -161,13 +161,13 @@ HB_FUNC(SCIFINDTEXT) {
 }
 
 HB_FUNC(SCISETTEXT) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
 
   [sv setString:hb_NSSTRING_par(2)];
 }
 
 HB_FUNC(SCISETFONT) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
 
   [sv setFontName:hb_NSSTRING_par(2)
              size:hb_parnl(3)
@@ -176,25 +176,25 @@ HB_FUNC(SCISETFONT) {
 }
 
 HB_FUNC(SCIGETKEYWORDS) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   const char *keyWords = [hb_NSSTRING_par(2) UTF8String];
 
-  hb_retnl([sv getGeneralProperty:SCI_SETKEYWORDS
-                        parameter:hb_parnl(3)
-                            extra:(long)keyWords]);
+  hb_retnll([sv getGeneralProperty:SCI_SETKEYWORDS
+                         parameter:hb_parnl(3)
+                             extra:(long)keyWords]);
 }
 
 HB_FUNC(SCISEND) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
 
-  hb_retnl([sv
+  hb_retnll([sv
       getGeneralProperty:hb_parnl(2)
                parameter:HB_ISCHAR(3) ? (long)hb_parc(3) : hb_parnl(3)
                    extra:HB_ISCHAR(4) ? (long)hb_parc(4) : hb_parnl(4)]);
 }
 
 HB_FUNC(SCISETCOLORPROP) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   int fBlue = hb_parni(4);
   int fGreen = hb_parni(5);
   int fRed = hb_parni(6);
@@ -212,26 +212,26 @@ HB_FUNC(SCISETLEXERPROP) {
   NSString *cProp = hb_NSSTRING_par(2);
   NSString *cValue = hb_NSSTRING_par(3);
 
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   [sv setLexerProperty:cProp value:cValue];
 }
 
 HB_FUNC(SCIGETONEPROP) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
-  hb_retnl([sv getGeneralProperty:hb_parnl(2)]);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  hb_retnll([sv getGeneralProperty:hb_parnl(2)]);
 }
 
 HB_FUNC(SCIGETPROP) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
 
-  hb_retnl([sv
+  hb_retnll([sv
       getGeneralProperty:hb_parnl(2)
                parameter:hb_parnl(3)
                    extra:HB_ISCHAR(4) ? (long)hb_parc(4) : hb_parnl(4)]);
 }
 
 HB_FUNC(SCISEARCHBACKWARD) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   char *szText = (char *)hb_parc(2);
   unsigned long dwSearchFlags = hb_parnl(3);
   long ulMinSel;
@@ -275,7 +275,7 @@ HB_FUNC(SCISEARCHBACKWARD) {
 }
 
 HB_FUNC(SCISEARCHFORWARD) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   char *szText = (char *)hb_parc(2);
   unsigned long dwSearchFlags = hb_parnl(3);
   long lPos;
@@ -310,7 +310,7 @@ HB_FUNC(SCISEARCHFORWARD) {
 }
 
 HB_FUNC(SCIGETSELTEXT) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   unsigned long dwLen =
       [sv getGeneralProperty:SCI_GETSELECTIONEND parameter:0 extra:0] -
       [sv getGeneralProperty:SCI_GETSELECTIONSTART parameter:0 extra:0];
@@ -323,7 +323,7 @@ HB_FUNC(SCIGETSELTEXT) {
 }
 
 HB_FUNC(SCIGETTEXT) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   unsigned long dwLen = [sv getGeneralProperty:SCI_GETLENGTH
                                      parameter:0
                                          extra:0];
@@ -336,7 +336,7 @@ HB_FUNC(SCIGETTEXT) {
 }
 
 HB_FUNC(SCIGETLINE) {
-  ScintillaView *sv = (ScintillaView *)hb_parnl(1);
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   unsigned long ulLine = hb_parnl(2) - 1;
   unsigned long dwLen = [sv getGeneralProperty:SCI_LINELENGTH
                                      parameter:ulLine
@@ -420,25 +420,25 @@ typedef struct {
 } SCNotification;
 
 HB_FUNC(SCNCODE) {
-  SCNotification *notification = (SCNotification *)hb_parnl(1);
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
 
-  hb_retnl(notification->nmhdr.code);
+  hb_retnll(notification->nmhdr.code);
 }
 
 HB_FUNC(SCNCH) {
-  SCNotification *notification = (SCNotification *)hb_parnl(1);
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
 
-  hb_retnl(notification->ch);
+  hb_retnll(notification->ch);
 }
 
 HB_FUNC(SCNMARGIN) {
-  SCNotification *notification = (SCNotification *)hb_parnl(1);
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
 
-  hb_retnl(notification->margin);
+  hb_retnll(notification->margin);
 }
 
 HB_FUNC(SCNPOS) {
-  SCNotification *notification = (SCNotification *)hb_parnl(1);
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
 
-  hb_retnl(notification->position);
+  hb_retnll(notification->position);
 }
