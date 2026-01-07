@@ -8,90 +8,122 @@ if [ $# = 0 ]; then
 fi
 
 echo compiling...
-./../../harbour/bin/harbour $1 -n -w -I./../include:./../../harbour/include $2
-if [ $? = 1 ]; then
-   exit
-fi   
 
-echo compiling C module...
-#  add -arch ppc -arch i386 for universal binaries
-SDKPATH=$(xcrun --show-sdk-path)
-   clang -ObjC $1.c -c -I./../include -I./../../harbour/include   
+APPName=$1
+OBJS=""
+PRG_FILES=""
 
-if [ ! -d $1.app ]; then
-   mkdir $1.app
+# Loop through all arguments (files)
+for FILE in "$@"; do
+    echo "Compiling $FILE.prg..."
+    ./../../harbour/bin/harbour "$FILE" -n -w -I./../include:./../../harbour/include
+    if [ $? -ne 0 ]; then
+       echo "Error compiling $FILE.prg"
+       exit 1
+    fi   
+
+    echo "Compiling C module $FILE.c..."
+    #  add -arch ppc -arch i386 for universal binaries
+    SDKPATH=$(xcrun --show-sdk-path)
+    clang -ObjC "$FILE.c" -c -I./../include -I./../../harbour/include   
+    if [ $? -ne 0 ]; then
+       echo "Error compiling $FILE.c"
+       exit 1
+    fi
+    
+    OBJS="$OBJS $FILE.o"
+    PRG_FILES="$PRG_FILES $FILE.prg"
+done
+
+if [ ! -d $APPName.app ]; then
+   mkdir $APPName.app
 fi   
-if [ ! -d $1.app/Contents ]; then
-   mkdir $1.app/Contents
-   echo '<?xml version="1.0" encoding="UTF-8"?>' > $1.app/Contents/Info.plist
-   echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $1.app/Contents/Info.plist
-   echo '<plist version="1.0">' >> $1.app/Contents/Info.plist
-   echo '<dict>' >> $1.app/Contents/Info.plist
-   echo '   <key>CFBundleExecutable</key>' >> $1.app/Contents/Info.plist
-   echo '   <string>'$1'</string>' >> $1.app/Contents/Info.plist
-   echo '   <key>CFBundleName</key>' >> $1.app/Contents/Info.plist
-   echo '   <string>'$1'</string>' >> $1.app/Contents/Info.plist
-   echo '   <key>CFBundleIdentifier</key>' >> $1.app/Contents/Info.plist
-   echo '   <string>com.fivetech.'$1'</string>' >> $1.app/Contents/Info.plist
-   echo '   <key>CFBundlePackageType</key>' >> $1.app/Contents/Info.plist
-   echo '   <string>APPL</string>' >> $1.app/Contents/Info.plist
-   echo '   <key>CFBundleInfoDictionaryVersion</key>' >> $1.app/Contents/Info.plist
-   echo '   <string>6.0</string>' >> $1.app/Contents/Info.plist
-   echo '   <key>CFBundleIconFile</key>' >> $1.app/Contents/Info.plist
-   echo '   <string>fivetech.icns</string>' >> $1.app/Contents/Info.plist
-   echo '   <key>NSHighResolutionCapable</key>' >> $1.app/Contents/Info.plist
-   echo '<true/>' >> $1.app/Contents/Info.plist
-   echo '	<key>NSPrincipalClass</key>' >> $1.app/Contents/Info.plist
-   echo '	<string>NSApplication</string>' >> $1.app/Contents/Info.plist
-   echo '	<key>NSAppTransportSecurity</key>' >> $1.app/Contents/Info.plist
-   echo '	<dict>' >> $1.app/Contents/Info.plist
-   echo '		<key>NSAllowsArbitraryLoads</key>' >> $1.app/Contents/Info.plist
-   echo '		<true/>' >> $1.app/Contents/Info.plist
-   echo '	</dict>' >> $1.app/Contents/Info.plist
-  # para poder enviar mail
-  # echo '   <key>NSAppleEventsUsageDescription</key>' >> $1.app/Contents/Info.plist
-  # echo '   <string>FiveMac needs to control Mail to send emails.</string>' >> $1.app/Contents/Info.plist
-   echo '</dict>' >> $1.app/Contents/Info.plist
-   echo '</plist>' >> $1.app/Contents/Info.plist
+if [ ! -d $APPName.app/Contents ]; then
+   mkdir $APPName.app/Contents
+   echo '<?xml version="1.0" encoding="UTF-8"?>' > $APPName.app/Contents/Info.plist
+   echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $APPName.app/Contents/Info.plist
+   echo '<plist version="1.0">' >> $APPName.app/Contents/Info.plist
+   echo '<dict>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>CFBundleExecutable</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>'$APPName'</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>CFBundleName</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>'$APPName'</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>CFBundleIdentifier</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>com.fivetech.'$APPName'</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>CFBundlePackageType</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>APPL</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>CFBundleInfoDictionaryVersion</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>6.0</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>CFBundleIconFile</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>fivetech.icns</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>NSHighResolutionCapable</key>' >> $APPName.app/Contents/Info.plist
+   echo '<true/>' >> $APPName.app/Contents/Info.plist
+   echo '	<key>NSPrincipalClass</key>' >> $APPName.app/Contents/Info.plist
+   echo '	<string>NSApplication</string>' >> $APPName.app/Contents/Info.plist
+   echo '	<key>NSAppTransportSecurity</key>' >> $APPName.app/Contents/Info.plist
+   echo '	<dict>' >> $APPName.app/Contents/Info.plist
+   echo '		<key>NSAllowsArbitraryLoads</key>' >> $APPName.app/Contents/Info.plist
+   echo '		<true/>' >> $APPName.app/Contents/Info.plist
+   echo '	</dict>' >> $APPName.app/Contents/Info.plist
+   # para poder enviar mail
+   # echo '   <key>NSAppleEventsUsageDescription</key>' >> $APPName.app/Contents/Info.plist
+   # echo '   <string>FiveMac needs to control Mail to send emails.</string>' >> $APPName.app/Contents/Info.plist
+   echo '</dict>' >> $APPName.app/Contents/Info.plist
+   echo '</plist>' >> $APPName.app/Contents/Info.plist
 fi   
-if [ ! -d $1.app/Contents/MacOS ]; then
-   mkdir $1.app/Contents/MacOS
+if [ ! -d $APPName.app/Contents/MacOS ]; then
+   mkdir $APPName.app/Contents/MacOS
 fi  
-if [ ! -d $1.app/Contents/Resources ]; then
-   mkdir $1.app/Contents/Resources
-   cp ./../icons/fivetech.icns $1.app/Contents/Resources/
+if [ ! -d $APPName.app/Contents/Resources ]; then
+   mkdir $APPName.app/Contents/Resources
+   cp ./../icons/fivetech.icns $APPName.app/Contents/Resources/
 fi 
 
 # Smart Copy: Only copy images referenced in the source code
 # First, clean existing bitmaps to ensure we don't keep unused ones from previous builds
-if [ -d "$1.app/Contents/Resources/bitmaps" ]; then
-   rm -rf "$1.app/Contents/Resources/bitmaps"
+if [ -d "$APPName.app/Contents/Resources/bitmaps" ]; then
+   rm -rf "$APPName.app/Contents/Resources/bitmaps"
 fi
-mkdir -p "$1.app/Contents/Resources/bitmaps"
+mkdir -p "$APPName.app/Contents/Resources/bitmaps"
 
 echo "Smart bundling images..."
-# Find all quoted strings ending in common image extensions
-IMAGES=$(grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" "$1.prg" | tr -d '"' | sort | uniq)
+# Find all quoted strings ending in common image extensions across ALL Prg files
+IMAGES=$(grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" $PRG_FILES | tr -d '"' | sort | uniq)
 
 if [ -z "$IMAGES" ]; then
-    echo "  No explicit image references found in $1.prg"
+    echo "  No explicit image references found in source files"
 else
     count=0
     for img in $IMAGES; do
+        # Extract filename only in case grep returns File:match format (though -o usually avoids this, with multiple files grep adds filename:)
+        # Actually with multiple files grep -o outputs "filename:match". We need to handle that.
+        # simpler: cat all files and grep.
         if [ -f "./../bitmaps/$img" ]; then
-            cp "./../bitmaps/$img" "$1.app/Contents/Resources/bitmaps/"
+            cp "./../bitmaps/$img" "$APPName.app/Contents/Resources/bitmaps/"
             ((count++))
         fi
     done
+    
+    # Retry with cat if count is 0, to handle grep output format difference
+    if [ $count -eq 0 ]; then
+       IMAGES=$(cat $PRG_FILES | grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" | tr -d '"' | sort | uniq)
+       for img in $IMAGES; do
+          if [ -f "./../bitmaps/$img" ]; then
+             cp "./../bitmaps/$img" "$APPName.app/Contents/Resources/bitmaps/"
+             ((count++))
+          fi
+       done
+    fi
+
     echo "  Bundled $count images."
 fi
 
 # Fallback/Legacy: If you want to copy ALL bitmaps, uncomment the line below:
-# cp -R ./../bitmaps $1.app/Contents/Resources/
+# cp -R ./../bitmaps $APPName.app/Contents/Resources/
 
-if [ ! -d $1.app/Contents/frameworks ]; then
-   mkdir $1.app/Contents/frameworks
-   cp -r ./../frameworks/* $1.app/Contents/frameworks/
+if [ ! -d $APPName.app/Contents/frameworks ]; then
+   mkdir $APPName.app/Contents/frameworks
+   cp -r ./../frameworks/* $APPName.app/Contents/frameworks/
 fi 
 
 echo linking...
@@ -109,12 +141,18 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 
 #  add -arch ppc -arch i386 for universal binaries
 #  add -arch ppc -arch i386 for universal binaries
-clang $1.o -o ./$1.app/Contents/MacOS/$1 -L$CRTLIB -L./../lib -lfive -lfivec -L./../../harbour/lib $HRBLIBS $FRAMEWORKS  -F./../frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+# Link ALL OBJS
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L./../lib -lfive -lfivec -L./../../harbour/lib $HRBLIBS $FRAMEWORKS  -F./../frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c
-rm $1.o
+#rm $1.o
+# Clean up all Objects and C files
+# rm $OBJS
+# for file in "$@"; do rm "$file.c"; done
+
 
 echo done!
-#./$1.app/Contents/MacOS/$1
-/usr/bin/open -W ./$1.app
+#./$APPName.app/Contents/MacOS/$APPName
+/usr/bin/open -W ./$APPName.app
+
