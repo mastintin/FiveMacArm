@@ -808,8 +808,10 @@ return nil
 
 static function cGetNombreRecortado( cfile , oGet )
 
-   oGet:setText( cFileNoext( cFilenopath( cfile ) ) )
-   oGet:assign()
+   if ! Empty( cFile )
+      oGet:setText( cFileNoext( cFilenopath( cfile ) ) )
+      oGet:assign()
+   endif
    
 return nil
 
