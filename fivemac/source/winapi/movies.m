@@ -76,7 +76,7 @@ HB_FUNC(AVCAPTUREVIEWCREATE) {
   previewLayer.frame =
       NSMakeRect(hb_parnl(2), hb_parnl(1), hb_parnl(3), hb_parnl(4));
 
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
   NSView *backView =
       [[NSView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                hb_parnl(3), hb_parnl(4))];
@@ -84,12 +84,12 @@ HB_FUNC(AVCAPTUREVIEWCREATE) {
   backView.layer = previewLayer;
   [GetView(window) addSubview:backView];
 
-  hb_retnl((HB_LONG)previewLayer);
+  hb_retnll((HB_LONGLONG)previewLayer);
 }
 
 HB_FUNC(CREATECAPSESSION) {
   AVCaptureSession *mCaptureSession = [[AVCaptureSession alloc] init];
-  hb_retnl((HB_LONG)mCaptureSession);
+  hb_retnll((HB_LONGLONG)mCaptureSession);
 }
 
 HB_FUNC(CREATECAPSCREENINPUT) {
@@ -97,25 +97,25 @@ HB_FUNC(CREATECAPSCREENINPUT) {
       [[AVCaptureScreenInput alloc] initWithDisplayID:CGMainDisplayID()];
   mCaptureDeviceInput.capturesMouseClicks = YES;
 
-  hb_retnl((HB_LONG)mCaptureDeviceInput);
+  hb_retnll((HB_LONGLONG)mCaptureDeviceInput);
 }
 
 HB_FUNC(SETCAPSCREENCROP) {
   AVCaptureScreenInput *mCaptureDeviceInput =
-      (AVCaptureScreenInput *)hb_parnl(1);
+      (AVCaptureScreenInput *)hb_parnll(1);
   mCaptureDeviceInput.cropRect =
       CGRectMake(hb_parnl(2), hb_parnl(3), hb_parnl(4), hb_parnl(5));
 }
 
 HB_FUNC(SETCAPSCREENFACTOR) {
   AVCaptureScreenInput *mCaptureDeviceInput =
-      (AVCaptureScreenInput *)hb_parnl(1);
+      (AVCaptureScreenInput *)hb_parnll(1);
   mCaptureDeviceInput.scaleFactor = hb_parnl(2);
 }
 
 HB_FUNC(SETCAPSCREENMOUSECLICK) {
   AVCaptureScreenInput *mCaptureDeviceInput =
-      (AVCaptureScreenInput *)hb_parnl(1);
+      (AVCaptureScreenInput *)hb_parnll(1);
   mCaptureDeviceInput.capturesMouseClicks = hb_parl(2);
 }
 
@@ -123,21 +123,21 @@ HB_FUNC(CREATECAPDEFDEVINPUTVIDEO) {
   // camara de video default
   AVCaptureDevice *device =
       [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-  hb_retnl((HB_LONG)device);
+  hb_retnll((HB_LONGLONG)device);
 }
 
 HB_FUNC(CREATECAPDEFDEVINPUTAUDIO) {
   // micro audio default
   AVCaptureDevice *device =
       [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
-  hb_retnl((HB_LONG)device);
+  hb_retnll((HB_LONGLONG)device);
 }
 
 HB_FUNC(CREATECAPDEVINPUT) {
 
   NSError *error = NULL;
 
-  AVCaptureDevice *device = (AVCaptureDevice *)hb_parnl(1);
+  AVCaptureDevice *device = (AVCaptureDevice *)hb_parnll(1);
 
   if (!device) {
     MsgAlert(@"Error camara no encontrada", @"Atention");
@@ -148,30 +148,31 @@ HB_FUNC(CREATECAPDEVINPUT) {
   AVCaptureDeviceInput *mCaptureDeviceInput =
       [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
 
-  hb_retnl((HB_LONG)mCaptureDeviceInput);
+  hb_retnll((HB_LONGLONG)mCaptureDeviceInput);
 }
 
 HB_FUNC(AVCAPTURESETSESSION) {
 
-  AVCaptureVideoPreviewLayer *vista = (AVCaptureVideoPreviewLayer *)hb_parnl(1);
-  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnl(2);
+  AVCaptureVideoPreviewLayer *vista =
+      (AVCaptureVideoPreviewLayer *)hb_parnll(1);
+  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnll(2);
   // Asociamos la vista de captura con la sesiÛn
   vista.session = mCaptureSession;
 }
 
 HB_FUNC(AVCAPTURESETINPUT) {
 
-  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnl(1);
+  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnll(1);
   AVCaptureDeviceInput *mCaptureDeviceInput =
-      (AVCaptureDeviceInput *)hb_parnl(2);
+      (AVCaptureDeviceInput *)hb_parnll(2);
 
   [mCaptureSession addInput:mCaptureDeviceInput];
 }
 
 HB_FUNC(AVCAPTURESETOUTPUT) {
 
-  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnl(1);
-  AVCaptureMovieFileOutput *out = (AVCaptureMovieFileOutput *)hb_parnl(2);
+  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnll(1);
+  AVCaptureMovieFileOutput *out = (AVCaptureMovieFileOutput *)hb_parnll(2);
 
   if ([mCaptureSession canAddOutput:out]) {
     [mCaptureSession addOutput:out];
@@ -246,13 +247,13 @@ HB_FUNC(CREATECAPDEVOUTPUT) {
 
   AVCaptureMovieFileOutput *out = [[AVCaptureMovieFileOutput alloc] init];
 
-  hb_retnl((HB_LONG)out);
+  hb_retnll((HB_LONGLONG)out);
 }
 
 HB_FUNC(CAPTURESTART) {
 
-  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnl(1);
-  AVCaptureMovieFileOutput *out = (AVCaptureMovieFileOutput *)hb_parnl(2);
+  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnll(1);
+  AVCaptureMovieFileOutput *out = (AVCaptureMovieFileOutput *)hb_parnll(2);
   NSString *string = hb_NSSTRING_par(3);
 
   NSURL *destPath = [NSURL fileURLWithPath:string];
@@ -264,13 +265,13 @@ HB_FUNC(CAPTURESTART) {
 
   [out startRecordingToOutputFileURL:destPath recordingDelegate:delegate];
 
-  hb_retnl((HB_LONG)out);
+  hb_retnll((HB_LONGLONG)out);
 }
 
 HB_FUNC(CAPTURESTOP) {
-  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnl(1);
+  AVCaptureSession *mCaptureSession = (AVCaptureSession *)hb_parnll(1);
 
-  AVCaptureFileOutput *out = (AVCaptureFileOutput *)hb_parnl(2);
+  AVCaptureFileOutput *out = (AVCaptureFileOutput *)hb_parnll(2);
 
   [out stopRecording];
 
@@ -279,7 +280,7 @@ HB_FUNC(CAPTURESTOP) {
 }
 
 HB_FUNC(CAPTUREPAUSERESUME) {
-  AVCaptureFileOutput *out = (AVCaptureFileOutput *)hb_parnl(1);
+  AVCaptureFileOutput *out = (AVCaptureFileOutput *)hb_parnll(1);
 
   if (out.recordingPaused) {
     [out resumeRecording];
@@ -295,15 +296,15 @@ HB_FUNC(AVCREATE) {
       [[AVPlayerView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                      hb_parnl(3), hb_parnl(4))];
 
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
   [GetView(window) addSubview:mview];
 
-  hb_retnl((HB_LONG)mview);
+  hb_retnll((HB_LONGLONG)mview);
 }
 
 HB_FUNC(AVOPEN) {
 
-  AVPlayerView *mview = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *mview = (AVPlayerView *)hb_parnll(1);
   NSURL *stringUrl =
       [[[NSURL alloc] initWithString:hb_NSSTRING_par(2)] autorelease];
 
@@ -314,7 +315,7 @@ HB_FUNC(AVOPEN) {
 
 HB_FUNC(AVOPENPANEL) {
 
-  AVPlayerView *mview = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *mview = (AVPlayerView *)hb_parnll(1);
   NSOpenPanel *openPanel = [NSOpenPanel openPanel];
 
   [openPanel setCanChooseDirectories:NO];
@@ -330,59 +331,59 @@ HB_FUNC(AVOPENPANEL) {
 }
 
 HB_FUNC(AVPLAY) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   [[vista player] play];
 }
 
 HB_FUNC(AVPAUSE) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   [[vista player] pause];
 }
 
 HB_FUNC(AVSHOWFULLBUTTON) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   vista.showsFullScreenToggleButton = hb_parl(2);
 }
 
 HB_FUNC(AVSHOWSHARINGBUTTON) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   vista.showsSharingServiceButton = hb_parl(2);
 }
 
 HB_FUNC(AVSHOWFRAMEGBUTTON) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   vista.showsFrameSteppingButtons = hb_parl(2);
 }
 
 HB_FUNC(SETAVCONTROLSTYLEFLOATING) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   vista.controlsStyle = AVPlayerViewControlsStyleFloating;
 }
 
 HB_FUNC(SETAVCONTROLSTYLEMINIMAL) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   vista.controlsStyle = AVPlayerViewControlsStyleMinimal;
 }
 
 HB_FUNC(SETAVCONTROLSTYLEDEFAULT) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   vista.controlsStyle = AVPlayerViewControlsStyleDefault;
 }
 
 HB_FUNC(SETAVCONTROLSTYLENONE) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   vista.controlsStyle = AVPlayerViewControlsStyleNone;
 }
 
 HB_FUNC(AVSEEKTIME) {
 
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   CMTime nSecondsIn = CMTimeMake(hb_parnl(2), 1);
   [[vista player] seekToTime:nSecondsIn];
 }
 
 HB_FUNC(GETAVDURATION) {
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   CMTime duration = vista.player.currentItem.asset.duration;
   float secondsFload = CMTimeGetSeconds(duration);
   int seconds = (int)secondsFload;
@@ -392,7 +393,7 @@ HB_FUNC(GETAVDURATION) {
 HB_FUNC(AVTRIMMMOVIE) {
   NSString *string = hb_NSSTRING_par(2);
 
-  AVPlayerView *vista = (AVPlayerView *)hb_parnl(1);
+  AVPlayerView *vista = (AVPlayerView *)hb_parnll(1);
   if ([vista canBeginTrimming]) {
 
     // Show trim user interface.

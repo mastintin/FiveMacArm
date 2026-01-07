@@ -37,13 +37,13 @@ function BuildBar()
 
    DEFINE TOOLBAR oBar OF oWnd
 
-   DEFINE BUTTON OF oBar PROMPT "New" IMAGE ImgPath() + "new.png" ;
+   DEFINE BUTTON OF oBar PROMPT "New" IMAGE ImgSymbols( "plus.app" ) ;
       ACTION New()
    
-   DEFINE BUTTON OF oBar PROMPT "Open" IMAGE ImgPath() + "open.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Open" IMAGE ImgSymbols( "folder" ) ;
       ACTION Open()
       
-   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgPath() + "exit2.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgSymbols( "xmark.circle" ) ;
       ACTION oWnd:End()
 
 return nil
@@ -355,9 +355,11 @@ function Open( cDbfName, lAddMru )
    local calias 
    local oPopupZap 
   
+   
    DEFAULT cDbfName := ChooseFile( FWString("Please select a DBF"), "dbf" ),;
            lAddMru := .T.
    
+  
    if Empty( cDbfName )
        MsgInfo( "No file selected" )
       return nil
@@ -412,25 +414,25 @@ else
 
    DEFINE TOOLBAR oBar OF oWnd
 
-   DEFINE BUTTON OF oBar PROMPT "Add" IMAGE ImgPath() + "add.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Add" IMAGE ImgSymbols( "plus" ) ;
       ACTION ( oBrw:GoBottom(), ( oBrw:cAlias )->( DbAppend() ) )
 
-   DEFINE BUTTON OF oBar PROMPT "Edit" IMAGE ImgPath() + "edit.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Edit" IMAGE ImgSymbols( "pencil" ) ;
       ACTION RecEdit( oBrw )
 
-   DEFINE BUTTON OF oBar PROMPT "Del" IMAGE ImgPath() + "minus.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Del" IMAGE ImgSymbols( "trash" ) ;
       ACTION DeleteRecord(oBrw)
 
-   DEFINE BUTTON OF oBar PROMPT "First" IMAGE ImgPath() + "first.png" ;
+   DEFINE BUTTON OF oBar PROMPT "First" IMAGE ImgSymbols( "backward.end" ) ;
       ACTION oBrw:GoTop()
 
-   DEFINE BUTTON OF oBar PROMPT "Last" IMAGE ImgPath() + "last.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Last" IMAGE ImgSymbols( "forward.end" ) ;
       ACTION oBrw:GoBottom()
    
-   DEFINE BUTTON OF oBar PROMPT "Structure" IMAGE ImgPath() + "preferences.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Structure" IMAGE ImgSymbols( "gear" ) ;
       ACTION ShowStruct( oBrw:cAlias )
 
-   DEFINE BUTTON OF oBar PROMPT "Indexs" IMAGE ImgPath() + "Sort.tif" ;
+   DEFINE BUTTON OF oBar PROMPT "Indexs" IMAGE ImgSymbols( "arrow.up.arrow.down" ) ;
     ACTION Indexes()
 
    @ 20, 1200 COMBOBOX oCbx VAR cTagName ITEMS aTags OF oWnd ;
@@ -439,20 +441,20 @@ else
 
    oBar:AddControl( oCbx, "Index", "ordered by" )
     
-   DEFINE BUTTON OF oBar PROMPT "Filters" IMAGE ImgPath() + "filter.tiff" ;
+   DEFINE BUTTON OF oBar PROMPT "Filters" IMAGE ImgSymbols( "line.3.horizontal.decrease" ) ;
    ACTION  ( cAlias )->( Filter( oBrw ) )
 
    DEFINE BUTTON OF oBar PROMPT FwString("Recall") ;
    IMAGE ImgSymbols( "arrow.uturn.backward.circle", "Recall" ) ;
    ACTION ( cAlias )->( Recall( oBrw, cDbfName ) )
 
-   DEFINE BUTTON OF oBar PROMPT "Pack" IMAGE ImgPath() + "build.tiff" ;
+   DEFINE BUTTON OF oBar PROMPT "Pack" IMAGE ImgSymbols( "hammer" ) ;
    ACTION   Pack( oBrw , cDbfName )
 
-   DEFINE BUTTON OF oBar PROMPT "Zap" IMAGE ImgPath() + "Behaviors.tiff" ; 
+   DEFINE BUTTON OF oBar PROMPT "Zap" IMAGE ImgSymbols( "bolt" ) ; 
      ACTION   Zap ( oBrw, cDbfName )
 
-   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgSymbols( "xmark.circle", "Salir del programa") ;
+   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgSymbols( "xmark.circle" ) ;
       ACTION oWnd:End()
    
    sele (calias)
@@ -579,22 +581,22 @@ function RecEdit( oBrw )
    
    DEFINE TOOLBAR oBar OF oWnd
 
-   DEFINE BUTTON oBtnSave OF oBar PROMPT "Save" IMAGE ImgPath() + "save2.png" ;
+   DEFINE BUTTON oBtnSave OF oBar PROMPT "Save" IMAGE ImgSymbols( "square.and.arrow.down" ) ;
       ACTION ( ( cAlias )->( SaveRecord( nRecNo, aRecord ) ), oBtnSave:Disable() )
 
    oBtnSave:Disable()
 
-   DEFINE BUTTON OF oBar PROMPT "Prev" IMAGE ImgPath() + "first.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Prev" IMAGE ImgSymbols( "backward.end" ) ;
       ACTION ( If( nRecNo > 1, ( cAlias )->( DbGoTo( --nRecNo ) ),),;
                aRecord := ( cAlias )->( LoadRecord() ), oBtnSave:Disable(), oBrw:Refresh(),;
                oSayRec:SetText( ( cAlias )->( GetRecNo() ) ) )
 
-   DEFINE BUTTON OF oBar PROMPT "Next" IMAGE ImgPath() + "last.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Next" IMAGE ImgSymbols( "forward.end" ) ;
       ACTION ( If( nRecNo < ( cAlias )->( RecCount() ), ( cAlias )->( DbGoTo( ++nRecNo ) ),),;
                aRecord := ( cAlias )->( LoadRecord() ), oBtnSave:Disable(), oBrw:Refresh(),;
                oSayRec:SetText( ( cAlias )->( GetRecNo() ) ) )
       
-   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgPath() + "exit2.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgSymbols( "xmark.circle" ) ;
       ACTION oWnd:End()
          
    @ 33, 10 BROWSE oBrw ;
@@ -777,10 +779,10 @@ function Indexes()
 
    DEFINE BUTTONBAR oBar OF oWnd 
 
-   DEFINE BUTTON OF oBar PROMPT "Add" IMAGE ImgPath() + "add.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Add" IMAGE ImgSymbols( "plus" ) ;
       ACTION ( IndexBuilder(), oBrw:Refresh(), oBrw:SetFocus() )
 
-   DEFINE BUTTON OF oBar PROMPT "Edit" IMAGE ImgPath() + "edit.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Edit" IMAGE ImgSymbols( "pencil" ) ;
       ACTION ( MsgInfo( "Edit" ) )
 
    DEFINE BUTTON OF oBar PROMPT "Del" IMAGE "TrashFull" ;
@@ -790,7 +792,7 @@ function Indexes()
    //DEFINE BUTTON OF oBar PROMPT "Report" RESOURCE "report" ;
    //   ACTION oBrw:Report() GROUP
 
-   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgPath() + "exit2.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgSymbols( "xmark.circle" ) ;
       ACTION oWnd:End() 
 
    @ 25, 4 BROWSE oBrw FIELDS "", "", "", "","" ,"" ;

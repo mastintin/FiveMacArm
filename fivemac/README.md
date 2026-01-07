@@ -22,6 +22,12 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Layer-Aware Coloring**: Modernized `WNDSETBKGCOLOR`, `WNDSETBRUSH`, and `WNDSETGRADIENTCOLOR` to use `CALayer` and `CGColor`. This fixes the "black background" issues on modern macOS versions.
 - **DEFINE DIALOG**: Corrected macro to properly pass brush objects.
 
+### Architecture & Modernization (January 2026 - Part 2)
+- **64-bit Architecture**: Extensive refactoring of the entire `winapi` layer. Replaced 32-bit handle functions (`hb_parnl`, `hb_retnl`) with 64-bit safe counterparts (`hb_parnll`, `hb_retnll`) across 40+ files (`windows.m`, `dialogs.m`, `toolbars.m`, etc.) to ensure stability on modern macOS.
+- **FiveDBU Modernization**: Refactored `fivedbu` sample to use **SF Symbols** for all toolbar icons, replacing legacy PNG/TIFF images.
+- **File Dialogs**: Fixed `ChooseFile` and `ChooseFolder` compatibility issues on newer macOS versions by migrating to the `UniformTypeIdentifiers` framework (`UTType`).
+- **Build System**: Updated `build.sh` and `makefile` to link against `UniformTypeIdentifiers`.
+
 ## Building
 
 To build the library and samples:

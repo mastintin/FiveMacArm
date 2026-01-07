@@ -209,7 +209,7 @@ SWIFT_OBJS =
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/winapi/%.m
 	if [ ! -d "objc" ]; then mkdir objc; fi
-	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -Wall -c -o $@ $<
+	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -F./frameworks -Wall -c -o $@ $<
 	if [ ! -d "lib" ]; then mkdir lib; fi
 	if [ ! -d "lib" ]; then mkdir lib; fi
 	ar rc ./lib/libfivec.a $@
@@ -236,9 +236,9 @@ SWIFT_OBJS =
 	ar rc ./lib/libfivec.a $@
 
 clean:
-	rm ./obj/*
-	rm ./objc/*
-	rm ./lib/*
+	rm -f ./obj/*
+	rm -f ./objc/*
+	rm -f ./lib/*
 
 create:
 	echo '<?xml version="1.0" encoding="UTF-8"?>' > Info.plist

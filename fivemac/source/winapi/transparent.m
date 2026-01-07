@@ -3,12 +3,10 @@
 HB_FUNC(SETTRANS) // hWnd
 {
   NSView *view = [[NSView alloc] init];
-  NSWindow *window = (NSWindow *)hb_parnl(1);
-
-  [GetView(window) addSubview:view];
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   [window setAlphaValue:hb_parnd(2)];
 
-  hb_retnl((HB_LONG)view);
+  hb_retnll((HB_LONGLONG)view);
 }
 
 HB_FUNC(SPLASHCREATE) // nTop, nLeft, nWidth, nHeight
@@ -30,12 +28,12 @@ HB_FUNC(SPLASHCREATE) // nTop, nLeft, nWidth, nHeight
                                     backing:NSBackingStoreBuffered
                                       defer:NO];
 
-  hb_retnl((HB_LONG)w);
+  hb_retnll((HB_LONGLONG)w);
 }
 
 HB_FUNC(SPLASHSETFILE) // hWnd
 {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
   [window setBackgroundColor:[NSColor colorWithPatternImage:
@@ -46,7 +44,7 @@ HB_FUNC(SPLASHSETFILE) // hWnd
 
 HB_FUNC(SPLASHRUN) // hWnd
 {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
 
   [window makeKeyAndOrderFront:nil];
   [window display];

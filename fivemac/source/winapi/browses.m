@@ -35,9 +35,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_BRWCHANGED);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong([self selectedRow]);
   hb_vmDo(4);
 }
@@ -49,9 +49,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[tableView window]);
+  hb_vmPushNumInt((HB_LONGLONG)[tableView window]);
   hb_vmPushLong(WM_HEADCLICK);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong([[(NSTableColumn *)aTableColumn identifier] integerValue]);
   hb_vmDo(4);
 }
@@ -66,9 +66,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_KEYDOWN);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong(unichar);
   hb_vmDo(4);
 
@@ -91,9 +91,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_RBUTTONDOWN);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmPushLong(self->nRow);
@@ -115,9 +115,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_MOUSEDOWN);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong(self->nRow);
   hb_vmPushLong(self->nCol);
 
@@ -131,9 +131,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_BRWDRAWRECT);
-  hb_vmPushLong((HB_LONG)self);
+  hb_vmPushNumInt((HB_LONGLONG)self);
   hb_vmPushLong(row);
   hb_vmDo(4);
 
@@ -154,14 +154,14 @@ static PHB_SYMB symFMH = NULL;
 
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushLong((HB_LONG)[self window]);
+    hb_vmPushNumInt((HB_LONGLONG)[self window]);
     hb_vmPushLong(WM_BRWCLRTEXT);
-    hb_vmPushLong((HB_LONG)self);
-    hb_vmPushLong((HB_LONG)aTableColumn);
+    hb_vmPushNumInt((HB_LONGLONG)self);
+    hb_vmPushNumInt((HB_LONGLONG)aTableColumn);
     hb_vmPushLong(rowIndex);
     hb_vmDo(5);
 
-    [aCell setTextColor:(NSColor *)hb_parnl(-1)];
+    [aCell setTextColor:(NSColor *)hb_parnll(-1)];
   }
 }
 
@@ -208,9 +208,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[aTableView window]);
+  hb_vmPushNumInt((HB_LONGLONG)[aTableView window]);
   hb_vmPushLong(WM_BRWROWS);
-  hb_vmPushLong((HB_LONG)aTableView);
+  hb_vmPushNumInt((HB_LONGLONG)aTableView);
   hb_vmDo(3);
 
   return (NSInteger)hb_parnl(-1);
@@ -227,9 +227,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[aTableView window]);
+  hb_vmPushNumInt((HB_LONGLONG)[aTableView window]);
   hb_vmPushLong(WM_BRWVALUE);
-  hb_vmPushLong((HB_LONG)aTableView);
+  hb_vmPushNumInt((HB_LONGLONG)aTableView);
 
   hb_vmPushLong([[(NSTableColumn *)aTableColumn identifier] integerValue]);
   // hb_vmPushLong( ( ( TableColumn * ) aTableColumn )->id );
@@ -311,12 +311,12 @@ static PHB_SYMB symFMH = NULL;
 
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushLong((HB_LONG)[aTableView window]);
+    hb_vmPushNumInt((HB_LONGLONG)[aTableView window]);
     hb_vmPushLong(WM_BRWSETVALUE);
-    hb_vmPushLong((HB_LONG)aTableView);
+    hb_vmPushNumInt((HB_LONGLONG)aTableView);
     hb_vmPushLong([[(NSTableColumn *)aTableColumn identifier] integerValue]);
     hb_vmPushLong(rowIndex);
-    hb_vmPushLong((HB_LONG)aData);
+    hb_vmPushNumInt((HB_LONGLONG)aData);
     hb_vmDo(6);
   }
 }
@@ -328,7 +328,7 @@ HB_FUNC(BRWCREATE) {
       [[NSScrollView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                      hb_parnl(3), hb_parnl(4))];
   Wbrowse *browse;
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
   DataSource *data = [[DataSource alloc] init];
 
   // [ sv setAutoresizingMask : NSViewWidthSizable | NSViewHeightSizable ];
@@ -351,18 +351,18 @@ HB_FUNC(BRWCREATE) {
   browse->nRow = 0;
   browse->nCol = 0;
 
-  hb_retnl((HB_LONG)browse);
+  hb_retnll((HB_LONGLONG)browse);
 }
 
 HB_FUNC(BRWSETSIZE) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
 
   [sv setFrameSize:NSMakeSize(hb_parnl(2), hb_parnl(3))];
 }
 
 HB_FUNC(BRWRESCREATE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   Wbrowse *browse = (Wbrowse *)[GetView(window) viewWithTag:hb_parnl(2)];
   NSTableColumn *column;
   int i;
@@ -382,21 +382,21 @@ HB_FUNC(BRWRESCREATE) {
     [column setIdentifier:[NSString stringWithFormat:@"%i", i]];
   }
 
-  hb_retnl((HB_LONG)browse);
+  hb_retnll((HB_LONGLONG)browse);
 }
 
 HB_FUNC(BRWSETCOLORSFORALTERNATE) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   NSInteger row = (NSInteger)hb_parni(2);
-  NSColor *color1 = (NSColor *)hb_parnl(3);
-  NSColor *color2 = (NSColor *)hb_parnl(4);
+  NSColor *color1 = (NSColor *)hb_parnll(3);
+  NSColor *color2 = (NSColor *)hb_parnll(4);
   NSColor *color = (row % 2) ? color1 : color2;
   [color setFill];
   NSRectFill([browse rectOfRow:row]);
 }
 
 HB_FUNC(BRWSETGRAYCOLORS) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   NSInteger row = (NSInteger)hb_parni(2);
   NSColor *color = (row % 2) ? [NSColor lightGrayColor] : [NSColor grayColor];
   [color setFill];
@@ -406,10 +406,10 @@ HB_FUNC(BRWSETGRAYCOLORS) {
 
 HB_FUNC(BRWSETGRADICOLOR) {
 
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   int row = hb_parni(2);
 
-  NSGradient *gradient = (NSGradient *)hb_parnl(3);
+  NSGradient *gradient = (NSGradient *)hb_parnll(3);
 
   if (gradient && ![[browse selectedRowIndexes] containsIndex:row]) {
     NSRect rowRect = [browse rectOfRow:row];
@@ -426,7 +426,7 @@ HB_FUNC(BRWSETGRADICOLOR) {
 }
 
 HB_FUNC(BRWADDCOLUMN) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
   NSTableColumn *column = [[NSTableColumn alloc] init];
 
@@ -440,24 +440,24 @@ HB_FUNC(BRWADDCOLUMN) {
 
   [browse addTableColumn:column];
 
-  hb_retnl((HB_LONG)column);
+  hb_retnll((HB_LONGLONG)column);
 }
 
 HB_FUNC(COLSETHEADER) {
-  NSTableColumn *column = (NSTableColumn *)hb_parnl(1);
+  NSTableColumn *column = (NSTableColumn *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
   [[column headerCell] setStringValue:string];
 }
 
 HB_FUNC(BRWREFRESH) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse reloadData];
 }
 
 HB_FUNC(BRWGOTOP) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse selectRowIndexes:[[NSIndexSet alloc] initWithIndex:0]
       byExtendingSelection:FALSE];
@@ -465,7 +465,7 @@ HB_FUNC(BRWGOTOP) {
 }
 
 HB_FUNC(BRWGOBOTTOM) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   DataSource *ds = (DataSource *)[browse dataSource];
   int iRows = [ds numberOfRowsInTableView:browse];
 
@@ -476,7 +476,7 @@ HB_FUNC(BRWGOBOTTOM) {
 
 HB_FUNC(BRWSETCOLBMP) // hTableView, nColumn
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   NSTableColumn *column =
       [[browse tableColumns] objectAtIndex:(hb_parnl(2) - 1)];
   NSImageCell *imageCell = [[[NSImageCell alloc] init] autorelease];
@@ -486,7 +486,7 @@ HB_FUNC(BRWSETCOLBMP) // hTableView, nColumn
 
 HB_FUNC(BRWSETCOLBMPTXT) // hTableView, nColumn
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   NSTableColumn *column =
       [[browse tableColumns] objectAtIndex:(hb_parnl(2) - 1)];
   BrwImageAndTextCell *imgTxtCell =
@@ -660,13 +660,13 @@ init ] autorelease ];
 }
 */
 HB_FUNC(BRWROWPOS) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   hb_retnl([browse selectedRow] == -1 ? 0 : [browse selectedRow] + 1);
 }
 
 HB_FUNC(BRWSETROWPOS) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   int iRows;
 
   [browse selectRowIndexes:[[NSIndexSet alloc] initWithIndex:hb_parnl(2) - 1]
@@ -677,14 +677,14 @@ HB_FUNC(BRWSETROWPOS) {
 }
 
 HB_FUNC(BRWCOLPOS) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   hb_retnl(browse->nCol);
 }
 
 HB_FUNC(BRWSETCOLWIDTH) // hTableView, nColumn, nWidth
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [[[browse tableColumns] objectAtIndex:hb_parnl(2) - 1] setWidth:hb_parnl(3)];
   [browse reloadData];
@@ -692,34 +692,34 @@ HB_FUNC(BRWSETCOLWIDTH) // hTableView, nColumn, nWidth
 
 HB_FUNC(BRWGETCOLWIDTH) // hTableView, nIndex --> nWidth
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   hb_retnl([[[browse tableColumns] objectAtIndex:hb_parnl(2) - 1] width]);
 }
 
 HB_FUNC(BRWSETROWHEIGHT) // hTableView, nRowHeight
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse setRowHeight:hb_parnl(2)];
 }
 
 HB_FUNC(BRWGETROWHEIGHT) // hTableView --> nRowHeight
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   hb_retnl([browse rowHeight]);
 }
 
 HB_FUNC(BRWSETALTCOLOR) // hTableView, lOnOff
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse setUsesAlternatingRowBackgroundColors:hb_parl(2)];
 }
 
 HB_FUNC(BRWSETFONT) {
-  NSTableView *tv = (NSTableView *)hb_parnl(1);
+  NSTableView *tv = (NSTableView *)hb_parnll(1);
   NSString *name = hb_NSSTRING_par(2);
   NSArray *tableColumns = [tv tableColumns];
   unsigned int columnIndex = [tableColumns count];
@@ -733,7 +733,7 @@ HB_FUNC(BRWSETFONT) {
 }
 
 HB_FUNC(BRWSETSYSTEMFONT) {
-  NSTableView *tv = (NSTableView *)hb_parnl(1);
+  NSTableView *tv = (NSTableView *)hb_parnll(1);
   NSArray *tableColumns = [tv tableColumns];
   unsigned int columnIndex = [tableColumns count];
   NSFont *font = [NSFont systemFontOfSize:(CGFloat)hb_parnl(2)];
@@ -746,7 +746,7 @@ HB_FUNC(BRWSETSYSTEMFONT) {
 }
 
 HB_FUNC(BRWSETMENUFONT) {
-  NSTableView *tv = (NSTableView *)hb_parnl(1);
+  NSTableView *tv = (NSTableView *)hb_parnll(1);
   NSArray *tableColumns = [tv tableColumns];
   unsigned int columnIndex = [tableColumns count];
 
@@ -759,7 +759,7 @@ HB_FUNC(BRWSETMENUFONT) {
 }
 
 HB_FUNC(BRWSETHEADHEIGHT) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   if ([browse headerView]) {
     NSRect frame = [[browse headerView] frame];
     frame.size.height = hb_parnl(2);
@@ -768,12 +768,12 @@ HB_FUNC(BRWSETHEADHEIGHT) {
 }
 
 HB_FUNC(BRWGETSELECT) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   hb_retnl([browse selectedRow]);
 }
 
 HB_FUNC(BRWSETGRIDLINES) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   int iType = hb_parnl(2);
 
   switch (iType) {
@@ -797,14 +797,14 @@ HB_FUNC(BRWSETGRIDLINES) {
 }
 
 HB_FUNC(BRWGETGRIDLINES) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   hb_retnl([browse gridStyleMask]);
 }
 
 HB_FUNC(BRWSETCOLEDITABLE) // hTableView, nIndex, lOnOff
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [[[browse tableColumns] objectAtIndex:hb_parnl(2) - 1]
       setEditable:hb_parl(3)];
@@ -812,7 +812,7 @@ HB_FUNC(BRWSETCOLEDITABLE) // hTableView, nIndex, lOnOff
 
 HB_FUNC(BRWSETHEADTOOLTIP) // hTableView, nIndex, cText
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(3);
 
   [[[browse tableColumns] objectAtIndex:hb_parnl(2) - 1]
@@ -821,14 +821,14 @@ HB_FUNC(BRWSETHEADTOOLTIP) // hTableView, nIndex, cText
 
 HB_FUNC(BRWSETNOHEAD) // hTableView
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse setHeaderView:NULL];
 }
 
 HB_FUNC(BRWSETINDICATORDESCENT) // oBrw:hWnd, nCol
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse
       setIndicatorImage:[NSImage imageNamed:@"NSDescendingSortIndicator"]
@@ -837,7 +837,7 @@ HB_FUNC(BRWSETINDICATORDESCENT) // oBrw:hWnd, nCol
 
 HB_FUNC(BRWSETNOINDICATOR) // oBrw:hWnd, nCol
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse
       setIndicatorImage:nil
@@ -846,7 +846,7 @@ HB_FUNC(BRWSETNOINDICATOR) // oBrw:hWnd, nCol
 
 HB_FUNC(BRWSETINDICATORASCEND) // oBrw:hWnd, nCol
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse
       setIndicatorImage:[NSImage imageNamed:@"NSAscendingSortIndicator"]
@@ -855,13 +855,13 @@ HB_FUNC(BRWSETINDICATORASCEND) // oBrw:hWnd, nCol
 
 HB_FUNC(BRWSETSELECTORSTYLE) // oBrw:hWnd, nHightLightStyle
 {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse setSelectionHighlightStyle:hb_parnl(2)];
 }
 
 HB_FUNC(BRWGODOWN) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   int iRows = [browse selectedRow];
 
   [browse selectRowIndexes:[[NSIndexSet alloc] initWithIndex:iRows + 1]
@@ -870,7 +870,7 @@ HB_FUNC(BRWGODOWN) {
 }
 
 HB_FUNC(BRWGOUP) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
   // int iRows = [ browse selectedRow ] ;
 
   [browse selectRowIndexes:[[NSIndexSet alloc] initWithIndex:0]
@@ -879,26 +879,26 @@ HB_FUNC(BRWGOUP) {
 }
 
 HB_FUNC(BRWSETDBLACTION) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse setDoubleAction:@selector(BrwDblClick:)];
 }
 
 HB_FUNC(BRWSETACTION) {
-  Wbrowse *browse = (Wbrowse *)hb_parnl(1);
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse setAction:@selector(BrwDblClick:)];
 }
 
 HB_FUNC(BRWAUTOAJUST) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
 
   [sv setAutoresizingMask:hb_parnl(2)];
 }
 
 HB_FUNC(BRWSCROLLAUTOHIDE) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
 
   [sv setAutohidesScrollers:hb_parl(2)];
@@ -906,7 +906,7 @@ HB_FUNC(BRWSCROLLAUTOHIDE) {
 
 HB_FUNC(BRWSCROLLSTYLE) {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
 
   [sv setScrollerStyle:hb_parnl(2)];
@@ -914,21 +914,21 @@ HB_FUNC(BRWSCROLLSTYLE) {
 }
 
 HB_FUNC(BRWSCROLLVSHOW) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
 
   [sv setHasVerticalScroller:hb_parl(2)];
 }
 
 HB_FUNC(BRWSCROLLHSHOW) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
 
   [sv setHasHorizontalScroller:hb_parl(2)];
 }
 
 HB_FUNC(BRWSSETCROLLVGRAFITE) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
   NSScroller *scrol = [sv verticalScroller];
 
@@ -940,7 +940,7 @@ HB_FUNC(BRWSSETCROLLVGRAFITE) {
 }
 
 HB_FUNC(BRWSETBKCOLOR) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
@@ -950,7 +950,7 @@ HB_FUNC(BRWSETBKCOLOR) {
 }
 
 HB_FUNC(BRWSETTEXTCOLOR) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
@@ -961,7 +961,7 @@ HB_FUNC(BRWSETTEXTCOLOR) {
 
 HB_FUNC(SETCELLTEXTCOLOR) {
 
-  NSTextFieldCell *cell = (NSTextFieldCell *)hb_parnl(1);
+  NSTextFieldCell *cell = (NSTextFieldCell *)hb_parnll(1);
   NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
@@ -971,7 +971,7 @@ HB_FUNC(SETCELLTEXTCOLOR) {
 }
 
 HB_FUNC(BRWSSETCROLLHGRAFITE) {
-  NSTableView *browse = (NSTableView *)hb_parnl(1);
+  NSTableView *browse = (NSTableView *)hb_parnll(1);
   NSScrollView *sv = [browse enclosingScrollView];
   NSScroller *scrol = [sv horizontalScroller];
 

@@ -230,40 +230,40 @@
 HB_FUNC(MAILCREATE) {
   Mailer *mimailer = [[Mailer alloc] init];
   [mimailer inicial];
-  hb_retnl((HB_LONG)mimailer);
+  hb_retnll((HB_LONGLONG)mimailer);
 }
 
 HB_FUNC(MAILSETTO) {
-  Mailer *mimailer = (Mailer *)hb_parnl(1);
+  Mailer *mimailer = (Mailer *)hb_parnll(1);
   NSString *setTo = hb_NSSTRING_par(2);
   [mimailer setToField:setTo];
 }
 
 HB_FUNC(MAILSETSUBJECT) {
-  Mailer *mimailer = (Mailer *)hb_parnl(1);
+  Mailer *mimailer = (Mailer *)hb_parnll(1);
   NSString *subj = hb_NSSTRING_par(2);
   [mimailer setSubjectField:subj];
 }
 
 HB_FUNC(MAILSETMSG) {
-  Mailer *mimailer = (Mailer *)hb_parnl(1);
+  Mailer *mimailer = (Mailer *)hb_parnll(1);
   NSString *msg = hb_NSSTRING_par(2);
   [mimailer setMessageContent:msg];
 }
 
 HB_FUNC(MAILSETFROM) {
-  Mailer *mimailer = (Mailer *)hb_parnl(1);
+  Mailer *mimailer = (Mailer *)hb_parnll(1);
   NSString *from = hb_NSSTRING_par(2);
   [mimailer setFromField:from];
 }
 
 HB_FUNC(MAILADDATTACH) {
-  Mailer *mimailer = (Mailer *)hb_parnl(1);
+  Mailer *mimailer = (Mailer *)hb_parnll(1);
   NSString *attach = hb_NSSTRING_par(2);
   [mimailer addAttach:attach];
 }
 
 HB_FUNC(MAILSEND) {
-  Mailer *mimailer = (Mailer *)hb_parnl(1);
+  Mailer *mimailer = (Mailer *)hb_parnll(1);
   [mimailer sendEmailMessage:mimailer];
 }

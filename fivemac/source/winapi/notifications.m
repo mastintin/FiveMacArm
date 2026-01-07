@@ -29,9 +29,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)notification); // Passing notification object
+  hb_vmPushNumInt((HB_LONGLONG)notification); // Passing notification object
   hb_vmPushLong(WM_NOTICLICK);
-  hb_vmPushLong((HB_LONG)notification);
+  hb_vmPushNumInt((HB_LONGLONG)notification);
   hb_vmDo(3);
 
   completionHandler();
@@ -54,37 +54,37 @@ HB_FUNC(NOTIFICREATE) {
   NSString *uuid = [[NSUUID UUID] UUIDString];
   content.userInfo = @{@"identifier" : uuid};
 
-  hb_retnl((HB_LONG)content);
+  hb_retnll((HB_LONGLONG)content);
 }
 
 HB_FUNC(NOTIFYSETTITLE) {
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   content.title = hb_NSSTRING_par(2);
 }
 
 HB_FUNC(NOTIFYGETTITLE) {
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   NSString *title = content.title;
   hb_retc([title cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 HB_FUNC(NOTIFYSETINFO) {
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   content.body = hb_NSSTRING_par(2);
 }
 
 HB_FUNC(NOTIFYSETSUBTITLE) {
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   content.subtitle = hb_NSSTRING_par(2);
 }
 
 HB_FUNC(NOTIFYDELIVER) {
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   UNUserNotificationCenter *center =
       [UNUserNotificationCenter currentNotificationCenter];
 
@@ -112,7 +112,7 @@ HB_FUNC(NOTIFYDELIVER) {
 
 HB_FUNC(NOTIFISOUND) {
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   content.sound = [UNNotificationSound defaultSound];
 }
 
@@ -125,7 +125,7 @@ HB_FUNC(NOTIFYDELETEALL) {
 
 HB_FUNC(NOTIFYDELETE) {
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   NSString *identifier = content.userInfo[@"identifier"];
   if (identifier) {
     UNUserNotificationCenter *center =
@@ -143,9 +143,9 @@ HB_FUNC(NOTIFIISPRESENTED) {
 }
 
 HB_FUNC(NOTIFIINTERVAL) {
-  NSTimeInterval interval = hb_parnl(2);
+  NSTimeInterval interval = hb_parnll(2);
   UNMutableNotificationContent *content =
-      (UNMutableNotificationContent *)hb_parnl(1);
+      (UNMutableNotificationContent *)hb_parnll(1);
   UNUserNotificationCenter *center =
       [UNUserNotificationCenter currentNotificationCenter];
 

@@ -4,7 +4,7 @@ HB_FUNC(SAYCREATE) {
   NSTextField *say =
       [[NSTextField alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                     hb_parnl(3), hb_parnl(4))];
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
   NSString *string = hb_NSSTRING_par(6);
 
   [say setEditable:FALSE];
@@ -30,20 +30,20 @@ HB_FUNC(SAYCREATE) {
 #endif
 
 HB_FUNC(SAYSETRAISED) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
 
   [[say cell] setBackgroundStyle:NSBackgroundStyleRaised];
 }
 
 HB_FUNC(SAYSETTEXT) {
-  NSTextField *label = (NSTextField *)hb_parnl(1);
+  NSTextField *label = (NSTextField *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
   [label setStringValue:string];
 }
 
 HB_FUNC(SETTEXTCOLOR) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
@@ -53,7 +53,7 @@ HB_FUNC(SETTEXTCOLOR) {
 }
 
 HB_FUNC(SETBKCOLOR) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
@@ -70,7 +70,7 @@ HB_FUNC(SETBKCOLOR) {
 // typedef NSUInteger NSTextFieldBezelStyle;
 
 HB_FUNC(SAYSETBEZELED) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   [[say cell] setBezeled:hb_parl(2)];
 
   if (hb_parl(2)) {
@@ -82,54 +82,54 @@ HB_FUNC(SAYSETBEZELED) {
 }
 
 HB_FUNC(SAYSETBEZELSQUARE) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   [[say cell] setBezelStyle:NSBezelStyleRegularSquare];
 }
 
 HB_FUNC(SAYSETBEZELROUNDED) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   [[say cell] setBezelStyle:NSBezelStylePush];
 }
 
 HB_FUNC(SAYSETSIZEFONT) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   [say setFont:[NSFont labelFontOfSize:hb_parnl(2)]];
 }
 
 HB_FUNC(SAYSETFONT) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   NSString *name = hb_NSSTRING_par(2);
   [say setFont:[NSFont fontWithName:name size:hb_parnl(3)]];
 }
 
 HB_FUNC(SETTEXTALIGN) {
-  NSTextField *say = (NSTextField *)hb_parnl(1);
+  NSTextField *say = (NSTextField *)hb_parnll(1);
   [say setAlignment:hb_parnl(2)];
 }
 
 HB_FUNC(TXTSETENABLED) // hGet --> cText
 {
-  NSTextField *get = (NSTextField *)hb_parnl(1);
+  NSTextField *get = (NSTextField *)hb_parnll(1);
   [get setEnabled:YES];
   [get setTextColor:[NSColor controlTextColor]];
 }
 
 HB_FUNC(TXTSETNOSELECT) // hGet --> cText
 {
-  NSTextField *get = (NSTextField *)hb_parnl(1);
+  NSTextField *get = (NSTextField *)hb_parnll(1);
   [get setEnabled:NO];
 }
 
 HB_FUNC(TXTSETDISABLED) // hGet --> cText
 {
-  NSTextField *get = (NSTextField *)hb_parnl(1);
+  NSTextField *get = (NSTextField *)hb_parnll(1);
   [get setEnabled:NO];
   [get setTextColor:[NSColor unemphasizedSelectedContentBackgroundColor]];
 }
 
 HB_FUNC(TXTISENABLED) // hGet --> cText
 {
-  NSTextField *get = (NSTextField *)hb_parnl(1);
+  NSTextField *get = (NSTextField *)hb_parnll(1);
   hb_retl((BOOL)[get isEnabled]);
 }
 
@@ -152,7 +152,7 @@ HB_FUNC(SAYHIPERLINKCREATE) {
   NSTextField *say =
       [[NSTextField alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                     hb_parnl(3), hb_parnl(4))];
-  NSWindow *window = (NSWindow *)hb_parnl(5);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
 
   NSString *string = hb_NSSTRING_par(6);
 

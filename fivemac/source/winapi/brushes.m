@@ -7,7 +7,7 @@ HB_FUNC(BRUSHCREATESOLID) // nRed, nGreen, nBlue, nAlpha
                                               blue:hb_parnd(3) / 255.0
                                              alpha:hb_parnd(4) / 255.0];
   [color retain];
-  hb_retnl((HB_LONG)color);
+  hb_retnll((HB_LONGLONG)color);
 }
 
 HB_FUNC(BRUSHCREATEPATTERN) // cImageFile
@@ -19,9 +19,9 @@ HB_FUNC(BRUSHCREATEPATTERN) // cImageFile
     NSColor *color = [NSColor colorWithPatternImage:image];
     [color retain];
     [image release];
-    hb_retnl((HB_LONG)color);
+    hb_retnll((HB_LONGLONG)color);
   } else
-    hb_retnl(0);
+    hb_retnll(0);
 }
 
 HB_FUNC(BRUSHCREATEGRADIENT) // nR1, nG1, nB1, nR2, nG2, nB2, nAngle, nWidth,
@@ -57,19 +57,19 @@ HB_FUNC(BRUSHCREATEGRADIENT) // nR1, nG1, nB1, nR2, nG2, nB2, nAngle, nWidth,
   [image release];
   [gradient release];
 
-  hb_retnl((HB_LONG)color);
+  hb_retnll((HB_LONGLONG)color);
 }
 
 HB_FUNC(BRUSHRELEASE) {
-  id obj = (id)hb_parnl(1);
+  id obj = (id)hb_parnll(1);
   if (obj)
     [obj release];
 }
 
 HB_FUNC(WNDSETCOLOR) // hWnd, hColor
 {
-  id obj = (id)hb_parnl(1);
-  NSColor *color = (NSColor *)hb_parnl(2);
+  id obj = (id)hb_parnll(1);
+  NSColor *color = (NSColor *)hb_parnll(2);
 
   if (obj && color) {
     if ([obj respondsToSelector:@selector(setBackgroundColor:)])
