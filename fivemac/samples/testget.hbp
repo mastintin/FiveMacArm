@@ -1,0 +1,30 @@
+# Compiler flags
+-n
+-w
+-i../include
+-i../../harbour/include
+
+# Libraries path
+-L../lib
+-L../../harbour/lib
+
+# FiveMac libraries
+-lfive
+-lfivec
+
+# Core libs
+-lz
+-lpcre
+-lsqlite3
+
+# Linker flags for Frameworks
+-ldflag=-F../frameworks
+
+-ldflag=-framework
+-ldflag=Cocoa
+
+# Output name
+-otestget
+
+# Source Files
+testget.prg

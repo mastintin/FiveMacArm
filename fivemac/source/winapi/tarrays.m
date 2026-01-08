@@ -117,3 +117,17 @@ HB_FUNC(DICTCREATELEN) {
 
   hb_retnll((HB_LONGLONG)mydict);
 }
+
+HB_FUNC(ARRAYADDITEM) {
+  NSMutableArray *myarray = (NSMutableArray *)hb_parnll(1);
+  id value;
+
+  if (HB_ISLOG(2))
+    value = [NSNumber numberWithBool:hb_parl(2)];
+  else if (HB_ISNUM(2))
+    value = [NSNumber numberWithDouble:hb_parnd(2)];
+  else
+    value = hb_NSSTRING_par(2);
+
+  [myarray addObject:value];
+}

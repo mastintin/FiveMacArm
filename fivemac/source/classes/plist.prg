@@ -15,6 +15,14 @@ CLASS TPlist
   METHOD GetArrayByName( cKey )
   
   METHOD IsKeyByName(cKey) INLINE IsKeyPlist( ::cName, cKey )
+  
+  METHOD SetBooleanByName( cKey, lValue, lPost )
+
+  
+
+
+  METHOD SetPathValue( cPath, xValue, lPost )
+  METHOD SetPathArray( cPath, aArray, lPost )
                         
 ENDCLASS
 
@@ -52,7 +60,7 @@ METHOD SetArrayByName( cKey, aArray, lpost ) CLASS TPlist
          oArray:=  ArrayCreateEmpty() 
                         
          for n = 1 to Len( aArray )
-            ArrayAddString(oArray, aArray[ n ]  )     
+            ArrayAddItem( oArray, aArray[ n ] )     
                   
          next 
           SetPlistArrayValue( ::cName, cKey, oArray, lpost ) 
@@ -80,12 +88,51 @@ return aArray
 
 //----------------------------------------------------------------------------//
 
-Function CreateInfoFile( cProg, cPath, cIcon )
+METHOD SetBooleanByName( cKey, lValue, lPost ) CLASS TPlist
+   DEFAULT lPost := .t.
+   SetPlistBoolean( ::cName, cKey, lValue, lPost )
+return nil
+
+//----------------------------------------------------------------------------//
+
+
+
+
+
+
+
+METHOD SetPathValue( cPath, xValue, lPost ) CLASS TPlist
+   DEFAULT lPost := .t.
+   SetPlistPathValue( ::cName, cPath, xValue, lPost )
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD SetPathArray( cPath, aArray, lPost ) CLASS TPlist
+   local oArray, n
+   DEFAULT lPost := .t.
+
+   if ! Empty( aArray ) .and. ValType( aArray ) == "A"
+      oArray := ArrayCreateEmpty()
+      for n = 1 to Len( aArray )
+         ArrayAddItem( oArray, aArray[ n ] )
+      next
+      SetPlistPathArray( ::cName, cPath, oArray, lPost )
+   endif
+return nil
+
+//----------------------------------------------------------------------------//
+
+Function CreateInfoFile( cProg, cPath, cIcon, cVersion )
 local lpost:= .f.
 local cFile:= cPath + cProg + ".app" + "/Contents/" + "Info.plist"
 
 if Empty( cIcon )
    cIcon := "fivetech.icns"
+endif
+
+if Empty( cVersion )
+   cVersion := "1.0"
 endif
 
 oInfo:=TPlist():new( cfile )
@@ -95,8 +142,13 @@ oInfo:=TPlist():new( cfile )
    :SetItemByName ( "CFBundleName" , cProg, lpost )
    :SetItemByName ( "CFBundleIdentifier" , "com.fivetech."+cProg , lpost  ) 
    :SetItemByName ( "CFBundlePackageType" , "APPL" , lpost  ) 
+   :SetItemByName ( "CFBundleShortVersionString" , cVersion , lpost  )
+   :SetItemByName ( "CFBundleVersion" , cVersion , lpost  )
    :SetItemByName ( "CFBundleInfoDictionaryVersion" , "6.0" , lpost  ) 
    :SetItemByName ( "CFBundleIconFile" , cIcon , lpost  ) 
+   :SetPathValue( "NSHighResolutionCapable", .t., lpost )
+   :SetItemByName( "NSPrincipalClass", "NSApplication", lpost )
+   :SetPathValue( "NSAppTransportSecurity/NSAllowsArbitraryLoads", .t., lpost )
  END
 
 Return nil

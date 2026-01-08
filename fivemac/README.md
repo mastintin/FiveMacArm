@@ -28,6 +28,13 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **File Dialogs**: Fixed `ChooseFile` and `ChooseFolder` compatibility issues on newer macOS versions by migrating to the `UniformTypeIdentifiers` framework (`UTType`).
 - **Build System**: Updated `build.sh` and `makefile` to link against `UniformTypeIdentifiers`.
 
+### Simple Project Builder (January 2026 - Part 3)
+- **UI Overhaul**: Redesigned `simple_builder` interface with improved layout, support for **Project Version** and **Icon** configuration.
+- **Project Loading**: New "Load Project" feature to import existing `.hbp` files, automatically populating source lists and setting the build environment.
+- **Robustness**: Build process switched to native `TaskExec` (compilation) and `CopyFileTo` (deployment) for better error handling and reliability.
+- **One-Click Launch**: Added "Launch App" button to run the compiled application directly from the tool using `MacExec`.
+- **Security**: Updated `CreateInfoFile` to generate compliant `Info.plist` files with `NSAppTransportSecurity` and High-DPI support.
+
 ## Building
 
 To build the library and samples:

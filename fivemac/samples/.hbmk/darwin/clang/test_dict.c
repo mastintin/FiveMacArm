@@ -1,0 +1,55 @@
+/*
+ * Harbour 3.2.0dev (r2512222342)
+ * LLVM/Clang C 17.0 (clang-1700.6.3.2) ARM64
+ * Generated C source from "test_dict.prg"
+ */
+
+#include "hbvmpub.h"
+#include "hbinit.h"
+
+
+HB_FUNC( MAIN );
+HB_FUNC_EXTERN( FILE );
+HB_FUNC_EXTERN( FERASE );
+HB_FUNC_EXTERN( TPLIST );
+HB_FUNC_EXTERN( ALERT );
+
+
+HB_INIT_SYMBOLS_BEGIN( hb_vm_SymbolInit_TEST_DICT )
+{ "MAIN", {HB_FS_PUBLIC | HB_FS_FIRST | HB_FS_LOCAL}, {HB_FUNCNAME( MAIN )}, NULL },
+{ "FILE", {HB_FS_PUBLIC}, {HB_FUNCNAME( FILE )}, NULL },
+{ "FERASE", {HB_FS_PUBLIC}, {HB_FUNCNAME( FERASE )}, NULL },
+{ "NEW", {HB_FS_PUBLIC | HB_FS_MESSAGE}, {NULL}, NULL },
+{ "TPLIST", {HB_FS_PUBLIC}, {HB_FUNCNAME( TPLIST )}, NULL },
+{ "SETDICTBYNAME", {HB_FS_PUBLIC | HB_FS_MESSAGE}, {NULL}, NULL },
+{ "SETVALUEINDICT", {HB_FS_PUBLIC | HB_FS_MESSAGE}, {NULL}, NULL },
+{ "ALERT", {HB_FS_PUBLIC}, {HB_FUNCNAME( ALERT )}, NULL }
+HB_INIT_SYMBOLS_EX_END( hb_vm_SymbolInit_TEST_DICT, "test_dict.prg", 0x0, 0x0003 )
+
+#if defined( HB_PRAGMA_STARTUP )
+   #pragma startup hb_vm_SymbolInit_TEST_DICT
+#elif defined( HB_DATASEG_STARTUP )
+   #define HB_DATASEG_BODY    HB_DATASEG_FUNC( hb_vm_SymbolInit_TEST_DICT )
+   #include "hbiniseg.h"
+#endif
+
+HB_FUNC( MAIN )
+{
+	static const HB_BYTE pcode[] =
+	{
+		13,2,0,36,3,0,106,11,116,101,115,116,46,112,
+		108,105,115,116,0,80,2,36,5,0,176,1,0,95,
+		2,12,1,28,12,36,6,0,176,2,0,95,2,20,
+		1,36,15,0,48,3,0,176,4,0,12,0,95,2,
+		112,1,80,1,36,18,0,48,5,0,95,1,106,7,
+		77,121,68,105,99,116,0,112,1,73,36,21,0,48,
+		6,0,95,1,106,7,77,121,68,105,99,116,0,106,
+		6,77,121,75,101,121,0,106,8,77,121,86,97,108,
+		117,101,0,112,3,73,36,23,0,176,7,0,106,14,
+		80,108,105,115,116,32,99,114,101,97,116,101,100,0,
+		20,1,36,25,0,100,110,7
+	};
+
+	hb_vmExecute( pcode, symbols );
+}
+
