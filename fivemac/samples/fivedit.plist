@@ -23,6 +23,7 @@
 		<string>AVFoundation</string>
 		<string>CoreMedia</string>
 		<string>iokit</string>
+		<string>UniformTypeIdentifiers</string>
 	</array>
 	<key>HarbLibs</key>
 	<array>
