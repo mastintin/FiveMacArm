@@ -916,19 +916,19 @@ static function OpenFile( cFileName )
 
    if oItem == nil
       if Lower( cFileExt( cFileName ) ) == "prg"
-         oItem = oPrgItem:AddItem( cFileNoPath( oEditor:cFileName ),,, cBmpPath + "new.png" )
+         oItem = oPrgItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
 
       elseif Lower( cFileExt( cFileName ) ) == "ch"
          if oChItem == nil
-            oChItem = oTree:AddItem( "CH", cBmpPath + "Group.tiff" )
+            oChItem = oTree:AddItem( "CH", ImgSymbols( "folder" ) )
          endif
-         oItem = oChItem:AddItem( cFileNoPath( oEditor:cFileName ),,, cBmpPath + "new.png" )
+         oItem = oChItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
 
       elseif Lower( cFileExt( cFileName ) ) == "m"
          if oMItem == nil
-            oMItem = oTree:AddItem( "M", cBmpPath + "Group.tiff" )
+            oMItem = oTree:AddItem( "M", ImgSymbols( "folder" ) )
          endif
-         oItem = oMItem:AddItem( cFileNoPath( oEditor:cFileName ),,, cBmpPath + "new.png" )
+         oItem = oMItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
       endif
    endif
 
@@ -1067,18 +1067,12 @@ function BuildButtonBar()
    @ 0, 0 SEGMENTBTN oSeg OF oWnd SIZE 290, 40 ;
       ACTION SelectionSegmentos( oSeg ) ;
       ITEMS { "", "", "" } ;
-      IMAGES { ImgSymbols("sidebar.left", "Navigator"), ImgSymbols("rectangle.bottom.third.inset.filled", "Debug"), ImgSymbols("sidebar.right", "Inspector") } ;
+      IMAGES { ImgSymbols("sidebar.left", "Navigator"), ImgSymbols("square.bottomhalf.filled", "Debug"), ImgSymbols("sidebar.right", "Inspector") } ;
       STYLE 5 ;
       TRACKING 1 ;
       AUTORESIZE 1
 
-  // oSeg:Anclaje( 1 )
-  // oSeg:SetStyle( 5 )
-  // oSeg:SetTracking( 1 )
-  // oSeg:SetImg( cBmpPath + "ideleft.tiff", 1 )
-  // oSeg:SetImg( cBmpPath + "idebottom.tiff", 2 )
-  // oSeg:SetImg( cBmpPath + "ideright.tiff", 3 )
-
+ 
    oBar:AddSegmentedBtn( "Views", "Views", oSeg, 108 )
 
    oBar:AddSpace()
@@ -1870,7 +1864,7 @@ function BuildLeft( oSplit )
    oTree:SetColWidth( 250 )
    oTree:SetBackColor( CLR_PANE )
 
-    oPrgItem = oTree:AddItem( "PRG", cBmpPath + "Group.tiff" ) // We create it here so
+    oPrgItem = oTree:AddItem( "PRG", ImgSymbols( "folder" ) ) // We create it here so
                                                                // it is the first group 
 
 return nil

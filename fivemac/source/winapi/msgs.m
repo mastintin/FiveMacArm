@@ -408,6 +408,28 @@ HB_FUNC(CHOOSESHEETTXTIMG) {
 #endif
 }
 
+HB_FUNC(CHOOSESHEETTEXT) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+
+  NSString *string = hb_NSSTRING_par(1);
+  NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+  if ([string length] != 0) {
+    [panel setDirectoryURL:[NSURL fileURLWithPath:string]];
+  }
+
+  panel.canChooseDirectories = YES;
+  panel.message = @"Importe Texto";
+  if (panel.runModal == NSModalResponseOK) {
+    NSString *source =
+        [[[[panel URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
+
+    hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
+  } else
+    hb_retc("");
+#endif
+}
+
 //----------------------------------------------------------------------------//
 
 HB_FUNC(CLIPBOARDNEW) {
