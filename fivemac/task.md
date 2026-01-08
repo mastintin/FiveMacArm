@@ -170,3 +170,75 @@ Recompile Fivemac library.
 Build and run fivedit.
 Test typing braces (), {}, [] and verify they highlight correctly when the caret is adjacent to them.
 Test mismatched braces to verify "BadLight" highlighting.
+
+## FiveMac Enhancements
+64-Bit Handle Refactoring Walkthrough
+Overview
+The goal of this task was to refactor the Objective-C runtime interaction functions in source/winapi to ensure 64-bit safety. This primarily involved identifying and replacing 32-bit handle interaction functions (hb_parnl, hb_retnl) with their 64-bit counterparts (hb_parnll, hb_retnll) for pointer/handle types.
+
+Changes Required
+The core changes required were:
+
+Parameter Retrieval: Changing hb_parnl(x) to hb_parnll(x) when retrieving handles (pointers, NSWindow*, etc.).
+Return Values: Changing hb_retnl((HB_LONG)x) to hb_retnll((HB_LONGLONG)x) when returning handles.
+Casts: Updating casts from (HB_LONG) to (HB_LONGLONG) for 64-bit compatibility.
+FiveDBU Refactoring
+Objective: Replaced PNG/TIFF icons with modern SF Symbols in 
+
+fivedbu.prg
+.
+Changes:
+Updated all DEFINE BUTTON commands to use ImgSymbols() instead of ImgPath().
+Mapped specific actions (New, Open, Save, etc.) to appropriate SF Symbols (plus.app, folder, square.and.arrow.down, etc.).
+Verification: Successfully compiled 
+
+fivedbu.app
+ utilizing the updated libfive.a and libfivec.a.
+
+Build Optimization
+Smart Image Bundling:
+
+Feature: Modified 
+
+build.sh
+ to analyze the source 
+
+.prg
+ file using grep and only copy images (png, jpg, tif, etc.) that are explicitly referenced in the code code to the app bundle.
+Logic: Matches strict filenames ending in images extensions (e.g. "image.png"). Implicit references (e.g. FILENAME "image") are ignored by design.
+Clean Step: The script now deletes the existing bitmaps folder in the app bundle before copying, ensuring no stale images remain.
+Benefit: Significantly reduces application bundle size by excluding unused assets from the bitmaps folder.
+Verification:
+
+fivedbu
+: 0 images bundled (uses SF Symbols).
+fiveform: 20 images bundled.
+fivedit: 7 images bundled (strict matching).
+Runtime Image Logic Refactoring:
+
+Issue: The ImgPath() function in 
+
+settings.prg
+ was designed to automatically copy missing bitmaps from the developer's home directory (~/five/Fivemac/bitmaps) to the app bundle at runtime. This "convenience" feature was undoing the work of our smart bundler by restoring all 120+ images as soon as the app launched.
+Fix: Disabled this auto-copy loop in 
+
+settings.prg
+.
+Result: fivedit.app now remains lightweight (7 images) even after execution.
+Multi-File Compilation:
+
+Feature: Updated 
+
+build.sh
+ to accept multiple 
+
+.prg
+ arguments (e.g., ./build.sh MainFile HelperFile).
+Logic: Iterates through all arguments, compiles each to an object file (.o), and links them all into a single executable.
+Verification: Verified with a multi-file test case (
+
+test_multi_main.prg
+ calling 
+
+test_multi_func.prg
+), which compiled and linked successfully. Single-file builds (fiveform) also verified as working (regression test passed).

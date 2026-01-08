@@ -681,6 +681,19 @@ HB_FUNC(WNDFULLSCREEN) {
 #endif
 }
 
+HB_FUNC(WNDSETRESIZABLE) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  BOOL bResizable = hb_parl(2);
+  NSUInteger style = [window styleMask];
+
+  if (bResizable)
+    style |= NSWindowStyleMaskResizable;
+  else
+    style &= ~NSWindowStyleMaskResizable;
+
+  [window setStyleMask:style];
+}
+
 HB_FUNC(WNDSETSPLASH) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
 

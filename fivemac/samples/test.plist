@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Deep</key>
+	<dict>
+		<key>Structure</key>
+		<dict>
+			<key>IsEnabled</key>
+			<true/>
+			<key>Level3</key>
+			<string>Success</string>
+			<key>MyList</key>
+			<array>
+				<string>Alpha</string>
+				<real>99.900000000000006</real>
+				<false/>
+			</array>
+			<key>Timeout</key>
+			<real>5000</real>
+		</dict>
+	</dict>
+	<key>MixedRootArray</key>
+	<array>
+		<string>One</string>
+		<real>2</real>
+		<true/>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>UserConfig</key>
+	<dict>
+		<key>IsAdmin</key>
+		<true/>
+		<key>LoginCount</key>
+		<real>100</real>
+		<key>Name</key>
+		<string>Manuel</string>
+		<key>Permissions</key>
+		<dict>
+			<key>Write</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>

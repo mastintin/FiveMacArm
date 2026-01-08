@@ -1,0 +1,76 @@
+# Explicit Platform and Compiler selection
+-plat=macos
+-comp=clang
+-hbexe
+
+# Compiler flags
+-n
+-w
+-i../include
+-i../../harbour/include
+
+# Libraries path
+-L../lib
+-L../../harbour/lib
+
+# FiveMac libraries
+-lfive
+-lfivec
+
+# Core libs
+-lz
+-lpcre
+-lsqlite3
+
+# Linker flags for Frameworks (split to ensure correct tokenization)
+-ldflag=-F../frameworks
+
+-ldflag=-framework
+-ldflag=Scintilla
+
+-ldflag=-framework
+-ldflag=Cocoa
+
+-ldflag=-framework
+-ldflag=WebKit
+
+-ldflag=-framework
+-ldflag=Quartz
+
+-ldflag=-framework
+-ldflag=UserNotifications
+
+-ldflag=-framework
+-ldflag=ScreenCaptureKit
+
+-ldflag=-framework
+-ldflag=ScriptingBridge
+
+-ldflag=-framework
+-ldflag=AVKit
+
+-ldflag=-framework
+-ldflag=AVFoundation
+
+-ldflag=-framework
+-ldflag=CoreMedia
+
+-ldflag=-framework
+-ldflag=iokit
+
+-ldflag=-framework
+-ldflag=UniformTypeIdentifiers
+
+# Rpath for finding frameworks relative to executable
+-ldflag=-rpath
+-ldflag=@loader_path/../frameworks
+
+# GT driver
+-gtstd
+
+# Output name
+-otest_multi
+
+# Source Files
+test_multi_main.prg
+test_multi_func.prg
