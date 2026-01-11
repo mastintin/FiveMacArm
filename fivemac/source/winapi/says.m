@@ -59,6 +59,7 @@ HB_FUNC(SETBKCOLOR) {
                                               blue:(hb_parnl(4) / 255.0)
                                              alpha:(hb_parnl(5) / 100.0)];
 
+  [say setDrawsBackground:YES];
   [say setBackgroundColor:color];
 }
 

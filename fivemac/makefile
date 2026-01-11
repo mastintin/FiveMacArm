@@ -95,15 +95,18 @@ PRG_OBJS = \
 	./obj/Ttimer.o	\
 	./obj/toolbar.o	\
 	./obj/toolbtn.o	\
+	./obj/TRect.o	\
    	./obj/valblank.o \
   	./obj/View.o	\
   	./obj/window.o	\
 	./obj/webview.o
 
 C_OBJS = ./objc/browses.o	\
+	./objc/Areas.o \
 	./objc/brushes.o	\
 	./objc/buttons.o	\
-	./objc/checkboxes.o \
+   ./objc/checkboxes.o \
+   ./objc/choosecolor.o \
    ./objc/choosefont.o \
     ./objc/colors.o \
   	./objc/colorton.o	\

@@ -15,7 +15,7 @@ function Main()
       SIZE ScreenWidth(), 0
 
    oWndMain:setPos(ScreenHeight() )
-   BuildImgRes()
+   // BuildImgRes()
    BuildToolBar()      
    SourceEditor()
    ShowInspector()      
@@ -43,63 +43,69 @@ function BuildToolbar()
 
    DEFINE TOOLBAR oBar OF oWndMain
 
-   DEFINE BUTTON OF oBar PROMPT "New" IMAGE ImgPath() + "new.png" ;
+   DEFINE BUTTON OF oBar PROMPT "New" IMAGE "plus" ;   
       ACTION NewForm()
          
-   DEFINE BUTTON OF oBar PROMPT "Open" IMAGE ImgPath() + "open.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Open" IMAGE "folder" ;
       ACTION OpenForm()
 
-   DEFINE BUTTON OF oBar PROMPT "Save" IMAGE ImgPath() + "save.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Save" IMAGE "square.and.arrow.down" ;
       ACTION SaveForm()
       
-   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE ImgPath() + "exit.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Exit" IMAGE "xmark" ;
       ACTION oWndMain:End()
          
    oBar:AddSpace()
 
-   DEFINE BUTTON OF oBar PROMPT "Source/form" IMAGE ImgPath() + "replace.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Source/form" IMAGE "doc.text" ;
       ACTION oWnd:SetFocus()
 
    oBar:AddSpace()
    
-   DEFINE BUTTON OF oBar PROMPT "Button" IMAGE ImgPath() + "button.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Button" IMAGE "rectangle" ;
       ACTION AddButton()
 
-   DEFINE BUTTON OF oBar PROMPT "BtnBmp" IMAGE ImgPath() + "btnbmp.png" ;
+   DEFINE BUTTON OF oBar PROMPT "BtnBmp" IMAGE "rectangle.badge.plus" ;
       ACTION AddBtnBmp()
 
-   DEFINE BUTTON OF oBar PROMPT "Checkbox" IMAGE ImgPath() + "checkbox.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Checkbox" IMAGE "checkmark.square" ;
       ACTION AddCheckbox()
 
-   DEFINE BUTTON OF oBar PROMPT "Radio" IMAGE ImgPath() + "radio.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Radio" IMAGE "circle.circle" ;
       ACTION AddRadio()
 
-   DEFINE BUTTON OF oBar PROMPT "Say" IMAGE ImgPath() + "say.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Say" IMAGE "textformat.abc" ;
       ACTION AddSay()
 
-   DEFINE BUTTON OF oBar PROMPT "Get" IMAGE ImgPath() + "get.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Get" IMAGE "text.justify.left" ;
       ACTION AddGet()
 
-   DEFINE BUTTON OF oBar PROMPT "ComboBox" IMAGE ImgPath() + "combobox.png" ;
+   DEFINE BUTTON OF oBar PROMPT "ComboBox" IMAGE "list.bullet" ;
       ACTION AddCombo()
 
-   DEFINE BUTTON OF oBar PROMPT "Browse" IMAGE ImgPath() + "browse.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Browse" IMAGE "tablecells" ;
       ACTION AddBrws()
 
-   DEFINE BUTTON OF oBar PROMPT "Image" IMAGE ImgPath() + "image.png" ;
+   DEFINE BUTTON OF oBar PROMPT "Image" IMAGE "photo" ;
       ACTION AddImg()
 
-   DEFINE BUTTON OF oBar PROMPT "Tabs" IMAGE ImgDefPath("tabs.png") ;
+   DEFINE BUTTON OF oBar PROMPT "Tabs" IMAGE "sidebar.left" ;
       ACTION AddTabs()
 
-   DEFINE BUTTON OF oBar PROMPT "Progress" IMAGE ImgDefPath( "progress.png") ;
+   DEFINE BUTTON OF oBar PROMPT "Progress" IMAGE "percent" ;
       ACTION AddProgress()
 
-   DEFINE BUTTON OF oBar PROMPT "Group" IMAGE ImgDefPath("box.png") ;
+   DEFINE BUTTON OF oBar PROMPT "Group" IMAGE "square.dashed" ;
       ACTION AddGroup()
       
-    DEFINE BUTTON OF oBar PROMPT "Slider" IMAGE ImgDefPath("slider.png") ;
+    DEFINE BUTTON OF oBar PROMPT "Slider" IMAGE "slider.horizontal.3" ;
       ACTION AddSlider()
+
+    DEFINE BUTTON OF oBar PROMPT "Web" IMAGE "globe" ;
+      ACTION AddWeb()
+
+    DEFINE BUTTON OF oBar PROMPT "Color" IMAGE "paintpalette" ;
+      ACTION AddColorWell()
    
 
 return nil
@@ -502,5 +508,35 @@ function AddProgress()
    oWndInsp:AddItem( oPgr )
 
 return nil
+
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+
+function AddWeb()
+
+   local oWeb, oParent := GetParent()
+   
+   @ 10, 10 WEBVIEW oWeb OF oParent SIZE 200, 200
+   
+   oWeb:cVarName = "oWeb" + oWeb:GetCtrlIndex()
+   
+   oWndInsp:AddItem( oWeb )
+   
+return nil 
+
+//----------------------------------------------------------------------------//
+
+function AddColorWell()
+
+   local oClr, oParent := GetParent()
+   local nColor := CLR_WHITE
+   
+   @ 10, 10 COLORWELL oClr VAR nColor OF oParent SIZE 50, 24
+   
+   oClr:cVarName = "oClr" + oClr:GetCtrlIndex()
+   
+   oWndInsp:AddItem( oClr )
+   
+return nil 
 
 //----------------------------------------------------------------------------//

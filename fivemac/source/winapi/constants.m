@@ -65,7 +65,15 @@ NSImage *ImgTemplate(NSString *name) {
       [[[NSDictionary alloc] initWithObjects:templates
                                      forKeys:names] autorelease];
 
-  return [NSImage imageNamed:[dict objectForKey:name]];
+  NSImage *img = [NSImage imageNamed:[dict objectForKey:name]];
+
+  if (img == nil)
+    if ([NSImage respondsToSelector:@selector(imageWithSystemSymbolName:
+                                               accessibilityDescription:)])
+      img = [NSImage imageWithSystemSymbolName:name
+                      accessibilityDescription:nil];
+
+  return img;
 }
 
 #else

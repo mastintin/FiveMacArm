@@ -504,7 +504,7 @@ HB_FUNC(WNDCLOSE) {
 
 HB_FUNC(WNDDESIGN) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  View *view = [window contentView];
+  View *view = (View *)[window contentView];
 
   hb_retl(view->bDesign);
 
@@ -514,7 +514,7 @@ HB_FUNC(WNDDESIGN) {
 
 HB_FUNC(WNDHITTEST) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  View *view = [window contentView];
+  View *view = (View *)[window contentView];
   NSPoint aPoint;
   BOOL bDesign = view->bDesign;
   NSView *ctrl;
@@ -525,8 +525,66 @@ HB_FUNC(WNDHITTEST) {
   view->bDesign = FALSE;
   ctrl = [view hitTest:aPoint];
 
-  if ([[ctrl class] isSubclassOfClass:[NSScrollView class]])
-    ctrl = [((NSScrollView *)ctrl) documentView];
+  // Robust HitTest Resolution Logic v2
+  // Goal: Normalize the hit to what handles fiveform expects.
+  // Handles Internal Views (Images in Buttons), Containers (WebViews), and
+  // Legacy Memos.
+
+  NSView *temp = ctrl;
+  Class wkClass = NSClassFromString(@"WKWebView");
+
+  while (temp && temp != view) {
+    // 1. WebView
+    if (wkClass && [temp isKindOfClass:wkClass]) {
+      if ([temp enclosingScrollView]) {
+        ctrl = [temp enclosingScrollView];
+      } else {
+        ctrl = temp;
+      }
+      break;
+    }
+
+    // 2. ScrollView (Container)
+    if ([temp isKindOfClass:[NSScrollView class]]) {
+      NSScrollView *sv = (NSScrollView *)temp;
+      NSView *docView = [sv documentView];
+
+      // For WebView, we want the ScrollView handle (Container Strategy)
+      if (wkClass && [docView isKindOfClass:wkClass]) {
+        ctrl = sv;
+      } else {
+        // For Memos/Browsers, we likely want the Inner View (Legacy behavior)
+        if (docView)
+          ctrl = docView;
+        else
+          ctrl = sv;
+      }
+      break;
+    }
+
+    // 3. NSBox (Group)
+    if ([temp isKindOfClass:[NSBox class]]) {
+      ctrl = temp;
+      break;
+    }
+
+    // 4. NSControl (standard controls like Button, Slider)
+    // Must exclude NSScroller because we want to climb to its ScrollView parent
+    if ([temp isKindOfClass:[NSControl class]]) {
+      if (![temp isKindOfClass:[NSScroller class]]) {
+        ctrl = temp;
+        break;
+      }
+    }
+
+    // 5. NSTextView (Inner Memo hit)
+    if ([temp isKindOfClass:[NSTextView class]]) {
+      ctrl = temp;
+      break;
+    }
+
+    temp = [temp superview];
+  }
 
   hb_retnll((HB_LONGLONG)ctrl);
   view->bDesign = bDesign;
@@ -564,12 +622,14 @@ HB_FUNC(WNDSETTEXT) {
 
 HB_FUNC(WNDGETTEXT) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  NSString *string;
+  NSString *string = @"";
 
   if ([window isKindOfClass:[NSControl class]])
     string = [((NSControl *)window) stringValue];
-  else
-    string = [window title];
+  else {
+    if ([window respondsToSelector:@selector(title)])
+      string = [window title];
+  }
 
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
@@ -692,6 +752,16 @@ HB_FUNC(WNDSETRESIZABLE) {
     style &= ~NSWindowStyleMaskResizable;
 
   [window setStyleMask:style];
+}
+
+HB_FUNC(WNDSETMINSIZE) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  [window setMinSize:NSMakeSize(hb_parnl(2), hb_parnl(3))];
+}
+
+HB_FUNC(WNDSETMAXSIZE) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  [window setMaxSize:NSMakeSize(hb_parnl(2), hb_parnl(3))];
 }
 
 HB_FUNC(WNDSETSPLASH) {
@@ -929,9 +999,10 @@ HB_FUNC(WNDSETPOS) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
 
-  if ([[window class] isSubclassOfClass:[NSTableView class]]) {
-    window = (NSWindow *)[((NSTableView *)window) enclosingScrollView];
-
+  if ([window respondsToSelector:@selector(enclosingScrollView)]) {
+    NSScrollView *sv = [(NSView *)window enclosingScrollView];
+    if (sv)
+      window = (NSWindow *)sv;
     frame = [window frame];
   }
 
@@ -946,11 +1017,18 @@ HB_FUNC(WNDSETPOS) {
     [ctrl setFrame:frame];
     [[ctrl window] display];
   } else
-    [window setFrame:frame display:YES animate:NO];
+    [window setFrame:frame display:YES];
 }
 
 HB_FUNC(WINSETSIZE) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
+
+  if ([window respondsToSelector:@selector(enclosingScrollView)]) {
+    NSScrollView *sv = [(NSView *)window enclosingScrollView];
+    if (sv)
+      window = (NSWindow *)sv;
+  }
+
   NSRect frame = [window frame];
   CGFloat nWidth = hb_parnl(2);
   CGFloat nHeight = hb_parnl(3);
@@ -965,6 +1043,13 @@ HB_FUNC(WINSETSIZE) {
 HB_FUNC(WINSETSIZECHANGE) // HControl ,nHeight,nWidth
 {
   NSWindow *window = (NSWindow *)hb_parnll(1);
+
+  if ([window respondsToSelector:@selector(enclosingScrollView)]) {
+    NSScrollView *sv = [(NSView *)window enclosingScrollView];
+    if (sv)
+      window = (NSWindow *)sv;
+  }
+
   NSRect frame = [window frame];
 
   CGFloat sizeyChange = hb_parnl(2);

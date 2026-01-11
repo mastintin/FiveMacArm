@@ -11,8 +11,11 @@ CLASS TInspector FROM TWindow
    DATA   oTabs
    DATA   oBrwProps
    DATA   oBrwEvents
+   DATA   oSayPos
 
    METHOD New()
+   
+   METHOD SetPosInfo( nRow, nCol ) INLINE ::oSayPos:SetText( "Row: " + AllTrim( Str( nRow ) ) + " Col: " + AllTrim( Str( nCol ) ) )
 
    METHOD AddItem( oCtrl )
 
@@ -59,6 +62,9 @@ METHOD New() CLASS TInspector
 
    @ 6, 8 TABS ::oTabs PROMPTS { "Properties", "Methods" } OF Self ;
       SIZE 300, 390 AUTORESIZE 18
+
+   // Coordinate Display in Inspector (Bottom of window, standard Cocoa coordinates)
+   @ 2, 20 SAY ::oSayPos PROMPT "Row: 0 Col: 0" OF Self SIZE 200, 20
 
    ::BuildPanels()
 
@@ -182,6 +188,11 @@ METHOD InspectProperty() CLASS TInspector
       case oCtrl:aProps[ ::oBrwProps:nArrayAt ] == "cFileName"
            uValue = ChooseFile( "Please select a file", "png" )
            oCtrl:cFileName = uValue
+
+      case "Color" $ oCtrl:aProps[ ::oBrwProps:nArrayAt ] .or. ;
+           "nClr" $ oCtrl:aProps[ ::oBrwProps:nArrayAt ]
+           uValue = ChooseColor( uValue )
+           __ObjSendMsg( oCtrl, "_" + oCtrl:aProps[ ::oBrwProps:nArrayAt ], uValue )
 
       case ValType( uValue ) == "A"
         if oCtrl:IsKindOf( "TTABS" ) 
