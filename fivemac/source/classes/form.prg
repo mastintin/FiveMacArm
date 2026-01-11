@@ -51,6 +51,10 @@ CLASS TForm FROM TWindow
 
    METHOD CheckCursor( nRow, nCol )
 
+   METHOD HCenter()
+   METHOD VCenter()
+
+
 ENDCLASS
 
 //----------------------------------------------------------------------------//
@@ -359,13 +363,9 @@ METHOD ShowPopup( nRow, nCol ) CLASS TForm
    MENU oPopup POPUP
       MENUITEM "Selected control"
       MENU
-         MENUITEM "Horizontal center" ACTION If( oCtrl != nil,;
-                     oCtrl:SetPos( oCtrl:nTop,;
-                     oCtrl:oWnd:nWidth / 2 - oCtrl:nWidth / 2 ),)
+         MENUITEM "Horizontal center" ACTION ::HCenter()
                      
-         MENUITEM "Vertical center" ACTION If( oCtrl != nil,;
-                     oCtrl:SetPos( oCtrl:oWnd:nHeight / 2 - ;
-                     oCtrl:nHeight / 2, oCtrl:nLeft ),)
+         MENUITEM "Vertical center" ACTION ::VCenter()
          
          SEPARATOR
          
@@ -391,3 +391,22 @@ METHOD ShowPopup( nRow, nCol ) CLASS TForm
 return nil
 
 //----------------------------------------------------------------------------//
+
+METHOD HCenter( nRow, nCol ) CLASS TForm
+local oCtrl := ::oLastControl
+If oCtrl != nil
+   oCtrl:SetPos( oCtrl:nTop,oCtrl:oWnd:nWidth / 2 - oCtrl:nWidth / 2 )
+   ::oRect:Set( oCtrl:nTop, oCtrl:nLeft, oCtrl:nWidth, oCtrl:nHeight )
+   ::oRect:SetBottomRightCornerLeft()
+endif
+
+Return nil 
+
+Method VCenter()  CLASS TForm
+local oCtrl := ::oLastControl
+       If oCtrl != nil
+          oCtrl:SetPos( oCtrl:oWnd:nHeight / 2 - oCtrl:nHeight / 2, oCtrl:nLeft )
+          ::oRect:Set( oCtrl:nTop, oCtrl:nLeft, oCtrl:nWidth, oCtrl:nHeight )
+          ::oRect:SetBottomRightCornerLeft()
+       endif   
+Return nil

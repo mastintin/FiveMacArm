@@ -3,14 +3,14 @@
 #include <fivemac.h>
 
 // deprecated
-// HB_FUNC(SETCURSORSIZE) { [[NSCursor resizeLeftRightCursor] set]; }
+HB_FUNC(SETCURSORSIZE) { [[NSCursor resizeLeftRightCursor] set]; }
 
 HB_FUNC(SETCURSORARROW) { [[NSCursor arrowCursor] set]; }
 
 HB_FUNC(SETCURSORHAND) { [[NSCursor openHandCursor] set]; }
 
 // deprecated
-// HB_FUNC(SETCURSORRESIZEDOWN) { [[NSCursor resizeDownCursor] set]; }
+HB_FUNC(SETCURSORRESIZEDOWN) { [[NSCursor resizeDownCursor] set]; }
 
 HB_FUNC(SETCURSORCLOSEHAND) { [[NSCursor closedHandCursor] set]; }
 

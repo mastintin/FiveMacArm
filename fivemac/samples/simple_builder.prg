@@ -18,61 +18,56 @@ function Main()
    // Standard Coordinates (Bottom-Left is 0,0)
    // Height 550 (Increased to lower top elements visually)
    
-   DEFINE WINDOW oWnd TITLE "Simple Project Builder" ;
-      SIZE 600, 550
+   DEFINE DIALOG oWnd TITLE "Simple Project Builder" ;
+      SIZE 600, 550 FLIPPED
 
-   // Top Inputs (Y ~ 450, lowered from 460/500 margin)
-   @ 450, 30 SAY "Project Name:" OF oWnd SIZE 100, 20
-   @ 450, 130 GET oGet VAR cProjectName OF oWnd SIZE 200, 24
+   // --- Top: Inputs (Y=30..90) ---
+   @ 30, 30 SAY "Project Name:" OF oWnd SIZE 100, 20
+   @ 30, 130 GET oGet VAR cProjectName OF oWnd SIZE 200, 24
 
-   @ 420, 30 SAY "Version:" OF oWnd SIZE 60, 20
-   @ 420, 90 GET oGetVer VAR cVersion OF oWnd SIZE 60, 24
+   @ 60, 30 SAY "Version:" OF oWnd SIZE 60, 20
+   @ 60, 90 GET oGetVer VAR cVersion OF oWnd SIZE 60, 24
    
-   @ 420, 160 SAY "Icon:" OF oWnd SIZE 40, 20
-   @ 420, 200 GET oGetIcon VAR cIcon OF oWnd SIZE 130, 24
+   @ 60, 160 SAY "Icon:" OF oWnd SIZE 40, 20
+   @ 60, 200 GET oGetIcon VAR cIcon OF oWnd SIZE 130, 24
 
-   // Browse: Y start 110, Height 280 -> Top at 390
+   // --- Middle: Browse (Y=110..380) ---
    @ 110, 30 BROWSE oBrw OF oWnd SIZE 340, 280 ;
       FIELDS aPrgs[ oBrw:nArrayAt ] ;
       HEADERS "Source Files" ;
       COLSIZES 320 
 
-   // Important for Array Browse
    oBrw:SetArray( aPrgs )
    oBrw:cAlias := "_ARRAY" 
    
-   // Buttons aligned on the right side
-   // Order Top -> Bottom: Load, Gen, Build, Run
-   // Load (Top aligned with Browse ~ 390)
-   @ 366, 400 BUTTON oBtnLoad PROMPT "Load Project" OF oWnd ;
+   // --- Right Side Buttons (Y=110..270) ---
+   @ 110, 400 BUTTON oBtnLoad PROMPT "Load Project" OF oWnd ;
       ACTION LoadHbp( oGet, oBtnGen, oBtnBuild, oBtnRun ) SIZE 160, 24
 
-   @ 326, 400 BUTTON oBtnGen PROMPT "Generate Project" OF oWnd ;
+   @ 150, 400 BUTTON oBtnGen PROMPT "Generate Project" OF oWnd ;
       ACTION GenerateHbp() SIZE 160, 24
 
-   @ 286, 400 BUTTON oBtnBuild PROMPT "Create App" OF oWnd ;
+   @ 190, 400 BUTTON oBtnBuild PROMPT "Create App" OF oWnd ;
       ACTION BuildApp( cVersion, cIcon, oBtnRun ) SIZE 160, 24
       
-   @ 246, 400 BUTTON oBtnRun PROMPT "Launch App" OF oWnd ;
+   @ 230, 400 BUTTON oBtnRun PROMPT "Launch App" OF oWnd ;
       ACTION RunApp() SIZE 160, 24
       
-   // Start disabled
    oBtnGen:Disable()
    oBtnBuild:Disable()
    oBtnRun:Disable()
 
-   // Add/Del buttons below Browse (Y ~ 80)
-   @ 80, 30 BUTTON oBtnAdd PROMPT "+" OF oWnd ;
+   // --- Bottom: Buttons (Y=420) ---
+   @ 420, 30 BUTTON oBtnAdd PROMPT "+" OF oWnd ;
       ACTION AddPrg( oBtnGen, oBtnBuild ) SIZE 40, 24
 
-   @ 80, 80 BUTTON oBtnDel PROMPT "-" OF oWnd ;
+   @ 420, 80 BUTTON oBtnDel PROMPT "-" OF oWnd ;
       ACTION DelPrg( oBtnGen, oBtnBuild ) SIZE 40, 24
-      
-   // Exit at Bottom
-   @ 20, 400 BUTTON oBtnExit PROMPT "Exit" OF oWnd ;
+
+   @ 500, 400 BUTTON oBtnExit PROMPT "Exit" OF oWnd ;
       ACTION oWnd:End() SIZE 160, 24
 
-   ACTIVATE WINDOW oWnd CENTERED ;
+   ACTIVATE DIALOG oWnd CENTERED ;
       ON INIT WndSetResizable( oWnd:hWnd, .F. )
    
 return nil
@@ -152,6 +147,10 @@ function GenerateHbp()
    cHbpContent += "-n" + CRLF
    cHbpContent += "-w" + CRLF
    
+   cHbpContent += "-plat=macos" + CRLF
+   cHbpContent += "-comp=clang" + CRLF
+
+
    // Adjust include/lib paths relative to the selected folder? 
    // For now, we assume standard position or use absolute paths?
    // Better to use relative paths if we assume the user is creating projects in 'samples' or similar depth.
@@ -206,6 +205,10 @@ function GenerateHbp()
    // Output
    cHbpContent += "-o" + cProjectName + CRLF
    
+   cHbpContent += "# Helper flags for ObjC" + CRLF
+   cHbpContent += "-cflag=-x" + CRLF
+   cHbpContent += "-cflag=objective-c" + CRLF
+
    // Sources
    cHbpContent += "# Sources" + CRLF
    for n := 1 to Len( aPrgs )

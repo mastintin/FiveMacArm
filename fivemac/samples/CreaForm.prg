@@ -7,15 +7,15 @@ static aForms := {}
 
 //----------------------------------------------------------------------------//
 
-function Main()
+function MainCreaForm()
 
-   BuildMenu()  
+  // BuildMenuDesigner()  
 
    DEFINE WINDOW oWndMain TITLE "FiveMac Designer" ;
-      SIZE ScreenWidth(), 0
+      SIZE ScreenWidth(), 200
 
    oWndMain:setPos(ScreenHeight() )
-   // BuildImgRes()
+
    BuildToolBar()      
  //  SourceEditor()
    ShowInspector()      
@@ -98,17 +98,37 @@ function BuildToolbar()
    DEFINE BUTTON OF oBar PROMPT "Group" IMAGE "square.dashed" ;
       ACTION AddGroup()
       
-    DEFINE BUTTON OF oBar PROMPT "Slider" IMAGE "slider.horizontal.3" ;
+   DEFINE BUTTON OF oBar PROMPT "Slider" IMAGE "slider.horizontal.3" ;
       ACTION AddSlider()
 
-    DEFINE BUTTON OF oBar PROMPT "Web" IMAGE "globe" ;
+   DEFINE BUTTON OF oBar PROMPT "Web" IMAGE "globe" ;
       ACTION AddWeb()
 
-    DEFINE BUTTON OF oBar PROMPT "Color" IMAGE "paintpalette" ;
+   DEFINE BUTTON OF oBar PROMPT "Color" IMAGE "paintpalette" ;
       ACTION AddColorWell()
-   
+
+   oBar:AddSpace()
+
+   DEFINE BUTTON OF oBar PROMPT "Salir" ;
+      TOOLTIP "Cerrar diseñador" ;
+       IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
+       ACTION  exitform()
 
 return nil
+//--------------------------------
+
+Function ExitForm()
+ 
+local i 
+ if len( aForms) >0
+   for i:= 1 to len( aForms)
+      aForms[i]:end()
+   next
+endif
+oWndInsp:end()
+oWndMain:end()
+
+Return nil
 
 //----------------------------------------------------------------------------//
 
@@ -209,16 +229,16 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function BuildMenu()
+function BuildMenuDesigner()
 
    local oMenu
    
    MENU oMenu
       MENUITEM "designer"
       MENU
-         MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2012", "Designer" )
-         SEPARATOR
-         MENUITEM "Exit" ACTION oWndMain:End() ACCELERATOR "q" 
+         //MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2012", "Designer Form " )
+         //SEPARATOR
+         MENUITEM "Exit" ACTION ExitForm()
       ENDMENU
       
       MENUITEM "files"
