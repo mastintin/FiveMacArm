@@ -66,7 +66,7 @@ HB_FUNC(TABVIEWCREATE) {
   hb_retnll((HB_LONGLONG)tabview);
 }
 
-HB_FUNC(TABVADDITEM) {
+HB_FUNC(TABVIEWITEMADD) {
   NSTabView *tabview = (NSTabView *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
@@ -84,7 +84,7 @@ HB_FUNC(TABVADDITEM) {
   hb_retnll((HB_LONGLONG)tabitem);
 }
 
-HB_FUNC(TABVSETTYPE) {
+HB_FUNC(TABVIEWSETTYPE) {
   NSTabView *tabview = (NSTabView *)hb_parnll(1);
 
   [tabview setTabViewType:hb_parnl(2)];
@@ -96,19 +96,19 @@ HB_FUNC(TABVIEWGETNUMITEMS) {
   hb_retni([tabview numberOfTabViewItems]);
 }
 
-HB_FUNC(TABVSELECTITEM) {
+HB_FUNC(TABVIEWSETSELECTEDITEM) {
   NSTabView *tabview = (NSTabView *)hb_parnll(1);
   [tabview selectTabViewItemAtIndex:hb_parni(2)];
 }
 
-HB_FUNC(TABVGETITEM) {
+HB_FUNC(TABVIEWGETITEM) {
   NSTabView *tabview = (NSTabView *)hb_parnll(1);
   NSTabViewItem *item = [tabview tabViewItemAtIndex:hb_parni(2)];
 
   hb_retnll((HB_LONGLONG)item);
 }
 
-HB_FUNC(TABVITEMSETLABEL) {
+HB_FUNC(TABVIEWITEMSETLABEL) {
   NSTabViewItem *item = (NSTabViewItem *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
   [item setLabel:string];

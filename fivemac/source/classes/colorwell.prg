@@ -7,7 +7,7 @@ CLASS TColorWell FROM TControl
    DATA   nRGBColor
    DATA   bChange
 
-   METHOD New( nTop, nLeft, nSize, nHeight, oWnd, bChange )
+   METHOD New( nTop, nLeft, nSize, nHeight, oWnd, bChange, nRGBColor )
 
    METHOD GetColor() INLINE ClrWGetColor( ::hWnd )
    
@@ -23,7 +23,7 @@ ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange ) CLASS TColorWell
+METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange, nRGBColor ) CLASS TColorWell
 
    DEFAULT nTop := 10, nLeft := 10, nWidth := 100, nHeight := 30,;
            oWnd := GetWndDefault() 
@@ -31,7 +31,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange ) CLASS TColorWell
    ::hWnd = CreateColorWell( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
    ::oWnd = oWnd
    ::bChange = bChange
-   
+   ::SetRGBColor( nRGBColor )
    oWnd:AddControl( Self )
    
 return Self

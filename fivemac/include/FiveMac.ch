@@ -203,11 +203,12 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 
 #xcommand @ <nRow>, <nCol> COLORWELL [ <oClrWell> ] ;
 		         [ OF <oWnd> ] ;
+               [VAR  <nColor> ] ;
              [ SIZE <nWidth>, <nHeight> ] ;
              [ ON CHANGE <uChange> ] ; 
           => ;
              [ <oClrWell> := ] TColorWell():New( <nRow>, <nCol>, [<nWidth>],;
-             [<nHeight>], [<oWnd>], [\{||(<uChange>)\}] )			       
+             [<nHeight>], [<oWnd>], [\{||(<uChange>)\}] , [<nColor>] )			       
 
 //----------------------------------------------------------------------------//
 

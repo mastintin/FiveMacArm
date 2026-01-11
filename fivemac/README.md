@@ -38,6 +38,13 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **One-Click Launch**: Added "Launch App" button to run the compiled application directly from the tool using `MacExec`.
 - **Security**: Updated `CreateInfoFile` to generate compliant `Info.plist` files with `NSAppTransportSecurity` and High-DPI support.
 
+### Visual Designer (January 2026 - Part 4)
+- **Visual Designer Core**: Complete overhaul of `TForm` (the designer canvas) using the new `TRect` class. This enables precise control resizing, movement, and "hotspot" management (corners/handles).
+- **Inspector Integration**: Robust two-way synchronization between the visual designer and the Object Inspector (`inspect.prg`). Properties derived from `TRect` (Top, Left, Width, Height) now update in real-time.
+- **TRect Class**: Introduced `TRect.prg` and `Areas.m` to provide a high-level Harbour object wrapper around native Cocoa `NSRect` manipulations. This powers the new geometric logic of the designer.
+- **New Controls**: Added support for **WebView** and **ColorWell** in the designer palette and inspector.
+- **Mouse Interaction**: Created `trst_mouse` sample to validate complex mouse interactions (drag-and-drop, resizing handles, cursor changes) before integrating them into the main designer.
+
 ## Building
 
 To build the library and samples:
