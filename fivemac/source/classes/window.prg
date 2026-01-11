@@ -578,6 +578,7 @@ METHOD HandleEvent( nMsg, nSender, uParam1, uParam2, uParam3, uParam4 ) CLASS TW
              return ::MouseMove( uParam1, uParam2 )
 
         case nMsg == WM_LBUTTONDOWN
+             // MsgInfo( "Window Click: " + Str( nMsg ) )
              if oControl != nil
                 return oControl:LButtonDown( uParam1, uParam2 )
              else

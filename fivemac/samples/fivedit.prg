@@ -417,26 +417,49 @@ return TaskExec( "/usr/bin/uname", { "-s" } )
 function NewFile()
 
    local scriptDbf := AppPath() + "/scripts.dbf"
-   local cFileName := "noname1.prg", n := 2
+   local cFileName := Space( 50 )
    local cAlias
-
-   while File( cFileName )
-      cFileName = "noname" + AllTrim( Str( n++ ) ) + ".prg"
-   end
-
-   if ! File( cFileName )
-      cAlias = Abrimos( "scripts" )
-      if ! Empty( cAlias )
-         MemoWrit( cFileName, ( cAlias )->CODE )
+   local cCode := '#include "FiveMac.ch"' + CRLF + CRLF + ;
+                  "function Main()" + CRLF + CRLF + ;
+                  '   MsgInfo( "Hello world!" )' + CRLF + CRLF + ;
+                  "return nil"
+   
+   if MsgGet( "New File", "Filename:", @cFileName )
+      
+      cFileName = AllTrim( cFileName )
+      
+      if Empty( cFileName )
+         return nil
       endif
-      // MemoWrit( cFileName, '#include "FiveMac.ch"' + CRLF + CRLF + ;
-      //                       "function Main()" + CRLF + CRLF + ;
-      //                       '   MsgInfo( "hello world!" )' + CRLF + CRLF + ;
-      //                       "return nil" )
-   endif
+      
+      if Empty( cFileExt( cFileName ) )
+         cFileName += ".prg"
+      endif
+      
+      cFileName = Path() + "/" + cFileName
+      
+      if File( cFileName )
+         if ! MsgYesNo( "File already exists. Overwrite?" )
+            return nil
+         endif
+      endif
 
-   Close( cAlias )
-   OpenFile( cFileName )
+      cAlias = Abrimos( "scripts" )
+      
+      if ! Empty( cAlias )
+         if ( cAlias )->( DbSeek( "Default" ) ) // Optional: Seek a specific default template if it exists
+             cCode = ( cAlias )->CODE
+         elseif ( cAlias )->( DbGoTop() ) .and. ! ( cAlias )->( Eof() )
+             cCode = ( cAlias )->CODE
+         endif
+         Close( cAlias )
+      endif
+      
+      MemoWrit( cFileName, cCode )
+      
+      OpenFile( cFileName )
+      
+   endif
 
 return nil
 
@@ -1062,6 +1085,11 @@ function BuildButtonBar()
        IMAGE  ImgSymbols( "tablecells", "Dbf" ) ;
       ACTION FunCreaDbf()
 
+   DEFINE BUTTON OF oBar PROMPT "Designer" ;
+      TOOLTIP "Open Form Designer" ;
+      IMAGE  ImgSymbols( "paintbrush.pointed", "Designer" ) ;
+      ACTION MainCreaForm()
+
    oBar:AddSpace() // AddSpaceFlex()
 
    @ 0, 0 SEGMENTBTN oSeg OF oWnd SIZE 290, 40 ;
@@ -1080,7 +1108,7 @@ function BuildButtonBar()
    DEFINE BUTTON OF oBar PROMPT "Exit" ;
       TOOLTIP "Exit" ;
        IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
-       ACTION Exit()
+       ACTION ExitPrg()
 
 return nil
 
@@ -1092,14 +1120,14 @@ function BuildMenu()
    local lfolder:= .f.
 
    MENU oMenu
-      MENUITEM "SciEdit"
+      MENUITEM "FiveEdit"
       MENU
          MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2026",;
                                               "FiveMac IDE", "About" )
          SEPARATOR
          MENUITEM "Preferences..." ACCELERATOR "," ACTION Preferences()
          SEPARATOR
-         MENUITEM "Exit" ACCELERATOR "q" ACTION Exit() IMAGE ImgSymbols( "power.circle", "Exit" ) 
+         MENUITEM "Exit" ACCELERATOR "q" ACTION ExitPrg() IMAGE ImgSymbols( "power.circle", "Exit" ) 
       ENDMENU
 
       MENUITEM "File"
@@ -1148,6 +1176,7 @@ function BuildMenu()
          MENUITEM "End of line"         ACTION  oEditor:SetEOL()
          SEPARATOR
          MENUITEM "Toggle Bookmark"     ACTION  oEditor:SetToggle()
+
          MENUITEM "Next Bookmark"       ACTION  oEditor:BookMarkNext( .t. )
          MENUITEM "Previous Bookmark"   ACTION  oEditor:BookMarkNext( .f. )
          MENUITEM "Clear All Bookmarks" ACTION  oEditor:BookMarkClearAll()
@@ -1179,6 +1208,8 @@ function BuildMenu()
 
       MENUITEM "Tools"
       MENU
+         MENUITEM "Form Designer..." ACTION MainCreaForm()
+         SEPARATOR
          MENUITEM "Terminal" ACTION MacExec( "Terminal.app" )
 
          SEPARATOR
@@ -1223,7 +1254,7 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function Exit()
+function ExitPrg()
 
    local oPlist
    local n, oEditor
