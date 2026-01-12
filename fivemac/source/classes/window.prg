@@ -41,7 +41,7 @@ CLASS TWindow
    DATA  cCursor
    DATA  bLostFocus, bGetFocus
 
-   CLASSDATA aProps INIT { "nTop", "nLeft", "nWidth", "nHeight", "cText", "cVarName" }
+   CLASSDATA aProps INIT { "nTop", "nLeft", "nWidth", "nHeight", "cText", "cVarName", "lFlipped" }
    
    DATA aEvents INIT { { { "OnClick", "nRow", "nCol" }, nil },;
    	                   { { "OnClose" }, nil },;
@@ -181,6 +181,8 @@ CLASS TWindow
    METHOD SetAutoresizesSubViews( lOnOff ) INLINE SetAutoresizesSubviews( ::hWnd, lOnOff )
    
    METHOD SetEventCode( cCode )
+   
+   METHOD GetTitleHeight() INLINE WM_GetTitleHeight( ::hWnd )
    
    METHOD SetPos( nRow, nCol ) INLINE WndSetPos( ::hWnd, nRow, nCol )
   
@@ -560,7 +562,10 @@ METHOD HandleEvent( nMsg, nSender, uParam1, uParam2, uParam3, uParam4 ) CLASS TW
         case nMsg == WM_PAINT
              return ::Paint()
 
-        case nMsg == WM_KEYDOWN
+          case nMsg == 31 // WM_FLIPPED
+           return ::lFlipped .and. Upper( ::ClassName() ) == "TWINDOW"
+
+      case nMsg == WM_KEYDOWN
              if oControl != nil
 		      return oControl:KeyDown( uParam1 )
              else

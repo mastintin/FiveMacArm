@@ -47,7 +47,7 @@ void CocoaInit(void);
 - (void)SliderChanged:(id)sender;
 - (IBAction)changeColor:(id)sender;
 - (NSView *)hitTest:(NSPoint)aPoint;
-//- ( BOOL ) isFlipped ;
+//- (BOOL)isFlipped;
 @end
 
 @implementation View
@@ -156,22 +156,19 @@ void CocoaInit(void);
   hb_vmDo(5);
 }
 
-/*
-- ( BOOL ) isFlipped
-{
-   if( symFMH == NULL )
-       symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMH" ) );
+- (BOOL)isFlipped {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
-   hb_vmPushSymbol( symFMH );
-   hb_vmPushNil();
-   hb_vmPushLong( ( HB_LONG ) [ self window ] );
-   hb_vmPushLong( WM_FLIPPED );
-   hb_vmPushLong( ( HB_LONG ) [ self window ] );
-   hb_vmDo( 3 );
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(WM_FLIPPED);
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmDo(3);
 
-   return hb_parl( -1 );
+  return hb_parl(-1);
 }
-*/
 
 - (void)mouseUp:(NSEvent *)theEvent {
   NSPoint point = [theEvent locationInWindow];
@@ -1137,4 +1134,11 @@ HB_FUNC(WINDOWISFLIPPED) {
 HB_FUNC(WINDOWPRINT) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
   [[window contentView] print:window];
+}
+HB_FUNC(WM_GETTITLEHEIGHT) {
+  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSRect frame = [window frame];
+  NSRect content = [window contentRectForFrameRect:frame];
+
+  hb_retnl((long)(frame.size.height - content.size.height));
 }
