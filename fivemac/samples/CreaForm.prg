@@ -125,8 +125,13 @@ local i
       aForms[i]:end()
    next
 endif
-oWndInsp:end()
-oWndMain:end()
+   if oWndInsp != nil
+      oWndInsp:end()
+   endif
+   
+   if oWndMain != nil
+      oWndMain:end()
+   endif
 
 Return nil
 

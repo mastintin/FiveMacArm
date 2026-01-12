@@ -66,7 +66,7 @@ METHOD New() CLASS TForm
    AAdd( ::aForms, Self )
    
    ::SetTitle( "Form" + AllTrim( Str( Len( ::aForms ) ) ) )
- //  ::lFlipped = .T.
+   ::lFlipped = .T.
    ::SetPos( 190, 530 )
    ::SetSize( 500, 356 )
  
@@ -77,6 +77,7 @@ METHOD New() CLASS TForm
    ::oRectBlue := ::oRect:GetBottomRightCorner()
    
    ::cVarName = "oForm" + AllTrim( Str( Len( ::aForms ) ) )
+  
 
 return Self
 
@@ -383,7 +384,7 @@ METHOD ShowPopup( nRow, nCol ) CLASS TForm
       SEPARATOR  
       
       MENUITEM "PRG source code" ;
-         ACTION SourceEdit( ::cGenPrg(), "Source code" )
+          ACTION ( SourceEdit( CreaSourceFlipped( ::cGenPrg() , ::GetTitleHeight() ), "Source code" ))
    ENDMENU
    
    ACTIVATE POPUP oPopup OF Self AT nRow, nCol
@@ -410,3 +411,115 @@ local oCtrl := ::oLastControl
           ::oRect:SetBottomRightCornerLeft()
        endif   
 Return nil
+
+//----------------------------------------------------------------------------//
+
+function CreaSourceFlipped( cSource , nTitleHeight)
+
+   local aLines := HB_ATokens( cSource, Chr( 10 ) )
+   local nLine, cLine
+   local lInDef := .F.
+   local lFlipped := .F.
+   local nWinHeight := 600
+   local aTokens
+   local nRow, nHeight
+   local cNewSource := ""
+   
+   
+   // First pass: Detect Flipped and Window Height
+   for nLine := 1 to Len( aLines )
+      cLine := AllTrim( aLines[ nLine ] )
+      
+      if Left( cLine, 1 ) == "*" .or. Left( cLine, 2 ) == "//"
+         loop
+      endif
+      
+      if "DEFINE WINDOW" $ Upper( cLine ) .or. "DEFINE DIALOG" $ Upper( cLine )
+         lInDef := .T.
+      endif
+      
+      if lInDef
+         // Try to parse SIZE
+         if "SIZE" $ Upper( cLine )
+             // Check if there is a comma for Width (SIZE W, H)
+             if "," $ SubStr( cLine, At( "SIZE", Upper( cLine ) ) + 5 )
+                 // It's usually SIZE Width, Height
+                 // We need Height (2nd param)
+                 aTokens := HB_ATokens( SubStr( cLine, At( "SIZE", Upper( cLine ) ) + 5 ), "," )
+                 if Len( aTokens ) > 1
+                    nWinHeight := Val( aTokens[ 2 ] )
+                 endif
+             else
+                 nWinHeight := Val( SubStr( cLine, At( "SIZE", Upper( cLine ) ) + 5 ) )
+             endif
+         endif
+         
+         if "FLIPPED" $ Upper( cLine )
+            lFlipped := .T.
+         endif
+         
+         if Right( cLine, 1 ) != ";"
+            lInDef := .F.
+         endif
+      endif
+   next
+   
+   if ! lFlipped
+      return cSource
+   endif
+   
+   // Second pass: Transform Controls
+   for nLine := 1 to Len( aLines )
+      cLine := aLines[ nLine ]
+      // Preserve original structure, modify only @ lines
+      
+      if "@" $ cLine .and. ( "BUTTON" $ Upper( cLine ) .or. "GET" $ Upper( cLine ) .or. ;
+                             "SAY" $ Upper( cLine ) .or. "IMAGE" $ Upper( cLine ) .or. ;
+                             "CHECKBOX" $ Upper( cLine ) .or. "COMBOBOX" $ Upper( cLine ) .or. ;
+                             "LISTBOX" $ Upper( cLine ) .or. "BROWSE" $ Upper( cLine ) .or. "BTNBMP" $ Upper( cLine ))
+                             
+          nRow := Val( SubStr( cLine, At( "@", cLine ) + 1 ) )
+         
+          nHeight := 30 // Default
+          if "SIZE" $ Upper( cLine )
+              // Parse Control Height
+                 aTokens := HB_ATokens( SubStr( cLine, At( "SIZE", Upper( cLine ) ) + 5 ), "," )
+                 if Len( aTokens ) > 1
+                    nHeight := Val( aTokens[ 2 ] )
+                 endif
+          else 
+            // Check subsequent lines for SIZE
+            nNextLine := nLine + 1
+            lFoundSize := .F.
+            cLookAhead := cLine
+            
+            // Loop while line continues (ends with semicolon)
+            while Right( AllTrim( cLookAhead ), 1 ) == ";" .and. nNextLine <= Len( aLines )
+               cLookAhead := aLines[ nNextLine ]
+               if "SIZE" $ Upper( cLookAhead )
+                  aTokens := HB_ATokens( SubStr( cLookAhead, At( "SIZE", Upper( cLookAhead ) ) + 5 ), "," )
+                  if Len( aTokens ) > 1
+                     nHeight := Val( aTokens[ 2 ] )
+                     lFoundSize := .T.
+                  endif
+               endif
+               if lFoundSize
+                  exit
+               endif
+               nNextLine++
+            enddo
+          endif
+          
+          nRow := nWinHeight - ( nRow + (1*nHeight) ) - if ( nTitleHeight > 0 , nTitleHeight , 30 )
+          
+          // Replace the number in the string
+          cLine := StrTran( cLine, "@ " + AllTrim( Str( Val( SubStr( cLine, At( "@", cLine ) + 1 ) ) ) ), ;
+                                   "@ " + AllTrim( Str( Int( nRow ) ) ) )
+
+          cLine:= cLine + " //"+ str ( nWinHeight ) + " " + str(nHeight) + " " + str( nrow)                        
+      endif
+      
+      cNewSource += cLine + Chr( 10 )
+   next
+   
+return cNewSource

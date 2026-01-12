@@ -12,6 +12,9 @@ CLASS TInspector FROM TWindow
    DATA   oBrwProps
    DATA   oBrwEvents
    DATA   oSayPos
+   
+   DATA   oForm
+
 
    METHOD New()
    
@@ -38,10 +41,14 @@ CLASS TInspector FROM TWindow
    METHOD SetControl( oCtrl )
 
    METHOD SetEvent( nRow, nCol, cData )
-
-   METHOD Refresh() INLINE ::oBrwProps:Refresh(), ::oBrwEvents:Refresh()
-
+ 
+   METHOD Refresh()
+ 
    METHOD SetForm( oForm )
+   
+   METHOD GetFormHeight()
+
+   METHOD GetFormFlipped()
    
 ENDCLASS
 
@@ -151,7 +158,7 @@ return nil
 //----------------------------------------------------------------------------//
 
 METHOD GetProp( nRow, nCol ) CLASS TInspector
-
+ 
    if nCol == 0
       return ::oCtrl:aProps[ nRow + 1 ]
    else
@@ -164,6 +171,18 @@ METHOD GetProp( nRow, nCol ) CLASS TInspector
               ::oBrwProps:SetColEditable( 2, .F. )
               return "{ ... }"
 
+         case ::oCtrl:aProps[ nRow + 1 ] == "nTop"
+           if ::oform:lFlipped 
+              if ::oCtrl == ::oForm
+                 return cValtoChar( ( __ObjSendMsg( ::oCtrl, ::oCtrl:aProps[ nRow + 1 ] ) ) )
+              else
+
+                  return cValToChar( ::oform:nHeight() - Val( cValToChar( __ObjSendMsg( ::oCtrl, ::oCtrl:aProps[ nRow + 1 ] ) ) )  - ::oCtrl:nHeight - ::oForm:GetTitleHeight() )
+              endif
+             else
+               return cValToChar(    __ObjSendMsg( ::oCtrl, ::oCtrl:aProps[ nRow + 1 ] ) )
+             endif
+
          otherwise
             ::oBrwProps:SetColEditable( 2, .T. )
             return cValToChar( __ObjSendMsg( ::oCtrl, ::oCtrl:aProps[ nRow + 1 ] ) )
@@ -172,6 +191,7 @@ METHOD GetProp( nRow, nCol ) CLASS TInspector
 
 return nil
 
+//----------------------------------------------------------------
 //----------------------------------------------------------------------------//
 
 METHOD InspectProperty() CLASS TInspector
@@ -213,7 +233,9 @@ METHOD InspectProperty() CLASS TInspector
            endif
         endif
       case ValType( uValue ) == "L"
-           __ObjSendMsg( oCtrl, "_" + oCtrl:aProps[ ::oBrwProps:nArrayAt ], ! uValue )
+          
+              __ObjSendMsg( oCtrl, "_" + oCtrl:aProps[ ::oBrwProps:nArrayAt ], ! uValue )
+  
 
       otherwise
           //  MsgInfo( uValue )
@@ -247,6 +269,10 @@ METHOD SetControl( oCtrl ) CLASS TInspector
    endif
 
    ::oCtrl = oCtrl
+ 
+   
+   // MsgInfo( "SetControl: " + oCtrl:ClassName() + " Flipped: " + cValToChar( ::oForm:lFlipped ) + " Parent: " + If( oCtrl:oWnd != nil, oCtrl:oWnd:ClassName(), "NIL" ) )
+   
    ::Refresh()
 
 return nil
@@ -268,6 +294,8 @@ METHOD SetForm( oForm ) CLASS TInspector
    if ::oCtrl == oForm
       return nil
    endif
+   
+   ::oForm = oForm
 
    ::oCbxControls:Reset()
 
@@ -277,7 +305,8 @@ METHOD SetForm( oForm ) CLASS TInspector
 
    ::SetControl( oForm )
    ::Refresh()
-
+   
+  
 return nil
 
 //----------------------------------------------------------------------------//
@@ -301,8 +330,8 @@ METHOD SelControl() CLASS TInspector
          ::oCtrl = oWnd:aControls[ nAt ]
       endif
    endif
-
-   ::Refresh()
+   
+    ::Refresh()
 
    if ::oCtrl:IsKindOf( "TCONTROL" )
       ::oCtrl:oWnd:SetFocus()
@@ -320,6 +349,7 @@ METHOD SetProp( nRow, nCol, cData ) CLASS TInspector
 
    if oCtrl != nil
       cProp = oCtrl:aProps[ nRow + 1 ]
+  
       cType = ValType( __ObjSendMsg( oCtrl, cProp ) )
           
       do case
@@ -328,15 +358,25 @@ METHOD SetProp( nRow, nCol, cData ) CLASS TInspector
 
          case cType == "N"
             if  cProp == "nAutoResize"
-               // msginfo("si")
-               oCtrl:Anclaje( val(cData) )
+                oCtrl:Anclaje( val(cData) )
             elseif cProp == "nTab" 
                    oCtrl:SetItemSelected( val(cData) )
-            else
-              __ObjSendMsg( oCtrl, "_" + cProp, Val( cData ) )
+            elseif cProp == "nTop" 
+                   
+                   if ::oForm:lFlipped .and. ! oCtrl:IsKindOf( "TWINDOW" )
+                      __ObjSendMsg( oCtrl, "_" + cProp, ::GetFormHeight() - Val( cData ) - oCtrl:nHeight )
+                   else
+                      __ObjSendMsg( oCtrl, "_" + cProp, Val( cData ) )
+                   endif
             endif
          case cType == "L"
-              __ObjSendMsg( oCtrl, "_" + cProp, Lower( cData ) == ".t." )
+
+              if cProp == "lFlipped"
+                 oCtrl:lFlipped := ( Lower( cData ) == ".t." )
+                 
+              else 
+                 __ObjSendMsg( oCtrl, "_" + cProp, Lower( cData ) == ".t." )
+              endif
       endcase
    endif
 
@@ -468,6 +508,57 @@ Function SumaAnclas(obtn1,obtn2,obtn3,obtn4,obtn5,obtn6)
 
 Return nAncla
 
+//----------------------------------------------------------------------------//
 
+METHOD GetFormHeight() CLASS TInspector
+
+   local nHeight := 0
+   
+   if ::oCtrl != nil
+      if ::oCtrl:IsKindOf( "TWINDOW" )
+         nHeight = ::oCtrl:nHeight
+      else
+         if ::oCtrl:oWnd != nil
+            nHeight = ::oCtrl:oWnd:nHeight
+         endif
+      endif
+   endif
+      
+     
+return nHeight
+
+
+//----------------------------------------------------------------------------//
+
+METHOD GetFormFlipped() CLASS TInspector
+
+   local lFlipped := .F.
+   
+   // MsgInfo( "Check: oForm " + ValType( ::oForm ) + " Flip: " + cValToChar( If( ::oForm != nil, ::oForm:lFlipped, "NIL" ) ) )
+   if ::oCtrl != nil
+      if ::oCtrl:IsKindOf( "TWINDOW" )
+         lFlipped = ::oCtrl:lFlipped
+      else
+         if ::oForm != nil
+            lFlipped = ::oForm:lFlipped
+         elseif ::oCtrl:oWnd != nil
+            lFlipped = ::oCtrl:oWnd:lFlipped
+         endif
+      endif
+   endif
+  
+ 
+return lFlipped
+
+//----------------------------------------------------------------------------//
+
+METHOD Refresh() CLASS TInspector
+
+   //::oForm:SetTitle("refresh Form Flipped: " + cValToChar( ::oForm:lFlipped ) )
+
+   ::oBrwProps:Refresh() 
+   ::oBrwEvents:Refresh()
+
+return nil
 
 
