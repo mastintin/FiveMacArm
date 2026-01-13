@@ -8,6 +8,8 @@ static oSplitV, oSplitH
 static oGet, cLog
 static aFunLines := {}, oFunList
 static oTree, oPrgItem, oChItem, oMItem, cBmpPath
+static oprjTree, oProjectItem, oProjPrgItem , oProjChItem, oProjMItem // Project Tree Items
+static cProject := ""             // Current Project Name
 static lSplit1, lSplit2, lSplit3
 static cDbfPath, popoverMas
 static cFontName := "Monaco", nFontSize := 14
@@ -1208,7 +1210,7 @@ function BuildMenu()
       MENU
          MENUITEM "New"
          MENUITEM "Open"
-         MENUITEM "Close"
+         MENUITEM "Close" ACTION CloseProject()
          SEPARATOR
          MENUITEM "Build Project..." ACTION MainBuilder()
          SEPARATOR
@@ -1410,7 +1412,8 @@ function Run()
    endif
 
    CreateInfoFile( cFileName, cFilePath, FileNoPath( IconPath ) )
-
+   CreatePkInfo( cFileName, cFilePath )
+   
    cText += "building info.plist" + Chr( 13 )
    oGet:SetText( cText )
    oGet:GoBottom()
@@ -1919,6 +1922,7 @@ function SelectFile()
 
    if oItem != nil .and. ! oItem:cName $ "PRG,CH,M"
       cFileName = oItem:Cargo
+      if ! Empty( cFileName )
 
       if ( nAt := AScan( aEditors,;
          { | oEd | oEd:cFileName == cFileName .and. ! oEd == oEditor } ) ) != 0
@@ -1943,6 +1947,8 @@ function SelectFile()
          oFunList:aCols[ 1 ]:SetHeader( "Commands" )
       endif
 
+   endif
+   
    endif
 
 return nil
@@ -2353,9 +2359,8 @@ HB_FUNC( SETHSCROLLELASTICITY )
 
 #pragma ENDDUMP
 
-//----------------------------------------------------------------------------//
-
-function OpenProject()
+/*
+Function OpenProject()
 
    local cFile := cGetFile( "Select Project", "hbp" )
    local cContent, aLines, cLine, n
@@ -2392,6 +2397,153 @@ function OpenProject()
    endif
 
 return nil
+*/
+
+
+
+//----------------------------------------------------------------------------//
+
+function OpenProject()
+
+   local cFile := cGetFile( "Select Project", "hbp" )
+   local  n
+   local cExt, i, cPrg
+   local oItem
+   local afiles
+
+   if ! Empty( cFile )
+      
+      // Change to Project Directory so paths resolve
+      DirChange( cFilePath( cFile ) )
+      
+      cProject := cFileNoExt( cFileNoPath( cFile ) )
+      oWnd:SetTitle( "FiveMac IDE - Project: " + cProject )
+      
+      // Manage Tree
+      if oProjectItem != nil
+         oTree:DelItem( oProjectItem )
+      endif
+      
+      oProjectItem = oTree:AddItem( "Project: " + cProject, ImgSymbols( "folder" ) )
+      oProjPrgItem = oProjectItem:AddItem( "PRG", ImgSymbols( "folder" ) )
+     
+      aFiles := aGetPrjFiles(cFile) 
+      BuildTreePrj(aFiles)
+     
+     oTree:Rebuild()
+     oTree:ExpandAll()
+     
+      for n := 1 to Len( aFiles )
+         cFile := AllTrim( aFiles[ n ] )
+         // Check extension
+         cExt := Lower( cFileExt( cFile ) )
+         if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
+            if File( cFile )
+               BuildEditor()
+               oEditor:Open( cFile )
+             //  openFilePrj( cLine )
+             endif
+         endif
+      next
+        
+      MsgInfo( "Project Loaded: " + cProject )
+   endif
+
+return nil
+
+//----------------------------------------------------------------------------//
+
+Static Function BuildTreePrj(aFiles)
+local oItem
+local n, cLine
+local cFileName 
+
+for n := 1 to Len( aFiles )
+   cFileName := AllTrim( aFiles[ n ] )
+  // Resolve relative path 
+
+   if File( cFileName )
+      if Lower( cFileExt( cFileName ) ) == "prg"
+         if oProjPrgItem == nil
+            oProjPrgItem = oProjectItem:AddItem( "PRG", ImgSymbols( "folder" ) )
+         endif
+         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjPrgItem, ImgSymbols("document") )
+         oItem:Cargo := cFileName 
+      elseif Lower( cFileExt( cFileName ) ) == "ch"
+         if oProjChItem == nil
+            oProjChItem = oProjectItem:AddItem( "CH", ImgSymbols( "folder" ) )
+         endif
+         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjChItem, ImgSymbols("document") )
+         oItem:Cargo := cFileName 
+      elseif Lower( cFileExt( cFileName ) ) == "m"
+         if oProjMItem == nil
+            oProjMItem = oProjectItem:AddItem( "M", ImgSymbols( "folder" ) )
+         endif
+         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjMItem, ImgSymbols("document") )
+         oItem:Cargo := cFileName 
+      endif
+   endif
+   oItem = nil
+ next
+
+ oTree:Rebuild()
+
+Return nil
+
+//----------------------------------------------------------------------------//
+
+Static Function aGetPrjFiles(cFile)
+
+local aFiles := {}
+local cContent := MemoRead( cFile )
+local aLines, n, cLine
+local cExt
+
+      // Normalize line endings
+      cContent := StrTran( cContent, Chr( 13 ) + Chr( 10 ), Chr( 10 ) )
+      cContent := StrTran( cContent, Chr( 13 ), Chr( 10 ) )
+       aLines := HB_ATokens( cContent, Chr( 10 ) )
+      
+      // aLines := HB_ATokens( cContent, CRLF )
+
+     for n := 1 to Len( aLines )
+         cLine := AllTrim( aLines[ n ] )
+         
+         // Skip comments and flags
+         if Left( cLine, 1 ) == "#" .or. Left( cLine, 1 ) == "-" .or. Empty( cLine )
+            loop
+         endif
+           
+         // Check extension
+         cExt := Lower( cFileExt( cLine ) )
+         if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
+             // Resolve relative path 
+             if File( cLine )
+                 AAdd( aFiles, cFilePath( cFile ) + cLine ) 
+             endif
+         endif
+      next
+
+Return aFiles
+
+//----------------------------------------------------------------------------//
+
+function CloseProject()
+
+   if oProjectItem != nil
+      oTree:DelItem( oProjectItem )
+      oProjectItem = nil
+      oProjPrgItem = nil
+      oProjChItem = nil
+      oProjMItem = nil
+   endif
+   
+   cProject := ""
+   oWnd:SetTitle( "FiveMac IDE" )
+   
+   MsgInfo( "Project Closed" )
+
+return nil
 
 //----------------------------------------------------------------------------//
 
@@ -2401,6 +2553,8 @@ function NewProject()
    local cPath := ""
    local cFileHbp, cHbpContent, cFilePrg, cCode
 
+   msginfo( "por implementar")
+/*
    if MsgGet( "New Project", "Project Name:", @cProjectName )
       
       cProjectName := AllTrim( cProjectName )
@@ -2455,11 +2609,13 @@ function NewProject()
       MemoWrit( cFilePrg, cCode )
       
       // Open the project
-      OpenFile( cFilePrg )
+   //   OpenFilePrj( cFilePrg )
       
       MsgInfo( "Project Created: " + cProjectName )
       
    endif
+*/
+
 
 return nil
 

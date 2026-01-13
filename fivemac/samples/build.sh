@@ -77,6 +77,8 @@ if [ ! -f $APPName.app/Contents/Info.plist ]; then
    # echo '   <string>FiveMac needs to control Mail to send emails.</string>' >> $APPName.app/Contents/Info.plist
    echo '</dict>' >> $APPName.app/Contents/Info.plist
    echo '</plist>' >> $APPName.app/Contents/Info.plist
+
+   echo 'APPL????' > $APPName.app/Contents/PkgInfo
 fi
 if [ ! -d $APPName.app/Contents/MacOS ]; then
    mkdir $APPName.app/Contents/MacOS

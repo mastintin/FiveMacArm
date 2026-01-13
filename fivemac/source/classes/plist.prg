@@ -18,9 +18,6 @@ CLASS TPlist
   
   METHOD SetBooleanByName( cKey, lValue, lPost )
 
-  
-
-
   METHOD SetPathValue( cPath, xValue, lPost )
   METHOD SetPathArray( cPath, aArray, lPost )
                         
@@ -95,12 +92,6 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-
-
-
-
-
-
 METHOD SetPathValue( cPath, xValue, lPost ) CLASS TPlist
    DEFAULT lPost := .t.
    SetPlistPathValue( ::cName, cPath, xValue, lPost )
@@ -126,6 +117,10 @@ return nil
 Function CreateInfoFile( cProg, cPath, cIcon, cVersion )
 local lpost:= .f.
 local cFile:= cPath + cProg + ".app" + "/Contents/" + "Info.plist"
+
+if Right( cPath, 4 ) == ".app"
+   cFile := cPath + "/Contents/Info.plist"
+endif
 
 if Empty( cIcon )
    cIcon := "fivetech.icns"
@@ -154,3 +149,17 @@ oInfo:=TPlist():new( cfile )
 Return nil
 
 
+
+//----------------------------------------------------------------------------//
+
+Function CreatePkInfo( cProg, cPath )
+   local cFile := cPath + cProg + ".app" + "/Contents/" + "PkgInfo"
+   
+   // Handle case where cPath already ends in .app (CreaBuilder fix)
+   if Right( cPath, 4 ) == ".app"
+       cFile := cPath + "/Contents/PkgInfo"
+   endif
+
+   MemoWrit( cFile, "APPL????" )
+
+return nil

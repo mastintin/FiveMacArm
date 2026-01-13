@@ -50,6 +50,7 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Context Menu Fixes**: Resolved issues with the File Tree context menu in `fivedit` (`outlines.m`), ensuring reliable file management (Closing/Deleting files) without UI glitches.
 - **Build System Improvements**: Updated `build.sh` to correctly generate and manage `Info.plist` files, solving issues with missing metadata and stale configurations in app bundles.
 - **Say Class**: Enhanced `TSay` with native image support (`SetImage`), allowing static text controls to display icons and bitmaps.
+- **Project Tree**: Fivedit now includes a dedicated Project Explorer view (`OpenProject`). When a project is loaded, it visualizes the project structure in a dedicated tree node, allowing quick access to source files and project management. Modified `OpenProject` to reliably parse `.hbp` files cross-platform (LF/CRLF).
 
 ## Building
 
