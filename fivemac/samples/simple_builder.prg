@@ -315,7 +315,7 @@ function BuildApp( cVersion, cIcon, oBtnRun )
    // - NSPrincipalClass
    // - NSAppTransportSecurity (AllowsArbitraryLoads)
    CreateInfoFile( cProjectName, cAppPath + "/Contents/", cIcon, cVersion )
-
+   CreatePkInfo( cProjectName, cAppPath )  
    // 5. Copy Resources (Icons & Frameworks)
    
    // Icon Copy relative to ./icons or absolute path
