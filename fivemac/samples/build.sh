@@ -40,6 +40,13 @@ if [ ! -d $APPName.app ]; then
 fi   
 if [ ! -d $APPName.app/Contents ]; then
    mkdir $APPName.app/Contents
+fi
+
+if [ ! -d $APPName.app/Contents ]; then
+   mkdir $APPName.app/Contents
+fi
+
+if [ ! -f $APPName.app/Contents/Info.plist ]; then
    echo '<?xml version="1.0" encoding="UTF-8"?>' > $APPName.app/Contents/Info.plist
    echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $APPName.app/Contents/Info.plist
    echo '<plist version="1.0">' >> $APPName.app/Contents/Info.plist
@@ -70,7 +77,7 @@ if [ ! -d $APPName.app/Contents ]; then
    # echo '   <string>FiveMac needs to control Mail to send emails.</string>' >> $APPName.app/Contents/Info.plist
    echo '</dict>' >> $APPName.app/Contents/Info.plist
    echo '</plist>' >> $APPName.app/Contents/Info.plist
-fi   
+fi
 if [ ! -d $APPName.app/Contents/MacOS ]; then
    mkdir $APPName.app/Contents/MacOS
 fi  

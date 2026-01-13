@@ -183,6 +183,30 @@
 
 @implementation MOutlineView
 
+- (void)rightMouseDown:(NSEvent *)theEvent {
+  NSPoint point = [theEvent locationInWindow];
+  NSPoint mousePoint = [self convertPoint:point fromView:nil];
+  NSInteger row = [self rowAtPoint:mousePoint];
+
+  static PHB_SYMB symFMH = NULL;
+
+  if (row >= 0 && [self selectedRow] != row)
+    [self selectRowIndexes:[NSIndexSet indexSetWithIndex:row]
+        byExtendingSelection:NO];
+
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(WM_RBUTTONDOWN);
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushLong(point.y);
+  hb_vmPushLong(point.x);
+  hb_vmDo(5);
+}
+
 @end
 
 //----------------------------------------------------------------------------------
@@ -435,4 +459,25 @@ HB_FUNC(NODECREATE) {
   [newNode1 release];
 
   hb_retnll((HB_LONGLONG)newNode1);
+}
+
+HB_FUNC(NODEDELETECHILD) {
+  Node *parentNode = (Node *)hb_parnll(1);
+  Node *childNode = (Node *)hb_parnll(2);
+
+  if (parentNode && childNode) {
+    NSLog(@"NodeDeleteChild: parent %p, child %p", parentNode, childNode);
+    NSLog(@"Children count before: %lu",
+          (unsigned long)[[parentNode children] count]);
+    if ([[parentNode children] containsObject:childNode]) {
+      NSLog(@"Found child, removing");
+      [[parentNode children] removeObject:childNode];
+    } else {
+      NSLog(@"Child NOT found in parent's children");
+    }
+    NSLog(@"Children count after: %lu",
+          (unsigned long)[[parentNode children] count]);
+  } else {
+    NSLog(@"NodeDeleteChild: Invalid arguments");
+  }
 }

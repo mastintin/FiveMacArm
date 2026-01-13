@@ -562,8 +562,8 @@ METHOD HandleEvent( nMsg, nSender, uParam1, uParam2, uParam3, uParam4 ) CLASS TW
         case nMsg == WM_PAINT
              return ::Paint()
 
-          case nMsg == 31 // WM_FLIPPED
-           return ::lFlipped .and. Upper( ::ClassName() ) == "TWINDOW"
+          case nMsg == WM_FLIPPED
+           return ::lFlipped // .and. Upper( ::ClassName() ) == "TWINDOW"
 
       case nMsg == WM_KEYDOWN
              if oControl != nil

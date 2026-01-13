@@ -1,3 +1,4 @@
+#include "formatters.h"
 #include <fivemac.h>
 
 static PHB_SYMB symFMH = NULL;
@@ -391,6 +392,102 @@ HB_FUNC(GETSETPLACEHOLDER) {
 
 HB_FUNC(GETSETPICTURE) {
   NSTextField *get = (NSTextField *)hb_parnll(1);
+  NSString *picture = hb_NSSTRING_par(2);
+
+  if (!picture || [picture length] == 0) {
+    [[get cell] setFormatter:nil];
+    return;
+  }
+
+  // 1. European Formatter (@E)
+  if ([picture rangeOfString:@"@E"].location != NSNotFound) {
+    FMEuroNumberFormatter *formatter =
+        [[[FMEuroNumberFormatter alloc] init] autorelease];
+
+    // Parse mask for decimals/integers (simplified logic from
+    // FMGETSETEURONUMBER)
+    NSString *cleanPic = [picture stringByReplacingOccurrencesOfString:@"@E"
+                                                            withString:@""];
+    cleanPic =
+        [cleanPic stringByTrimmingCharactersInSet:[NSCharacterSet
+                                                      whitespaceCharacterSet]];
+
+    if ([cleanPic length] > 0) {
+      NSRange dotRange = [cleanPic rangeOfString:@"."];
+      if (dotRange.location != NSNotFound) {
+        int decimals = [cleanPic length] - dotRange.location - 1;
+        [formatter setMinimumFractionDigits:0];
+        [formatter setMaximumFractionDigits:decimals];
+
+        NSString *intPart = [cleanPic substringToIndex:dotRange.location];
+        int nineCount = 0;
+        for (int i = 0; i < [intPart length]; i++)
+          if ([intPart characterAtIndex:i] == '9')
+            nineCount++;
+        formatter->maxIntegerDigits = nineCount;
+
+      } else {
+        [formatter setMinimumFractionDigits:0];
+        [formatter setMaximumFractionDigits:0];
+        int nineCount = 0;
+        for (int i = 0; i < [cleanPic length]; i++)
+          if ([cleanPic characterAtIndex:i] == '9')
+            nineCount++;
+        formatter->maxIntegerDigits = nineCount;
+      }
+
+      if ([cleanPic rangeOfString:@","].location != NSNotFound)
+        [formatter setUsesGroupingSeparator:YES];
+      else
+        [formatter setUsesGroupingSeparator:NO];
+    }
+
+    [[get cell] setFormatter:formatter];
+    return;
+  }
+
+  // 2. Picture Mask (@R)
+  if ([picture rangeOfString:@"@R"].location != NSNotFound) {
+    FMPictureFormatter *formatter =
+        [[[FMPictureFormatter alloc] init] autorelease];
+    // Strip @R and spaces
+    NSString *mask = [picture stringByReplacingOccurrencesOfString:@"@R"
+                                                        withString:@""];
+    mask = [mask stringByTrimmingCharactersInSet:[NSCharacterSet
+                                                     whitespaceCharacterSet]];
+
+    formatter->picture = [mask retain];
+    [[get cell] setFormatter:formatter];
+    return;
+  }
+
+  // 3. Uppercase (@!)
+  if ([picture rangeOfString:@"@!"].location != NSNotFound) {
+    FMUpperFormatter *formatter = [[[FMUpperFormatter alloc] init] autorelease];
+    [[get cell] setFormatter:formatter];
+    return;
+  }
+
+  // 4. Alpha (@A)
+  if ([picture rangeOfString:@"@A"].location != NSNotFound) {
+    FMAlphaFormatter *formatter = [[[FMAlphaFormatter alloc] init] autorelease];
+    [[get cell] setFormatter:formatter];
+    return;
+  }
+
+  // 5. Simple Mask (contains 9 or # but no @ command)
+  if (([picture rangeOfString:@"9"].location != NSNotFound ||
+       [picture rangeOfString:@"#"].location != NSNotFound) &&
+      [picture rangeOfString:@"@"].location == NSNotFound) {
+
+    FMPictureFormatter *formatter =
+        [[[FMPictureFormatter alloc] init] autorelease];
+    formatter->picture = [picture retain];
+    [[get cell] setFormatter:formatter];
+    return;
+  }
+
+  // 6. Fallback: Generic NSHarbourFormatter
   NSHarbourFormatter *formatter =
       [[[NSHarbourFormatter alloc] init] autorelease];
 

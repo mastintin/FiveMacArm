@@ -272,6 +272,18 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 		       <oWnd>, bSETGET(<uVar>), [\{||(<uValid>)\}],;
 		       <.update.>, <.password.> ,<.lsearch.>, [{|Self|<uChange>}],;
 		       <.lrounded.>, [<cToolTip>], [<nAutoResize>], [<(oGet)>], [<cPicture>],,<.lUtf.> )
+
+#xcommand @ <nRow>, <nCol> FMGET [ <oGet> VAR ] <uVar> ;
+           [ OF <oWnd> ] ;
+           [ SIZE <nWidth>, <nHeight> ] ;
+           [ VALID <uValid> ] ;
+           [ ON CHANGE <uChange> ] ;
+           [ INCREMENTAL <uInc> ] ;
+           [ PICTURE <cPicture> ] ;
+        => ;
+           [ <oGet> := ] TFMGet():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
+           <oWnd>, bSETGET(<uVar>), [\{|Self|(<uValid>)\}],;
+           [{|Self|<uChange>}], [\{|c,o|(<uInc>)\}], [<cPicture>] )
 		                                   
 #xcommand REDEFINE GET [ <oGet> VAR ] <uVar> ;
              [ ID <nId> ] ;
@@ -329,11 +341,12 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
             [ AUTORESIZE <nAutoResize> ] ;	
             [ TOOLTIP <cToolTip> ] ; 
             [ <lutf8: UTF8 > ] ;
+            [ PICTURE <cPicture> ] ;
             [ PIXEL ] ;
          => ;
             [ <oSay> := ] TSay():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
             <oWnd>, <cText>, <.raised.>, [ Upper(<(cPostext)>) ],;
-            [<nAutoResize>], [<cToolTip>], [<(oSay)>] )	
+            [<nAutoResize>], [<cToolTip>], [<(oSay)>],, ,[<cPicture>] )	
     
                 
  #xcommand @ <nRow>, <nCol> HIPERLINK [ <oSay> PROMPT ] <cText> ;

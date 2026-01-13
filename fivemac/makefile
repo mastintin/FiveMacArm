@@ -45,6 +45,7 @@ PRG_OBJS = \
 	./obj/dialog.o	\
 	./obj/errsysm.o \
 	./obj/filename.o \
+    ./obj/fmget.o \
 	./obj/folder.o	\
 	./obj/folditem.o \
 	./obj/font.o \
@@ -119,6 +120,7 @@ C_OBJS = ./objc/browses.o	\
 	./objc/encript.o \
 	./objc/fonts.o	\
   	./objc/formatters.o	\
+    ./objc/fmget.o \
   	./objc/funcs.o \
 	./objc/gets.o \
 	./objc/groups.o \

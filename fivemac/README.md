@@ -45,6 +45,12 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **New Controls**: Added support for **WebView** and **ColorWell** in the designer palette and inspector.
 - **Mouse Interaction**: Created `trst_mouse` sample to validate complex mouse interactions (drag-and-drop, resizing handles, cursor changes) before integrating them into the main designer.
 
+### Project Builder & Fivedit Integration (January 2026 - Part 5)
+- **CreaBuilder Integration**: The "Simple Project Builder" (`CreaBuilder.prg`) is now fully integrated into the **Fivedit** environment. Developers can create, manage, and build projects directly from the IDE via a new "Build Project" toolbar button and menu item.
+- **Context Menu Fixes**: Resolved issues with the File Tree context menu in `fivedit` (`outlines.m`), ensuring reliable file management (Closing/Deleting files) without UI glitches.
+- **Build System Improvements**: Updated `build.sh` to correctly generate and manage `Info.plist` files, solving issues with missing metadata and stale configurations in app bundles.
+- **Say Class**: Enhanced `TSay` with native image support (`SetImage`), allowing static text controls to display icons and bitmaps.
+
 ## Building
 
 To build the library and samples:
