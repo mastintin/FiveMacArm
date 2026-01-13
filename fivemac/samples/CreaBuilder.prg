@@ -3,7 +3,7 @@
 static oWnd, oBrw, aPrgs := {}
 static cProjectName := "myproject"
 
-function Main()
+function MainBuilder()
 
    local oBtnAdd, oBtnDel, oBtnGen, oBtnBuild, oBtnExit, oBtnLoad, oBtnRun
    local oGet, oGetVer, oGetIcon

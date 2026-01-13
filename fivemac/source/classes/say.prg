@@ -8,10 +8,12 @@
 
 CLASS TSay FROM TControl
 
-   METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, lRaised, nAlign,;
-               nAutoAjust, cToolTip, cVarName )
+   DATA cPicture
 
-   METHOD SetText( cText ) INLINE SaySetText( ::hWnd, cText )
+   METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, lRaised, nAlign,;
+               nAutoAjust, cToolTip, cVarName, lUtf, cUrl, cPicture )
+
+   METHOD SetText( cText )
 
    METHOD GetText() INLINE GetGetText( ::hWnd )
 
@@ -46,7 +48,7 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, lRaised, cAlign,;
-            nAutoAjust, cToolTip, cVarName ,lutf ,cUrl ) CLASS TSay
+            nAutoAjust, cToolTip, cVarName ,lutf ,cUrl, cPicture ) CLASS TSay
    
    local nAlign
 
@@ -54,12 +56,14 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, lRaised, cAlign,;
            cPrompt := "Say", lRaised := .F., cAlign := "TEXTLEFT",;
            nAutoAjust := 0       
 
+   ::cPicture = cPicture
+
    if !Empty(cUrl)
         ::hWnd = SayHiperlinkCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, cPrompt, cUrl )
    else
         ::hWnd = SayCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, cPrompt )
         ::SetText( cPrompt )      
-  endif
+   endif
    
       
    ::oWnd = oWnd
@@ -143,4 +147,18 @@ METHOD SetColor( nClrFore, nClrBack ) CLASS TSay
        
 return nil 
   
+//----------------------------------------------------------------------------//      
+
+METHOD SetText( cText ) CLASS TSay
+
+   if ::cPicture != nil
+      cText = Transform( cText, ::cPicture )
+   else
+      cText = cValToChar( cText )
+   endif
+   
+   SaySetText( ::hWnd, cText )
+   
+return nil
+
 //----------------------------------------------------------------------------//      
