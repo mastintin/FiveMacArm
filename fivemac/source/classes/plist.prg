@@ -116,8 +116,15 @@ return nil
 
 Function CreateInfoFile( cProg, cIcon, cVersion )
    local lpost:= .f.
-   local cFile
+   local cFile, cExe, oInfo
    
+   // Ensure cProg does NOT have .app for the binary/identifier
+   cExe := cProg
+   if Right( cExe, 4 ) == ".app"
+      cExe := Left( cExe, Len( cExe ) - 4 )
+   endif
+
+   // Bundle path DOES need .app
    if !Right( cProg, 4 ) == ".app"
       cProg := cProg + ".app"
    endif
@@ -134,9 +141,9 @@ Function CreateInfoFile( cProg, cIcon, cVersion )
    oInfo:=TPlist():new( cfile )
 
    WITH OBJECT oInfo  
-   :SetItemByName ( "CFBundleExecutable" , cProg , lpost ) 
-   :SetItemByName ( "CFBundleName" , cProg, lpost )
-   :SetItemByName ( "CFBundleIdentifier" , "com.fivetech."+cProg , lpost  ) 
+   :SetItemByName ( "CFBundleExecutable" , cExe , lpost ) 
+   :SetItemByName ( "CFBundleName" , cExe, lpost )
+   :SetItemByName ( "CFBundleIdentifier" , "com.fivetech."+cExe , lpost  ) 
    :SetItemByName ( "CFBundlePackageType" , "APPL" , lpost  ) 
    :SetItemByName ( "CFBundleShortVersionString" , cVersion , lpost  )
    :SetItemByName ( "CFBundleVersion" , cVersion , lpost  )
