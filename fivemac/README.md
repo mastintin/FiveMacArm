@@ -60,6 +60,12 @@ To build the library and samples:
 2. Run `make` to build the `libfive.a` and `libfivec.a` libraries.
 3. Use `./build.sh <samplename>` in the `samples` directory to build specific applications (e.g., `./build.sh fivedit`).
 
+### Fivedit Location & Build System (January 2026 - Part 6)
+- **Repo Structure**: `fivedit` has been moved to its own directory `samples/fivedit/` to better organize its growing codebase and resources.
+- **Build Robustness**: Fixed critical issues in `CreaBuilder.prg` and `Info.plist` generation ("App Damaged" errors) by ensuring `CFBundleExecutable` contains only the filename and using relative paths for bundle creation. 
+- **Self-Healing Environment**: `NewFile` in Fivedit now automatically detects and creates missing indexes (`scripts.cdx`) for the template database, preventing runtime errors on fresh installs.
+- **Script Engine**: Corrected various path resolution issues in `RunScript` and `BuildApp` to support the new directory structure.
+
 ## Documentation
 
 See `whatsnew.txt` for a detailed history of changes and new features.
