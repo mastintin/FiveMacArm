@@ -22,8 +22,10 @@
 		<string>AVKit</string>
 		<string>AVFoundation</string>
 		<string>CoreMedia</string>
-		<string>iokit</string>
 		<string>UniformTypeIdentifiers</string>
+		<string>CoreImage</string>
+		<string>UserNotifications</string>
+		<string>IOKit</string>
 	</array>
 	<key>HarbLibs</key>
 	<array>
@@ -47,8 +49,8 @@
 	</array>
 	<key>LastFiles</key>
 	<array>
-		<string>/Users/manuel/five/Fivemac/fivemac/samples/msglogo.prg</string>
-		<string>/Users/manuel/five/Fivemac/fivemac/samples/browse.prg</string>
+		<string>/Users/manuel/five/Fivemac/fivemac/samples/test_multi_main.prg</string>
+		<string>/Users/manuel/five/Fivemac/fivemac/samples/test_multi_func.prg</string>
 		<string></string>
 		<string></string>
 		<string></string>
