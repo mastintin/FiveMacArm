@@ -49,6 +49,7 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **CreaBuilder Integration**: The "Simple Project Builder" (`CreaBuilder.prg`) is now fully integrated into the **Fivedit** environment. Developers can create, manage, and build projects directly from the IDE via a new "Build Project" toolbar button and menu item.
 - **Context Menu Fixes**: Resolved issues with the File Tree context menu in `fivedit` (`outlines.m`), ensuring reliable file management (Closing/Deleting files) without UI glitches.
 - **Build System Improvements**: Updated `build.sh` to correctly generate and manage `Info.plist` files, solving issues with missing metadata and stale configurations in app bundles.
+- **Say Class**: Enhanced `TSay` with `PICTURE` support (`New`, `SetText`) for formatted output of numeric and date values.
 
 - **Project Tree**: Fivedit now includes a dedicated Project Explorer view (`OpenProject`). When a project is loaded, it visualizes the project structure in a dedicated tree node, allowing quick access to source files and project management. Modified `OpenProject` to reliably parse `.hbp` files cross-platform (LF/CRLF).
 
