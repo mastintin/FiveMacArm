@@ -383,8 +383,7 @@ function BuildApp( cVersion, cIcon, oBtnRun )
    // Icon Copy relative to ./icons or absolute path
    // CopyFileTo requires full destination path (including filename)
    // Remove dest first
-   msgInfo("copying icon "+ cIcon)
-
+ 
    
    if File( cIcon )
       if File( cResPath + "/" + cFileNoPath( cIcon ) )      
@@ -392,31 +391,23 @@ function BuildApp( cVersion, cIcon, oBtnRun )
       endif
       CopyFileTo( cIcon, cResPath + "/" + cFileNoPath( cIcon ) )
    else
-      msgInfo("icono no encontrado")
-      msgInfo("buscando en "+cRoot+"/icons/"+cIcon)
+     
       if File( cRoot + "/icons/" + cIcon )
          if File( cResPath + "/" + cIcon )
-            msgInfo("icono encontrado en " + cResPath + "/" + cIcon)
             FErase( cResPath + "/" + cIcon )
-            msgInfo("icono enborrado")
          endif
          CopyFileTo( cRoot + "/icons/" + cIcon, cResPath + "/" + cIcon )
-         msgInfo("icono copiado")
+        
       else
        
          // Fallback default
          if File( cResPath + "/fivetech.icns" )
-
-            FErase( cResPath + "/fivetech.icns" )
-            msgInfo("icono enborrado en feedback")
+            FErase( cResPath + "/fivetech.icns")
          endif
          CopyFileTo( cRoot + "/icons/fivetech.icns", cResPath + "/fivetech.icns" )
-         msgInfo("icono copiado")
+         
       endif
    endif
-   msgInfo("copying frameworks")
-   msginfo( "croot es "+cRoot)
-   msginfo( "cFwPath es "+cFwPath)
    WaitRun( "cp -r " + cRoot + "/frameworks/* " + cFwPath + "/" )
 
    // 6. Smart Image Bundling
