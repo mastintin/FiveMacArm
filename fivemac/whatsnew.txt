@@ -18,6 +18,25 @@ January 2026
 
 * Internal: Scintilla search logic updated in `scintilla.prg` and `scintillas.m`.
 
+* Enhancement: Architecture & Modernization (64-bit support).
+  - Extensive refactoring of `winapi` layer (windows.m, dialogs.m, etc.) replacing 32-bit handle functions with 64-bit counterparts for modern macOS stability.
+  - Native file dialogs updated to use `UniformTypeIdentifiers`.
+
+* New: Visual Designer & Inspector.
+  - New `TForm` and `TRect` classes for precise control manipulation (resizing, movement).
+  - Two-way synchronization between Designer and Object Inspector (`inspect.prg`).
+  - Added WebView and ColorWell support to the designer.
+
+* Enhancement: Project Management in Fivedit.
+  - Integrated `CreaBuilder.prg` for full project lifecycle management (Build, Run, Create).
+  - New "Project Tree" view for managing multi-file projects (`.hbp`).
+  - `NewFile` auto-creates missing `scripts.cdx` indexes for templates.
+
+* Improvement: Build System & Deployment.
+  - `fivedit` moved to `samples/fivedit/` structure.
+  - Fixed `Info.plist` generation (stripped paths from Executable name) to prevent "App Damaged" errors.
+  - `TSay` class added `PICTURE` support for formatted numeric/date output.
+
 April 2017
 ==========
 
