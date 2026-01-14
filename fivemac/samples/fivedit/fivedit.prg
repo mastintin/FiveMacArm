@@ -450,10 +450,19 @@ function NewFile()
       cAlias = Abrimos( "scripts" )
       
       if ! Empty( cAlias )
-         if ( cAlias )->( DbSeek( "Default" ) ) // Optional: Seek a specific default template if it exists
+         if ( cAlias )->( OrdCount() ) == 0
+            // Create index if missing
+            ( cAlias )->( OrdCreate( AppPath() + "/scripts.cdx", "Name", "NAME" ) )
+         endif
+         ( cAlias )->( OrdSetFocus( "Name" ) )
+
+         if ( cAlias )->( DbSeek( "Default" ) ) 
             cCode = ( cAlias )->CODE
-         elseif ( cAlias )->( DbGoTop() ) .and. ! ( cAlias )->( Eof() )
-            cCode = ( cAlias )->CODE
+         else
+            ( cAlias )->( DbGoTop() ) 
+            if ! ( cAlias )->( Eof() )
+               cCode = ( cAlias )->CODE
+            endif
          endif
          Close( cAlias )
       endif

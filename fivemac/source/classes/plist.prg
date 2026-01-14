@@ -123,6 +123,8 @@ Function CreateInfoFile( cProg, cIcon, cVersion )
    if Right( cExe, 4 ) == ".app"
       cExe := Left( cExe, Len( cExe ) - 4 )
    endif
+   // Ensure it is just the filename, not full path
+   cExe := cFileNoPath( cExe )
 
    // Bundle path DOES need .app
    if !Right( cProg, 4 ) == ".app"
