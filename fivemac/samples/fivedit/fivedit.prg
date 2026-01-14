@@ -1100,7 +1100,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
          DEFINE BUTTON OF oBar PROMPT "Build Proj" ;
             TOOLTIP "Build Project" ;
             IMAGE ImgSymbols( "hammer", "Build" ) ;
-            ACTION MainBuilder()
+            ACTION MainBuilder( if( !Empty( cProject ), cPathPrj + cProject + ".hbp", "" ) )
 
          DEFINE BUTTON OF oBar PROMPT "Designer" ;
             TOOLTIP "Open Form Designer" ;
@@ -1222,7 +1222,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
          MENUITEM "Open"
          MENUITEM "Close" ACTION CloseProject()
          SEPARATOR
-         MENUITEM "Build Project..." ACTION MainBuilder()
+         MENUITEM "Build Project..." ACTION MainBuilder( if( !Empty( cProject ), cPathPrj + cProject + ".hbp", "" ) )
          SEPARATOR
          MENUITEM "Recent projects"
          ENDMENU
@@ -1747,6 +1747,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
          //:Anclaje( nOr( 16, 2 ) )
 
          :bAction = { || oEditor:GotoLine( aFunLines[ oFunList:nRowPos ][ 2 ] ),;
+            oEditor:Send( SCI_SETFIRSTVISIBLELINE, aFunLines[ oFunList:nRowPos ][ 2 ] - 1, 0 ),;
             oEditor:SetFocus() }
          :SetColor( CLR_BLACK, CLR_PANE )
       END

@@ -4,7 +4,7 @@ static oWnd, oBrw, aPrgs := {}
 static cProjectName := "myproject"
 Static cPathPrj
 
-function MainBuilder()
+function MainBuilder( cAutoProject )
 
    local oBtnAdd, oBtnDel, oBtnGen, oBtnBuild, oBtnExit, oBtnLoad, oBtnRun
    local oGet, oGetVer, oGetIcon
@@ -19,7 +19,7 @@ function MainBuilder()
    // Standard Coordinates (Bottom-Left is 0,0)
    // Height 550 (Increased to lower top elements visually)
    
-   DEFINE DIALOG oWnd TITLE "Simple Project Builder" ;
+   DEFINE DIALOG oWnd TITLE "FiveMac Project Builder" ;
       SIZE 600, 550  FLIPPED
 
    // --- Top: Inputs (Y=30..90) ---
@@ -69,8 +69,16 @@ function MainBuilder()
       ACTION oWnd:End() SIZE 160, 24
 
    ACTIVATE DIALOG oWnd CENTERED ;
-      ON INIT WndSetResizable( oWnd:hWnd, .F. )
+      ON INIT ( WndSetResizable( oWnd:hWnd, .F. ), AutoLoad( cAutoProject, oGet, oBtnGen, oBtnBuild, oBtnRun ) )
    
+return nil
+
+function AutoLoad( cAutoProject, oGet, oBtnGen, oBtnBuild, oBtnRun )
+   if !Empty( cAutoProject ) .and. File( cAutoProject )
+      if MsgYesNo( "El proyecto " + cFileNoPath( cAutoProject ) + " está abierto." + CRLF + "¿Desea cargarlo en el Builder?" )
+         LoadProjectFrom( cAutoProject, oGet, oBtnGen, oBtnBuild, oBtnRun )
+      endif
+   endif
 return nil
 
 // Helper to check buttons state
@@ -350,7 +358,7 @@ function BuildApp( cVersion, cIcon, oBtnRun )
    if File( cMacPath + "/" + cProjectName )
       FErase( cMacPath + "/" + cProjectName )
    endif
-   msginfo( "copiando binario " + cExeFile + " a " + cMacPath + "/" + cProjectName )
+
 
    // Using FiveMac CopyFileTo (Cocoa NSFileManager)
    // if ! CopyFileTo( cExeFile, cMacPath + "/" + cProjectName )
@@ -499,56 +507,61 @@ return nil
 
 function LoadHbp( oGet, oBtnGen, oBtnBuild, oBtnRun )
    local cFile := cGetFile( "HBP Project (*.hbp)|*.hbp", "Select Project" )
+   
+   if ! Empty( cFile )
+      LoadProjectFrom( cFile, oGet, oBtnGen, oBtnBuild, oBtnRun )
+   endif
+
+return nil
+
+function LoadProjectFrom( cFile, oGet, oBtnGen, oBtnBuild, oBtnRun )
+
    local cContent, aLines, cLine, n
    local cExt, i
    
-   if ! Empty( cFile )
-      cProjectName := cFileNoExt( cFileNoPath( cFile ) )
-      cPathPrj := cFilePath( cFile ) 
-
-      // Change to Project Directory so HBP check passes
-      DirChange( cFilePath( cFile ) )
+   cProjectName := cFileNoExt( cFileNoPath( cFile ) )
+   cPathPrj := cFilePath( cFile ) 
+   
+   // Change to Project Directory so HBP check passes
+   DirChange( cFilePath( cFile ) )
+   
+   oGet:Refresh()
+   
+   cContent := MemoRead( cFile )
+   aLines := HB_ATokens( cContent, CRLF )
+   
+   aPrgs := {}
+   
+   for n := 1 to Len( aLines )
+      cLine := AllTrim( aLines[ n ] )
       
-      oGet:Refresh()
-      
-      cContent := MemoRead( cFile )
-      aLines := HB_ATokens( cContent, CRLF )
-      
-      aPrgs := {}
-      
-      for n := 1 to Len( aLines )
-         cLine := AllTrim( aLines[ n ] )
-         
-         // Skip comments and flags
-         if Left( cLine, 1 ) == "#" .or. Left( cLine, 1 ) == "-" .or. Empty( cLine )
-            loop
-         endif
-         
-         // Check extension
-         cExt := Lower( cFileExt( cLine ) )
-         if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
-            AAdd( aPrgs, cLine )
-         else
-            // If valid file, add it
-            if ! Empty( cExt )
-               AAdd( aPrgs, cLine )
-            endif
-         endif
-      next
-      
-      oBrw:SetArray( aPrgs )
-      oBrw:Refresh()
-      
-      CheckButtons( oBtnGen, oBtnBuild )
-      
-      // Check if App exists to enable Run?
-      if File( cProjectName + ".app" )
-         oBtnRun:Enable()
-      else
-         oBtnRun:Disable()
+      // Skip comments and flags
+      if Left( cLine, 1 ) == "#" .or. Left( cLine, 1 ) == "-" .or. Empty( cLine )
+         loop
       endif
       
-      MsgInfo( "Project Loaded: " + cProjectName )
+      // Check extension
+      cExt := Lower( cFileExt( cLine ) )
+      if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
+         AAdd( aPrgs, cLine )
+      else
+         // If valid file, add it
+         if ! Empty( cExt )
+            AAdd( aPrgs, cLine )
+         endif
+      endif
+   next
+   
+   oBrw:SetArray( aPrgs )
+   oBrw:Refresh()
+   
+   CheckButtons( oBtnGen, oBtnBuild )
+   
+   // Check if App exists to enable Run?
+   if File( cProjectName + ".app" )
+      oBtnRun:Enable()
+   else
+      oBtnRun:Disable()
    endif
-
+   
 return nil
