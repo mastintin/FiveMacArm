@@ -10,6 +10,7 @@ static aFunLines := {}, oFunList
 static oTree, oPrgItem, oChItem, oMItem, cBmpPath
 static oprjTree, oProjectItem, oProjPrgItem , oProjChItem, oProjMItem // Project Tree Items
 static cProject := ""             // Current Project Name
+static cPathPrj := ""
 static lSplit1, lSplit2, lSplit3
 static cDbfPath, popoverMas
 static cFontName := "Monaco", nFontSize := 14
@@ -26,7 +27,7 @@ REQUEST APPTERMINATE
 
 function Main()
 
-  local oSlide, oSayZoom
+   local oSlide, oSayZoom
   
    cBmpPath = ImgPath()
    cDbfPath = AppPath() + "/"
@@ -43,7 +44,7 @@ function Main()
    BuildButtonBar()
 
    @ 21, 0 SPLITTER oSplitV OF oWnd SIZE oWnd:nWidth, oWnd:nHeight - 92 VERTICAL ;
-     AUTORESIZE 18 VIEWS 3
+      AUTORESIZE 18 VIEWS 3
 
    @ 0, 0 SPLITTER oSplitH OF oSplitV:aViews[ 2 ] ;
       SIZE oSplitV:aViews[ 2 ]:nWidth, oSplitV:aViews[ 2 ]:nHeight ;
@@ -86,7 +87,7 @@ function Main()
 
    oSlide:SetMinMaxValue( -9, 20 )
    oSlide:bChange := { || oSayZoom:setText("Zoom : " + ;
-                          Alltrim(str( ( ( oEditor:setZoom( oSlide:GetValue() ) + 10 ) * 10 ) ) ) + "%" ) }
+      Alltrim(str( ( ( oEditor:setZoom( oSlide:GetValue() ) + 10 ) * 10 ) ) ) + "%" ) }
 
    ACTIVATE WINDOW oWnd
    
@@ -131,7 +132,7 @@ return nil
 
 function AutoIndentation()
 
-/*
+   /*
  // void SciTEBase::MaintainIndentation(char ch) {
 
    local nEolMode  := oEditor:GetEolMode()
@@ -171,7 +172,7 @@ function BuildEditor()
    endif
 
    oEditor = TScintilla():New( 0, 0, oSplitH:aViews[ 1 ]:nWidth  ,;
-                               oSplitH:aViews[ 1 ]:nHeight - 7, oSplitH:aViews[ 1 ]  )
+      oSplitH:aViews[ 1 ]:nHeight - 7, oSplitH:aViews[ 1 ]  )
 
    oEditor:nAutoResize = 18
    oEditor:Send( 2130, 0, 0 ) // SCI_SETHSCROLLBAR, 0
@@ -197,10 +198,10 @@ function BuildPreferences()
    cPrefFile = Path() + "/fivedit.plist"
 
    if ! File( cPrefFile )
-       SetPlistValue( cPrefFile, "PathHarbour", "/Users/~/harbour", .T. )
-       SetPlistValue( cPrefFile, "PathFiveMac", "/Users/~/fivemac", .T. )
+      SetPlistValue( cPrefFile, "PathHarbour", "/Users/~/harbour", .T. )
+      SetPlistValue( cPrefFile, "PathFiveMac", "/Users/~/fivemac", .T. )
 
-       SetPlistValue( cPrefFile, "PathSDK", GetSDKPath(), .T. )
+      SetPlistValue( cPrefFile, "PathSDK", GetSDKPath(), .T. )
    endif
 
    CreatePlistHarblib()
@@ -227,14 +228,14 @@ function BuildScriptDbf()
    local scriptDbf := AppPath() + "/scripts.dbf"
    local cAlias
    local cCode := '#include "FiveMac.ch"' + CRLF + CRLF + ;
-                  "function Main()" + CRLF + CRLF + ;
-                  ' MsgInfo( "Hello world!" )' + CRLF + CRLF + ;
-                  "return nil"
+      "function Main()" + CRLF + CRLF + ;
+      ' MsgInfo( "Hello world!" )' + CRLF + CRLF + ;
+      "return nil"
 
    if ! File( scriptDbf )
       DbCreate( scriptDbf, { { "NAME", "C", 20, 0 },;
-                             { "DESCRIPT", "C", 100, 0 },;
-                             { "CODE", "M", 80, 0 } } )
+         { "DESCRIPT", "C", 100, 0 },;
+         { "CODE", "M", 80, 0 } } )
       cAlias = Abrimos( "scripts" )
       if ! Empty( cAlias )
          ( cAlias )->(dbAppend())
@@ -262,8 +263,8 @@ function EditorChange()
 
    if oMsgBar != nil
       oMsgBar:SetText( "FiveMac IDE " + ;
-                       " Row: " + AllTrim( Str( oEditor:nLine() ) ) + ;
-                       " Col: " + AllTrim( Str( oEditor:nCol() ) ) )
+         " Row: " + AllTrim( Str( oEditor:nLine() ) ) + ;
+         " Col: " + AllTrim( Str( oEditor:nCol() ) ) )
    endif
 
    if oEditor:GetModify()
@@ -316,14 +317,14 @@ return nil
 
 function CreatePlistHarblib()
 
-  local oPlist := TPlist():New( cPrefFile )
-  local lHarblib := oPlist:IsKeyByName( "HarbLibs" )
-  local aHarbLibs:={ "hbdebug", "hbvm", "hbrtl", "hblang", "hbrdd",;
-                     "hbrtl", "gttrm", "hbvm", "hbmacro", "hbpp", "rddntx",;
-                     "rddcdx", "rddfpt", "hbsix", "hbcommon", "hbcplr" }
-  if ! lHarblib
-     oPlist:SetArrayByName( "HarbLibs", aHarbLibs, .T. )
-  endif
+   local oPlist := TPlist():New( cPrefFile )
+   local lHarblib := oPlist:IsKeyByName( "HarbLibs" )
+   local aHarbLibs:={ "hbdebug", "hbvm", "hbrtl", "hblang", "hbrdd",;
+      "hbrtl", "gttrm", "hbvm", "hbmacro", "hbpp", "rddntx",;
+      "rddcdx", "rddfpt", "hbsix", "hbcommon", "hbcplr" }
+   if ! lHarblib
+      oPlist:SetArrayByName( "HarbLibs", aHarbLibs, .T. )
+   endif
 
 return nil
 
@@ -331,19 +332,19 @@ return nil
 
 function CreatePlistFrameWorks()
 
-  local oPlist := TPlist():New( cPrefFile )
-  local lFramewors := oPlist:IsKeyByName( "FrameWorks" )
-  local lExtraFrameworks := oPlist:IsKeyByName( "ExtraFrameWorks" )
-  local aFrameWorks := { "Cocoa", "WebKit", "QTkit", "Quartz" }
-  local aExtraFrameworks := { "Scintilla" }
+   local oPlist := TPlist():New( cPrefFile )
+   local lFramewors := oPlist:IsKeyByName( "FrameWorks" )
+   local lExtraFrameworks := oPlist:IsKeyByName( "ExtraFrameWorks" )
+   local aFrameWorks := { "Cocoa", "WebKit", "QTkit", "Quartz" }
+   local aExtraFrameworks := { "Scintilla" }
 
-  if ! lFramewors
-     oPlist:SetArrayByName( "FrameWorks", aFrameWorks, .T. )
-  endif
+   if ! lFramewors
+      oPlist:SetArrayByName( "FrameWorks", aFrameWorks, .T. )
+   endif
 
-  if ! lExtraFrameworks
-     oPlist:SetArrayByName( "ExtraFrameWorks", aExtraFrameworks, .T. )
-  endif
+   if ! lExtraFrameworks
+      oPlist:SetArrayByName( "ExtraFrameWorks", aExtraFrameworks, .T. )
+   endif
 
 return nil
 
@@ -359,9 +360,9 @@ function RunScript( oEditor )
    BEGIN SEQUENCE
       bOldError = ErrorBlock( { | o | DoBreak( o ) } )
       oHrb = HB_CompileFromBuf( StrTran( oEditor:GetText(), "Main", "__Main" ),;
-                                .T., "-n", "-I" + ;
-                                StrTran( AllTrim( cFivePath ), "~", UserName() ) + "/include",;
-                                "-I" + StrTran( AllTrim( cHarbourPath ), "~", UserName() ) + "/include" )
+         .T., "-n", "-I" + ;
+         StrTran( AllTrim( cFivePath ), "~", UserName() ) + "/include",;
+         "-I" + StrTran( AllTrim( cHarbourPath ), "~", UserName() ) + "/include" )
    END SEQUENCE 
    ErrorBlock( bOldError )
 
@@ -386,13 +387,13 @@ static function DoBreak( oError )
       for n = 1 to Len( oError:Args )
          MsgInfo( oError:Args[ n ] )
          cInfo += "[" + Str( n, 4 ) + "] = " + ValType( oError:Args[ n ] ) + ;
-                  "   " + cValToChar( oError:Args[ n ] ) + CRLF
+            "   " + cValToChar( oError:Args[ n ] ) + CRLF
       next
    endif
 
    MsgStop( oError:Description + CRLF + cInfo,;
-   FWString( "Script error at line:" ) + " " + ;
-             AllTrim( Str( ProcLine( 2 ) ) ) )
+      FWString( "Script error at line:" ) + " " + ;
+      AllTrim( Str( ProcLine( 2 ) ) ) )
 
    BREAK
 
@@ -422,9 +423,9 @@ function NewFile()
    local cFileName := Space( 50 )
    local cAlias
    local cCode := '#include "FiveMac.ch"' + CRLF + CRLF + ;
-                  "function Main()" + CRLF + CRLF + ;
-                  '   MsgInfo( "Hello world!" )' + CRLF + CRLF + ;
-                  "return nil"
+      "function Main()" + CRLF + CRLF + ;
+      '   MsgInfo( "Hello world!" )' + CRLF + CRLF + ;
+      "return nil"
    
    if MsgGet( "New File", "Filename:", @cFileName )
       
@@ -450,9 +451,9 @@ function NewFile()
       
       if ! Empty( cAlias )
          if ( cAlias )->( DbSeek( "Default" ) ) // Optional: Seek a specific default template if it exists
-             cCode = ( cAlias )->CODE
+            cCode = ( cAlias )->CODE
          elseif ( cAlias )->( DbGoTop() ) .and. ! ( cAlias )->( Eof() )
-             cCode = ( cAlias )->CODE
+            cCode = ( cAlias )->CODE
          endif
          Close( cAlias )
       endif
@@ -501,16 +502,16 @@ function Preferences()
    DEFINE MULTIVIEW oMulti OF oDlg RESIZED
 
    @ 0,0 MVIEW PROMPT "Fonts & Colors" SIZE 700, 382 TITLE "Fonts & Colors" OF oMulti ;
-         TOOLTIP "Fonts & Colors" IMAGE ImgSymbols( "paintpalette" ) 
+      TOOLTIP "Fonts & Colors" IMAGE ImgSymbols( "paintpalette" ) 
 
    @ 0,0 MVIEW PROMPT "WorkSpace" SIZE 700, 382 TITLE "WorkSpace" OF oMulti ;
-         TOOLTIP "WorkSpace" IMAGE ImgSymbols( "desktopcomputer" )
+      TOOLTIP "WorkSpace" IMAGE ImgSymbols( "desktopcomputer" )
 
    @ 0,0 MVIEW PROMPT "Frameworks" SIZE 700, 382 TITLE "Frameworks" OF oMulti ;
-         TOOLTIP "Frameworks" IMAGE  ImgSymbols( "square.stack.3d.up" )
+      TOOLTIP "Frameworks" IMAGE  ImgSymbols( "square.stack.3d.up" )
 
    @ 0,0 MVIEW PROMPT "Harbour" SIZE 700, 382 TITLE "Harbour" OF oMulti ;
-   TOOLTIP "Harbour" IMAGE ImgSymbols( "archivebox" )
+      TOOLTIP "Harbour" IMAGE ImgSymbols( "archivebox" )
 
    oMulti:oToolbar:SetBtnSelected( 1 )
 
@@ -520,23 +521,23 @@ function Preferences()
    oTree:bAction = { || ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize ) }
 
    oItem = oTree:AddItem( "Colors", ImgSymbols( "paintpalette" ) )
-      oItem:AddItem( "Strings" )
-      oItem:AddItem( "Numbers" )
-      oItem:AddItem( "Comments" )
-      oItem:AddItem( "Harbour" )
-      oItem:AddItem( "FiveMac" )
+   oItem:AddItem( "Strings" )
+   oItem:AddItem( "Numbers" )
+   oItem:AddItem( "Comments" )
+   oItem:AddItem( "Harbour" )
+   oItem:AddItem( "FiveMac" )
 
    oItem = oTree:AddItem( "ToolBar" )
-      oItem:AddItem( "Prompts" )
+   oItem:AddItem( "Prompts" )
 
    oItem = oTree:AddItem( "Font", ImgSymbols( "textformat" ) )
-      oItem:AddItem( "Name-Size" )
+   oItem:AddItem( "Name-Size" )
    
-    oTree:Select( oTree:GetItemByName( "Strings" ))
-    oTree:refresh()
+   oTree:Select( oTree:GetItemByName( "Strings" ))
+   oTree:refresh()
 
-   @ 300, 260 COLORWELL oClr SIZE 100, 30 OF oMulti:aViews[ 1 ] ;
-      ON CHANGE SetEditorColor( oTree:GetSelect():cName, oClr:GetColor() )
+   // @ 300, 260 COLORWELL oClr SIZE 100, 30 OF oMulti:aViews[ 1 ] ;
+   //    ON CHANGE SetEditorColor( oTree:GetSelect():cName, oClr:GetColor() )
 
    @ 125, 220 SAY oSayFont PROMPT "Font Name:" OF oMulti:aViews[ 1 ]
    @ 100, 220 COMBOBOX oCbxFont VAR cFontName ITEMS aFonts SIZE 200, 25 OF oMulti:aViews[ 1 ] ;
@@ -556,14 +557,14 @@ function Preferences()
    //------ controles en segunda vista ------------
 
    @ 230, 280 IMAGE oImg OF oMulti:aViews[ 2 ] SIZE 130, 130 FILENAME cVarIcon
-       oImg:setFrame()
+   oImg:setFrame()
 
    @ 224, 40 SAY "App Settings" OF oMulti:aViews[ 2 ]
 
    @ 204, 40 GET oGetIcon VAR cVarIcon OF oMulti:aViews[ 2 ] SIZE 580, 20
    
    @ 204, 630  BTNBMP OF oMulti:aViews[ 2 ]  ;
-     FILENAME ImgSymbols( "plus.circle" )  ;
+      FILENAME ImgSymbols( "plus.circle" )  ;
       ACTION ChooseSheetTxtImg(oGetIcon:hwnd,oImg:hWnd ) SIZE 30, 30 STYLE 10
       
    oGetIcon:SetNOSelect()
@@ -589,9 +590,9 @@ function Preferences()
 
    @ 10, 630  BTNBMP OF oMulti:aViews[ 2 ]  ;
       FILENAME ImgSymbols( "folder" )  ;
-     ACTION oGet3:opensheet(ParentPath( oGet3:gettext()))  SIZE 30, 30 STYLE 10
+      ACTION oGet3:opensheet(ParentPath( oGet3:gettext()))  SIZE 30, 30 STYLE 10
 
-  //------ controles en vista 3 -----------
+   //------ controles en vista 3 -----------
 
    @ 40, 10 TREE oTree2 TITLE "Frameworks" ;
       SIZE 300, 340 OF oMulti:aViews[ 3 ]
@@ -645,7 +646,7 @@ function Preferences()
    //------ controles en vista 4 -----------
 
    @ 40, 10 TREE oTree3 TITLE "Harbour Libs" ;
-     SIZE 300, 340 OF oMulti:aViews[ 4 ]
+      SIZE 300, 340 OF oMulti:aViews[ 4 ]
 
    oTree3:SetPijama( .T. )
 
@@ -659,8 +660,8 @@ function Preferences()
    next
 
    @ 12, 10 BTNBMP oBtn3 OF oMulti:aViews[ 4 ] ;
-   FILENAME ImgSymbols( "minus.circle" ) ;
-   ACTION Dellib( oTree3, 2 ) SIZE 30, 30 STYLE 10
+      FILENAME ImgSymbols( "minus.circle" ) ;
+      ACTION Dellib( oTree3, 2 ) SIZE 30, 30 STYLE 10
 
    @ 12, 39 BTNBMP oBtn4 OF oMulti:aViews[ 4 ] ;
       FILENAME ImgSymbols( "plus.circle" ) ;
@@ -700,13 +701,13 @@ function Preferences()
 
    ACTIVATE DIALOG oDlg CENTERED ;
       ON INIT ( if( ( n := AScan( aFonts, cFontName ) ) > 0, oCbxFont:Select( n ), ), ;
-              ( oTree:Rebuild(), oTree:ExpandAll() ) ,;
-              oTree2:Rebuild(), oTree2:ExpandAll(),;
-              oTree3:Rebuild(), oTree3:ExpandAll(),;
-              oTree4:Rebuild(), oTree4:ExpandAll(),;
-              oTreeFlag:Rebuild(), oTreeFlag:ExpandAll(),;
-              oTree:Select( oTree:GetItemByName( "Strings" )),;
-              oTree:refresh() ) 
+      ( oTree:Rebuild(), oTree:ExpandAll() ) ,;
+      oTree2:Rebuild(), oTree2:ExpandAll(),;
+      oTree3:Rebuild(), oTree3:ExpandAll(),;
+      oTree4:Rebuild(), oTree4:ExpandAll(),;
+      oTreeFlag:Rebuild(), oTreeFlag:ExpandAll(),;
+      oTree:Select( oTree:GetItemByName( "Strings" )),;
+      oTree:refresh() ) 
 
    if ! ( cVar1 == GetPlistValue( cPrefFile, "PathFiveMac" ) )
       SetPlistValue( cPrefFile, "PathFiveMac", cVar1, .T. )
@@ -714,21 +715,21 @@ function Preferences()
 
    if ! ( cVar2 == GetPlistValue( cPrefFile, "PathHarbour" ) )
       SetPlistValue( cPrefFile, "PathHarbour", cVar2, .T. )
-    endif
+   endif
 
    if ! ( cVar3 == GetPlistValue( cPrefFile, "PathSDK" ) )
       SetPlistValue( cPrefFile, "PathSDK", cVar3, .T. )
    endif
   
-    if !(  oGetIcon:getText() == GetPlistValue( cPrefFile, "PathIcon" ) )
-         SetPlistValue( cPrefFile, "PathIcon",  cVarIcon , .T. )
-    endif
+   if !(  oGetIcon:getText() == GetPlistValue( cPrefFile, "PathIcon" ) )
+      SetPlistValue( cPrefFile, "PathIcon",  cVarIcon , .T. )
+   endif
 
    if ! ( GetPlistValue( cPrefFile, "PathIcon" ) == oImg:GetFile() )
       SetPlistValue( cPrefFile, "PathIcon", oImg:GetFile(), .T. )
    endif
 
-    SetPlistValue( cPrefFile, "Color-Strings", 1234, .T. )
+   SetPlistValue( cPrefFile, "Color-Strings", 1234, .T. )
 
 return nil
 
@@ -758,7 +759,7 @@ function DelLib( oTree, ntipo )
 
    oPlist:SetArrayByName( aTipo[ nTipo ], aLibs, .T. )
 
- return nil
+return nil
 
 //----------------------------------------------------------------------------//
 
@@ -779,7 +780,7 @@ function DlgAddlib( oTree, ntipo )
    endif
 
    
-  // @ 67, 108 GET oGet VAR cLib OF oDlg SIZE 192, 22
+   // @ 67, 108 GET oGet VAR cLib OF oDlg SIZE 192, 22
    
    if nTipo == 1
       
@@ -795,26 +796,26 @@ function DlgAddlib( oTree, ntipo )
 
       oNode = oTree:oNode:aNodes[ 1 ]
 
-       if nTipo == 2
-          cBmp =  ImgSymbols( "square.stack.3d.up")
-       elseif nTipo == 1
-          cBmp = ImgSymbols( "square.stack.3d.up")
-       endif
+      if nTipo == 2
+         cBmp =  ImgSymbols( "square.stack.3d.up")
+      elseif nTipo == 1
+         cBmp = ImgSymbols( "square.stack.3d.up")
+      endif
 
-       oNode:AddItem( cLib,,, cBmp )
+      oNode:AddItem( cLib,,, cBmp )
 
-       n = oNode:nItems
+      n = oNode:nItems
 
-       for i = 1 to n
-          AAdd( aLibs, oNode:anodes[ i ]:cName )
-       next
+      for i = 1 to n
+         AAdd( aLibs, oNode:anodes[ i ]:cName )
+      next
 
-       aTitles:= { "FrameWorks" , "HarbLibs" ,"ExtraFrameWorks","HarbourFlags" }
+      aTitles:= { "FrameWorks" , "HarbLibs" ,"ExtraFrameWorks","HarbourFlags" }
 
-       oPlist:SetArrayByName( aTitles[nTipo], aLibs, .T. )
+      oPlist:SetArrayByName( aTitles[nTipo], aLibs, .T. )
 
-       oTree:Rebuild()
-       oTree:ExpandAll()
+      oTree:Rebuild()
+      oTree:ExpandAll()
 
    endif
 
@@ -837,21 +838,21 @@ return nil
 
 //----------------------------------------------------------------------------//
 
- function SetEditorColor( cType, nRGBColor )
+function SetEditorColor( cType, nRGBColor )
 
-  oEditor:SetTextColor( cType, nRGBColor )
+   oEditor:SetTextColor( cType, nRGBColor )
 
-  ? cType
-  ? "Color-" + cType
-  ? nRGBColor
+   ? cType
+   ? "Color-" + cType
+   ? nRGBColor
   
-  ? ISKEYPLIST( cPrefFile, "Color-" + cType )  
+   ? ISKEYPLIST( cPrefFile, "Color-" + cType )  
   
    SetPlistValue( cPrefFile, "Color-" + cType, nRGBColor, .T. )
   
    ?  GetPlistValue( cPrefFile, "Color-" + cType )
   
- return nil
+return nil
 
 //----------------------------------------------------------------------------//
 
@@ -860,285 +861,285 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
    local oItem := oTree:GetSelect(), cName
 
    if oItem != nil .and. oClr != nil
-      cName = oItem:cName
+   cName = oItem:cName
 
-      if cName $ "Strings,Numbers,Comments,Harbour,FiveMac"
-         oClr:Show()
-         oClr:SetColor( oEditor:GetTextColor( cName ) )
-         if oCbxFont != nil; oCbxFont:Hide(); endif
-         if oGetSize != nil; oGetSize:Hide(); endif
-         if oSayFont != nil; oSayFont:Hide(); endif
-         if oSaySize != nil; oSaySize:Hide(); endif
-      elseif cItemInTree( oItem, "Name-Size" )
-         oClr:Hide()
-         if oCbxFont != nil; oCbxFont:Show(); endif
-         if oGetSize != nil; oGetSize:Show(); endif
-         if oSayFont != nil; oSayFont:Show(); endif
-         if oSaySize != nil; oSaySize:Show(); endif
-      else
-         oClr:Hide()
-         if oCbxFont != nil; oCbxFont:Hide(); endif
-         if oGetSize != nil; oGetSize:Hide(); endif
-         if oSayFont != nil; oSayFont:Hide(); endif
-         if oSaySize != nil; oSaySize:Hide(); endif
-      endif
-
-   endif
-
-return nil
-
-//----------------------------------------------------------------------------//
-
-function UpdateEditorsFont()
-   local oEditor
-   for each oEditor in aEditors
-      oEditor:SetFont( cFontName, nFontSize )
-   next
-return nil
-
-//----------------------------------------------------------------------------//
-
-function cItemInTree( oItem, cName )
-   local lFound := .f.
-   while oItem != nil
-      if oItem:cName == cName
-         lFound := .t.
-         exit
-      endif
-      oItem = oItem:oParent
-   enddo
-return lFound
-
-//----------------------------------------------------------------------------//
-
-static function OpenFile( cFileName )
-
-   local oItem
-
-   if Empty( cFileName )
-      BuildEditor()
-      if oEditor:DlgOpen()
-         cFileName = oEditor:cFileName
-         oMruFiles:bAction:AddItem( oEditor:cFileName,;
-                                    { | oMenuItem | OpenFile( oMenuItem:cPrompt ) } )
-      else
-         return nil
-      endif
+   if cName $ "Strings,Numbers,Comments,Harbour,FiveMac"
+   oClr:Show()
+   oClr:SetColor( oEditor:GetTextColor( cName ) )
+   if oCbxFont != nil; oCbxFont:Hide(); endif
+   if oGetSize != nil; oGetSize:Hide(); endif
+   if oSayFont != nil; oSayFont:Hide(); endif
+   if oSaySize != nil; oSaySize:Hide(); endif
+   elseif cItemInTree( oItem, "Name-Size" )
+   oClr:Hide()
+   if oCbxFont != nil; oCbxFont:Show(); endif
+   if oGetSize != nil; oGetSize:Show(); endif
+   if oSayFont != nil; oSayFont:Show(); endif
+   if oSaySize != nil; oSaySize:Show(); endif
    else
-      if File( cFileName )
-         if ( oItem := oTree:GetItemByName( cFileNoPath( cFileName ) ) ) == nil .or. ;
-            oItem:Cargo != cFileName
+   oClr:Hide()
+   if oCbxFont != nil; oCbxFont:Hide(); endif
+      if oGetSize != nil; oGetSize:Hide(); endif
+         if oSayFont != nil; oSayFont:Hide(); endif
+            if oSaySize != nil; oSaySize:Hide(); endif
+            endif
+
+         endif
+
+      return nil
+
+      //----------------------------------------------------------------------------//
+
+      function UpdateEditorsFont()
+         local oEditor
+         for each oEditor in aEditors
+            oEditor:SetFont( cFontName, nFontSize )
+         next
+      return nil
+
+      //----------------------------------------------------------------------------//
+
+      function cItemInTree( oItem, cName )
+         local lFound := .f.
+         while oItem != nil
+            if oItem:cName == cName
+               lFound := .t.
+               exit
+            endif
+            oItem = oItem:oParent
+         enddo
+      return lFound
+
+      //----------------------------------------------------------------------------//
+
+      static function OpenFile( cFileName )
+
+         local oItem
+
+         if Empty( cFileName )
             BuildEditor()
-            oEditor:Open( cFileName )
-            oMruFiles:bAction:AddItem( oEditor:cFileName,;
-                                       { | oMenuItem | OpenFile( oMenuItem:cPrompt ) } )
+            if oEditor:DlgOpen()
+               cFileName = oEditor:cFileName
+               oMruFiles:bAction:AddItem( oEditor:cFileName,;
+                  { | oMenuItem | OpenFile( oMenuItem:cPrompt ) } )
+            else
+               return nil
+            endif
+         else
+            if File( cFileName )
+               if ( oItem := oTree:GetItemByName( cFileNoPath( cFileName ) ) ) == nil .or. ;
+                     oItem:Cargo != cFileName
+                  BuildEditor()
+                  oEditor:Open( cFileName )
+                  oMruFiles:bAction:AddItem( oEditor:cFileName,;
+                     { | oMenuItem | OpenFile( oMenuItem:cPrompt ) } )
+               endif
+            else
+               MsgAlert( cFileName + " not found!" )
+               return nil
+            endif
          endif
-      else
-         MsgAlert( cFileName + " not found!" )
-         return nil
-      endif
-   endif
 
-   if oItem == nil
-      if Lower( cFileExt( cFileName ) ) == "prg"
-         oItem = oPrgItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
+         if oItem == nil
+            if Lower( cFileExt( cFileName ) ) == "prg"
+               oItem = oPrgItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
 
-      elseif Lower( cFileExt( cFileName ) ) == "ch"
-         if oChItem == nil
-            oChItem = oTree:AddItem( "CH", ImgSymbols( "folder" ) )
+            elseif Lower( cFileExt( cFileName ) ) == "ch"
+               if oChItem == nil
+                  oChItem = oTree:AddItem( "CH", ImgSymbols( "folder" ) )
+               endif
+               oItem = oChItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
+
+            elseif Lower( cFileExt( cFileName ) ) == "m"
+               if oMItem == nil
+                  oMItem = oTree:AddItem( "M", ImgSymbols( "folder" ) )
+               endif
+               oItem = oMItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
+            endif
          endif
-         oItem = oChItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
 
-      elseif Lower( cFileExt( cFileName ) ) == "m"
-         if oMItem == nil
-            oMItem = oTree:AddItem( "M", ImgSymbols( "folder" ) )
+         if oItem != nil
+            if oItem:Cargo != oEditor:cFileName
+               oItem:Cargo = oEditor:cFileName
+               oTree:Rebuild()
+            endif
+
+            oTree:ExpandAll()
+            oTree:Select( oItem )
          endif
-         oItem = oMItem:AddItem( cFileNoPath( oEditor:cFileName ),,, ImgSymbols("document") )
-      endif
-   endif
 
-   if oItem != nil
-      if oItem:Cargo != oEditor:cFileName
-         oItem:Cargo = oEditor:cFileName
-         oTree:Rebuild()
-      endif
+         oEditor:SetFocus()
 
-      oTree:ExpandAll()
-      oTree:Select( oItem )
-   endif
+         FillFuncList()
 
-   oEditor:SetFocus()
+         if Lower( cFileExt( oEditor:cFileName ) ) == "prg"
+            oFunList:aCols[ 1 ]:SetHeader( "Functions" )
+         else
+            oFunList:aCols[ 1 ]:SetHeader( "Commands" )
+         endif
 
-   FillFuncList()
+      return nil
 
-   if Lower( cFileExt( oEditor:cFileName ) ) == "prg"
-      oFunList:aCols[ 1 ]:SetHeader( "Functions" )
-   else
-      oFunList:aCols[ 1 ]:SetHeader( "Commands" )
-   endif
+      //----------------------------------------------------------------------------//
 
-return nil
+      function BuildButtonBar()
 
-//----------------------------------------------------------------------------//
+         local oBar, oBtnSearch, oSeg
 
-function BuildButtonBar()
+         DEFINE TOOLBAR oBar OF oWnd
 
-   local oBar, oBtnSearch, oSeg
+         DEFINE BUTTON OF oBar PROMPT "New File" ;
+            TOOLTIP "Creates a new file" ;
+            IMAGE  ImgSymbols( "doc.badge.plus", "New" ) ;
+            ACTION NewFile()
 
-   DEFINE TOOLBAR oBar OF oWnd
+         DEFINE BUTTON OF oBar PROMPT "Open" ;
+            TOOLTIP "Open a file" ;
+            IMAGE  ImgSymbols( "folder", "Open" ) ;
+            ACTION OpenFile()
 
-   DEFINE BUTTON OF oBar PROMPT "New File" ;
-      TOOLTIP "Creates a new file" ;
-      IMAGE  ImgSymbols( "doc.badge.plus", "New" ) ;
-      ACTION NewFile()
+         DEFINE BUTTON OF oBar PROMPT "Close" ;
+            TOOLTIP "Close this file" ;
+            IMAGE  ImgSymbols( "xmark.circle", "Close" ) ;
+            ACTION CloseFile()
 
-   DEFINE BUTTON OF oBar PROMPT "Open" ;
-      TOOLTIP "Open a file" ;
-       IMAGE  ImgSymbols( "folder", "Open" ) ;
-       ACTION OpenFile()
+         DEFINE BUTTON oBtnSave OF oBar PROMPT "Save" ;
+            TOOLTIP "Save the file to disk" ;
+            IMAGE  ImgSymbols( "externaldrive", "Save" ) ;
+            ACTION oEditor:Save(), oBtnSave:Disable()
 
-   DEFINE BUTTON OF oBar PROMPT "Close" ;
-      TOOLTIP "Close this file" ;
-       IMAGE  ImgSymbols( "xmark.circle", "Close" ) ;
-       ACTION CloseFile()
-
-   DEFINE BUTTON oBtnSave OF oBar PROMPT "Save" ;
-      TOOLTIP "Save the file to disk" ;
-      IMAGE  ImgSymbols( "externaldrive", "Save" ) ;
-       ACTION oEditor:Save(), oBtnSave:Disable()
-
-   oBtnSave:Disable()
+         oBtnSave:Disable()
 
 
 
-   oBar:Addspace()
+         oBar:Addspace()
 
-   DEFINE BUTTON OF oBar PROMPT "Undo" ;
-      TOOLTIP "Undo the lastest actions" ;
-       IMAGE  ImgSymbols( "arrow.uturn.backward", "Undo" ) ;
-       ACTION oEditor:UnDo()
+         DEFINE BUTTON OF oBar PROMPT "Undo" ;
+            TOOLTIP "Undo the lastest actions" ;
+            IMAGE  ImgSymbols( "arrow.uturn.backward", "Undo" ) ;
+            ACTION oEditor:UnDo()
 
-   DEFINE BUTTON OF oBar PROMPT "Redo" ;
-      TOOLTIP "Redo the lastest actions" ;
-       IMAGE  ImgSymbols( "arrow.uturn.forward", "Redo" ) ;
-       ACTION oEditor:ReDo()
+         DEFINE BUTTON OF oBar PROMPT "Redo" ;
+            TOOLTIP "Redo the lastest actions" ;
+            IMAGE  ImgSymbols( "arrow.uturn.forward", "Redo" ) ;
+            ACTION oEditor:ReDo()
 
-   oBar:AddSpace()
+         oBar:AddSpace()
 
-   DEFINE BUTTON OF oBar PROMPT "Cut" ;
-      TOOLTIP "Remove the selected text and put it on the clipboard" ;
-       IMAGE  ImgSymbols( "scissors", "Cut" ) ;
-       ACTION oEditor:Cut()
+         DEFINE BUTTON OF oBar PROMPT "Cut" ;
+            TOOLTIP "Remove the selected text and put it on the clipboard" ;
+            IMAGE  ImgSymbols( "scissors", "Cut" ) ;
+            ACTION oEditor:Cut()
 
-   DEFINE BUTTON OF oBar PROMPT "Copy" ;
-      TOOLTIP "Copy the selected text to the clipboard" ;
-       IMAGE  ImgSymbols( "doc.on.doc", "Copy" ) ;
-       ACTION oEditor:Copy()
+         DEFINE BUTTON OF oBar PROMPT "Copy" ;
+            TOOLTIP "Copy the selected text to the clipboard" ;
+            IMAGE  ImgSymbols( "doc.on.doc", "Copy" ) ;
+            ACTION oEditor:Copy()
 
-   DEFINE BUTTON OF oBar PROMPT "Paste" ;
-      TOOLTIP "Insert text from the clipboard at the current position" ;
-       IMAGE  ImgSymbols( "doc.on.clipboard", "Paste" ) ;
-       ACTION oEditor:Paste()
+         DEFINE BUTTON OF oBar PROMPT "Paste" ;
+            TOOLTIP "Insert text from the clipboard at the current position" ;
+            IMAGE  ImgSymbols( "doc.on.clipboard", "Paste" ) ;
+            ACTION oEditor:Paste()
 
-   oBar:AddSpace()
+         oBar:AddSpace()
 
-   oBtnSearch = oBar:AddGet( , "Text to find",;
-                   { | oGet | oEditor:FindText( oGet:GetText(), .T. ) } )
+         oBtnSearch = oBar:AddGet( , "Text to find",;
+            { | oGet | oEditor:FindText( oGet:GetText(), .T. ) } )
 
-   DEFINE BUTTON OF oBar PROMPT "Previous" ;
-      TOOLTIP "Repeat the search backwards" ;
-       IMAGE  ImgSymbols( "arrow.left", "Previous" ) ;
-       ACTION oEditor:FindPrev()
+         DEFINE BUTTON OF oBar PROMPT "Previous" ;
+            TOOLTIP "Repeat the search backwards" ;
+            IMAGE  ImgSymbols( "arrow.left", "Previous" ) ;
+            ACTION oEditor:FindPrev()
 
-   DEFINE BUTTON OF oBar PROMPT "Next" ;
-      TOOLTIP "Repeat the search forward" ;
-       IMAGE  ImgSymbols( "arrow.right", "Next" ) ;
-       ACTION oEditor:FindNext()
+         DEFINE BUTTON OF oBar PROMPT "Next" ;
+            TOOLTIP "Repeat the search forward" ;
+            IMAGE  ImgSymbols( "arrow.right", "Next" ) ;
+            ACTION oEditor:FindNext()
 
-   DEFINE BUTTON OF oBar PROMPT "Replace" ;
-      TOOLTIP "Search and replace" ;
-       IMAGE ImgSymbols( "pencil.and.outline", "Replace" ) ;
-       ACTION EditReplace()
+         DEFINE BUTTON OF oBar PROMPT "Replace" ;
+            TOOLTIP "Search and replace" ;
+            IMAGE ImgSymbols( "pencil.and.outline", "Replace" ) ;
+            ACTION EditReplace()
 
-   DEFINE BUTTON OF oBar PROMPT "Goto Line" ;
-      TOOLTIP "Go to a line number" ;
-       IMAGE  ImgSymbols( "list.number", "Go Line" ) ;
-       ACTION EditGotoLine()
+         DEFINE BUTTON OF oBar PROMPT "Goto Line" ;
+            TOOLTIP "Go to a line number" ;
+            IMAGE  ImgSymbols( "list.number", "Go Line" ) ;
+            ACTION EditGotoLine()
 
-   oBar:AddSpace()
+         oBar:AddSpace()
 
-   DEFINE BUTTON OF oBar ;
-      IMAGE ImgSymbols( "play.rectangle", "Script" )  ;
-      PROMPT FWString( "Script" ) ACTION RunScript(oEditor ) ;
-      TOOLTIP FWString( "Run as script" )
+         DEFINE BUTTON OF oBar ;
+            IMAGE ImgSymbols( "play.rectangle", "Script" )  ;
+            PROMPT FWString( "Script" ) ACTION RunScript(oEditor ) ;
+            TOOLTIP FWString( "Run as script" )
 
-   DEFINE BUTTON OF oBar PROMPT "Run" ;
-      TOOLTIP "Build and run" ;
-      IMAGE ImgSymbols( "play.fill", "Run" ) ;
-      ACTION Run()
+         DEFINE BUTTON OF oBar PROMPT "Run" ;
+            TOOLTIP "Build and run" ;
+            IMAGE ImgSymbols( "play.fill", "Run" ) ;
+            ACTION Run()
 
-   DEFINE BUTTON OF oBar PROMPT "Terminal" ;
-      TOOLTIP "Open a terminal window" ;
-       IMAGE  ImgSymbols( "apple.terminal", "Terminal" ) ;
-      ACTION MacExec( "terminal.app" )
+         DEFINE BUTTON OF oBar PROMPT "Terminal" ;
+            TOOLTIP "Open a terminal window" ;
+            IMAGE  ImgSymbols( "apple.terminal", "Terminal" ) ;
+            ACTION MacExec( "terminal.app" )
 
-   DEFINE BUTTON OF oBar PROMPT "Dbf Builder" ;
-      TOOLTIP "Create Dbf" ;
-       IMAGE  ImgSymbols( "tablecells", "Dbf" ) ;
-      ACTION FunCreaDbf()
+         DEFINE BUTTON OF oBar PROMPT "Dbf Builder" ;
+            TOOLTIP "Create Dbf" ;
+            IMAGE  ImgSymbols( "tablecells", "Dbf" ) ;
+            ACTION FunCreaDbf()
 
-   DEFINE BUTTON OF oBar PROMPT "Build Proj" ;
-      TOOLTIP "Build Project" ;
-      IMAGE ImgSymbols( "hammer", "Build" ) ;
-      ACTION MainBuilder()
+         DEFINE BUTTON OF oBar PROMPT "Build Proj" ;
+            TOOLTIP "Build Project" ;
+            IMAGE ImgSymbols( "hammer", "Build" ) ;
+            ACTION MainBuilder()
 
-   DEFINE BUTTON OF oBar PROMPT "Designer" ;
-      TOOLTIP "Open Form Designer" ;
-      IMAGE  ImgSymbols( "paintbrush.pointed", "Designer" ) ;
-      ACTION MainCreaForm()
+         DEFINE BUTTON OF oBar PROMPT "Designer" ;
+            TOOLTIP "Open Form Designer" ;
+            IMAGE  ImgSymbols( "paintbrush.pointed", "Designer" ) ;
+            ACTION MainCreaForm()
 
-   oBar:AddSpace() // AddSpaceFlex()
+         oBar:AddSpace() // AddSpaceFlex()
 
-   @ 0, 0 SEGMENTBTN oSeg OF oWnd SIZE 290, 40 ;
-      ACTION SelectionSegmentos( oSeg ) ;
-      ITEMS { "", "", "" } ;
-      IMAGES { ImgSymbols("sidebar.left", "Navigator"), ImgSymbols("square.bottomhalf.filled", "Debug"), ImgSymbols("sidebar.right", "Inspector") } ;
-      STYLE 5 ;
-      TRACKING 1 ;
-      AUTORESIZE 1
+         @ 0, 0 SEGMENTBTN oSeg OF oWnd SIZE 290, 40 ;
+            ACTION SelectionSegmentos( oSeg ) ;
+            ITEMS { "", "", "" } ;
+            IMAGES { ImgSymbols("sidebar.left", "Navigator"), ImgSymbols("square.bottomhalf.filled", "Debug"), ImgSymbols("sidebar.right", "Inspector") } ;
+            STYLE 5 ;
+            TRACKING 1 ;
+            AUTORESIZE 1
 
  
-   oBar:AddSegmentedBtn( "Views", "Views", oSeg, 108 )
+         oBar:AddSegmentedBtn( "Views", "Views", oSeg, 108 )
 
-   oBar:AddSpace()
+         oBar:AddSpace()
 
-   DEFINE BUTTON OF oBar PROMPT "Exit" ;
-      TOOLTIP "Exit" ;
-       IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
-       ACTION ExitPrg()
+         DEFINE BUTTON OF oBar PROMPT "Exit" ;
+            TOOLTIP "Exit" ;
+            IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
+            ACTION ExitPrg()
 
-return nil
+      return nil
 
-//----------------------------------------------------------------------------//
+      //----------------------------------------------------------------------------//
 
-function BuildMenu()
+      function BuildMenu()
 
-   local oMenu
-   local lfolder:= .f.
+         local oMenu
+         local lfolder:= .f.
 
-   MENU oMenu
-      MENUITEM "FiveEdit"
-      MENU
+         MENU oMenu
+         MENUITEM "FiveEdit"
+         MENU
          MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2026",;
-                                              "FiveMac IDE", "About" )
+            "FiveMac IDE", "About" )
          SEPARATOR
          MENUITEM "Preferences..." ACCELERATOR "," ACTION Preferences()
          SEPARATOR
          MENUITEM "Exit" ACCELERATOR "q" ACTION ExitPrg() IMAGE ImgSymbols( "power.circle", "Exit" ) 
-      ENDMENU
+         ENDMENU
 
-      MENUITEM "File"
-      MENU
+         MENUITEM "File"
+         MENU
          MENUITEM "New"   ACCELERATOR "n" ACTION NewFile()
          MENUITEM "New Project..." ACTION NewProject()
          MENUITEM "Open"  ACCELERATOR "o" ACTION OpenFile()
@@ -1152,10 +1153,10 @@ function BuildMenu()
          MENUITEM oMruFiles PROMPT "Recent files"
          MENU
          ENDMENU
-      ENDMENU
+         ENDMENU
 
-      MENUITEM "Edit"
-      MENU
+         MENUITEM "Edit"
+         MENU
          MENUITEM "Undo"  ACCELERATOR "z" ACTION oEditor:UnDo()
          MENUITEM "Redo"  ACCELERATOR "Z" ACTION oEditor:ReDo()
          SEPARATOR
@@ -1175,10 +1176,10 @@ function BuildMenu()
          MENUITEM "Set Upper" ACTION oEditor:Uppercase()
          MENUITEM "Set Lower" ACTION oEditor:Lowercase()
 
-      ENDMENU
+         ENDMENU
 
-      MENUITEM "View"
-      MENU
+         MENUITEM "View"
+         MENU
          MENUITEM "Whitespace" ACTION  oEditor:SetViewSpace()
          MENUITEM "&Indentation Guides"  ACTION  oEditor:SetIndent()
          MENUITEM "Fold Margin"         ACTION  oEditor:SetMargin( lfolder:= !lfolder )
@@ -1190,10 +1191,10 @@ function BuildMenu()
          MENUITEM "Previous Bookmark"   ACTION  oEditor:BookMarkNext( .f. )
          MENUITEM "Clear All Bookmarks" ACTION  oEditor:BookMarkClearAll()
 
-      ENDMENU
+         ENDMENU
 
-      MENUITEM "Search"
-      MENU
+         MENUITEM "Search"
+         MENU
          MENUITEM "Find..."
          MENUITEM "Find Next" ACTION oEditor:FindNext()
          MENUITEM "Find Prev" ACTION oEditor:FindPrev()
@@ -1204,10 +1205,10 @@ function BuildMenu()
          SEPARATOR
 
          MENUITEM "Find in files"
-      ENDMENU
+         ENDMENU
 
-      MENUITEM "Project"
-      MENU
+         MENUITEM "Project"
+         MENU
          MENUITEM "New"
          MENUITEM "Open"
          MENUITEM "Close" ACTION CloseProject()
@@ -1215,10 +1216,10 @@ function BuildMenu()
          MENUITEM "Build Project..." ACTION MainBuilder()
          SEPARATOR
          MENUITEM "Recent projects"
-      ENDMENU
+         ENDMENU
 
-      MENUITEM "Tools"
-      MENU
+         MENUITEM "Tools"
+         MENU
          MENUITEM "Form Designer..." ACTION MainCreaForm()
          SEPARATOR
          MENUITEM "Terminal" ACTION MacExec( "Terminal.app" )
@@ -1226,539 +1227,546 @@ function BuildMenu()
          SEPARATOR
 
          MENUITEM "Tool configuration..."
-      ENDMENU
+         ENDMENU
 
-      MENUITEM "Help"
-      MENU
+         MENUITEM "Help"
+         MENU
          MENUITEM "Index"
-      ENDMENU
+         ENDMENU
 
-   ENDMENU
+         ENDMENU
 
-return oMenu
+      return oMenu
 
-//----------------------------------------------------------------------------//
+      //----------------------------------------------------------------------------//
 
-function CloseFile()
+      function CloseFile()
 
-   local nAt
+         local nAt
 
-   oEditor:Close()
+         oEditor:Close()
 
-   oTree:DelItem( oTree:GetSelect() )
-   oTree:ExpandAll()
+         oTree:DelItem( oTree:GetSelect() )
+         oTree:ExpandAll()
 
-   if Len( aEditors ) > 1 .and. ;
-      ( nAt := AScan( aEditors, { | oEd | oEd == oEditor } ) ) != 0
-      ADel( aEditors, nAt )
-      ASize( aEditors, Len( aEditors ) - 1 )
+         if Len( aEditors ) > 1 .and. ;
+               ( nAt := AScan( aEditors, { | oEd | oEd == oEditor } ) ) != 0
+            ADel( aEditors, nAt )
+            ASize( aEditors, Len( aEditors ) - 1 )
 
-      if nAt >= 1 .and. nAt <= Len( aEditors )
-         oEditor:RemoveFromSuperview()
-         oEditor:End()
-         oEditor = aEditors[ nAt ]
-         oSplitH:aViews[ 1 ]:AddSubview( oEditor )
-      endif
-   endif
+            if nAt >= 1 .and. nAt <= Len( aEditors )
+               oEditor:RemoveFromSuperview()
+               oEditor:End()
+               oEditor = aEditors[ nAt ]
+               oSplitH:aViews[ 1 ]:AddSubview( oEditor )
+            endif
+         endif
 
-return nil
+      return nil
 
-//----------------------------------------------------------------------------//
+      //----------------------------------------------------------------------------//
 
-function ExitPrg()
+      function ExitPrg()
 
-   local oPlist
-   local n, oEditor
-   local afiles:= {}
+         local oPlist
+         local n, oEditor
+         local afiles:= {}
    
-   oPlist := TPlist():new( cPrefFile  )
+         oPlist := TPlist():new( cPrefFile  )
 
-   for n = 1 to Len( aEditors )
+         for n = 1 to Len( aEditors )
 
-      oEditor = aEditors[ n ]
+            oEditor = aEditors[ n ]
 
-    //  oPlist:SetItemByName("File" + AllTrim( Str( n ) ), oEditor:cFileName )
+            //  oPlist:SetItemByName("File" + AllTrim( Str( n ) ), oEditor:cFileName )
 
-      AAdd( afiles, oEditor:cFileName )
+            AAdd( afiles, oEditor:cFileName )
 
-      if oEditor:GetModify()
-         if MsgYesNo( "Save the changes ?", "File has changed" )
+            if oEditor:GetModify()
+               if MsgYesNo( "Save the changes ?", "File has changed" )
+                  oEditor:Save()
+               endif
+            endif
+
+         next
+
+         while n < 10
+            //  oPlist:SetItemByName("File"+AllTrim( Str( n++ ) ) , "" )
+
+            aadd(aFiles, ""   )
+            n++
+
+         end
+
+         oPlist:SetArrayByName( "LastFiles", aFiles , .t. )
+
+         oWnd:End()
+
+      return nil
+
+      //----------------------------------------------------------------------------//
+
+      function Run()
+
+         local cText := ""
+         local oPlist := TPlist():New( cPrefFile  )
+         local aFrameworks := oPlist:GetArrayByName( "FrameWorks" )
+         local aHarbLibs := oPlist:GetArrayByName( "HarbLibs" )
+         local aExtraFrameworks := oPlist:GetArrayByName( "ExtraFrameWorks" )
+
+         local SdkPath  := oPlist:GetItemByName( "PathSDK"  )
+         local HarbPath := oPlist:GetItemByName( "PathHarbour" )
+         local FivePath := oPlist:GetItemByName( "PathFiveMac" )
+         local IconPath := oPlist:GetItemByName( "PathIcon" )
+
+         local Framework:= ""
+         local HarbLibs := ""
+         local ExtraFrameWork:= ""
+         local i, n
+         local cFinText
+         local cFileName := cFileNoExt( oEditor:cFileName )
+         local cFilePath := cFilePath(  oEditor:cFileName )
+   
+         local cAuxFile
+   
+         local cCurrentPath := Path() + "/"
+
+         local oArrayArguments
+         local cResult
+   
+         // Frameworks 
+         if len(aFrameWorks) == 0
+            aFrameworks := { "Cocoa","WebKit","IOKit","ScreenCaptureKit","Quartz","CoreImage",;
+               "UserNotifications","ScriptingBridge","AVKit","AVFoundation","CoreMedia","UniformTypeIdentifiers" }  
+         endif  
+    
+         n = Len( aFrameworks )
+         for i = 1 to n
+            Framework = Framework + "-framework " + AllTrim( aFrameworks[ i ] ) + " "
+         next
+
+         // Extraframeworks 
+  
+         if Len( aExtraFrameworks ) > 0
+            n = Len( aExtraFrameworks )
+            for i = 1 to n
+               ExtraFramework = ExtraFramework + "-framework " + AllTrim( aExtraFrameworks[ i ] ) + " "
+            next
+         endif
+
+         n = Len( aHarbLibs )
+         for i = 1 to n
+            HarbLibs += "-l" + AllTrim( aHarbLibs[ i ] ) + " "
+         next
+
+         if oEditor:GetModify()
             oEditor:Save()
          endif
-      endif
 
-   next
+         cText = cText + "PRG compiling..." + Chr( 13 )
+         oGet:GoBottom()
 
-     while n < 10
-      //  oPlist:SetItemByName("File"+AllTrim( Str( n++ ) ) , "" )
+         cResult := RunHarbour( oEditor:cFileName )
+         if Empty( cResult )
 
-        aadd(aFiles, ""   )
-        n++
-
-     end
-
-     oPlist:SetArrayByName( "LastFiles", aFiles , .t. )
-
-   oWnd:End()
-
-return nil
-
-//----------------------------------------------------------------------------//
-
-function Run()
-
-   local cText := ""
-   local oPlist := TPlist():New( cPrefFile  )
-   local aFrameworks := oPlist:GetArrayByName( "FrameWorks" )
-   local aHarbLibs := oPlist:GetArrayByName( "HarbLibs" )
-   local aExtraFrameworks := oPlist:GetArrayByName( "ExtraFrameWorks" )
-
-   local SdkPath  := oPlist:GetItemByName( "PathSDK"  )
-   local HarbPath := oPlist:GetItemByName( "PathHarbour" )
-   local FivePath := oPlist:GetItemByName( "PathFiveMac" )
-   local IconPath := oPlist:GetItemByName( "PathIcon" )
-
-   local Framework:= ""
-   local HarbLibs := ""
-   local ExtraFrameWork:= ""
-   local i, n
-   local cFinText
-   local cFileName := cFileNoExt( oEditor:cFileName )
-   local cFilePath := cFilePath(  oEditor:cFileName )
+            Return .f.
+         endif
    
-   local cAuxFile
-   
-   local cCurrentPath := Path() + "/"
+         cText += cResult + Chr( 13 )
 
-   local oArrayArguments
-   local cResult
-   
+         oGet:SetText( cText )
+         oGet:GoBottom()
 
-   n = Len( aFrameworks )
-   for i = 1 to n
-      Framework = Framework + "-framework " + AllTrim( aFrameworks[ i ] ) + " "
-   next
-
-   if Len( aExtraFrameworks ) > 0
-      n = Len( aExtraFrameworks )
-      for i = 1 to n
-         ExtraFramework = ExtraFramework + "-framework " + AllTrim( aExtraFrameworks[ i ] ) + " "
-      next
-   endif
-
-   n = Len( aHarbLibs )
-   for i = 1 to n
-      HarbLibs += "-l" + AllTrim( aHarbLibs[ i ] ) + " "
-   next
-
-   if oEditor:GetModify()
-      oEditor:Save()
-   endif
-
-   cText = cText + "PRG compiling..." + Chr( 13 )
-   oGet:GoBottom()
-
-   cResult := RunHarbour( oEditor:cFileName )
-   if Empty( cResult )
-
-      Return .f.
-   endif
-   
-   cText += cResult + Chr( 13 )
-
-   oGet:SetText( cText )
-   oGet:GoBottom()
-
-   if ! IsFile( cFilePath + cfileName + ".c" )
-      MsgInfo( "PRG compile error, please review the reported errors" )
-      return nil
-   endif
+         if ! IsFile( cFilePath + cfileName + ".c" )
+            MsgInfo( "PRG compile error, please review the reported errors" )
+            return nil
+         endif
 
  
 
-   cText += "C compiling..." + Chr( 13 )
-   oGet:SetText( cText )
-   oGet:GoBottom()
+         cText += "C compiling..." + Chr( 13 )
+         oGet:SetText( cText )
+         oGet:GoBottom()
 
-   cText += RunGcc( cFilePath + cFileName )
+         cText += RunGcc( cFilePath + cFileName )
 
-   oGet:SetText( cText )
-   oGet:GoBottom()
+         oGet:SetText( cText )
+         oGet:GoBottom()
 
 
-   if ! IsFile( cFilePath + cfileName + ".o" )
-      cText +=  Chr( 13 )+ "C compile error, no object file generate. please review the reported errors" + Chr( 13 )
-      Return nil
-   else
-      cText += "OK" + Chr( 13 )
-      oGet:SetText( cText )
-      oGet:GoBottom()
-   endif
+         if ! IsFile( cFilePath + cfileName + ".o" )
+            cText +=  Chr( 13 )+ "C compile error, no object file generate. please review the reported errors" + Chr( 13 )
+            Return nil
+         else
+            cText += "OK" + Chr( 13 )
+            oGet:SetText( cText )
+            oGet:GoBottom()
+         endif
 
- // System( "./build.sh " + cFileNoExt( oEditor:cFileName ) + " > build.log" )
+         // System( "./build.sh " + cFileNoExt( oEditor:cFileName ) + " > build.log" )
  
-   if ! IsFile( cFilePath + cFileName + ".app" )
-      CreateDir( cFilePath + cFileName + ".app" )
-   endif
+         if ! IsFile( cFilePath + cFileName + ".app" )
+            CreateDir( cFilePath + cFileName + ".app" )
+         endif
 
-   cText += "building the app..." + Chr( 13 )
-   oGet:SetText( cText )
-   oGet:GoBottom()
+         cText += "building the app..." + Chr( 13 )
+         oGet:SetText( cText )
+         oGet:GoBottom()
 
-   //---------- incluye info.plist -----------
+         //---------- incluye info.plist -----------
 
-   if  ! IsFile( cFilePath + cFileName + ".app/Contents" )
-        CreateDir( cFilePath + cFileName + ".app/Contents" )
-   endif
+         if  ! IsFile( cFilePath + cFileName + ".app/Contents" )
+            CreateDir( cFilePath + cFileName + ".app/Contents" )
+         endif
 
-   CreateInfoFile( cFileName, cFilePath, FileNoPath( IconPath ) )
-   CreatePkInfo( cFileName, cFilePath )
+         CreateInfoFile( cFilePath + cFileName , FileNoPath( IconPath ) )
+         CreatePkInfo( cFilePath + cFileName)
    
-   cText += "building info.plist" + Chr( 13 )
-   oGet:SetText( cText )
-   oGet:GoBottom()
+         cText += "building info.plist" + Chr( 13 )
+         oGet:SetText( cText )
+         oGet:GoBottom()
    
-   //----------- crea dir de exe --------------
+         //----------- crea dir de exe --------------
 
-   if ! IsFile(  cFilePath + cFileName + ".app/Contents/MacOS" )
-      CreateDir( cFilePath + cFileName + ".app/Contents/MacOS" )
-   endif
+         if ! IsFile(  cFilePath + cFileName + ".app/Contents/MacOS" )
+            CreateDir( cFilePath + cFileName + ".app/Contents/MacOS" )
+         endif
 
-  //------------- incluir icono ------------
+         //------------- incluir icono ------------
 
-   if Empty( IconPath )
-      IconPath := FivePath + "/icons/fivetech.icns"
-   endif
+         if Empty( IconPath )
+            IconPath := FivePath + "/icons/fivetech.icns"
+         endif
 
-   cAuxFile := cFilePath + cFileName + ".app/Contents/Resources"
+         cAuxFile := cFilePath + cFileName + ".app/Contents/Resources"
    
-   if  ! IsFile( cAuxFile )
-        CreateDir( cAuxFile )
-   endif
+         if  ! IsFile( cAuxFile )
+            CreateDir( cAuxFile )
+         endif
   
-   cAuxFile += "/" + FileNoPath( IconPath )
+         cAuxFile += "/" + FileNoPath( IconPath )
    
-   if file(  cAuxFile )
-       cText += " App icon yo existe..." + Chr( 13 )
-   else
-        if ( CopyFileTo( IconPath, cAuxFile ) )
-            cText += "including app icon..." + Chr( 13 )
-       else
-            cText += " NO including app icon..." + Chr( 13 )
-       endif
-   endif
+         if file(  cAuxFile )
+            cText += " App icon yo existe..." + Chr( 13 )
+         else
+            if ( CopyFileTo( IconPath, cAuxFile ) )
+               cText += "including app icon..." + Chr( 13 )
+            else
+               cText += " NO including app icon..." + Chr( 13 )
+            endif
+         endif
    
-   oGet:SetText( cText )
-   oGet:GoBottom()
+         oGet:SetText( cText )
+         oGet:GoBottom()
 
-   //-----------  incluir frameworks ------------
+         //-----------  incluir frameworks ------------
 
-   cAuxFile := cFilePath + cFileName + ".app/Contents/Frameworks"
+         cAuxFile := cFilePath + cFileName + ".app/Contents/Frameworks"
    
-   if Len( aExtraFrameworks ) > 0
+         if Len( aExtraFrameworks ) > 0
        
-      if  ! IsFile( cAuxFile )
-         CreateDir( cAuxFile )
-      endif
+            if  ! IsFile( cAuxFile )
+               CreateDir( cAuxFile )
+            endif
     
-      for n = 1 to Len( aExtraFrameworks )
-          CopyFileTo( Fivepath + "/frameworks/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework",;
-                      cAuxFile +"/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework" )
-      next
+            for n = 1 to Len( aExtraFrameworks )
+               CopyFileTo( Fivepath + "/frameworks/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework",;
+                  cAuxFile +"/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework" )
+            next
       
-   endif
+         endif
    
-   //-----------  create sh file ------------
+         //-----------  create sh file ------------
    
-   cAuxFile := cFilePath + cFileName + ".sh"
+         cAuxFile := cFilePath + cFileName + ".sh"
    
-   MakeshFile( cAuxFile )
-   SETEXECUTABLE( cAuxFile )
+         MakeshFile( cAuxFile )
+         SETEXECUTABLE( cAuxFile )
 
-    cText+= "creando archivo sh" + Chr( 13 )
-    oGet:SetText( cText )
-    oGet:GoBottom()
+         cText+= "creando archivo sh" + Chr( 13 )
+         oGet:SetText( cText )
+         oGet:GoBottom()
 
-/*
+         /*
     oArrayArguments := ArrayCreateEmpty()
     ArrayAddString( oArrayArguments, cAuxFile  )
     ArrayAddString( oArrayArguments, cFilename  )
     cText += TaskExecArray( "/bin/sh", oArrayArguments )
 */
 
-    cText += TaskExec( "/bin/sh", { cAuxFile, cFilename } )
+         cText += TaskExec( "/bin/sh", { cAuxFile, cFilename } )
 
-    oGet:SetText( cText )
-    oGet:GoBottom()
+         oGet:SetText( cText )
+         oGet:GoBottom()
 
-    cFinText = AllTrim( SubStr( cText, Len( ctext ) - 5, 5 ) )
+         cFinText = AllTrim( SubStr( cText, Len( ctext ) - 5, 5 ) )
 
-    if cFinText = "done!"
+         if cFinText = "done!"
        
-      cAuxFile := cFilePath + cFileName
+            cAuxFile := cFilePath + cFileName
        
-      MoveToTrash( cAuxFile +".sh" )
+            MoveToTrash( cAuxFile +".sh" )
 
-      if IsFile( cAuxFile + ".o" )
-         MoveToTrash( cAuxFile + ".c" )
-         MoveToTrash( cAuxFile + ".o" )
-         if IsFile( cAuxFile + ".app/Contents/MacOS/" + cFileName )
-            MacExec( cAuxFile + ".app" )
+            if IsFile( cAuxFile + ".o" )
+               MoveToTrash( cAuxFile + ".c" )
+               MoveToTrash( cAuxFile + ".o" )
+               if IsFile( cAuxFile + ".app/Contents/MacOS/" + cFileName )
+                  MacExec( cAuxFile + ".app" )
+               endif
+            else
+               MoveToTrash( cAuxFile + ".app" )
+               MsgInfo( "app creation error" )
+            endif
          endif
-      else
-         MoveToTrash( cAuxFile + ".app" )
-         MsgInfo( "app creation error" )
-      endif
-    endif
 
-return nil
+      return nil
 
-//----------------------------------------------------------------------------//
+      //----------------------------------------------------------------------------//
 
-function RunHarbour( cFile )
+      function RunHarbour( cFile )
 
-   local oPlist := TPlist():New( cPrefFile  )
-   local aHarbFlags := oPlist:GetArrayByName( "HarbourFlags" )
-   local HarbPath   := oPlist:GetItemByName( "PathHarbour" )
-   local FivePath   := oPlist:GetItemByName( "PathFiveMac" )
-   local cText
-   local cHarbour := HarbPath + "/bin/harbour"
-   local cIncludes := "-I" + FivePath + "/include:" + HarbPath + "/include"
-   local i
-   local oArrayArguments
-   local aArguments := {}
+         local oPlist := TPlist():New( cPrefFile  )
+         local aHarbFlags := oPlist:GetArrayByName( "HarbourFlags" )
+         local HarbPath   := oPlist:GetItemByName( "PathHarbour" )
+         local FivePath   := oPlist:GetItemByName( "PathFiveMac" )
+         local cText
+         local cHarbour := HarbPath + "/bin/harbour"
+         local cIncludes := "-I" + FivePath + "/include:" + HarbPath + "/include"
+         local i
+         local oArrayArguments
+         local aArguments := {}
    
-   local cFileName := cFileNoExt( cFile )
-   local cFilePath := cFilePath( cFile )
+         local cFileName := cFileNoExt( cFile )
+         local cFilePath := cFilePath( cFile )
 
-    if !file( cFile )
-       msginfo( "el archivo no existe "+ cFile )
-       Return nil
-    endif
+         if !file( cFile )
+            msginfo( "el archivo no existe "+ cFile )
+            Return nil
+         endif
     
-    if !file( FivePath + "/include/FiveMac.ch" )
-        if msgYesNo( "el path de FiveMac parace no estar bien. Quiere comprobarlo ?", "Atencion" )
-            Preferences()
-            msginfo( "Vuelva a ejecutar run ")
-        endif
-        Return nil
-    endif
+         if !file( FivePath + "/include/FiveMac.ch" )
+            if msgYesNo( "el path de FiveMac parace no estar bien. Quiere comprobarlo ?", "Atencion" )
+               Preferences()
+               msginfo( "Vuelva a ejecutar run ")
+            endif
+            Return nil
+         endif
     
-    if !File( cHarbour )
-       if msgYesNo( "el path de Harbour parace no estar bien. Quiere comprobarlo ?", "Atencion" )
-          Preferences()
-          msginfo( "Vuelva a ejecutar run ")
-       endif
-       Return nil
-    endif
+         if !File( cHarbour )
+            if msgYesNo( "el path de Harbour parace no estar bien. Quiere comprobarlo ?", "Atencion" )
+               Preferences()
+               msginfo( "Vuelva a ejecutar run ")
+            endif
+            Return nil
+         endif
 
-   oArrayArguments := ArrayCreateEmpty()
+         oArrayArguments := ArrayCreateEmpty()
   
-   aadd( aArguments, cFile )
+         aadd( aArguments, cFile )
   
-//   ArrayAddString( oArrayArguments, cFile  )
+         //   ArrayAddString( oArrayArguments, cFile  )
 
-   if Len( aHarbFlags ) > 0
-      for i = 1 to Len( aHarbFlags )
-//         ArrayAddString( oArrayArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
-          aadd( aArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
-      next
-   endif
+         if Len( aHarbFlags ) > 0
+            for i = 1 to Len( aHarbFlags )
+               //         ArrayAddString( oArrayArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
+               aadd( aArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
+            next
+         endif
 
- //  ArrayAddString( oArrayArguments, cIncludes )
- //  ArrayAddString( oArrayArguments, "-o"+ cFilePath + cFileName +".c" )
-//   cText = TaskExecArray( cHarbour, oArrayArguments )
+         //  ArrayAddString( oArrayArguments, cIncludes )
+         //  ArrayAddString( oArrayArguments, "-o"+ cFilePath + cFileName +".c" )
+         //   cText = TaskExecArray( cHarbour, oArrayArguments )
   
-   aadd( aArguments, cIncludes )
-   aadd( aArguments, "-o"+ cFilePath + cFileName +".c" )
+         aadd( aArguments, cIncludes )
+         aadd( aArguments, "-o"+ cFilePath + cFileName +".c" )
    
-   // MsgInfo( ValToPrg( aArguments ) ) // Debug arguments
-   cText = TaskExec( cHarbour, aArguments )
+         // MsgInfo( ValToPrg( aArguments ) ) // Debug arguments
+         cText = TaskExec( cHarbour, aArguments )
  
-return cText
+      return cText
 
-//----------------------------------------------------------------------------//
+      //----------------------------------------------------------------------------//
 
-function RunGcc( cFile )
+      function RunGcc( cFile )
 
-   local oPlist := TPlist():New( cPrefFile  )
-   local HarbPath := oPlist:GetItemByName( "PathHarbour" )
-   local FivePath := oPlist:GetItemByName( "PathFiveMac" )
-   local SdkPath  := oPlist:GetItemByName( "PathSDK"  )
+         local oPlist := TPlist():New( cPrefFile  )
+         local HarbPath := oPlist:GetItemByName( "PathHarbour" )
+         local FivePath := oPlist:GetItemByName( "PathFiveMac" )
+         local SdkPath  := oPlist:GetItemByName( "PathSDK"  )
   
-   local cGcc := "/usr/bin/clang"
+         local cGcc := "/usr/bin/clang"
    
-   local HEADERS   := SdkPath + "/usr/include"
-   local FRAMEPATH := sdkPath + "/System/Library/Frameworks"
+         local HEADERS   := SdkPath + "/usr/include"
+         local FRAMEPATH := sdkPath + "/System/Library/Frameworks"
 
-   local aArg := {}
+         local aArg := {}
    
-   aadd( aArg, "-ObjC" )
-   aadd( aArg, cFile + ".c")
-   aadd( aArg, "-c"   )
-   aadd( aArg, "-o"+ cFile + ".o" )
-   aadd( aArg, "-I" + FivePath + "/include" )
-   aadd( aArg, "-I" + HarbPath + "/include" )
-   aadd( aArg, "-I" + HEADERS  )
-   aadd( aArg, "-I" + FRAMEPATH  )
+         aadd( aArg, "-ObjC" )
+         aadd( aArg, cFile + ".c")
+         aadd( aArg, "-c"   )
+         aadd( aArg, "-o"+ cFile + ".o" )
+         aadd( aArg, "-I" + FivePath + "/include" )
+         aadd( aArg, "-I" + HarbPath + "/include" )
+         aadd( aArg, "-I" + HEADERS  )
+         aadd( aArg, "-I" + FRAMEPATH  )
 
 
-return TaskExec( cGcc, aArg )
+      return TaskExec( cGcc, aArg )
 
-//----------------------------------------------------------------------------//
+      //----------------------------------------------------------------------------//
 
-function MakeShFile( cShFile )
+      function MakeShFile( cShFile )
     
-    local oPlist := TPlist():New( cPrefFile  )
-    local cHarbPath  := oPlist:GetItemByName( "PathHarbour" )
-    local cFivePath  := oPlist:GetItemByName( "PathFiveMac" )
-    local cSdkPath   := oPlist:GetItemByName( "PathSDK"  )
+         local oPlist := TPlist():New( cPrefFile  )
+         local cHarbPath  := oPlist:GetItemByName( "PathHarbour" )
+         local cFivePath  := oPlist:GetItemByName( "PathFiveMac" )
+         local cSdkPath   := oPlist:GetItemByName( "PathSDK"  )
 
-    local cCurrentPath := cFilePath( cShFile )
-    local cText
-    local cMPath := strTran( cCurrentPath, " ","\ ")
+         local cCurrentPath := cFilePath( cShFile )
+         local cText
+         local cMPath := strTran( cCurrentPath, " ","\ ")
     
-    local aHarbLibs   := oPlist:GetArrayByName( "HarbLibs" )
-    local aFrameworks := oPlist:GetArrayByName( "FrameWorks" )
-    local aExtraFrameworks := oPlist:GetArrayByName( "ExtraFrameWorks" )
+         local aHarbLibs   := oPlist:GetArrayByName( "HarbLibs" )
+         local aFrameworks := oPlist:GetArrayByName( "FrameWorks" )
+         local aExtraFrameworks := oPlist:GetArrayByName( "ExtraFrameWorks" )
     
-    local n, i, cUsrPath
+         local n, i, cUsrPath
 
-     //-------- cortamos los path --------------------
+         //-------- cortamos los path --------------------
      
-     cFivePath := strTran( cFivePath, "/Usuarios", "/Users" )
-     cHarbPath := strTran( cHarbPath, "/Usuarios", "/Users" )
+         cFivePath := strTran( cFivePath, "/Usuarios", "/Users" )
+         cHarbPath := strTran( cHarbPath, "/Usuarios", "/Users" )
      
-     cFivePath := substr( cFivePath, hb_at("/Users", cFivePath ) )
-     cHarbPath := substr( cHarbPath, hb_at("/Users", cHarbPath ) )
+         cFivePath := substr( cFivePath, hb_at("/Users", cFivePath ) )
+         cHarbPath := substr( cHarbPath, hb_at("/Users", cHarbPath ) )
      
-     //----------------- generamos el texto ----------------------
+         //----------------- generamos el texto ----------------------
 
-     cText := "SDKPATH="+ cSdkPath + hb_eol() + ;
-              "HEADERS=$SDKPATH/usr/include"+ hb_eol() +;
-              "CRTLIB=$SDKPATH/usr/lib"+ hb_eol()
+         cText := "SDKPATH="+ cSdkPath + hb_eol() + ;
+            "HEADERS=$SDKPATH/usr/include"+ hb_eol() +;
+            "CRTLIB=$SDKPATH/usr/lib"+ hb_eol()
      
-      //--------- libs harbour ----------------------
+         //--------- libs harbour ----------------------
       
-      if len( aHarbLibs ) > 0
-             cText += "HRBLIBS='"
-              n:= Len( aHarbLibs )
-              for i=1 to n
-                  cText += " -l" + alltrim( aHarbLibs[i] )
-              next
-              cText += "' " + hb_eol()
-     else
+         if len( aHarbLibs ) > 0
+            cText += "HRBLIBS='"
+            n:= Len( aHarbLibs )
+            for i=1 to n
+               cText += " -l" + alltrim( aHarbLibs[i] )
+            next
+            cText += "' " + hb_eol()
+         else
      
-        cText += "HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lhbrtl -lgttrm -lhbvm" +;
-                         " -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage'" + hb_eol()
+            cText += "HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lhbrtl -lgttrm -lhbvm" +;
+               " -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage'" + hb_eol()
      
-     endif
+         endif
      
-     //---------- frameworks -----------------------
+         //---------- frameworks -----------------------
      
-     if len( aFrameworks ) > 0
-         cText += "FRAMEWORKS='"
-          n:= Len( aFrameworks )
-         for i=1 to n
-             cText += " -framework " + alltrim( aFrameworks[i] )
-         next
-         cText += "' " + hb_eol()
-     else
+         if len( aFrameworks ) > 0
+            cText += "FRAMEWORKS='"
+            n:= Len( aFrameworks )
+            for i=1 to n
+               cText += " -framework " + alltrim( aFrameworks[i] )
+            next
+            cText += "' " + hb_eol()
+         else
      
-         cText += "FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit'"+ hb_eol()
+            cText += "FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit'"+ hb_eol()
      
-     endif
+         endif
      
      
-    cText+= "FIVEPATH=" + cFivePath + hb_eol()
-    cText+= "HARBPATH=" + cHarbPath + hb_eol()
+         cText+= "FIVEPATH=" + cFivePath + hb_eol()
+         cText+= "HARBPATH=" + cHarbPath + hb_eol()
 
-    cText +="clang " + cMPath + "/$1.o -o " + cMPath + "/$1.app/Contents/MacOS/$1 -L$CRTLIB " +;
-                "-L$FIVEPATH/lib -lfive -lfivec "+;
-                "-L$HARBPATH/lib $HRBLIBS "+;
-                "$FRAMEWORKS -lsqlite3 -lz -lpcre -rpath @executable_path/../Frameworks"
+         cText +="clang " + cMPath + "/$1.o -o " + cMPath + "/$1.app/Contents/MacOS/$1 -L$CRTLIB " +;
+            "-L$FIVEPATH/lib -lfive -lfivec "+;
+            "-L$HARBPATH/lib $HRBLIBS "+;
+            "$FRAMEWORKS -lsqlite3 -lz -lpcre -rpath @executable_path/../Frameworks"
     
-    //--------- Extraframeworks ----------------------
+         //--------- Extraframeworks ----------------------
     
-    if len( aExtraFrameworks ) > 0
+         if len( aExtraFrameworks ) > 0
         
-        cText += " -F$FIVEPATH/frameworks"
-        n = Len( aExtraFrameworks )
-        for i = 1 to n
-           cText += " -framework "+ AllTrim( aExtraFrameworks[ i ] )
-        next
-        cText +=  hb_eol()
-    endif
+            cText += " -F$FIVEPATH/frameworks"
+            n = Len( aExtraFrameworks )
+            for i = 1 to n
+               cText += " -framework "+ AllTrim( aExtraFrameworks[ i ] )
+            next
+            cText +=  hb_eol()
+         endif
 
- ShFileFromString( cText, cCurrentPath + cFileNoPath( cShFile ) )
+         ShFileFromString( cText, cCurrentPath + cFileNoPath( cShFile ) )
 
-return nil
+      return nil
 
-//----------------------------------------------------------------------------//
+      //----------------------------------------------------------------------------//
 
-function BuildRight( oSplit )
+      function BuildRight( oSplit )
 
-  local nFunc := 1
-  local oSplitH2
-  local oBrwSniped
-  local aSniped
-  local oBtnAdd,oBtnDel,obtnnull
+         local nFunc := 1
+         local oSplitH2
+         local oBrwSniped
+         local aSniped
+         local oBtnAdd,oBtnDel,obtnnull
 
-   @ 0, 0 SPLITTER oSplitH2 OF oSplit ;
-      SIZE oSplit:nWidth, oSplit:nHeight-10 ;
-      HORIZONTAL STYLE 3 AUTORESIZE nOr( 16, 2 ) VIEWS 2
+         @ 0, 0 SPLITTER oSplitH2 OF oSplit ;
+            SIZE oSplit:nWidth, oSplit:nHeight-10 ;
+            HORIZONTAL STYLE 3 AUTORESIZE nOr( 16, 2 ) VIEWS 2
 
-   @ 0, 0 BROWSE oFunList FIELDS "" HEADERS "Functions" OF oSplitH2:aViews[ 1 ];
-    SIZE oSplitH2:aViews[ 1 ]:nWidth-2, oSplitH2:aViews[ 1 ]:nHeight ;
-    COLSIZES 400 ;
-    AUTORESIZE nOr( 16, 2 )
+         @ 0, 0 BROWSE oFunList FIELDS "" HEADERS "Functions" OF oSplitH2:aViews[ 1 ];
+            SIZE oSplitH2:aViews[ 1 ]:nWidth-2, oSplitH2:aViews[ 1 ]:nHeight ;
+            COLSIZES 400 ;
+            AUTORESIZE nOr( 16, 2 )
 
-   FillFuncList()
+         FillFuncList()
 
-   WITH OBJECT oFunList
-      if aFunLines != nil
-         :setArray( aFunLines )
-         :bLine = { | nRow | { If( Len( aFunLines ) > 0 .and. nRow <= Len( aFunLines ),;
-                               aFunLines[ nRow ][ 1 ], "" ) } }
-      endif
+         WITH OBJECT oFunList
+         if aFunLines != nil
+            :setArray( aFunLines )
+            :bLine = { | nRow | { If( Len( aFunLines ) > 0 .and. nRow <= Len( aFunLines ),;
+               aFunLines[ nRow ][ 1 ], "" ) } }
+         endif
 
-      :SetColEditable( 1, .F. )
-      //:SetColWidth( 1, 180 )
-      :SetRowHeight( 20 )
-      :SetGridLines( 1 )
-      :SetSelectorStyle( 1 )
-      //:Anclaje( nOr( 16, 2 ) )
+         :SetColEditable( 1, .F. )
+         //:SetColWidth( 1, 180 )
+         :SetRowHeight( 20 )
+         :SetGridLines( 1 )
+         :SetSelectorStyle( 1 )
+         //:Anclaje( nOr( 16, 2 ) )
 
-      :bAction = { || oEditor:GotoLine( aFunLines[ oFunList:nRowPos ][ 2 ] ),;
-                      oEditor:SetFocus() }
-      :SetColor( CLR_BLACK, CLR_PANE )
-   END
+         :bAction = { || oEditor:GotoLine( aFunLines[ oFunList:nRowPos ][ 2 ] ),;
+            oEditor:SetFocus() }
+         :SetColor( CLR_BLACK, CLR_PANE )
+      END
 
-   @ 22, 0 BROWSE oBrwSniped FIELDS "" HEADERS "Code Sniped" OF oSplitH2:aViews[ 2 ];
-      SIZE oSplitH2:aViews[ 2 ]:nWidth-2, oSplitH2:aViews[ 2 ]:nHeight ;
-      ON CHANGE ( Showpopover( oBrwSniped:hwnd , aSniped[oBrwSniped:nRowPos][2]  ) );
-      AUTORESIZE  nOr( 16, 2 ) ;
-      COLSIZES 180
+      @ 22, 0 BROWSE oBrwSniped FIELDS "" HEADERS "Code Sniped" OF oSplitH2:aViews[ 2 ];
+         SIZE oSplitH2:aViews[ 2 ]:nWidth-2, oSplitH2:aViews[ 2 ]:nHeight ;
+         ON CHANGE ( Showpopover( oBrwSniped:hwnd , aSniped[oBrwSniped:nRowPos][2]  ) );
+         AUTORESIZE  nOr( 16, 2 ) ;
+         COLSIZES 180
 
-   aSniped:=FillSnipedCode()
+      aSniped:=FillSnipedCode()
 
-   WITH OBJECT oBrwSniped
+      WITH OBJECT oBrwSniped
       if aSniped != nil
          :setArray( aSniped )
          :bLine = { | nRow | { If( Len( aSniped ) > 0 .and. nRow <= Len( aSniped ),;
-         aSniped[ nRow ][ 1 ], "" ) } }
-       endif
+            aSniped[ nRow ][ 1 ], "" ) } }
+      endif
       :SetColEditable( 1, .F. )
       //:SetColWidth( 1, 180 )
       :SetRowHeight( 20 )
       :SetGridLines( 1 )
       :SetSelectorStyle( 1 )
-     // :Anclaje( nOr( 16, 2 ) )
+      // :Anclaje( nOr( 16, 2 ) )
       :SetAlternateColor( .t. )
 
 
       :bAction = { || oEditor:AddText( aSniped[ oBrwSniped:nRowPos ][ 2 ] ), ;
-                      oEditor:SetFocus() }
+         oEditor:SetFocus() }
    END
 
    @ 0, 0 BTNBMP oBtndel OF oSplitH2:aViews[ 2 ];
@@ -1768,7 +1776,7 @@ function BuildRight( oSplit )
    @ 0, 22 BTNBMP oBtnadd OF oSplitH2:aViews[ 2 ];
       FILENAME "Add" ;
       ACTION popoverMas := ShowWinPopOver( oBtnAdd:hWnd,;
-             DlgAddSnipet( @aSniped, @oBrwSniped ):hWnd ) SIZE 22, 22 STYLE 10
+      DlgAddSnipet( @aSniped, @oBrwSniped ):hWnd ) SIZE 22, 22 STYLE 10
 
    @ 0, 44 BUTTON obtnnull PROMPT "" OF oSplitH2:aViews[ 2 ] ;
       ACTION .T. SIZE 128, 22 STYLE 10 TYPE 10 AUTORESIZE 2
@@ -1862,23 +1870,23 @@ return oDlg
 //----------------------------------------------------------------------------//
 
 Function Savesnipet(cName,cDescrip,oGetText,aSniped)
-local cText
-local calias
+   local cText
+   local calias
 
-if !Empty( cName )
-  cText:= oGetText:GetText()+CRLF
-  if !Empty(cText)
-    calias:=Abrimos("scripts")
-    (cAlias)->(dbappend())
-    (cAlias)->Name:=cName
-    (cAlias)->Descript:=cDescrip
-    (cAlias)->Code := cText
-    (calias)->(dbunlock())
+   if !Empty( cName )
+      cText:= oGetText:GetText()+CRLF
+      if !Empty(cText)
+         calias:=Abrimos("scripts")
+         (cAlias)->(dbappend())
+         (cAlias)->Name:=cName
+         (cAlias)->Descript:=cDescrip
+         (cAlias)->Code := cText
+         (calias)->(dbunlock())
+      endif
+      close(calias)
+      aadd(aSniped, { cName,cText } )
+
    endif
-    close(calias)
-    aadd(aSniped, { cName,cText } )
-
-endif
 
 return nil
 
@@ -1889,8 +1897,8 @@ function SelectFunction()
    local nAt, nLine := oEditor:nLine()
 
    if Len( aFunLines ) > 0 .and. ;
-      ( nAt := AScan( aFunLines, { | u | u[ 2 ] <= nLine .and. ;
-                                         u[ 3 ] >= nLine } ) ) != 0
+         ( nAt := AScan( aFunLines, { | u | u[ 2 ] <= nLine .and. ;
+         u[ 3 ] >= nLine } ) ) != 0
       oFunList:Select( nAt )
    endif
 
@@ -1909,8 +1917,8 @@ function BuildLeft( oSplit )
    
    oTree:bRClicked = { | nRow, nCol | ShowTreeMenu( nRow, nCol ) }
 
-    oPrgItem = oTree:AddItem( "PRG", ImgSymbols( "folder" ) ) // We create it here so
-                                                               // it is the first group 
+   oPrgItem = oTree:AddItem( "PRG", ImgSymbols( "folder" ) ) // We create it here so
+   // it is the first group 
 
 return nil
 
@@ -1924,30 +1932,30 @@ function SelectFile()
       cFileName = oItem:Cargo
       if ! Empty( cFileName )
 
-      if ( nAt := AScan( aEditors,;
-         { | oEd | oEd:cFileName == cFileName .and. ! oEd == oEditor } ) ) != 0
-         oSplitH:aViews[ 1 ]:AddSubview( aEditors[ nAt ] )
+         if ( nAt := AScan( aEditors,;
+               { | oEd | oEd:cFileName == cFileName .and. ! oEd == oEditor } ) ) != 0
+            oSplitH:aViews[ 1 ]:AddSubview( aEditors[ nAt ] )
 
-         aEditors[ nAt ]:nWidth  = oSplitH:aViews[ 1 ]:nWidth
-         aEditors[ nAt ]:nHeight = oSplitH:aViews[ 1 ]:nHeight - 7
+            aEditors[ nAt ]:nWidth  = oSplitH:aViews[ 1 ]:nWidth
+            aEditors[ nAt ]:nHeight = oSplitH:aViews[ 1 ]:nHeight - 7
 
-         oEditor:RemoveFromSuperview()
-         oEditor = aEditors[ nAt ]
+            oEditor:RemoveFromSuperview()
+            oEditor = aEditors[ nAt ]
 
-      else
-         BuildEditor()
-         oEditor:Open( cFileName )
+         else
+            BuildEditor()
+            oEditor:Open( cFileName )
+         endif
+
+         FillFuncList()
+
+         if Lower( cFileExt( cFileName ) ) != "ch"
+            oFunList:aCols[ 1 ]:SetHeader( "Functions" )
+         else
+            oFunList:aCols[ 1 ]:SetHeader( "Commands" )
+         endif
+
       endif
-
-      FillFuncList()
-
-      if Lower( cFileExt( cFileName ) ) != "ch"
-         oFunList:aCols[ 1 ]:SetHeader( "Functions" )
-      else
-         oFunList:aCols[ 1 ]:SetHeader( "Commands" )
-      endif
-
-   endif
    
    endif
 
@@ -1972,7 +1980,7 @@ function FillFuncList()
    for n = 1 to nLines
       cToken = Lower( Left( cLine := LTrim( oEditor:GetLine( n ) ), 4 ) )
       if cToken $ "func,proc,clas,meth" .and. ;
-         Lower( cFileExt( oEditor:cFileName ) ) $ "prg,ch"
+            Lower( cFileExt( oEditor:cFileName ) ) $ "prg,ch"
          AAdd( aFunLines, { cLine, n, n + 1 } )
       endif
 
@@ -1985,7 +1993,7 @@ function FillFuncList()
             AAdd( aFunLines, { "@ ... " + StrToken( cLine, 5 ), n, n + 1 } )
          else
             AAdd( aFunLines, { StrToken( cLine, 2 ) + " " + ;
-                               StrToken( cLine, 3 ), n, n + 1 } )
+               StrToken( cLine, 3 ), n, n + 1 } )
          endif
       endif
 
@@ -2053,14 +2061,14 @@ function FunCreaDbf()
       HEADERS "FieldName", "Type", "Length", "Decimals" ;
       OF oDlg SIZE 379, 245 ;
       ON CHANGE ( cFieldName := aFields[ oBrw:nRowPos, 1 ], oGet:Refresh(),;
-                  cType   := aFields[ oBrw:nRowPos, 2 ], oCbx:Refresh(),;
-                  nLength :=  aFields[ oBrw:nRowPos, 3 ], oGetLen:Refresh(),;
-                  nDec    :=  aFields[ oBrw:nRowPos, 4 ], oGetDeci:Refresh() )
+      cType   := aFields[ oBrw:nRowPos, 2 ], oCbx:Refresh(),;
+      nLength :=  aFields[ oBrw:nRowPos, 3 ], oGetLen:Refresh(),;
+      nDec    :=  aFields[ oBrw:nRowPos, 4 ], oGetDeci:Refresh() )
 
    oBrw:SetArray( aFields )
    oBrw:bLine = { | nRow | { aFields[ nRow ][ 1 ], aFields[ nRow ][ 2 ],;
-                             AllTrim( Str( aFields[ nRow ][ 3 ] ) ),;
-                             AllTrim( Str( aFields[ nRow ][ 4 ] ) ) } }
+      AllTrim( Str( aFields[ nRow ][ 3 ] ) ),;
+      AllTrim( Str( aFields[ nRow ][ 4 ] ) ) } }
 
    oBrw:SetSelectorStyle( 1 )
 
@@ -2083,7 +2091,7 @@ function FunCreaDbf()
    @ 242, 407 BUTTON "Up"   OF oDlg ACTION ( SetFieldUp( @aFields, oBrw:nRowPos ), oBrw:Refresh() )
    @ 210, 407 BUTTON "Down" OF oDlg ACTION ( SetFieldDown( @aFields, oBrw:nRowPos ), oBrw:Refresh())
    @ 178, 407 BUTTON "Del"  OF oDlg ACTION ( ADel( aFields, oBrw:nRowPos ),;
-                                             ASize( aFields, Len( aFields ) - 1 ), oBrw:Refresh() )
+      ASize( aFields, Len( aFields ) - 1 ), oBrw:Refresh() )
 
    @ 48, 20 SAY "DBF filename:" OF oDlg SIZE 92, 17
 
@@ -2100,7 +2108,7 @@ function FunCreaDbf()
 
    @ 71, 407 BUTTON "Import" OF oDlg ;
       ACTION ( aStruct := ImportDbf(), If( ! Empty( aStruct ),;
-             ( aFields := aStruct, oBrw:SetArray( aFields ) ),), oBrw:Refresh() )
+      ( aFields := aStruct, oBrw:SetArray( aFields ) ),), oBrw:Refresh() )
 
    @ 41, 407 BUTTON oBtnCreate PROMPT "Create" OF oDlg ;
       ACTION ( MsgInfo( "crea dbf" ), DbCreate( cFileName, aFields, cRdd ) )
@@ -2218,11 +2226,11 @@ static function DbfGen( aFields )
 
    for n = 1 to Len( aInfo )
       cPrg += If( n == 1, "{ ", space(18) ) + '{ "' + ;
-              aInfo[ n ][ 1 ] + '", "' + ;
-              aInfo[ n ][ 2 ] + '", ' + ;
-              AllTrim( Str( aInfo[ n ][ 3 ] ) ) + ", " + ;
-              AllTrim( Str( aInfo[ n ][ 4 ] ) ) + "}" + ;
-              If( n < Len( aInfo ), ",;", " } " ) + CRLF
+         aInfo[ n ][ 1 ] + '", "' + ;
+         aInfo[ n ][ 2 ] + '", ' + ;
+         AllTrim( Str( aInfo[ n ][ 3 ] ) ) + ", " + ;
+         AllTrim( Str( aInfo[ n ][ 4 ] ) ) + "}" + ;
+         If( n < Len( aInfo ), ",;", " } " ) + CRLF
    next
 
 return cPrg
@@ -2306,7 +2314,7 @@ function EditReplace()
 
    @ 90, 320 BUTTON "Replace" OF oDlg SIZE 80, 20 ;
       ACTION ( oEditor:ReplaceSel( AllTrim( cRep ) ),;
-               FindNextWrap( oEditor, AllTrim( cFind ) ) )
+      FindNextWrap( oEditor, AllTrim( cFind ) ) )
 
    @ 50, 320 BUTTON "All" OF oDlg SIZE 80, 20 ;
       ACTION ReplaceAll( oEditor, AllTrim( cFind ), AllTrim( cRep ) )
@@ -2415,6 +2423,7 @@ function OpenProject()
       
       // Change to Project Directory so paths resolve
       DirChange( cFilePath( cFile ) )
+      cPathPrj:= cFilePath( cFile )
       
       cProject := cFileNoExt( cFileNoPath( cFile ) )
       oWnd:SetTitle( "FiveMac IDE - Project: " + cProject )
@@ -2430,8 +2439,8 @@ function OpenProject()
       aFiles := aGetPrjFiles(cFile) 
       BuildTreePrj(aFiles)
      
-     oTree:Rebuild()
-     oTree:ExpandAll()
+      oTree:Rebuild()
+      oTree:ExpandAll()
      
       for n := 1 to Len( aFiles )
          cFile := AllTrim( aFiles[ n ] )
@@ -2441,8 +2450,8 @@ function OpenProject()
             if File( cFile )
                BuildEditor()
                oEditor:Open( cFile )
-             //  openFilePrj( cLine )
-             endif
+               //  openFilePrj( cLine )
+            endif
          endif
       next
         
@@ -2454,39 +2463,39 @@ return nil
 //----------------------------------------------------------------------------//
 
 Static Function BuildTreePrj(aFiles)
-local oItem
-local n, cLine
-local cFileName 
+   local oItem
+   local n, cLine
+   local cFileName 
 
-for n := 1 to Len( aFiles )
-   cFileName := AllTrim( aFiles[ n ] )
-  // Resolve relative path 
+   for n := 1 to Len( aFiles )
+      cFileName := AllTrim( aFiles[ n ] )
+      // Resolve relative path 
 
-   if File( cFileName )
-      if Lower( cFileExt( cFileName ) ) == "prg"
-         if oProjPrgItem == nil
-            oProjPrgItem = oProjectItem:AddItem( "PRG", ImgSymbols( "folder" ) )
+      if File( cFileName )
+         if Lower( cFileExt( cFileName ) ) == "prg"
+            if oProjPrgItem == nil
+               oProjPrgItem = oProjectItem:AddItem( "PRG", ImgSymbols( "folder" ) )
+            endif
+            oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjPrgItem, ImgSymbols("document") )
+            oItem:Cargo := cFileName 
+         elseif Lower( cFileExt( cFileName ) ) == "ch"
+            if oProjChItem == nil
+               oProjChItem = oProjectItem:AddItem( "CH", ImgSymbols( "folder" ) )
+            endif
+            oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjChItem, ImgSymbols("document") )
+            oItem:Cargo := cFileName 
+         elseif Lower( cFileExt( cFileName ) ) == "m"
+            if oProjMItem == nil
+               oProjMItem = oProjectItem:AddItem( "M", ImgSymbols( "folder" ) )
+            endif
+            oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjMItem, ImgSymbols("document") )
+            oItem:Cargo := cFileName 
          endif
-         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjPrgItem, ImgSymbols("document") )
-         oItem:Cargo := cFileName 
-      elseif Lower( cFileExt( cFileName ) ) == "ch"
-         if oProjChItem == nil
-            oProjChItem = oProjectItem:AddItem( "CH", ImgSymbols( "folder" ) )
-         endif
-         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjChItem, ImgSymbols("document") )
-         oItem:Cargo := cFileName 
-      elseif Lower( cFileExt( cFileName ) ) == "m"
-         if oProjMItem == nil
-            oProjMItem = oProjectItem:AddItem( "M", ImgSymbols( "folder" ) )
-         endif
-         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjMItem, ImgSymbols("document") )
-         oItem:Cargo := cFileName 
       endif
-   endif
-   oItem = nil
- next
+      oItem = nil
+   next
 
- oTree:Rebuild()
+   oTree:Rebuild()
 
 Return nil
 
@@ -2494,35 +2503,35 @@ Return nil
 
 Static Function aGetPrjFiles(cFile)
 
-local aFiles := {}
-local cContent := MemoRead( cFile )
-local aLines, n, cLine
-local cExt
+   local aFiles := {}
+   local cContent := MemoRead( cFile )
+   local aLines, n, cLine
+   local cExt
 
-      // Normalize line endings
-      cContent := StrTran( cContent, Chr( 13 ) + Chr( 10 ), Chr( 10 ) )
-      cContent := StrTran( cContent, Chr( 13 ), Chr( 10 ) )
-       aLines := HB_ATokens( cContent, Chr( 10 ) )
+   // Normalize line endings
+   cContent := StrTran( cContent, Chr( 13 ) + Chr( 10 ), Chr( 10 ) )
+   cContent := StrTran( cContent, Chr( 13 ), Chr( 10 ) )
+   aLines := HB_ATokens( cContent, Chr( 10 ) )
       
-      // aLines := HB_ATokens( cContent, CRLF )
+   // aLines := HB_ATokens( cContent, CRLF )
 
-     for n := 1 to Len( aLines )
-         cLine := AllTrim( aLines[ n ] )
+   for n := 1 to Len( aLines )
+      cLine := AllTrim( aLines[ n ] )
          
-         // Skip comments and flags
-         if Left( cLine, 1 ) == "#" .or. Left( cLine, 1 ) == "-" .or. Empty( cLine )
-            loop
-         endif
+      // Skip comments and flags
+      if Left( cLine, 1 ) == "#" .or. Left( cLine, 1 ) == "-" .or. Empty( cLine )
+         loop
+      endif
            
-         // Check extension
-         cExt := Lower( cFileExt( cLine ) )
-         if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
-             // Resolve relative path 
-             if File( cLine )
-                 AAdd( aFiles, cFilePath( cFile ) + cLine ) 
-             endif
+      // Check extension
+      cExt := Lower( cFileExt( cLine ) )
+      if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
+         // Resolve relative path 
+         if File( cLine )
+            AAdd( aFiles, cFilePath( cFile ) + cLine ) 
          endif
-      next
+      endif
+   next
 
 Return aFiles
 
@@ -2554,7 +2563,7 @@ function NewProject()
    local cFileHbp, cHbpContent, cFilePrg, cCode
 
    msginfo( "por implementar")
-/*
+   /*
    if MsgGet( "New Project", "Project Name:", @cProjectName )
       
       cProjectName := AllTrim( cProjectName )
@@ -2626,7 +2635,7 @@ function ShowTreeMenu( nRow, nCol )
    local oMenu
 
    MENU oMenu POPUP
-      MENUITEM "Close" ACTION CloseFile()
+   MENUITEM "Close" ACTION CloseFile()
    ENDMENU
 
    ACTIVATE POPUP oMenu OF oWnd AT nRow, nCol
