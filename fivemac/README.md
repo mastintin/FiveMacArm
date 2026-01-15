@@ -11,6 +11,7 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 ### Fivedit (Advanced Editor Sample)
 - **Integrated Manual Search**: The Toolbar search field now supports a native manual search workflow. Clicking the magnifying glass icon triggers the search without stealing focus while typing.
 - **Improved Replace Dialog**: Redesigned layout and added "Wrap Around" logic.
+- **Smart Auto-Indentation**: Full implementation of auto-indentation for Harbour control structures (`if`, `for`, `while`, `do case`, etc.) with correct handling of opening, middle, and closing blocks.
 - **Stability**: Fixed various focus issues and crashes (Goto Line, Replace).
 
 ### Browse & Data Management
