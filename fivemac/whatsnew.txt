@@ -6,6 +6,11 @@ January 2026
   - Enhanced Replace Dialog: Improved layout (bottom-up coordinates) and Wrap Around search logic.
   - Replaces older sciedit/sciedit2 samples.
 
+* Enhancement: Scintilla Auto-Indentation implemented in `TScintilla` class.
+  - Smart Indentation: Automatically indents new lines based on context.
+  - Keyword Support: Handles `if`, `else`, `elseif`, `try`, `while`, `for`, `switch`, `do`, `case`, `catch`.
+  - Event Handling: Robust interception of Enter key via `NSEvent` monitor.
+
 * Enhancement: Class TGet (get.prg) now supports `bAction` and `WM_BTNCLICK` event.
   - Allows assigning an action to the search field's magnifying glass icon.
 

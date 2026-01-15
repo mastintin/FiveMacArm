@@ -123,16 +123,201 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 }
 */
 
+// -----------------------------------------------------------------------------------------
+@interface MyScintillaView : ScintillaView
+@end
+
+@implementation MyScintillaView
+
+- (void)mouseDown:(NSEvent *)theEvent {
+  NSPoint p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+
+  // INTERCEPT ALL CLICKS (Universal Fix)
+  // Scintilla Native Logic is broken by SplitView (Offset Bug).
+  // We handle ALL clicks manually via Harbour to ensure correct Local Coords.
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9999); // Manual Sidebar Handler
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushLong((HB_LONG)p.x);
+  hb_vmPushLong((HB_LONG)p.y);
+  hb_vmDo(5);
+  return; // STOP PROPAGATION (No super mouseDown)
+}
+
+- (void)mouseDragged:(NSEvent *)theEvent {
+  NSPoint p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9997); // Manual Drag Handler
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushLong((HB_LONG)p.x);
+  hb_vmPushLong((HB_LONG)p.y);
+  hb_vmDo(5);
+}
+
+- (void)insertText:(id)insertString {
+  NSLog(@"[MyScintillaView] insertText: %@", insertString);
+  [self handleCustomInput:insertString];
+  [super insertText:insertString];
+}
+
+- (void)insertText:(id)insertString replacementRange:(NSRange)replacementRange {
+  NSLog(@"[MyScintillaView] insertText:replacementRange: %@", insertString);
+  [self handleCustomInput:insertString];
+
+  // Check if super responds (it should if it conforms to NSTextInputClient)
+  if ([super respondsToSelector:@selector(insertText:replacementRange:)]) {
+    [super insertText:insertString replacementRange:replacementRange];
+  }
+}
+
+- (void)handleCustomInput:(id)insertString {
+  // Check for Newline (Enter Key)
+  if ([insertString isKindOfClass:[NSString class]] &&
+      ([insertString isEqualToString:@"\n"] ||
+       [insertString isEqualToString:@"\r"])) {
+    NSLog(@"[MyScintillaView] Newline Detected via handleCustomInput");
+
+    if (symFMH == NULL)
+      symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+    hb_vmPushSymbol(symFMH);
+    hb_vmPushNil();
+    hb_vmPushNumInt((HB_LONGLONG)[self window]);
+    hb_vmPushLong(9996);
+    hb_vmPushNumInt((HB_LONGLONG)self);
+    hb_vmPushLong(0);
+    hb_vmPushLong(0);
+    hb_vmDo(5);
+  }
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+  NSLog(@"[MyScintillaView] performKeyEquivalent: %d", [event keyCode]);
+  return [super performKeyEquivalent:event];
+}
+
+- (void)flagsChanged:(NSEvent *)event {
+  NSLog(@"[MyScintillaView] flagsChanged");
+  [super flagsChanged:event];
+}
+
+- (void)doCommandBySelector:(SEL)selector {
+  NSLog(@"[MyScintillaView] doCommandBySelector: %@",
+        NSStringFromSelector(selector));
+  [super doCommandBySelector:selector];
+}
+
+- (void)keyDown:(NSEvent *)theEvent {
+  NSLog(@"[MyScintillaView] keyDown: %d", [theEvent keyCode]);
+  [super keyDown:theEvent];
+}
+
+- (BOOL)acceptsFirstResponder {
+  NSLog(@"[MyScintillaView] acceptsFirstResponder");
+  return YES;
+}
+
+- (BOOL)becomeFirstResponder {
+  NSLog(@"[MyScintillaView] becomeFirstResponder");
+  return YES;
+}
+
+- (BOOL)canBecomeKeyView {
+  return YES;
+}
+
+- (NSView *)hitTest:(NSPoint)aPoint {
+  // Always intercept hitTest to ensure we get the mouseDown
+  return self;
+}
+
+- (BOOL)isFlipped {
+  return YES;
+}
+
+- (void)triggerAutoIndent {
+  NSLog(@"[MyScintillaView] Triggering AutoIndent (Delayed)");
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9996);
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushLong(0);
+  hb_vmPushLong(0);
+  hb_vmDo(5);
+}
+
+@end
+// -----------------------------------------------------------------------------------------
+
 HB_FUNC(SCICREATE) {
 
   NSRect newFrame =
       NSMakeRect(hb_parnl(2), hb_parnl(1), hb_parnl(3), hb_parnl(4));
   NSWindow *window = (NSWindow *)hb_parnll(5);
-  ScintillaView *sv =
-      [[[ScintillaView alloc] initWithFrame:newFrame] autorelease];
+
+  // Use Subclass with Fixes
+  MyScintillaView *sv =
+      [[[MyScintillaView alloc] initWithFrame:newFrame] autorelease];
   [GetView(window) addSubview:sv];
 
   [sv registerNotifyCallback:(id)sv value:NotifyFunc];
+
+  // Install Local Event Monitor for this App
+  // This ensures we catch Enter even if the Responder Chain is acting up.
+  // Install Local Event Monitor for this App
+  // Debug Mode: Log ALL keys and First Responder Class
+  [NSEvent
+      addLocalMonitorForEventsMatchingMask:NSKeyDownMask
+                                   handler:^(NSEvent *theEvent) {
+                                     unsigned short kc = [theEvent keyCode];
+                                     NSWindow *win = [theEvent window];
+                                     NSResponder *first = [win firstResponder];
+
+                                     BOOL isScintilla = (first == sv);
+                                     if (!isScintilla &&
+                                         [first isKindOfClass:[NSView class]]) {
+                                       isScintilla = [(NSView *)first
+                                           isDescendantOf:
+                                               sv]; // Check if focused view is
+                                                    // inside ScintillaView
+                                     }
+
+                                     NSLog(@"[Monitor] Key: %d | WinMatch: %d "
+                                           @"| ValidFocus: %d | FR Class: %@",
+                                           kc, (win == [sv window]),
+                                           isScintilla, [first className]);
+
+                                     if (kc == 36 ||
+                                         kc == 76) { // Return or Numpad Enter
+                                       if (win == [sv window]) {
+                                         if (isScintilla) {
+                                           NSLog(
+                                               @"[Monitor] Enter MATCHED for "
+                                               @"Scintilla (Descendant/Self)");
+                                           [sv performSelector:@selector
+                                               (triggerAutoIndent)
+                                                    withObject:nil
+                                                    afterDelay:0.01];
+                                         }
+                                       }
+                                     }
+                                     return theEvent;
+                                   }];
 
   hb_retnll((HB_LONGLONG)sv);
 }

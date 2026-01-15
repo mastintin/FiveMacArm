@@ -89,6 +89,9 @@ function Main()
    oSlide:bChange := { || oSayZoom:setText("Zoom : " + ;
       Alltrim(str( ( ( oEditor:setZoom( oSlide:GetValue() ) + 10 ) * 10 ) ) ) + "%" ) }
 
+   // Workaround for Scintilla Key Interception
+   oEditor:bKeyDown = { |k| EditorKeyHandler( k ) }
+
    ACTIVATE WINDOW oWnd
    
 return nil
@@ -180,8 +183,8 @@ function BuildEditor()
    
    // oEditor:Send( 2276, 1, 0 ) // SCI_SETSCROLLWIDTH, 1
 
-   oEditor:nMargLeft:= 40
-   oEditor:Send( SCI_SETMARGINLEFT, 0, oEditor:nMargLeft )
+   // oEditor:nMargLeft:= 40
+   // oEditor:Send( SCI_SETMARGINLEFT, 0, oEditor:nMargLeft )
 
    oEditor:bChange = { || EditorChange() }
    oEditor:SetFont( cFontName, nFontSize )
@@ -292,14 +295,14 @@ function LoadRecentFiles()
 
       for n = 1 to Len( aFiles )
 
-         cfileName = afiles[ n ]
+      cfileName = afiles[ n ]
 
-         // cFileName = GetPlistValue( cPrefFile, "File" + AllTrim( Str( n ) ) )
+      // cFileName = GetPlistValue( cPrefFile, "File" + AllTrim( Str( n ) ) )
 
-         if ! Empty( cFileName )
-            OpenFile( cFileName )
-            lCarga = .T.
-         endif
+      if ! Empty( cFileName )
+         OpenFile( cFileName )
+         lCarga = .T.
+      endif
       next
 
       if lCarga
@@ -385,9 +388,9 @@ static function DoBreak( oError )
    if ValType( oError:Args ) == "A"
       cInfo += "   Args:" + CRLF
       for n = 1 to Len( oError:Args )
-         MsgInfo( oError:Args[ n ] )
-         cInfo += "[" + Str( n, 4 ) + "] = " + ValType( oError:Args[ n ] ) + ;
-            "   " + cValToChar( oError:Args[ n ] ) + CRLF
+      MsgInfo( oError:Args[ n ] )
+      cInfo += "[" + Str( n, 4 ) + "] = " + ValType( oError:Args[ n ] ) + ;
+         "   " + cValToChar( oError:Args[ n ] ) + CRLF
       next
    endif
 
@@ -613,7 +616,7 @@ function Preferences()
 
    i = Len( aFrameworks )
    for n = 1 to i
-      oItem2:AddItem( aFrameworks[n],,, ImgSymbols( "square.stack.3d.up" ) )
+   oItem2:AddItem( aFrameworks[n],,, ImgSymbols( "square.stack.3d.up" ) )
    next
 
    @ 12, 10 BTNBMP oBtn1 OF oMulti:aViews[ 3 ] ;
@@ -638,7 +641,7 @@ function Preferences()
 
    i= Len( aExtraFrameworks )
    for n = 1 to i
-      oItem4:AddItem( aExtraFrameworks[ n ],,, ImgSymbols( "square.stack.3d.up" ) )
+   oItem4:AddItem( aExtraFrameworks[ n ],,, ImgSymbols( "square.stack.3d.up" ) )
    next
 
    @ 12, 340 BTNBMP oBtn5 OF oMulti:aViews[ 3 ] ;
@@ -665,7 +668,7 @@ function Preferences()
 
    i = Len( aHarbLibs )
    for n = 1 to i
-      oItem3:AddItem( aHarbLibs[n],,, ImgSymbols( "archivebox" ) )
+   oItem3:AddItem( aHarbLibs[n],,, ImgSymbols( "archivebox" ) )
    next
 
    @ 12, 10 BTNBMP oBtn3 OF oMulti:aViews[ 4 ] ;
@@ -690,7 +693,7 @@ function Preferences()
 
    i = Len( aHarbourFlags )
    for n = 1 to i
-      oItemFlag:AddItem( aHarbourFlags[ n ],,, ImgSymbols( "flag" ) )
+   oItemFlag:AddItem( aHarbourFlags[ n ],,, ImgSymbols( "flag" ) )
    next
 
    @ 12, 340 BTNBMP oBtndelFlag OF oMulti:aViews[ 4 ] ;
@@ -763,7 +766,7 @@ function DelLib( oTree, ntipo )
    n = oNodo:nItems
 
    for i = 1 to n
-      AAdd( aLibs, oNodo:aNodes[ i ]:cName )
+   AAdd( aLibs, oNodo:aNodes[ i ]:cName )
    next
 
    oPlist:SetArrayByName( aTipo[ nTipo ], aLibs, .T. )
@@ -816,7 +819,7 @@ function DlgAddlib( oTree, ntipo )
       n = oNode:nItems
 
       for i = 1 to n
-         AAdd( aLibs, oNode:anodes[ i ]:cName )
+      AAdd( aLibs, oNode:anodes[ i ]:cName )
       next
 
       aTitles:= { "FrameWorks" , "HarbLibs" ,"ExtraFrameWorks","HarbourFlags" }
@@ -902,7 +905,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
       function UpdateEditorsFont()
          local oEditor
          for each oEditor in aEditors
-            oEditor:SetFont( cFontName, nFontSize )
+         oEditor:SetFont( cFontName, nFontSize )
          next
       return nil
 
@@ -911,11 +914,11 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
       function cItemInTree( oItem, cName )
          local lFound := .f.
          while oItem != nil
-            if oItem:cName == cName
-               lFound := .t.
-               exit
-            endif
-            oItem = oItem:oParent
+         if oItem:cName == cName
+            lFound := .t.
+            exit
+         endif
+         oItem = oItem:oParent
          enddo
       return lFound
 
@@ -1285,25 +1288,25 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
 
          for n = 1 to Len( aEditors )
 
-            oEditor = aEditors[ n ]
+         oEditor = aEditors[ n ]
 
-            //  oPlist:SetItemByName("File" + AllTrim( Str( n ) ), oEditor:cFileName )
+         //  oPlist:SetItemByName("File" + AllTrim( Str( n ) ), oEditor:cFileName )
 
-            AAdd( afiles, oEditor:cFileName )
+         AAdd( afiles, oEditor:cFileName )
 
-            if oEditor:GetModify()
-               if MsgYesNo( "Save the changes ?", "File has changed" )
-                  oEditor:Save()
-               endif
+         if oEditor:GetModify()
+            if MsgYesNo( "Save the changes ?", "File has changed" )
+               oEditor:Save()
             endif
+         endif
 
          next
 
          while n < 10
-            //  oPlist:SetItemByName("File"+AllTrim( Str( n++ ) ) , "" )
+         //  oPlist:SetItemByName("File"+AllTrim( Str( n++ ) ) , "" )
 
-            aadd(aFiles, ""   )
-            n++
+         aadd(aFiles, ""   )
+         n++
 
          end
 
@@ -1351,7 +1354,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
     
          n = Len( aFrameworks )
          for i = 1 to n
-            Framework = Framework + "-framework " + AllTrim( aFrameworks[ i ] ) + " "
+         Framework = Framework + "-framework " + AllTrim( aFrameworks[ i ] ) + " "
          next
 
          // Extraframeworks 
@@ -1359,13 +1362,13 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
          if Len( aExtraFrameworks ) > 0
             n = Len( aExtraFrameworks )
             for i = 1 to n
-               ExtraFramework = ExtraFramework + "-framework " + AllTrim( aExtraFrameworks[ i ] ) + " "
+            ExtraFramework = ExtraFramework + "-framework " + AllTrim( aExtraFrameworks[ i ] ) + " "
             next
          endif
 
          n = Len( aHarbLibs )
          for i = 1 to n
-            HarbLibs += "-l" + AllTrim( aHarbLibs[ i ] ) + " "
+         HarbLibs += "-l" + AllTrim( aHarbLibs[ i ] ) + " "
          next
 
          if oEditor:GetModify()
@@ -1479,8 +1482,8 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
             endif
     
             for n = 1 to Len( aExtraFrameworks )
-               CopyFileTo( Fivepath + "/frameworks/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework",;
-                  cAuxFile +"/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework" )
+            CopyFileTo( Fivepath + "/frameworks/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework",;
+               cAuxFile +"/" + AllTrim( aExtraFrameworks[ n ] ) + ".framework" )
             next
       
          endif
@@ -1577,8 +1580,8 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
 
          if Len( aHarbFlags ) > 0
             for i = 1 to Len( aHarbFlags )
-               //         ArrayAddString( oArrayArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
-               aadd( aArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
+            //         ArrayAddString( oArrayArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
+            aadd( aArguments, "-" + AllTrim( aHarbFlags[ i ] ) )
             next
          endif
 
@@ -1661,7 +1664,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
             cText += "HRBLIBS='"
             n:= Len( aHarbLibs )
             for i=1 to n
-               cText += " -l" + alltrim( aHarbLibs[i] )
+            cText += " -l" + alltrim( aHarbLibs[i] )
             next
             cText += "' " + hb_eol()
          else
@@ -1677,7 +1680,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
             cText += "FRAMEWORKS='"
             n:= Len( aFrameworks )
             for i=1 to n
-               cText += " -framework " + alltrim( aFrameworks[i] )
+            cText += " -framework " + alltrim( aFrameworks[i] )
             next
             cText += "' " + hb_eol()
          else
@@ -1702,7 +1705,7 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
             cText += " -F$FIVEPATH/frameworks"
             n = Len( aExtraFrameworks )
             for i = 1 to n
-               cText += " -framework "+ AllTrim( aExtraFrameworks[ i ] )
+            cText += " -framework "+ AllTrim( aExtraFrameworks[ i ] )
             next
             cText +=  hb_eol()
          endif
@@ -1832,8 +1835,8 @@ function fillSnipedCode()
       ( cAlias )->( DbGotop() )
 
       while ! ( cAlias )->( Eof() )
-         AAdd( aSniped, { ( cAlias )->name, ( cAlias )->Code } )
-         ( cAlias )->( DbSkip() )
+      AAdd( aSniped, { ( cAlias )->name, ( cAlias )->Code } )
+      ( cAlias )->( DbSkip() )
       end
    endif
 
@@ -1988,34 +1991,34 @@ function FillFuncList()
    aFunLines = {}
 
    for n = 1 to nLines
-      cToken = Lower( Left( cLine := LTrim( oEditor:GetLine( n ) ), 4 ) )
-      if cToken $ "func,proc,clas,meth" .and. ;
-            Lower( cFileExt( oEditor:cFileName ) ) $ "prg,ch"
-         AAdd( aFunLines, { cLine, n, n + 1 } )
-      endif
+   cToken = Lower( Left( cLine := LTrim( oEditor:GetLine( n ) ), 4 ) )
+   if cToken $ "func,proc,clas,meth" .and. ;
+         Lower( cFileExt( oEditor:cFileName ) ) $ "prg,ch"
+      AAdd( aFunLines, { cLine, n, n + 1 } )
+   endif
 
-      if Left( cLine, 12 ) == "static funct"
-         AAdd( aFunLines, { cLine, n, n + 1 } )
-      endif
+   if Left( cLine, 12 ) == "static funct"
+      AAdd( aFunLines, { cLine, n, n + 1 } )
+   endif
 
-      if Left( cLine, 6 ) == "#xcomm"
-         if StrToken( cLine, 2 ) == "@"
-            AAdd( aFunLines, { "@ ... " + StrToken( cLine, 5 ), n, n + 1 } )
-         else
-            AAdd( aFunLines, { StrToken( cLine, 2 ) + " " + ;
-               StrToken( cLine, 3 ), n, n + 1 } )
-         endif
+   if Left( cLine, 6 ) == "#xcomm"
+      if StrToken( cLine, 2 ) == "@"
+         AAdd( aFunLines, { "@ ... " + StrToken( cLine, 5 ), n, n + 1 } )
+      else
+         AAdd( aFunLines, { StrToken( cLine, 2 ) + " " + ;
+            StrToken( cLine, 3 ), n, n + 1 } )
       endif
+   endif
 
-      if Left( cLine, 7 ) == "HB_FUNC"
-         AAdd( aFunLines, { cLine, n, n + 1 } )
-      endif
+   if Left( cLine, 7 ) == "HB_FUNC"
+      AAdd( aFunLines, { cLine, n, n + 1 } )
+   endif
 
-      if cToken $ "retu" .or. Left( cToken, 1 ) == "}"
-         if ATail( aFunLines ) != nil
-            ATail( aFunLines )[ 3 ] = n
-         endif
+   if cToken $ "retu" .or. Left( cToken, 1 ) == "}"
+      if ATail( aFunLines ) != nil
+         ATail( aFunLines )[ 3 ] = n
       endif
+   endif
    next
 
    ASort( aFunLines,,, { | x, y | x[ 1 ] < y[ 1 ] } )
@@ -2235,12 +2238,12 @@ static function DbfGen( aFields )
    local n, cTempName
 
    for n = 1 to Len( aInfo )
-      cPrg += If( n == 1, "{ ", space(18) ) + '{ "' + ;
-         aInfo[ n ][ 1 ] + '", "' + ;
-         aInfo[ n ][ 2 ] + '", ' + ;
-         AllTrim( Str( aInfo[ n ][ 3 ] ) ) + ", " + ;
-         AllTrim( Str( aInfo[ n ][ 4 ] ) ) + "}" + ;
-         If( n < Len( aInfo ), ",;", " } " ) + CRLF
+   cPrg += If( n == 1, "{ ", space(18) ) + '{ "' + ;
+      aInfo[ n ][ 1 ] + '", "' + ;
+      aInfo[ n ][ 2 ] + '", ' + ;
+      AllTrim( Str( aInfo[ n ][ 3 ] ) ) + ", " + ;
+      AllTrim( Str( aInfo[ n ][ 4 ] ) ) + "}" + ;
+      If( n < Len( aInfo ), ",;", " } " ) + CRLF
    next
 
 return cPrg
@@ -2254,7 +2257,7 @@ function cCheckArea( cDbfName )
    local cAlias := cDbfName
 
    while Select( cAlias ) != 0
-      cAlias = cDbfName + AllTrim( Str( n++ ) )
+   cAlias = cDbfName + AllTrim( Str( n++ ) )
    end
 
 return cAlias
@@ -2351,7 +2354,7 @@ static function ReplaceAll( oEditor, cFind, cRep )
    oEditor:GoTop()
 
    while oEditor:SearchForward( cFind )
-      oEditor:ReplaceSel( cRep )
+   oEditor:ReplaceSel( cRep )
    end
 
 return nil
@@ -2453,16 +2456,16 @@ function OpenProject()
       oTree:ExpandAll()
      
       for n := 1 to Len( aFiles )
-         cFile := AllTrim( aFiles[ n ] )
-         // Check extension
-         cExt := Lower( cFileExt( cFile ) )
-         if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
-            if File( cFile )
-               BuildEditor()
-               oEditor:Open( cFile )
-               //  openFilePrj( cLine )
-            endif
+      cFile := AllTrim( aFiles[ n ] )
+      // Check extension
+      cExt := Lower( cFileExt( cFile ) )
+      if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
+         if File( cFile )
+            BuildEditor()
+            oEditor:Open( cFile )
+            //  openFilePrj( cLine )
          endif
+      endif
       next
         
       MsgInfo( "Project Loaded: " + cProject )
@@ -2478,31 +2481,31 @@ Static Function BuildTreePrj(aFiles)
    local cFileName 
 
    for n := 1 to Len( aFiles )
-      cFileName := AllTrim( aFiles[ n ] )
-      // Resolve relative path 
+   cFileName := AllTrim( aFiles[ n ] )
+   // Resolve relative path 
 
-      if File( cFileName )
-         if Lower( cFileExt( cFileName ) ) == "prg"
-            if oProjPrgItem == nil
-               oProjPrgItem = oProjectItem:AddItem( "PRG", ImgSymbols( "folder" ) )
-            endif
-            oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjPrgItem, ImgSymbols("document") )
-            oItem:Cargo := cFileName 
-         elseif Lower( cFileExt( cFileName ) ) == "ch"
-            if oProjChItem == nil
-               oProjChItem = oProjectItem:AddItem( "CH", ImgSymbols( "folder" ) )
-            endif
-            oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjChItem, ImgSymbols("document") )
-            oItem:Cargo := cFileName 
-         elseif Lower( cFileExt( cFileName ) ) == "m"
-            if oProjMItem == nil
-               oProjMItem = oProjectItem:AddItem( "M", ImgSymbols( "folder" ) )
-            endif
-            oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjMItem, ImgSymbols("document") )
-            oItem:Cargo := cFileName 
+   if File( cFileName )
+      if Lower( cFileExt( cFileName ) ) == "prg"
+         if oProjPrgItem == nil
+            oProjPrgItem = oProjectItem:AddItem( "PRG", ImgSymbols( "folder" ) )
          endif
+         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjPrgItem, ImgSymbols("document") )
+         oItem:Cargo := cFileName 
+      elseif Lower( cFileExt( cFileName ) ) == "ch"
+         if oProjChItem == nil
+            oProjChItem = oProjectItem:AddItem( "CH", ImgSymbols( "folder" ) )
+         endif
+         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjChItem, ImgSymbols("document") )
+         oItem:Cargo := cFileName 
+      elseif Lower( cFileExt( cFileName ) ) == "m"
+         if oProjMItem == nil
+            oProjMItem = oProjectItem:AddItem( "M", ImgSymbols( "folder" ) )
+         endif
+         oItem = oProjectItem:AddItem( cFileNoPath( cFileName ),,oProjMItem, ImgSymbols("document") )
+         oItem:Cargo := cFileName 
       endif
-      oItem = nil
+   endif
+   oItem = nil
    next
 
    oTree:Rebuild()
@@ -2526,21 +2529,21 @@ Static Function aGetPrjFiles(cFile)
    // aLines := HB_ATokens( cContent, CRLF )
 
    for n := 1 to Len( aLines )
-      cLine := AllTrim( aLines[ n ] )
+   cLine := AllTrim( aLines[ n ] )
          
-      // Skip comments and flags
-      if Left( cLine, 1 ) == "#" .or. Left( cLine, 1 ) == "-" .or. Empty( cLine )
-         loop
-      endif
+   // Skip comments and flags
+   if Left( cLine, 1 ) == "#" .or. Left( cLine, 1 ) == "-" .or. Empty( cLine )
+      loop
+   endif
            
-      // Check extension
-      cExt := Lower( cFileExt( cLine ) )
-      if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
-         // Resolve relative path 
-         if File( cLine )
-            AAdd( aFiles, cFilePath( cFile ) + cLine ) 
-         endif
+   // Check extension
+   cExt := Lower( cFileExt( cLine ) )
+   if cExt == "prg" .or. cExt == "c" .or. cExt == "m"
+      // Resolve relative path 
+      if File( cLine )
+         AAdd( aFiles, cFilePath( cFile ) + cLine ) 
       endif
+   endif
    next
 
 Return aFiles
@@ -2653,3 +2656,18 @@ function ShowTreeMenu( nRow, nCol )
 return nil
 
 //----------------------------------------------------------------------------//
+
+function EditorKeyHandler( nKey )
+
+   local hFocus
+
+   MsgInfo( "Key: " + Str( nKey ) )
+
+   if nKey == 13 // Enter
+      hFocus = GetFocus()
+      if oEditor != nil .and. oEditor:hWnd == hFocus
+         oEditor:AutoIndent()
+      endif
+   endif
+
+return nil
