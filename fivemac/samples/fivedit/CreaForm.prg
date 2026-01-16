@@ -9,7 +9,7 @@ static aForms := {}
 
 function MainCreaForm()
 
-  // BuildMenuDesigner()  
+   // BuildMenuDesigner()  
 
    DEFINE WINDOW oWndMain TITLE "FiveMac Designer" ;
       SIZE ScreenWidth(), 200
@@ -17,7 +17,7 @@ function MainCreaForm()
    oWndMain:setPos(ScreenHeight() )
 
    BuildToolBar()      
- //  SourceEditor()
+   //  SourceEditor()
    ShowInspector()      
    NewForm()
    
@@ -26,14 +26,6 @@ function MainCreaForm()
 return nil   
 
 //----------------------------------------------------------------------------//
-
-function BuildImgRes()
-local aImg:= {"new.png","open.png","save.png","exit.png","replace.png","button.png","btnbmp.png" ,;
-              "checkbox.png","radio.png","say.png","get.png","combobox.png","browse.png","image.png" } 
-
-	copyImgInRes( aImg )
-
-Return nil 
 
 //----------------------------------------------------------------------------//
 
@@ -111,20 +103,20 @@ function BuildToolbar()
 
    DEFINE BUTTON OF oBar PROMPT "Salir" ;
       TOOLTIP "Cerrar diseñador" ;
-       IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
-       ACTION  exitform()
+      IMAGE  ImgSymbols( "power.circle", "Exit" ) ;
+      ACTION  exitform()
 
 return nil
 //--------------------------------
 
 Function ExitForm()
  
-local i 
- if len( aForms) >0
-   for i:= 1 to len( aForms)
+   local i 
+   if len( aForms) >0
+      for i:= 1 to len( aForms)
       aForms[i]:end()
-   next
-endif
+      next
+   endif
    if oWndInsp != nil
       oWndInsp:end()
    endif
@@ -142,27 +134,27 @@ function SourceEditor()
    oWndCode = TWndCode():New()
 
    oWndCode:AddSource( "project1.prg",; 
-                       '#include "FiveMac.ch"' + CRLF + CRLF + ;
-                       "//" + Replicate( "-", 72 ) + "//" + CRLF + CRLF + ;
-                       "function Main()" + CRLF + CRLF + ;
-                       "   public oApplication, oForm1" + CRLF + CRLF + ;
-                       "   oApplication = TApplication():New()" + CRLF + CRLF + ;
-                       "   oApplication:AddForm( oForm1 := TForm1():New() )" + CRLF + CRLF + ;
-                       "   oApplication:Run()" + CRLF + CRLF + ;
-                       "return nil " + CRLF + CRLF + ;
-                       "//" + Replicate( "-", 72 ) + "//" )   
+      '#include "FiveMac.ch"' + CRLF + CRLF + ;
+      "//" + Replicate( "-", 72 ) + "//" + CRLF + CRLF + ;
+      "function Main()" + CRLF + CRLF + ;
+      "   public oApplication, oForm1" + CRLF + CRLF + ;
+      "   oApplication = TApplication():New()" + CRLF + CRLF + ;
+      "   oApplication:AddForm( oForm1 := TForm1():New() )" + CRLF + CRLF + ;
+      "   oApplication:Run()" + CRLF + CRLF + ;
+      "return nil " + CRLF + CRLF + ;
+      "//" + Replicate( "-", 72 ) + "//" )   
    
    oWndCode:AddSource( "form1.prg",; 
-                       '#include "FiveMac.ch"' + CRLF + CRLF + ;
-                       "//" + Replicate( "-", 72 ) + "//" + CRLF + CRLF + ;
-                       "CLASS TForm1 FROM TForm" + CRLF + CRLF + ;
-                       "   METHOD New()" + CRLF + CRLF + ;
-                       "ENDCLASS " + CRLF + CRLF + ;
-                       "//" + Replicate( "-", 72 ) + "//" + CRLF + CRLF + ;
-                       "METHOD New() CLASS TForm1" + CRLF + CRLF + ;
-                       "   super:New()" + CRLF + CRLF + ;
-                       "return self" + CRLF + CRLF + ;
-                       "//" + Replicate( "-", 72 ) + "//" )   
+      '#include "FiveMac.ch"' + CRLF + CRLF + ;
+      "//" + Replicate( "-", 72 ) + "//" + CRLF + CRLF + ;
+      "CLASS TForm1 FROM TForm" + CRLF + CRLF + ;
+      "   METHOD New()" + CRLF + CRLF + ;
+      "ENDCLASS " + CRLF + CRLF + ;
+      "//" + Replicate( "-", 72 ) + "//" + CRLF + CRLF + ;
+      "METHOD New() CLASS TForm1" + CRLF + CRLF + ;
+      "   super:New()" + CRLF + CRLF + ;
+      "return self" + CRLF + CRLF + ;
+      "//" + Replicate( "-", 72 ) + "//" )   
 
    ACTIVATE WINDOW oWndCode
    
@@ -239,29 +231,29 @@ function BuildMenuDesigner()
    local oMenu
    
    MENU oMenu
-      MENUITEM "designer"
-      MENU
-         //MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2012", "Designer Form " )
-         //SEPARATOR
-         MENUITEM "Exit" ACTION ExitForm()
-      ENDMENU
+   MENUITEM "designer"
+   MENU
+   //MENUITEM "About..." ACTION MsgAbout( "(c) FiveTech Software 2012", "Designer Form " )
+   //SEPARATOR
+   MENUITEM "Exit" ACTION ExitForm()
+   ENDMENU
       
-      MENUITEM "files"
-      MENU
-         MENUITEM "New"  ACCELERATOR "n" ACTION NewForm()
-         MENUITEM "Open" 
-         MENU
-            MENUITEM "Form..." ACTION OpenForm()
-            MENUITEM "Program..." ACTION OpenPRG()
-         ENDMENU   
-         MENUITEM "Save" ACCELERATOR "s" ACTION SaveForm()
-      ENDMENU
+   MENUITEM "files"
+   MENU
+   MENUITEM "New"  ACCELERATOR "n" ACTION NewForm()
+   MENUITEM "Open" 
+   MENU
+   MENUITEM "Form..." ACTION OpenForm()
+   MENUITEM "Program..." ACTION OpenPRG()
+   ENDMENU   
+   MENUITEM "Save" ACCELERATOR "s" ACTION SaveForm()
+   ENDMENU
       
-      MENUITEM "View"
-      MENU
-         MENUITEM "Inspector..." ACCELERATOR "i" ACTION ShowInspector()
-         MENUITEM "Forms..." ACCELERATOR "f" ACTION SelForm()
-      ENDMENU
+   MENUITEM "View"
+   MENU
+   MENUITEM "Inspector..." ACCELERATOR "i" ACTION ShowInspector()
+   MENUITEM "Forms..." ACCELERATOR "f" ACTION SelForm()
+   ENDMENU
    ENDMENU
    
 return nil   
@@ -304,8 +296,8 @@ function SelForm()
    oBrw1:SetColWidth( 1, 226 )
    oBrw1:SetColor( CLR_BLACK, CLR_PANE )
    oBrw1:bAction = { || If( oBrw1:nArrayAt != 0,;
-                     ( oDlg:End(), aForms[ oBrw1:nArrayAt ]:SetFocus(),;
-                       oWnd := aForms[ oBrw1:nArrayAt ], oWndInsp:SetForm( oWnd ) ),) }
+      ( oDlg:End(), aForms[ oBrw1:nArrayAt ]:SetFocus(),;
+      oWnd := aForms[ oBrw1:nArrayAt ], oWndInsp:SetForm( oWnd ) ),) }
    oBrw1:SetFocus()
    oBrw1:GoTop()
 
@@ -328,13 +320,13 @@ function GetParent()
    do case
       case oCtrl:ClassName() == "TTABS"
      
-           return oCtrl:aControls[ oCtrl:nTab ]
+         return oCtrl:aControls[ oCtrl:nTab ]
            
       case oCtrl:ClassName() == "TGROUP"
-           return oCtrl
+         return oCtrl
            
-      otherwise
-           return oWnd
+         otherwise
+         return oWnd
    endcase
    
 return nil                      
@@ -417,9 +409,9 @@ function AddBrws()
    local oBrw, oParent := GetParent()  
     
    @ 10, 10 BROWSE oBrw ;
-     FIELDS "" ;
-     HEADERS "Table" ;
-     OF oParent SIZE 150, 150
+      FIELDS "" ;
+      HEADERS "Table" ;
+      OF oParent SIZE 150, 150
      
    oBrw:SetArray( {} )
   
@@ -453,7 +445,7 @@ function AddGroup()
       SIZE 200, 200 ;
       PROMPT "Group" ;
       OF oParent
-      // [ STYLE <nStyle> ]
+   // [ STYLE <nStyle> ]
 
    oGrp:cVarName = "oGrp" + oGrp:GetCtrlIndex() 
    

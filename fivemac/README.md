@@ -54,6 +54,14 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 
 - **Project Tree**: Fivedit now includes a dedicated Project Explorer view (`OpenProject`). When a project is loaded, it visualizes the project structure in a dedicated tree node, allowing quick access to source files and project management. Modified `OpenProject` to reliably parse `.hbp` files cross-platform (LF/CRLF).
 
+### IntelliSense & Snippets (January 2026 - Part 7)
+- **Code Snippets**: Implemented full support for standard VSCode-style snippets (`snippets.json`). Typing a keyword (like `for`, `class`, `function`) and pressing `TAB` expands the template with cursor placeholders support.
+- **IntelliSense Autocomplete**: Added a robust, icon-aware Autocomplete system for Harbour functions.
+    - **Visuals**: Distinct icons for Functions (Cube) and Keywords/Snippets (Box) loaded directly from memory.
+    - **Smart Insertion**: Automatically strips metadata (like library names) from inserted text.
+    - **Contextual Help**: Persistent Tooltips (CallTips) appear upon insertion to guide parameter entry, styled with a modern light-gray theme.
+- **SCNotification Fixes**: Resolved critical 64-bit alignment issues in the Objective-C layer (`scintillas.m`) that prevented correct text retrieval from Scintilla notifications on macOS.
+
 ## Building
 
 To build the library and samples:

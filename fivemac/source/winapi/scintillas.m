@@ -246,6 +246,34 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
   return YES;
 }
 
+- (void)triggerTab {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9995); // Code for TAB
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushLong(0);
+  hb_vmPushLong(0);
+  hb_vmDo(5);
+}
+
+- (void)triggerAutoComplete {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9994); // Code for Ctrl+Space
+  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushLong(0);
+  hb_vmPushLong(0);
+  hb_vmDo(5);
+}
+
 - (void)triggerAutoIndent {
   NSLog(@"[MyScintillaView] Triggering AutoIndent (Delayed)");
   if (symFMH == NULL)
@@ -282,7 +310,7 @@ HB_FUNC(SCICREATE) {
   // Install Local Event Monitor for this App
   // Debug Mode: Log ALL keys and First Responder Class
   [NSEvent
-      addLocalMonitorForEventsMatchingMask:NSKeyDownMask
+      addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown
                                    handler:^(NSEvent *theEvent) {
                                      unsigned short kc = [theEvent keyCode];
                                      NSWindow *win = [theEvent window];
@@ -313,6 +341,41 @@ HB_FUNC(SCICREATE) {
                                                (triggerAutoIndent)
                                                     withObject:nil
                                                     afterDelay:0.01];
+                                         }
+                                       }
+                                     }
+
+                                     if (kc == 48) { // Tab
+                                       if (win == [sv window]) {
+                                         if (isScintilla) {
+                                           // NSLog(@"[Monitor] Tab MATCHED for
+                                           // Scintilla"); // Cleaned
+                                           [sv performSelector:@selector
+                                               (triggerTab)
+                                                    withObject:nil
+                                                    afterDelay:0.01];
+                                           return (
+                                               NSEvent *)nil; // Consume event!
+                                                              // Cast required.
+                                         }
+                                       }
+                                     }
+                                     if (kc == 49) { // Space
+                                       NSUInteger flags =
+                                           [theEvent modifierFlags];
+                                       if (flags & NSEventModifierFlagControl) {
+                                         NSLog(
+                                             @"[Monitor] Ctrl+Space DETECTED!");
+                                         if (win == [sv window]) {
+                                           if (isScintilla) {
+                                             NSLog(@"[Monitor] Triggering "
+                                                   @"AutoComplete...");
+                                             [sv performSelector:@selector
+                                                 (triggerAutoComplete)
+                                                      withObject:nil
+                                                      afterDelay:0.01];
+                                             return (NSEvent *)nil;
+                                           }
                                          }
                                        }
                                      }
@@ -520,6 +583,83 @@ HB_FUNC(SCIGETTEXT) {
   hb_xfree(buffer);
 }
 
+HB_FUNC(SCIGETTEXTRANGE) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  int nStart = hb_parni(2);
+  int nEnd = hb_parni(3);
+
+  if (sv) {
+    int len = nEnd - nStart;
+    if (len > 0) {
+      char *buffer = (char *)malloc(len + 1);
+      struct Sci_TextRange tr;
+      tr.chrg.cpMin = nStart;
+      tr.chrg.cpMax = nEnd;
+      tr.lpstrText = buffer;
+
+      [sv setGeneralProperty:SCI_GETTEXTRANGE parameter:0 value:(long)&tr];
+
+      hb_retc(buffer);
+      free(buffer);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
+}
+
+HB_FUNC(SCIREGIMAGE) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  int nType = hb_parni(2);
+  char *cXpm = (char *)hb_parc(3);
+
+  [sv setGeneralProperty:SCI_REGISTERIMAGE parameter:nType value:(long)cXpm];
+}
+
+HB_FUNC(SCIREGIMAGEFROMFILE) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  int nType = hb_parni(2);
+  NSString *path = hb_NSSTRING_par(3);
+
+  NSError *error = nil;
+  NSString *content = [NSString stringWithContentsOfFile:path
+                                                encoding:NSUTF8StringEncoding
+                                                   error:&error];
+
+  if (content) {
+    const char *cXpm = [content UTF8String];
+    NSLog(@"[Scintilla] Loading XPM type %d len %lu: %.50s...", nType,
+          (unsigned long)[content length], cXpm);
+    [sv setGeneralProperty:SCI_REGISTERIMAGE parameter:nType value:(long)cXpm];
+    hb_retl(YES);
+  } else {
+    NSLog(@"Error reading XPM file: %@", [error localizedDescription]);
+    hb_retl(NO);
+  }
+}
+
+// Define minimal SCNotification if missing
+struct SCNotification_Local {
+  struct {
+    void *hwndFrom;
+    unsigned long idFrom;
+    unsigned int code;
+  } nmhdr;
+  long position; // Changed to long (8 bytes) for correct alignment on 64-bit
+  int ch;
+  int modifiers;
+  int modificationType;
+  const char *text;
+};
+
+HB_FUNC(SCIGETNOTIFYTEXT) {
+  struct SCNotification_Local *p = (struct SCNotification_Local *)hb_parnll(1);
+  if (p && p->text)
+    hb_retc((char *)p->text);
+  else
+    hb_retc("");
+}
 HB_FUNC(SCIGETLINE) {
   ScintillaView *sv = (ScintillaView *)hb_parnll(1);
   unsigned long ulLine = hb_parnl(2) - 1;
