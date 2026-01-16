@@ -53,6 +53,7 @@ PRG_OBJS = \
   	./obj/get.o \
 	./obj/group.o \
 	./obj/harbour.o \
+    ./obj/hbdocs.o \
 	./obj/image.o \
 	./obj/inspect.o \
   	./obj/itunes.o \
@@ -78,6 +79,7 @@ PRG_OBJS = \
 	./obj/outline.o	\
 	./obj/say.o	\
 	./obj/scintilla.o	\
+	./obj/snippets.o	\
 	./obj/simage.o	\
 	./obj/segment.o \
 	./obj/settings.o \

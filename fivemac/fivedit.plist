@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Color-Strings</key>
-	<string></string>
 	<key>ExtraFrameWorks</key>
 	<array>
 		<string>Scintilla</string>
@@ -11,21 +9,13 @@
 	<key>FontName</key>
 	<string>Monaco</string>
 	<key>FontSize</key>
-	<string>16</string>
+	<string>14</string>
 	<key>FrameWorks</key>
 	<array>
 		<string>Cocoa</string>
 		<string>WebKit</string>
+		<string>QTkit</string>
 		<string>Quartz</string>
-		<string>ScreenCaptureKit</string>
-		<string>ScriptingBridge</string>
-		<string>AVKit</string>
-		<string>AVFoundation</string>
-		<string>CoreMedia</string>
-		<string>UniformTypeIdentifiers</string>
-		<string>CoreImage</string>
-		<string>UserNotifications</string>
-		<string>IOKit</string>
 	</array>
 	<key>HarbLibs</key>
 	<array>
@@ -34,7 +24,9 @@
 		<string>hbrtl</string>
 		<string>hblang</string>
 		<string>hbrdd</string>
+		<string>hbrtl</string>
 		<string>gttrm</string>
+		<string>hbvm</string>
 		<string>hbmacro</string>
 		<string>hbpp</string>
 		<string>rddntx</string>
@@ -43,15 +35,12 @@
 		<string>hbsix</string>
 		<string>hbcommon</string>
 		<string>hbcplr</string>
-		<string>hbcpage</string>
-		<string>hbhsx</string>
-		<string>rddnsx</string>
 	</array>
 	<key>LastFiles</key>
 	<array>
-		<string>/Users/manuel/five/Fivemac/fivemac/samples/test_multi_main.prg</string>
-		<string>/Users/manuel/five/Fivemac/fivemac/samples/test_multi_func.prg</string>
-		<string>/Users/manuel/five/Fivemac/fivemac/samples/fiveform.prg</string>
+		<string></string>
+		<string></string>
+		<string></string>
 		<string></string>
 		<string></string>
 		<string></string>
@@ -60,9 +49,9 @@
 		<string></string>
 	</array>
 	<key>PathFiveMac</key>
-	<string>/Users/manuel/five/Fivemac/fivemac</string>
+	<string>/Users/~/fivemac</string>
 	<key>PathHarbour</key>
-	<string>/Users/manuel/five/Fivemac/harbour</string>
+	<string>/Users/~/harbour</string>
 	<key>PathSDK</key>
 	<string>/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk</string>
 </dict>

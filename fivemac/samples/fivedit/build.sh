@@ -85,10 +85,23 @@ fi
 if [ ! -d $APPName.app/Contents/MacOS ]; then
    mkdir $APPName.app/Contents/MacOS
 fi  
+   
+# Copy resources always (even if folders exist)
+cp snippets.json "$APPName.app/Contents/Resources/"
+cp hbdocs.json "$APPName.app/Contents/Resources/"
+cp hbdocs.missing "$APPName.app/Contents/Resources/"
+if [ -d "img" ]; then
+   echo "Copying images from img..."
+   cp -v img/* "$APPName.app/Contents/Resources/"
+fi
+
 if [ ! -d $APPName.app/Contents/Resources ]; then
    mkdir $APPName.app/Contents/Resources
+fi
    cp ./../icons/fivetech.icns $APPName.app/Contents/Resources/
-fi 
+    cp ./*.inc                    ./$APPName.app/Contents/Resources/
+   cp ./*.json                   ./$APPName.app/Contents/Resources/
+   cp ./hbdocs.json              ./$APPName.app/Contents/Resources/
 
 # Smart Copy: Only copy images referenced in the source code
 # First, clean existing bitmaps to ensure we don't keep unused ones from previous builds
@@ -163,7 +176,7 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 #  add -arch ppc -arch i386 for universal binaries
 #  add -arch ppc -arch i386 for universal binaries
 # Link ALL OBJS
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib -lfive -lfivec -L$HARBPATH/lib $HRBLIBS $FRAMEWORKS  -F$PATHCONF/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib $PATHCONF/lib/libfive.a $PATHCONF/lib/libfivec.a -L$HARBPATH/lib $HRBLIBS $FRAMEWORKS  -F$PATHCONF/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c

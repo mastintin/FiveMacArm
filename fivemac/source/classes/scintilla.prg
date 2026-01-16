@@ -39,6 +39,7 @@ CLASS TScintilla FROM TControl
    
    DATA cLastFind
    DATA bChange
+   DATA bCharAdded
    DATA oRowItem, oColItem
    DATA nSetStyle
    DATA lLinTabs
@@ -105,6 +106,7 @@ CLASS TScintilla FROM TControl
    METHOD Charrightrectextend ()              INLINE ::Send( SCI_CHARRIGHTRECTEXTEND )
    METHOD ClearAll()                          INLINE ::Send( SCI_CLEARALL )
 
+   METHOD Clear()                             INLINE ::Send( SCI_CLEAR )
    METHOD Close()
 
    METHOD Copy()           INLINE ::Send( SCI_COPY )
@@ -186,6 +188,8 @@ CLASS TScintilla FROM TControl
 
    METHOD GetTipCursor()              INLINE ::Send( SCI_GETCARETSTYLE, 0, 0 )
    METHOD GetText()                    INLINE SciGetText( ::hWnd )
+   METHOD GetWordLeft()
+   METHOD InsertSnippet( cFragment )
 
    METHOD GoDown()                            INLINE ::Send( SCI_LINEDOWN )
    METHOD GoTop()                             INLINE ::Send( SCI_HOME )
@@ -201,6 +205,13 @@ CLASS TScintilla FROM TControl
    METHOD GotoLineEnsureVisible( nextline )
 
    METHOD GoNextChar() INLINE ::GotoPos( ::GetCurrentPos() + 1 )
+
+   METHOD CallTipShow( nPos, cText )     INLINE ::Send( 2200, nPos, cText )
+   METHOD CallTipCancel()                INLINE ::Send( 2201, 0, 0 )
+   METHOD CallTipActive()                INLINE ::Send( 2202, 0, 0 )
+   METHOD CallTipPosStart()              INLINE ::Send( 2203, 0, 0 )
+   METHOD CallTipSetHlt( nStart, nEnd )  INLINE ::Send( 2204, nStart, nEnd )
+   METHOD CallTipSetBack( nColor )       INLINE ::Send( 2205, nColor, 0 )
 
    METHOD GotoPos( nPos )   INLINE ::Send( SCI_GOTOPOS, nPos )
 
@@ -279,6 +290,7 @@ CLASS TScintilla FROM TControl
    METHOD Paste()                	 INLINE ::Send( SCI_PASTE )
    METHOD PositionFromLine( nLine )  INLINE SciGetProp( ::hWnd, SCI_POSITIONFROMLINE, nLine, 0 )
    METHOD PositionEndLine( nLine )   INLINE ::Send( SCI_GETLINEENDPOSITION, nLine, 0 )
+   METHOD GetTextRange( nStart, nEnd ) INLINE SciGetTextRange( ::hWnd, nStart, nEnd )
    
    METHOD ReDo() INLINE ::Send( SCI_REDO )
 
@@ -395,11 +407,26 @@ CLASS TScintilla FROM TControl
    METHOD StyleSetSize( nSize )               INLINE ::Send( SCI_STYLESETSIZE, ::nSetStyle, nSize )
 
    METHOD StyleSetColor( nClrFore, nClrBack )
-
    METHOD Tab()                               INLINE ::Send( SCI_TAB )
    METHOD UnDo()                              INLINE ::Send( SCI_UNDO )
    METHOD Uppercase()                         INLINE ::Send( SCI_UPPERCASE )
 
+   METHOD AutoCShow( nLen, cList )            INLINE ::Send( SCI_AUTOCSHOW, nLen, cList )
+   METHOD AutoCCancel()                       INLINE ::Send( SCI_AUTOCCANCEL )
+   METHOD AutoCActive()                       INLINE ::Send( SCI_AUTOCACTIVE ) != 0
+   METHOD AutoCPosStart()                     INLINE ::Send( SCI_AUTOCPOSSTART )
+   METHOD AutoCComplete()                     INLINE ::Send( SCI_AUTOCCOMPLETE )
+   METHOD AutoCStops( cChars )                INLINE ::Send( SCI_AUTOCSTOPS, 0, cChars )
+   METHOD AutoCSetSeparator( nSep )           INLINE ::Send( SCI_AUTOCSETSEPARATOR, nSep, 0 )
+   METHOD AutoCGetSeparator()                 INLINE ::Send( SCI_AUTOCGETSEPARATOR )
+   METHOD AutoCSelect( cText )                INLINE ::Send( SCI_AUTOCSELECT, 0, cText )
+   METHOD AutoCSetCancelAtStart( l )          INLINE ::Send( SCI_AUTOCSETCANCELATSTART, If( l, 1, 0 ), 0 )
+   METHOD AutoCGetCancelAtStart()             INLINE ::Send( SCI_AUTOCGETCANCELATSTART )
+   METHOD AutoCSetFillUps( cSet )             INLINE ::Send( SCI_AUTOCSETFILLUPS, 0, cSet )
+   METHOD AutoCSetChooseSingle( l )           INLINE ::Send( SCI_AUTOCSETCHOOSESINGLE, If( l, 1, 0 ), 0 )
+   METHOD AutoCGetChooseSingle()              INLINE ::Send( SCI_AUTOCGETCHOOSESINGLE )
+   METHOD AutoCSetIgnoreCase( l )             INLINE ::Send( SCI_AUTOCSETIGNORECASE, If( l, 1, 0 ), 0 )
+   METHOD AutoCGetIgnoreCase()                INLINE ::Send( SCI_AUTOCGETIGNORECASE )
    METHOD Vchome()                            INLINE ::Send( SCI_VCHOME )
    METHOD Vchomeextend()                      INLINE ::Send( SCI_VCHOMEEXTEND )
    METHOD Vchomerectextend()                  INLINE ::Send( SCI_VCHOMERECTEXTEND )
@@ -419,6 +446,10 @@ CLASS TScintilla FROM TControl
    METHOD Wordrightendextend ()               INLINE ::Send( SCI_WORDRIGHTENDEXTEND )
    METHOD Wordrightextend ()                  INLINE ::Send( SCI_WORDRIGHTEXTEND )
 
+   METHOD RegisterImage( nType, cXpm )        INLINE SciRegImage( ::hWnd, nType, cXpm )
+   METHOD RegisterImageFromFile( nType, cFile ) INLINE SciRegImageFromFile( ::hWnd, nType, cFile )
+   METHOD ClearRegisteredImages()             INLINE ::Send( 2408 )
+     
    METHOD MenuEdit( lPopup )
     
    METHOD ValidChar( c ) INLINE  Lower( c ) $ "abcdefghijklmnopqrstuvwxyz1234567890ñ"
@@ -929,42 +960,8 @@ METHOD AutoIndent() CLASS TScintilla
       endif
    endif
       
-   return nil
-
-   // DEAD CODE BELOW (To be deleted)
-   // MsgInfo( "AutoIndent Line: " + Str(nCurLine) + " PrevIndent: " + Str(nIndentation) )
-
-   // Standard: Copy Indentation from previous line
-   
-   // NOTE: SetLineIndentation might not update cursor pos visually until explicit Goto?
-   msginfo( "pasa" )
-   ::SetLineIndentation( nCurLine, nIndentation )
-
-
-   // Smart: Increase Indentation if previous line opened a block
-   if ! Empty( cPrevLine )
-      cToken := Lower( SubStr( cPrevLine, 1, AT( " ", cPrevLine + " " ) - 1 ) )
-      
-      if cToken $ "if try while for do switch case otherwise else elseif catch"
-         
-         // Increase Indent
-         nIndentation += ::nIndent
-         ::SetLineIndentation( nCurLine, nIndentation )
-         ::GotoPos( ::GetCurrentPos() + ::nIndent ) // Advance cursor
-         
-         // Auto-Close (Optional - Keep existing logic if desired, but simplified)
-         // For now, let's just focus on Indentation as requested.
-         // If user wants Auto-Close, we can add it later.
-         
-         // Special handling for 'do case' space
-         if Left( Lower( cPrevLine ), 7 ) == "do case"
-            // Already handled by 'do' check above? No, 'do' is typically 'do while'.
-            // 'do case' is two words.
-         endif
-      endif
-   endif
-      
 return nil
+
 
 //----------------------------------------------------------------------------//
 
@@ -1060,6 +1057,19 @@ METHOD HandleEvent( nMsg, uParam1, uParam2, uParam3 )  CLASS TScintilla
       case nMsg == WM_SCINOTIFY
          ::Notify( uParam1, uParam2 )
 
+      case nMsg == 9995 // Manual Tab Key
+         // MsgInfo( "Tab intercepted in FSCI. Forwarding..." )
+         if ! Empty( ::bKeyDown )
+            Eval( ::bKeyDown, 9 )
+         endif
+         return nil
+
+      case nMsg == 9994 // Manual AutoComplete (Ctrl+Space)
+         if ! Empty( ::bKeyDown )
+            Eval( ::bKeyDown, -1 ) // Use -1 or special code for Manual Trigger
+         endif
+         return nil
+
       case nMsg == 9996 // Manual Auto-Indent (Enter Key)
          ::AutoIndent()
 
@@ -1120,8 +1130,29 @@ METHOD Notify( nType, pScnNotification ) CLASS TScintilla
    local nMargin,nPos,nLine
 
    local nCode := ScnCode( pScnNotification )
+   
+   // if nCode == 2022
+   //    MsgInfo( "Notify Code: " + Str( nCode ) ) 
+   // endif
 
    do case
+      case nCode == 2022 // SCN_AUTOCSELECTION
+         cText := SciGetNotifyText( pScnNotification )
+        
+         nPos  := At( "(", cText ) // Generalize for "Function(" and "Function (Lib)"
+        
+         if nPos > 0
+            // Extract clean function name
+            cName := RTrim( Left( cText, nPos - 1 ) )
+           
+            // Cancel default insertion and insert clean text
+            ::AutoCCancel()
+            ::ReplaceSel( cName )
+           
+            // Show full info as CallTip
+            ::CallTipShow( ::GetCurrentPos(), cText )
+         endif
+ 
       case nCode == SCN_CHARADDED
          ::CharAdded( ScnCh( pScnNotification ) )
 
@@ -1166,6 +1197,10 @@ return nil
 //----------------------------------------------------------------------------//
 
 METHOD CharAdded( nChar ) CLASS TScintilla
+
+   if ! Empty( ::bCharAdded )
+      Eval( ::bCharAdded, nChar, Self )
+   endif
 
    // Trigger on NewLine (10=LF, 13=CR)
    if nChar == 10 .or. nChar == 13
@@ -1255,12 +1290,15 @@ METHOD IntelliSense( nChar ) CLASS TScintilla
    local nAt   := ::nCol()
    local cLine := Lower( LTrim( ::GetLine( ::GetCurrentLineNumber() + 1 ) ) )
 
-   if SubStr( cLine, 1, 8 ) $ "define window"
+   // Close CallTip if closing parenthesis is typed
+   if nChar == 41 // ')'
+      ::CallTipCancel()
+   endif
+
+   if Len( cLine ) > 2 .and. SubStr( cLine, 1, 8 ) $ "define window"
       ::CallTipShow( ::GetCurrentPos(), "DEFINE WINDOW <oWnd>" + Chr( 10 ) + ;
          "   TITLE <cTitle> " + Chr( 10 ) + ;
          "   FROM <nTop>, <nLeft> TO <nBottom>, <nRight>" )
-   else
-      ::CallTipCancel()
    endif
 
 return nil
@@ -1934,3 +1972,87 @@ Return if( nOp = 1, cCad2, cCad3 )
 
 //----------------------------------------------------------------------------//
 
+
+
+//----------------------------------------------------------------------------//
+
+METHOD GetWordLeft() CLASS TScintilla
+
+   local nPos       := ::GetCurrentPos()
+   local nLine      := ::LineFromPosition( nPos )
+   local nLineStart := ::PositionFromLine( nLine )
+   // Get text from start of line up to cursor
+   local cText      := ::GetTextRange( nLineStart, nPos )
+   local cWord      := ""
+   local nLen       := Len( cText )
+   local i, cChar
+
+   for i := nLen to 1 step -1
+   cChar := SubStr( cText, i, 1 )
+   // Simple check: Allow A-Z, a-z, 0-9, _
+   if ! ( ( cChar >= "A" .and. cChar <= "Z" ) .or. ;
+         ( cChar >= "a" .and. cChar <= "z" ) .or. ;
+         ( cChar >= "0" .and. cChar <= "9" ) .or. ;
+         cChar == "_" )
+      exit
+   endif
+   cWord := cChar + cWord
+   next
+   
+return cWord
+
+//----------------------------------------------------------------------------//
+
+METHOD InsertSnippet( cBody ) CLASS TScintilla
+
+   local nPos      := ::GetCurrentPos()
+   // Recalculate word start manually like in GetWordLeft because SCI_WORDSTARTPOSITION is failing
+   local cWord     := ::GetWordLeft() 
+   local nLen      := Len( cWord )
+   local nStart    := nPos - nLen
+   local nStartSeq, nEndSeq, cToken, cContent, cDefault
+ 
+   // Remove the triggered keyword
+   ::SetSel( nStart, nPos )
+   ::Clear()
+   
+   // Basic Parser for VSCode Snippets
+   cBody := StrTran( cBody, "$0", "" )
+   cBody := StrTran( cBody, "$1", "" )
+   cBody := StrTran( cBody, "$2", "" )
+   cBody := StrTran( cBody, "$3", "" )
+   
+   // Replace ${n:default} with default
+   do while "${" $ cBody
+   nStartSeq := At( "${", cBody )
+   // Find closing brace after start. 
+   // Since At doesn't support offset, we substring or regex.
+   // Easiest here: find "}" in the substring starting at nStartSeq
+   nEndSeq   := At( "}", SubStr( cBody, nStartSeq ) )
+      
+   if nEndSeq > 0
+      nEndSeq  := nStartSeq + nEndSeq - 1
+      cToken   := SubStr( cBody, nStartSeq, nEndSeq - nStartSeq + 1 ) // ${1:label}
+         
+      // Safety check to avoid infinite loop if no } found properly
+      if Empty( cToken )
+         exit
+      endif
+
+      cContent := SubStr( cBody, nStartSeq + 2, nEndSeq - nStartSeq - 2 ) // 1:label
+         
+      if ":" $ cContent
+         cDefault := SubStr( cContent, At( ":", cContent ) + 1 )
+      else
+         cDefault := "" // VSCode uses empty if no default.
+      endif
+         
+      cBody := StrTran( cBody, cToken, cDefault )
+   else
+      exit // Error or malformed
+   endif
+   enddo
+   
+   ::InsertText( nStart, cBody )
+   
+return nil
