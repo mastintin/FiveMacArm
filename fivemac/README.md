@@ -61,6 +61,11 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - **Smart Insertion**: Automatically strips metadata (like library names) from inserted text.
     - **Contextual Help**: Persistent Tooltips (CallTips) appear upon insertion to guide parameter entry, styled with a modern light-gray theme.
 - **SCNotification Fixes**: Resolved critical 64-bit alignment issues in the Objective-C layer (`scintillas.m`) that prevented correct text retrieval from Scintilla notifications on macOS.
+- **SwiftUI Integration**: Initial rollout of native SwiftUI controls bridged to Harbour.
+    - **TSwiftVStack**: A powerful vertical list control with support for dynamic item addition (Text, Images, HStack Rows).
+    - **Layout Control**: Added `SetSpacing` and `SetAlignment` (Leading/Center/Trailing) for precise UI layout.
+    - **Interactivity**: Native click support for all items, delegating events back to Harbour codeblocks.
+    - **HStack Rows**: Support for complex rows containing Icons + Text with proper alignment.
 
 ## Building
 
