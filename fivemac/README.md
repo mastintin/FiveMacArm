@@ -51,8 +51,13 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Context Menu Fixes**: Resolved issues with the File Tree context menu in `fivedit` (`outlines.m`), ensuring reliable file management (Closing/Deleting files) without UI glitches.
 - **Build System Improvements**: Updated `build.sh` to correctly generate and manage `Info.plist` files, solving issues with missing metadata and stale configurations in app bundles.
 - **Say Class**: Enhanced `TSay` with `PICTURE` support (`New`, `SetText`) for formatted output of numeric and date values.
-
 - **Project Tree**: Fivedit now includes a dedicated Project Explorer view (`OpenProject`). When a project is loaded, it visualizes the project structure in a dedicated tree node, allowing quick access to source files and project management. Modified `OpenProject` to reliably parse `.hbp` files cross-platform (LF/CRLF).
+
+### Fivedit Location & Build System (January 2026 - Part 6)
+- **Repo Structure**: `fivedit` has been moved to its own directory `samples/fivedit/` to better organize its growing codebase and resources.
+- **Build Robustness**: Fixed critical issues in `CreaBuilder.prg` and `Info.plist` generation ("App Damaged" errors) by ensuring `CFBundleExecutable` contains only the filename and using relative paths for bundle creation. 
+- **Self-Healing Environment**: `NewFile` in Fivedit now automatically detects and creates missing indexes (`scripts.cdx`) for the template database, preventing runtime errors on fresh installs.
+- **Script Engine**: Corrected various path resolution issues in `RunScript` and `BuildApp` to support the new directory structure.
 
 ### IntelliSense & Snippets (January 2026 - Part 7)
 - **Code Snippets**: Implemented full support for standard VSCode-style snippets (`snippets.json`). Typing a keyword (like `for`, `class`, `function`) and pressing `TAB` expands the template with cursor placeholders support.
@@ -85,13 +90,6 @@ To build the library and samples:
 2. Run `make` to build the `libfive.a` and `libfivec.a` libraries.
 3. Use `./build.sh <samplename>` in the `samples` directory to build specific applications (e.g., `./build.sh fivedit`).
 
-### Fivedit Location & Build System (January 2026 - Part 6)
-- **Repo Structure**: `fivedit` has been moved to its own directory `samples/fivedit/` to better organize its growing codebase and resources.
-- **Build Robustness**: Fixed critical issues in `CreaBuilder.prg` and `Info.plist` generation ("App Damaged" errors) by ensuring `CFBundleExecutable` contains only the filename and using relative paths for bundle creation. 
-- **Self-Healing Environment**: `NewFile` in Fivedit now automatically detects and creates missing indexes (`scripts.cdx`) for the template database, preventing runtime errors on fresh installs.
-- **Script Engine**: Corrected various path resolution issues in `RunScript` and `BuildApp` to support the new directory structure.
-
 ## Documentation
 
 See `whatsnew.txt` for a detailed history of changes and new features.
-
