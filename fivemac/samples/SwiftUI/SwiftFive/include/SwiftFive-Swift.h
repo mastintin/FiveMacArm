@@ -314,6 +314,12 @@ SWIFT_CLASS_NAMED("SwiftButtonLoader")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_CLASS_NAMED("SwiftGridLoader")
+@interface SwiftGridLoader : NSObject
++ (NSView * _Nonnull)makeGridWithIndex:(NSInteger)index columnsJson:(NSString * _Nonnull)columnsJson callback:(void (^ _Nonnull)(NSInteger))callback actionCallback:(void (^ _Nonnull)(NSString * _Nonnull))actionCallback SWIFT_WARN_UNUSED_RESULT;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
 @class NSNumber;
 @class NSImage;
 SWIFT_CLASS_NAMED("SwiftImageLoader")
@@ -336,6 +342,12 @@ SWIFT_CLASS_NAMED("SwiftLabelLoader")
 + (void)setLabelFontSize:(double)size;
 + (void)setLabelFontStyle:(NSString * _Nonnull)style;
 + (void)setLabelTextColor:(NSString * _Nonnull)colorHex;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+SWIFT_CLASS_NAMED("SwiftListLoader")
+@interface SwiftListLoader : NSObject
++ (NSView * _Nonnull)makeListWithIndex:(NSInteger)index callback:(void (^ _Nonnull)(NSInteger))callback SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -364,14 +376,41 @@ SWIFT_CLASS_NAMED("SwiftTabViewLoader")
 SWIFT_CLASS_NAMED("SwiftVStackLoader")
 @interface SwiftVStackLoader : NSObject
 + (NSView * _Nonnull)makeVStackWithIndex:(NSInteger)index callback:(void (^ _Nonnull)(NSInteger))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)setActionCallback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
 + (void)addItem:(NSString * _Nonnull)text;
 + (void)addSystemImage:(NSString * _Nonnull)systemName;
++ (void)addSystemImageItem:(NSString * _Nonnull)systemName parentId:(NSString * _Nullable)parentId;
 + (void)addHStackItem:(NSString * _Nonnull)text systemName:(NSString * _Nonnull)systemName;
 + (void)setScrollable:(BOOL)scrollable;
 + (void)setBackgroundColorRed:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
 + (void)setSpacing:(double)spacing;
 + (void)setAlignment:(NSInteger)alignment;
 + (void)setInvertedColor:(BOOL)useInverted;
++ (void)setLastItemId:(NSString * _Nonnull)id;
++ (NSString * _Nonnull)addVStackItem:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addHStackContainer:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addLazyVGrid:(NSString * _Nullable)parentId columnsJson:(NSString * _Nonnull)columnsJson SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addList:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addTextItem:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (void)addSpacer:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (void)addDivider:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addButtonItem:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (void)setItem:(NSString * _Nonnull)id backgroundColorRed:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
++ (NSString * _Nonnull)addBatchToParent:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json SWIFT_WARN_UNUSED_RESULT;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+SWIFT_CLASS_NAMED("SwiftZStackLoader")
+@interface SwiftZStackLoader : NSObject
++ (NSView * _Nonnull)makeZStackWithIndex:(NSInteger)index actionCallback:(void (^ _Nonnull)(NSString * _Nonnull))actionCallback SWIFT_WARN_UNUSED_RESULT;
++ (void)addItem:(NSString * _Nonnull)text;
++ (void)addSystemImage:(NSString * _Nonnull)systemName;
++ (void)addFileImage:(NSString * _Nonnull)filePath;
++ (void)setAlignment:(NSInteger)alignment;
++ (void)setBackgroundColorRed:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
++ (void)setForegroundColorRed:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
++ (void)removeAllItems;
++ (NSString * _Nonnull)addBatchToParent:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
