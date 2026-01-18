@@ -46,6 +46,26 @@
     => ;
     [ <oStub> := ] TSwiftVStack():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd> )
 
+#xcommand @ <nRow>, <nCol> SWIFTZSTACK [ <oZStk> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    => ;
+    [ <oZStk> := ] TSwiftZStack():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd> )
+
+#xcommand @ <nRow>, <nCol> SWIFTLIST [ <oList> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    => ;
+    [ <oList> := ] TSwiftList():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd> )
+
+#xcommand @ <nRow>, <nCol> SWIFTGRID [ <oGrid> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ COLUMNS <aColumns> ] ;
+    [ OF <oWnd> ] ;
+    => ;
+    [ <oGrid> := ] TSwiftGrid():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <aColumns>, <oWnd> )
+
+
 //----------------------------------------------------------------------------//
 
 #endif

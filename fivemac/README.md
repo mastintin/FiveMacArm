@@ -66,6 +66,16 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - **Layout Control**: Added `SetSpacing` and `SetAlignment` (Leading/Center/Trailing) for precise UI layout.
     - **Interactivity**: Native click support for all items, delegating events back to Harbour codeblocks.
     - **HStack Rows**: Support for complex rows containing Icons + Text with proper alignment.
+    - **TSwiftZStack**: New Layered control for overlaying content (Images beneath Text), supported by `TestSwiftZStack.prg`. Supports both SF Symbols and File Images.
+
+### SwiftUI Integration & Aesthetics (January 2026 - Part 8)
+- **Batch Registration API**: Radical performance improvement for large lists. Developers can now use `AddItem()` and `AddBatch()` to create thousands of UI elements (Text, Buttons, Stacks) in a single optimized JSON-based transaction.
+- **Premium UI Styling**: Overhauled the default aesthetic for SwiftUI Buttons. Buttons now feature a modern semi-bold font, consistent padding, linear gradients, and subtle drop shadows out-of-the-box.
+- **Aesthetic Parameters**: The Batch API now supports per-item customization:
+    - **Custom Colors**: Pass `nClrFore` and `nClrBack` to `AddItem` to override default styles.
+    - **Alpha Transparency**: Full support for `nAlphaFore` and `nAlphaBack` (0.0 to 1.0) for sophisticated layering and glassmorphism effects.
+- **TSwiftList**: Simplified root list control that inherits from `TSwiftVStack`, optimized for high-performance data display using the new Batch API.
+- **Unified Action Bridge**: Centralized the `SwiftOnAction` callback mechanism to handle all button and interaction events across different Swift views, improving reliability and simplifying registration.
 
 ## Building
 
