@@ -2,15 +2,37 @@ import SwiftUI
 import AppKit
 
 @available(OSX 10.15, *)
-public struct ViewRegistry {
-    public static var views: [Int: AnyView] = [:]
+@objc(ViewRegistry)
+public class ViewRegistry: NSObject {
+    private static var views: [Int: AnyView] = [:]
+    private static var objects: [Int: Any] = [:]
     
-    public static func register(_ view: some View, for index: Int) {
+    @objc(registerObject:forIndex:) 
+    public static func registerObject(_ object: Any, for index: NSInteger) {
+        let idx = Int(index)
+        print("DEBUG: [Swift] ViewRegistry registering object for index \(idx)")
+        objects[idx] = object
+    }
+    
+    @objc(getObject:) 
+    public static func getObject(for index: NSInteger) -> Any? {
+        let idx = Int(index)
+        // print("DEBUG: [Swift] ViewRegistry getting object for index \(idx)")
+        return objects[idx]
+    }
+    
+    public static func register<T: View>(_ view: T, for index: Int) {
         views[index] = AnyView(view)
     }
     
-    public static func clean(index: Int) {
-        views.removeValue(forKey: index)
+    public static func getView(for index: Int) -> AnyView? {
+        return views[index]
+    }
+    
+    @objc(clean:) 
+    public static func clean(index: NSInteger) {
+        views.removeValue(forKey: Int(index))
+        objects.removeValue(forKey: Int(index))
     }
 }
 
@@ -22,7 +44,7 @@ struct SwiftTabView: View {
         if #available(OSX 11.0, *) {
             TabView {
                 ForEach(tabData, id: \.id) { item in
-                    if let view = ViewRegistry.views[item.id] {
+                    if let view = ViewRegistry.getView(for: item.id) {
                         view
                             .tabItem {
                                 Label(item.title, systemImage: item.icon)
@@ -55,10 +77,6 @@ public class SwiftTabViewLoader: NSObject {
             let view = SwiftTabView(tabData: tabs)
             let hosting = NSHostingView(rootView: view)
             hosting.translatesAutoresizingMaskIntoConstraints = false
-            // Clear tabs for next usage? Or keep? 
-            // Better design: makeTabView takes the array. But passing arrays from ObjC complex.
-            // Using static accumulator for this generic bridging.
-            // tabs.removeAll() // Should clear after creation
             return hosting
         }
         return NSView()

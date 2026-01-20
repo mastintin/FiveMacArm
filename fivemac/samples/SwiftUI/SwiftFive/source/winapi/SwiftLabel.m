@@ -3,18 +3,31 @@
 HB_FUNC(SWIFTUPDATELABEL) {
   NSString *className = hb_NSSTRING_par(1);
   NSString *text = hb_NSSTRING_par(2);
+  NSInteger nIndex = (NSInteger)hb_parni(3);
 
-  NSLog(@"SWIFTUPDATELABEL: Class=%@ Text=%@", className, text);
+  NSLog(@"SWIFTUPDATELABEL: Class=%@ Text=%@ Index=%ld", className, text,
+        (long)nIndex);
 
   Class swiftClass = NSClassFromString(className);
 
   if (swiftClass) {
-    if ([swiftClass respondsToSelector:@selector(updateLabel:)]) {
-      NSLog(@"SWIFTUPDATELABEL: Calling updateLabel:...");
-      [swiftClass performSelector:@selector(updateLabel:) withObject:text];
+    SEL selector = NSSelectorFromString(@"updateLabel:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&text atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
     } else {
-      NSLog(@"SWIFTUPDATELABEL: Class %@ does NOT respond to updateLabel:",
-            className);
+      NSLog(
+          @"SWIFTUPDATELABEL: Class %@ does NOT respond to updateLabel:index:",
+          className);
     }
   } else {
     NSLog(@"SWIFTUPDATELABEL: Class %@ NOT found", className);
@@ -52,7 +65,11 @@ HB_FUNC(SWIFTLABELCREATE) {
     [invocation setSelector:selector];
     [invocation setTarget:swiftClass];
 
-    int nIndex = hb_parni(7); // Get index for Label (Added in PRG)
+    NSInteger nIndex =
+        (NSInteger)hb_parni(7); // Get index for Label (Added in PRG)
+
+    NSLog(@"SWIFTLABELCREATE: Calling makeLabelWithText: Text=%@ Index=%ld",
+          cText, (long)nIndex);
 
     [invocation setArgument:&cText atIndex:2];
     [invocation setArgument:&nIndex atIndex:3];
@@ -72,18 +89,34 @@ HB_FUNC(SWIFTLABELCREATE) {
 
 HB_FUNC(SWIFTLABELSETFONT) {
   double nSize = hb_parnd(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
+
   NSString *className = @"SwiftFive.SwiftLabelLoader";
   Class swiftClass = NSClassFromString(className);
 
-  if (swiftClass &&
-      [swiftClass respondsToSelector:@selector(setLabelFontSize:)]) {
-    [swiftClass performSelector:@selector(setLabelFontSize:)
-                     withObject:[NSNumber numberWithDouble:nSize]];
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setLabelFontSize:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      NSNumber *numSize = [NSNumber numberWithDouble:nSize];
+      [invocation setArgument:&numSize atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
+    }
   }
 }
 
 HB_FUNC(SWIFTLABELSETCOLOR) {
   long nColor = hb_parnl(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
+
   // Harbour Color is R + (G * 256) + (B * 65536)
   int r = nColor & 0xFF;
   int g = (nColor >> 8) & 0xFF;
@@ -94,9 +127,20 @@ HB_FUNC(SWIFTLABELSETCOLOR) {
   NSString *className = @"SwiftFive.SwiftLabelLoader";
   Class swiftClass = NSClassFromString(className);
 
-  if (swiftClass &&
-      [swiftClass respondsToSelector:@selector(setLabelTextColor:)]) {
-    [swiftClass performSelector:@selector(setLabelTextColor:)
-                     withObject:hexColor];
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setLabelTextColor:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&hexColor atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
+    }
   }
 }

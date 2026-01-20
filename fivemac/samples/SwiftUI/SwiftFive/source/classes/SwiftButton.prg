@@ -19,6 +19,8 @@ CLASS TSwiftButton FROM TControl
     METHOD SetColor( nFgColor, nBgColor )
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
+    DATA lGlass
+    METHOD SetGlass( lGlass )
 
 ENDCLASS
 
@@ -52,19 +54,25 @@ return nil
 
 METHOD SetColor( nFgColor, nBgColor ) CLASS TSwiftButton
     if nBgColor != nil
-    SWIFTBTNSETBGCOLOR( nBgColor )
+    SWIFTBTNSETBGCOLOR( nBgColor, ::nIndex )
     endif
     if nFgColor != nil
-    SWIFTBTNSETFGCOLOR( nFgColor )
+    SWIFTBTNSETFGCOLOR( nFgColor, ::nIndex )
     endif
 return nil
 
 METHOD SetRadius( nRadius ) CLASS TSwiftButton
-    SWIFTBTNSETRADIUS( nRadius )
+    SWIFTBTNSETRADIUS( nRadius, ::nIndex )
 return nil
 
 METHOD SetPadding( nPadding ) CLASS TSwiftButton
-    SWIFTBTNSETPADDING( nPadding )
+    SWIFTBTNSETPADDING( nPadding, ::nIndex )
+return nil
+
+METHOD SetGlass( lGlass ) CLASS TSwiftButton
+    DEFAULT lGlass := .T.
+    ::lGlass := lGlass
+    SWIFTBTNSETGLASS( lGlass, ::nIndex )
 return nil
 
 // Called from C callback
