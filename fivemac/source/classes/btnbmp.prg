@@ -13,10 +13,10 @@ CLASS TBtnBmp FROM TControl
 
 
    CLASSDATA  aProps INIT { "nTop", "nLeft", "nWidth", "nHeight", "cFileName",;
-   	                        "cText", "cVarName", "nAutoResize", "lPressed", "nType" }
+      "cText", "cVarName", "nAutoResize", "lPressed", "nType" }
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bAction, cFileName, nStyle,;
-               cToolTip, nAutoResize, cVarName, cOnclick, cLayout )
+      cToolTip, nAutoResize, cVarName, cOnclick, cLayout )
    
    METHOD cGenPrg()
    
@@ -35,7 +35,7 @@ CLASS TBtnBmp FROM TControl
    METHOD SetText( cText ) INLINE BtnSetText( ::hWnd, cText )
    
    METHOD _cFileName( cFileName ) INLINE ;
-                      ::__cFileName := cFileName, ::SetFileName( cFileName )
+      ::__cFileName := cFileName, ::SetFileName( cFileName )
    
    METHOD cFileName() INLINE ::__cFileName
    
@@ -51,12 +51,17 @@ CLASS TBtnBmp FROM TControl
 
    METHOD Disable() INLINE BtnSetEnabled(::hWnd,.f.)
 
+   METHOD SetGlass( lOnOff ) INLINE If( lOnOff, BtnSetGlass( ::hWnd ),)
+
+   METHOD SetBezelColor( nRed, nGreen, nBlue, nAlpha ) INLINE ;
+      BtnSetBezelColor( ::hWnd, nRed, nGreen, nBlue, nAlpha )
+
 ENDCLASS
 
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bAction, cFileName, nStyle,;
-            cToolTip, nAutoResize, cVarName, cOnclick, cLayout ) CLASS TBtnBmp
+      cToolTip, nAutoResize, cVarName, cOnclick, cLayout ) CLASS TBtnBmp
 
    DEFAULT nWidth := 50, nHeight := 50, oWnd := GetWndDefault()
    DEFAULT nAutoResize := 0
@@ -65,20 +70,20 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bAction, cFileName, nStyle,;
    ::oWnd    = oWnd
    ::bAction = bAction
 
-    if ! Empty( cOnClick )
-      ::SetEventCode( "OnClick", cOnClick )
+   if ! Empty( cOnClick )
+   ::SetEventCode( "OnClick", cOnClick )
    endif
 
    if ! Empty( cFileName )
-      ::cFileName = cFileName
+   ::cFileName = cFileName
    endif   
     
    if ! Empty( nStyle )
-  		::SetBezelStyle( nStyle )
+   ::SetBezelStyle( nStyle )
    endif 
    
    if ! Empty( cToolTip )
-      ::SetToolTip( cToolTip )
+   ::SetToolTip( cToolTip )
    endif
    
    ::nAutoResize = nAutoResize
@@ -98,47 +103,49 @@ return Self
 METHOD cGenPrg() CLASS TBtnBmp
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " BTNBMP " + ::cVarName + ;
-                  " ;" + CRLF + '      FILENAME "' + ::cFileName + '"' + ;
-                  " ;" + CRLF + "      SIZE " + ;
-                  AllTrim( Str( ::nWidth ) ) + ", " + ;
-                  AllTrim( Str( ::nHeight ) ) 
-    
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " BTNBMP " + ::cVarName + ;
+      " ;" + CRLF + '      FILENAME "' + ::cFileName + '"' + ;
+      " ;" + CRLF + "      SIZE " + ;
+      AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) ) 
+                  
    local cEventCode := ::GetEventCode( "OnClick" )    
        
    if ! Empty( cEventCode )
-      cCode += " ACTION " + cEventCode
-   endif   
-                  
-   if ::nAutoResize != 0                  
-      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
-   endif            
-                              
-return cCode                                
+   cCode += " ACTION " + cEventCode
+   endif     
+                      
+   if ::nAutoResize != 0
+   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
+   endif
+
+return cCode
 
 //----------------------------------------------------------------------------//
 
 METHOD Click() CLASS TBtnBmp
 
-  // if ! Empty( ::GetEventCode( "OnClick" ) )
-  //    Eval( ::GetEventBlock( "OnClick" ), Self )
-  // else
-      if ::bAction != nil
-         if ValType( ::bAction ) == "C"
-            Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
-         else
-            Eval( ::bAction, Self )
-         endif
-      endif
- //  endif
-          
-return nil 
+   //  if ! Empty( ::GetEventCode( "OnClick" ) )
+   //     Eval( ::GetEventBlock( "OnClick" ),  Self )
+   //  else
+ 
+   IF ::bAction != nil
+   if  valtype(::bAction)== "C"
+   Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
+   else
+   Eval( ::bAction, Self )
+   endif
+   ENDIF
+     
+   //  endif 
+       
+return nil  
 
 //----------------------------------------------------------------------------//
 
-METHOD SetBmpPosition( cLayout ) CLASS TBtnBmp
-/*
+METHOD SetBmpPosition( nLayout ) CLASS TBtnBmp
+   /*
 NSNoImage        = 0,
 NSImageOnly      = 1,
 NSImageLeft      = 2,
@@ -148,13 +155,12 @@ NSImageAbove     = 5,
 NSImageOverlaps  = 6
 */
 
-if Valtype(cLayout) == "N"
-   ::nLayout := cLayout
-else
-   ::nLayout   = AScan( aLayouts, cLayout )
-endif
+   if valtype( nLayout ) == "N"
+   ::nLayout := nLayout
+   else
+   ::nLayout   = AScan( aLayouts, nLayout )
+   endif
 
-BTNSETIMAGENPOSITION( ::hWnd, ::nLayout )
+   BtnSetImagenPosition( ::hWnd, ::nLayout )
 
-Return nil
-
+return nil

@@ -184,3 +184,26 @@ HB_FUNC(BTNSETTOOLTIP) {
 
   [button setToolTip:string];
 }
+
+HB_FUNC(BTNSETGLASS) {
+  NSButton *button = (NSButton *)hb_parnll(1);
+  if (button) {
+    // NSBezelStyleTexturedRounded (11) is the modern equivalent for glass look
+    [button setBezelStyle:11];
+    if (@available(macOS 10.12.2, *)) {
+      [button setBezelColor:[[NSColor systemBlueColor]
+                                colorWithAlphaComponent:0.8]];
+    }
+  }
+}
+
+HB_FUNC(BTNSETBEZELCOLOR) {
+  NSButton *button = (NSButton *)hb_parnll(1);
+  if (button && @available(macOS 10.12.2, *)) {
+    NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
+                                               green:hb_parnd(3) / 255.0
+                                                blue:hb_parnd(4) / 255.0
+                                               alpha:hb_parnd(5)];
+    [button setBezelColor:color];
+  }
+}

@@ -43,13 +43,24 @@ HB_FUNC(SAYSETTEXT) {
 }
 
 HB_FUNC(SETTEXTCOLOR) {
-  NSTextField *say = (NSTextField *)hb_parnll(1);
+  NSView *view = (NSView *)hb_parnll(1);
   NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
                                              alpha:(hb_parnl(5) / 100.0)];
 
-  [say setTextColor:color];
+  if ([view isKindOfClass:[NSTextField class]]) {
+    [(NSTextField *)view setTextColor:color];
+  } else if ([view isKindOfClass:[NSButton class]]) {
+    NSButton *button = (NSButton *)view;
+    NSMutableAttributedString *attrTitle = [[NSMutableAttributedString alloc]
+        initWithAttributedString:[button attributedTitle]];
+    [attrTitle addAttribute:NSForegroundColorAttributeName
+                      value:color
+                      range:NSMakeRange(0, [attrTitle length])];
+    [button setAttributedTitle:attrTitle];
+    [attrTitle release];
+  }
 }
 
 HB_FUNC(SETBKCOLOR) {

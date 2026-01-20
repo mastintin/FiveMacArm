@@ -46,7 +46,7 @@ CLASS TButton FROM TControl
    DATA   nAlignText
    
    METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nStyle,;
-               nType, cBmp, nAutoResize, cToolTip, cVarName, cOnclick )
+      nType, cBmp, nAutoResize, cToolTip, cVarName, cOnclick )
 
    METHOD Redefine( nId, oWnd, bAction )
 
@@ -78,11 +78,11 @@ CLASS TButton FROM TControl
 
    METHOD SetFocus() INLINE btnSetFocus( ::oWnd:hWnd, ::hWnd )
 
-  METHOD SetDefault() INLINE BTNSETDEFAULT( ::oWnd:hWnd, ::hWnd )
+   METHOD SetDefault() INLINE BTNSETDEFAULT( ::oWnd:hWnd, ::hWnd )
 
 
 
-  // METHOD SetFocus() INLINE ::oWnd:SetFocus()
+   // METHOD SetFocus() INLINE ::oWnd:SetFocus()
 
    METHOD Enable() INLINE BtnSetEnabled(::hWnd,.t.)
 
@@ -94,39 +94,44 @@ CLASS TButton FROM TControl
 
    METHOD setHighlight( lhighlight) INLINE BtnSetHighLight(::hWnd, lhighlight )
 
+   METHOD SetGlass( lOnOff ) INLINE If( lOnOff, BtnSetGlass( ::hWnd ),)
+
+   METHOD SetBezelColor( nRed, nGreen, nBlue, nAlpha ) INLINE ;
+      BtnSetBezelColor( ::hWnd, nRed, nGreen, nBlue, nAlpha )
+
 ENDCLASS
 
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nStyle,;
-            nType, cBmp, nAutoResize, cToolTip, cVarName, cOnclick ) CLASS TButton
+      nType, cBmp, nAutoResize, cToolTip, cVarName, cOnclick ) CLASS TButton
 
    DEFAULT nWidth := 90, nHeight := 30, oWnd := GetWndDefault(),;
-           cPrompt := "button", nAutoResize := 0
+      cPrompt := "button", nAutoResize := 0
 
    ::hWnd = BtnCreate( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd )
 
    if ! Empty( nStyle )
-        ::SetBezelStyle( nStyle )
+   ::SetBezelStyle( nStyle )
    endif
 
    if ! Empty( ntype )
-        ::SetType( nType )
+   ::SetType( nType )
    endif
 
    if ! Empty( cBmp )
-      ::SetFileName( cBmp )
+   ::SetFileName( cBmp )
    endif
 
    if ! Empty( cTooltip )
-      ::SetToolTip( cToolTip )
+   ::SetToolTip( cToolTip )
    endif
 
    ::oWnd    = oWnd
    ::bAction = bAction
    
    if ! Empty( cOnClick )
-      ::SetEventCode( "OnClick", cOnClick )
+   ::SetEventCode( "OnClick", cOnClick )
    endif
    
    ::nAutoResize = nAutoResize
@@ -158,21 +163,21 @@ return Self
 METHOD cGenPrg() CLASS TButton
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " BUTTON " + ::cVarName + ;
-                  ' PROMPT "' + ::GetText() + '" OF ' + ::oWnd:cVarName + ;
-                  " ;" + CRLF + "      SIZE " + ;
-                  AllTrim( Str( ::nWidth ) ) + ", " + ;
-                  AllTrim( Str( ::nHeight ) ) 
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " BUTTON " + ::cVarName + ;
+      ' PROMPT "' + ::GetText() + '" OF ' + ::oWnd:cVarName + ;
+      " ;" + CRLF + "      SIZE " + ;
+      AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) ) 
                   
    local cEventCode := ::GetEventCode( "OnClick" )    
        
    if ! Empty( cEventCode )
-      cCode += " ACTION " + cEventCode
+   cCode += " ACTION " + cEventCode
    endif     
                        
-  if ::nAutoResize != 0
-      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
+   if ::nAutoResize != 0
+   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
    endif
 
 return cCode
@@ -181,20 +186,20 @@ return cCode
 
 METHOD Click() CLASS TButton
 
- //  if ! Empty( ::GetEventCode( "OnClick" ) )
- //     Eval( ::GetEventBlock( "OnClick" ),  Self )
- //  else
+   //  if ! Empty( ::GetEventCode( "OnClick" ) )
+   //     Eval( ::GetEventBlock( "OnClick" ),  Self )
+   //  else
  
-     IF ::bAction != nil
-       if  valtype(::bAction)== "C"
-          MsgInfo( ::bAction )
-          Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
-       else
-          Eval( ::bAction, Self )
-       endif
-     ENDIF
+   IF ::bAction != nil
+   if  valtype(::bAction)== "C"
+   MsgInfo( ::bAction )
+   Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
+   else
+   Eval( ::bAction, Self )
+   endif
+   ENDIF
      
- //  endif 
+   //  endif 
        
 return nil  
 
@@ -205,11 +210,11 @@ METHOD Initiate() CLASS TButton
    local hWnd := BtnResCreate( ::oWnd:hWnd, ::nId )
 
    if hWnd != 0
-      ::hWnd = hWnd
+   ::hWnd = hWnd
    else
-      MsgAlert( "Non defined ID " + ;
-                AllTrim( Str( ::nId ) ) + ;
-                " in resource " + ::oWnd:cNibName )
+   MsgAlert( "Non defined ID " + ;
+      AllTrim( Str( ::nId ) ) + ;
+      " in resource " + ::oWnd:cNibName )
    endif
 
 return nil

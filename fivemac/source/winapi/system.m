@@ -22,7 +22,22 @@ HB_FUNC(APPPATH) {
 HB_FUNC(RESPATH) {
   NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
 
-  hb_retc([bundlePath cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (hb_pcount() > 0) {
+    NSString *fileName = hb_NSSTRING_par(1);
+    NSString *fullPath = [bundlePath stringByExpandingTildeInPath];
+    NSString *testPath = [fullPath stringByAppendingPathComponent:fileName];
+
+    if ([[NSFileManager defaultManager] fileExistsAtPath:testPath]) {
+      hb_retc([testPath cStringUsingEncoding:NSUTF8StringEncoding]);
+    } else {
+      // Try in bitmaps/ subfolder common in FiveMac
+      testPath = [bundlePath stringByAppendingPathComponent:@"bitmaps"];
+      testPath = [testPath stringByAppendingPathComponent:fileName];
+      hb_retc([testPath cStringUsingEncoding:NSUTF8StringEncoding]);
+    }
+  } else {
+    hb_retc([bundlePath cStringUsingEncoding:NSUTF8StringEncoding]);
+  }
 }
 
 HB_FUNC(CURRENTPATH) {

@@ -791,6 +791,65 @@ HB_FUNC(WNDSETBRUSH) {
   }
 }
 
+HB_FUNC(WNDSETGLASS) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  if (window) {
+    [window setOpaque:NO];
+    [window setBackgroundColor:[NSColor clearColor]];
+
+    // Modern macOS Translucency properties
+    [window setTitlebarAppearsTransparent:YES];
+    [window
+        setStyleMask:[window styleMask] |
+                     32768]; // NSWindowStyleMaskFullSizeContentView = 1 << 15
+    [window setHasShadow:YES];
+
+    NSView *contentView = [window contentView];
+
+    // Check if glass already exists
+    for (NSView *sub in contentView.subviews) {
+      if ([sub.identifier isEqualToString:@"WindowGlass"]) {
+        return;
+      }
+    }
+
+    NSView *glassView = nil;
+
+    if ([NSGlassEffectView class]) {
+      NSGlassEffectView *gView =
+          [[NSGlassEffectView alloc] initWithFrame:contentView.bounds];
+      gView.style = NSGlassEffectViewStyleRegular;
+      glassView = gView;
+      [contentView addSubview:glassView
+                   positioned:NSWindowBelow
+                   relativeTo:nil];
+
+    } else {
+      NSVisualEffectView *vView =
+          [[NSVisualEffectView alloc] initWithFrame:contentView.bounds];
+      vView.identifier = @"WindowGlass";
+      vView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+
+      // Use a material that is more vibrant for window backgrounds
+      if (@available(macOS 10.14, *)) {
+        vView.material = NSVisualEffectMaterialUnderWindowBackground;
+      } else {
+        vView.material = NSVisualEffectMaterialWindowBackground;
+      }
+
+      vView.blendingMode = NSVisualEffectBlendingModeBehindWindow;
+      vView.state = NSVisualEffectStateActive;
+      glassView = vView;
+
+      [contentView addSubview:glassView
+                   positioned:NSWindowBelow
+                   relativeTo:nil];
+    }
+
+    [glassView release];
+  }
+}
+
 HB_FUNC(WNDSETBKGCOLOR) // hWnd, r, g, b, alpha
 {
   NSWindow *window = (NSWindow *)hb_parnll(1);
