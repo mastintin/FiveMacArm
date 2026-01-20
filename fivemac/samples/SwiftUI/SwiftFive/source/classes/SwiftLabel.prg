@@ -1,6 +1,8 @@
 #include "FiveMac.ch"
 #include "SwiftControls.ch"
 
+static aSwiftLabels := {}
+
 CLASS TSwiftLabel FROM TControl
 
     DATA nIndex
@@ -18,8 +20,12 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftLabel
 
     ::oWnd    = oWnd
     ::nId     = ::GetCtrlIndex()
+    
+    AAdd( aSwiftLabels, Self )
+    ::nIndex = Len( aSwiftLabels )
    
-    ::hWnd = SWIFTLABELCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd )
+    // Pass ::nIndex (Param 7)
+    ::hWnd = SWIFTLABELCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nIndex )
 
     oWnd:AddControl( Self )
 
@@ -27,16 +33,14 @@ return Self
 
 METHOD SetText( cText ) CLASS TSwiftLabel
    
-    // Reuse the existing generic label updater for now
-    // In future we might want instance-specific updating if we store the hosting controller
-    SwiftUpdateLabel( "SwiftFive.SwiftLabelLoader", cText )
+    SwiftUpdateLabel( "SwiftFive.SwiftLabelLoader", cText, ::nIndex )
 
 return nil
 
 METHOD SetFont( nSize ) CLASS TSwiftLabel
-    SWIFTLABELSETFONT( nSize )
+    SWIFTLABELSETFONT( nSize, ::nIndex )
 return nil
 
 METHOD SetColor( nColor ) CLASS TSwiftLabel
-    SWIFTLABELSETCOLOR( nColor )
+    SWIFTLABELSETCOLOR( nColor, ::nIndex )
 return nil

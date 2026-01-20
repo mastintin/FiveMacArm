@@ -7,7 +7,8 @@ HB_FUNC(SWIFTBTNCREATE) {
   CGFloat nHeight = (CGFloat)hb_parnd(4);
   NSString *cPrompt = hb_NSSTRING_par(5);
   NSWindow *window = (NSWindow *)hb_parnl(6);
-  int nIndex = hb_parni(7); // Receive the Index in aSwiftButtons
+  NSInteger nIndex =
+      (NSInteger)hb_parni(7); // Receive the Index in aSwiftButtons
 
   // Class name hardcoded or passed? We use specific loader.
   NSString *className = @"SwiftFive.SwiftButtonLoader";
@@ -25,7 +26,7 @@ HB_FUNC(SWIFTBTNCREATE) {
       if (pDynSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
         hb_vmPushNil();
-        hb_vmPushInteger(nIndex);
+        hb_vmPushInteger((int)nIndex);
         hb_vmDo(1);
       }
     });
@@ -78,50 +79,125 @@ NSString *HexColorFromHarbour(long nColor) {
 
 HB_FUNC(SWIFTBTNSETBGCOLOR) {
   long nColor = hb_parnl(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
   NSString *hexColor = HexColorFromHarbour(nColor);
 
   NSString *className = @"SwiftFive.SwiftButtonLoader";
   Class swiftClass = NSClassFromString(className);
-  if (swiftClass &&
-      [swiftClass respondsToSelector:@selector(setButtonBackgroundColor:)]) {
-    [swiftClass performSelector:@selector(setButtonBackgroundColor:)
-                     withObject:hexColor];
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setButtonBackgroundColor:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&hexColor atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
+    }
   }
 }
 
 HB_FUNC(SWIFTBTNSETFGCOLOR) {
   long nColor = hb_parnl(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
   NSString *hexColor = HexColorFromHarbour(nColor);
 
   NSString *className = @"SwiftFive.SwiftButtonLoader";
   Class swiftClass = NSClassFromString(className);
-  if (swiftClass &&
-      [swiftClass respondsToSelector:@selector(setButtonForegroundColor:)]) {
-    [swiftClass performSelector:@selector(setButtonForegroundColor:)
-                     withObject:hexColor];
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setButtonForegroundColor:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&hexColor atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
+    }
   }
 }
 
 HB_FUNC(SWIFTBTNSETRADIUS) {
   double nRadius = hb_parnd(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
 
   NSString *className = @"SwiftFive.SwiftButtonLoader";
   Class swiftClass = NSClassFromString(className);
-  if (swiftClass &&
-      [swiftClass respondsToSelector:@selector(setButtonCornerRadius:)]) {
-    [swiftClass performSelector:@selector(setButtonCornerRadius:)
-                     withObject:[NSNumber numberWithDouble:nRadius]];
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setButtonCornerRadius:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      NSNumber *numRad = [NSNumber numberWithDouble:nRadius];
+      [invocation setArgument:&numRad atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
+    }
   }
 }
 
 HB_FUNC(SWIFTBTNSETPADDING) {
   double nPadding = hb_parnd(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
 
   NSString *className = @"SwiftFive.SwiftButtonLoader";
   Class swiftClass = NSClassFromString(className);
-  if (swiftClass &&
-      [swiftClass respondsToSelector:@selector(setButtonPadding:)]) {
-    [swiftClass performSelector:@selector(setButtonPadding:)
-                     withObject:[NSNumber numberWithDouble:nPadding]];
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setButtonPadding:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      NSNumber *numPad = [NSNumber numberWithDouble:nPadding];
+      [invocation setArgument:&numPad atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
+    }
+  }
+}
+
+HB_FUNC(SWIFTBTNSETGLASS) {
+  BOOL isGlass = hb_parl(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
+
+  NSString *className = @"SwiftFive.SwiftButtonLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setButtonGlass:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&isGlass atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+
+      [invocation invoke];
+    }
   }
 }

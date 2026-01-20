@@ -18,6 +18,20 @@
     => ;
     [ <oSay> := ] TSwiftLabel():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cText>, <oWnd> )
 
+#xcommand @ <nRow>, <nCol> SWIFTSAY [ <oSay> PROMPT ] <cText> ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    => ;
+    [ <oSay> := ] TSwiftLabel():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cText>, <oWnd> )
+
+#xcommand @ <nRow>, <nCol> SWIFTGET [ <oGet> PROMPT ] <cText> ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    [ PLACEHOLDER <cPlaceholder> ] ;
+    [ ON CHANGE <uChange> ] ;
+    => ;
+    [ <oGet> := ] TSwiftTextField():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cText>, <cPlaceholder>, <oWnd>, [<uChange>] )
+
 #xcommand @ <nRow>, <nCol> SWIFTSLIDER [ <oSld> VAR ] <nVal> ;
     [ SIZE <nWidth>, <nHeight> ] ;
     [ OF <oWnd> ] ;

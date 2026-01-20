@@ -74,16 +74,16 @@ struct SwiftLabelView: View {
 @objc(SwiftLabelLoader)
 public class SwiftLabelLoader: NSObject {
     
-    // Simplistic approach: Keep track of the last created state to update it.
-    // In a real app with multiple labels, we'd need a map or ID system.
-    static var sharedState: Any? = nil
+    // Store states by Index (String for Hybrid Support)
+    static var states: [String: LabelState] = [:]
     
     @objc(makeLabelWithText:index:)
     public static func makeLabel(text: String, index: Int) -> NSView {
          if #available(OSX 10.15, *) {
              // Default state
             let state = LabelState(text: text, fontSize: 24.0, fontStyle: "", textColor: .black)
-            sharedState = state
+            let key = String(index)
+            states[key] = state
             
             let view = SwiftLabelView(state: state)
             
@@ -98,22 +98,24 @@ public class SwiftLabelLoader: NSObject {
         }
     }
     
-    @objc(updateLabel:)
-    public static func updateLabel(_ text: String) {
+    @objc(updateLabel:index:)
+    public static func updateLabel(_ text: String, index: Int) {
         if #available(OSX 10.15, *) {
+            let key = String(index)
             DispatchQueue.main.async {
-                if let state = sharedState as? LabelState {
+                if let state = states[key] {
                     state.text = text
                 }
             }
         }
     }
 
-    @objc(setLabelFontSize:)
-    public static func setLabelFontSize(_ size: Double) {
+    @objc(setLabelFontSize:index:)
+    public static func setLabelFontSize(_ size: Double, index: Int) {
         if #available(OSX 10.15, *) {
+            let key = String(index)
             DispatchQueue.main.async {
-                if let state = sharedState as? LabelState {
+                if let state = states[key] {
                     state.fontSize = CGFloat(size)
                     state.fontStyle = "" // Clear style to usage size
                 }
@@ -121,22 +123,24 @@ public class SwiftLabelLoader: NSObject {
         }
     }
 
-    @objc(setLabelFontStyle:)
-    public static func setLabelFontStyle(_ style: String) {
+    @objc(setLabelFontStyle:index:)
+    public static func setLabelFontStyle(_ style: String, index: Int) {
         if #available(OSX 10.15, *) {
+            let key = String(index)
             DispatchQueue.main.async {
-                if let state = sharedState as? LabelState {
+                if let state = states[key] {
                     state.fontStyle = style
                 }
             }
         }
     }
 
-    @objc(setLabelTextColor:)
-    public static func setLabelTextColor(_ colorHex: String) {
+    @objc(setLabelTextColor:index:)
+    public static func setLabelTextColor(_ colorHex: String, index: Int) {
         if #available(OSX 10.15, *) {
+            let key = String(index)
             DispatchQueue.main.async {
-                if let state = sharedState as? LabelState {
+                if let state = states[key] {
                     state.textColor = Color(hex: colorHex)
                 }
             }

@@ -307,10 +307,11 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 SWIFT_CLASS_NAMED("SwiftButtonLoader")
 @interface SwiftButtonLoader : NSObject
 + (NSView * _Nonnull)makeButtonWithTitle:(NSString * _Nonnull)title index:(NSInteger)index callback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
-+ (void)setButtonBackgroundColor:(NSString * _Nonnull)colorHex;
-+ (void)setButtonForegroundColor:(NSString * _Nonnull)colorHex;
-+ (void)setButtonCornerRadius:(double)radius;
-+ (void)setButtonPadding:(double)padding;
++ (void)setButtonBackgroundColor:(NSString * _Nonnull)colorHex index:(NSInteger)index;
++ (void)setButtonForegroundColor:(NSString * _Nonnull)colorHex index:(NSInteger)index;
++ (void)setButtonCornerRadius:(double)radius index:(NSInteger)index;
++ (void)setButtonPadding:(double)padding index:(NSInteger)index;
++ (void)setButtonGlass:(BOOL)isGlass index:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -338,10 +339,10 @@ SWIFT_CLASS_NAMED("SwiftImageLoader")
 SWIFT_CLASS_NAMED("SwiftLabelLoader")
 @interface SwiftLabelLoader : NSObject
 + (NSView * _Nonnull)makeLabelWithText:(NSString * _Nonnull)text index:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
-+ (void)updateLabel:(NSString * _Nonnull)text;
-+ (void)setLabelFontSize:(double)size;
-+ (void)setLabelFontStyle:(NSString * _Nonnull)style;
-+ (void)setLabelTextColor:(NSString * _Nonnull)colorHex;
++ (void)updateLabel:(NSString * _Nonnull)text index:(NSInteger)index;
++ (void)setLabelFontSize:(double)size index:(NSInteger)index;
++ (void)setLabelFontStyle:(NSString * _Nonnull)style index:(NSInteger)index;
++ (void)setLabelTextColor:(NSString * _Nonnull)colorHex index:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -370,6 +371,14 @@ SWIFT_CLASS_NAMED("SwiftTabViewLoader")
 + (void)addTabWithIndex:(NSInteger)index title:(NSString * _Nonnull)title icon:(NSString * _Nonnull)icon;
 + (NSView * _Nonnull)makeTabView SWIFT_WARN_UNUSED_RESULT;
 + (void)clearTabs;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+SWIFT_CLASS_NAMED("SwiftTextFieldLoader")
+@interface SwiftTextFieldLoader : NSObject
++ (NSView * _Nonnull)makeTextFieldWithText:(NSString * _Nonnull)text placeholder:(NSString * _Nonnull)placeholder id:(NSString * _Nonnull)id index:(NSInteger)index callback:(void (^ _Nonnull)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)setText:(NSString * _Nonnull)text index:(NSInteger)index;
++ (NSString * _Nonnull)getTextFromIndex:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -411,6 +420,14 @@ SWIFT_CLASS_NAMED("SwiftZStackLoader")
 + (void)setForegroundColorRed:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
 + (void)removeAllItems;
 + (NSString * _Nonnull)addBatchToParent:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json SWIFT_WARN_UNUSED_RESULT;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+SWIFT_CLASS_NAMED("ViewRegistry") SWIFT_AVAILABILITY(macos,introduced=10.15)
+@interface ViewRegistry : NSObject
++ (void)registerObject:(id _Nonnull)object forIndex:(NSInteger)index;
++ (id _Nullable)getObject:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
++ (void)clean:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
