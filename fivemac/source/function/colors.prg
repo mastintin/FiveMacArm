@@ -1,3 +1,5 @@
+#include "FiveMac.ch"
+
 function nRGB( nRed, nGreen, nBlue )
 return nRed + ( nGreen * 256 ) + ( nBlue * 65536 )
 
@@ -24,11 +26,9 @@ FUNCTION GetRgbaAll( nDecimal )
         GetAlphaFromRgba(nDecimal) ;
         }   
 
-Function nRGBAFromRGB(nRgb,nAlpha)  
-    local nDecimal 
+Function nRGBAFromRGB( nRgb, nAlpha )  
     DEFAULT nAlpha := 255 
-    nRgb +( nAlpha* 256^3)
-Return nDecimal   
+return nRgb + ( nAlpha * 16777216 )
 
 // max nColor Blanco 16777215
 // numeros superiores tienen Alpha 
