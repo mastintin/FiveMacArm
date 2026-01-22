@@ -19,15 +19,21 @@ CLASS TSwiftList FROM TSwiftVStack
     // Actually SWIFTVSTACKCREATE and SWIFTLISTCREATE are different,
     // but the subsequent AddItem/AddBatch bridges can be shared if they use the same Loader.
 
+    METHOD SelectIndex( nIndex )
+
+    METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha )
+
 ENDCLASS
 
-METHOD New( nRow, nCol, nWidth, nHeight, oWnd ) CLASS TSwiftList
 
-    DEFAULT nWidth := 200, nHeight := 200, oWnd := GetWndDefault()
+METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftList
+
+    DEFAULT nWidth := 200, nHeight := 200, oWnd := GetWndDefault(), nAutoResize := 0
 
     ::oWnd = oWnd
     
     ::nId = Len( aLists ) + 1
+    ::nIndex = ::nId
     AAdd( aLists, Self )
     ::hItems := {=>}
     ::aBatch := {}
@@ -36,6 +42,10 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd ) CLASS TSwiftList
 
     ::hWnd = SWIFTLISTCREATE( oWnd:hWnd, ::nId, nRow, nCol, nWidth, nHeight )
     
+    if nAutoResize != 0
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    endif
+
     oWnd:AddControl( Self )
 
 return Self
@@ -53,3 +63,15 @@ function SwiftListOnClick( nListIndex, nItemIndex )
     endif
 
 return nil
+
+METHOD SelectIndex( nIndex ) CLASS TSwiftList
+    SWIFTLISTSELECTINDEX( ::nId, nIndex )
+return nil
+
+METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftList
+    DEFAULT nRed := 0, nGreen := 0, nBlue := 0
+    DEFAULT nAlpha := 1.0
+    SWIFTLISTSETBGCOLOR( ::nId, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+return nil
+
+

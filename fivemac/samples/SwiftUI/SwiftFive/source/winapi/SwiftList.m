@@ -2,7 +2,17 @@
 
 HB_FUNC(SWIFTLISTCREATE) {
   NSWindow *window = (NSWindow *)hb_parnl(1);
-  int nIndex = hb_parni(2);
+  // Support for Hybrid ID (Int or String)
+  NSString *cId = nil;
+  int nIndex = 0;
+
+  if (HB_ISNUM(2)) {
+    nIndex = hb_parni(2);
+    cId = [NSString stringWithFormat:@"%d", nIndex];
+  } else if (HB_ISCHAR(2)) {
+    cId = hb_NSSTRING_par(2);
+    nIndex = [cId intValue]; // Try validation
+  }
 
   NSString *className = @"SwiftFive.SwiftListLoader";
   Class swiftClass = NSClassFromString(className);
@@ -16,10 +26,12 @@ HB_FUNC(SWIFTLISTCREATE) {
 
     [invocation setSelector:selector];
     [invocation setTarget:swiftClass];
-    [invocation setArgument:&nIndex atIndex:2];
+    // Pass String ID
+    [invocation setArgument:&cId atIndex:2];
 
     // Callback block for clicks (Legacy index-based)
-    void (^callback)(int) = ^(int index) {
+    // IMPORTANT: Swift Int is NSInteger (64-bit), not int (32-bit).
+    void (^callback)(NSInteger) = ^(NSInteger index) {
       PHB_DYNS pSym = hb_dynsymFindName("SWIFTLISTONCLICK");
       if (pSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pSym));
@@ -57,7 +69,7 @@ HB_FUNC(SWIFTLISTCREATE) {
         }
       };
 
-      SEL actionSelector = @selector(setActionCallback:);
+      SEL actionSelector = @selector(setActionCallback:callback:);
       if ([vstackClass respondsToSelector:actionSelector]) {
         NSMethodSignature *actionSig =
             [vstackClass methodSignatureForSelector:actionSelector];
@@ -65,7 +77,10 @@ HB_FUNC(SWIFTLISTCREATE) {
             [NSInvocation invocationWithMethodSignature:actionSig];
         [actionInv setSelector:actionSelector];
         [actionInv setTarget:vstackClass];
-        [actionInv setArgument:&actionCallbackBlock atIndex:2];
+        // ARG 2: Root ID
+        [actionInv setArgument:&cId atIndex:2];
+        // ARG 3: Callback
+        [actionInv setArgument:&actionCallbackBlock atIndex:3];
         [actionInv invoke];
       }
     }
@@ -83,5 +98,58 @@ HB_FUNC(SWIFTLISTCREATE) {
     }
   } else {
     hb_retnl(0);
+  }
+}
+
+HB_FUNC(SWIFTLISTSELECTINDEX) {
+  NSString *id = [NSString stringWithFormat:@"%ld", (long)hb_parnl(1)];
+  int index = hb_parni(2);
+
+  Class cls = NSClassFromString(@"SwiftFive.SwiftListLoader");
+  if (cls) {
+    // signature: selectIndex:index:
+    SEL selector = @selector(selectIndex:index:);
+    if ([cls respondsToSelector:selector]) {
+      NSMethodSignature *signature = [cls methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:cls];
+      [invocation setArgument:&id atIndex:2];
+      [invocation setArgument:&index atIndex:3];
+      [invocation invoke];
+    }
+  }
+}
+
+HB_FUNC(SWIFTLISTSETBGCOLOR) { // (rootId, r, g, b, a)
+  NSString *rootId = [NSString stringWithFormat:@"%ld", (long)hb_parnl(1)];
+  double red = hb_parnd(2);
+  double green = hb_parnd(3);
+  double blue = hb_parnd(4);
+  double alpha = hb_parnd(5);
+
+  NSString *className = @"SwiftFive.SwiftListLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = @selector(setBackgroundColorRed:red:green:blue:alpha:);
+    NSMethodSignature *signature =
+        [swiftClass methodSignatureForSelector:selector];
+
+    if (signature) {
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&red atIndex:3];
+      [invocation setArgument:&green atIndex:4];
+      [invocation setArgument:&blue atIndex:5];
+      [invocation setArgument:&alpha atIndex:6];
+
+      [invocation invoke];
+    }
   }
 }
