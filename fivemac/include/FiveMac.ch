@@ -261,7 +261,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    <oWnd>, bSETGET(<uVar>), [\{||(<uValid>)\}],;
    <.update.>, <.password.> ,<.lsearch.>, [{|Self|<uChange>}],;
    <.lrounded.>, [<cToolTip>], [<nAutoResize>], [<(oGet)>], [<cPicture>] ) ;
-   ; If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), )
+   ; [ If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
 
 
 
@@ -285,7 +285,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    <oWnd>, bSETGET(<uVar>), [\{||(<uValid>)\}],;
    <.update.>, <.password.> ,<.lsearch.>, [{|Self|<uChange>}],;
    <.lrounded.>, [<cToolTip>], [<nAutoResize>], [<(oGet)>], [<cPicture>],,<.lUtf.> ) ;
-   ; If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), )
+   ; [ If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
 
 #xcommand @ <nRow>, <nCol> FMGET [ <oGet> VAR ] <uVar> ;
    [ OF <oWnd> ] ;
@@ -299,7 +299,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <oGet> := ] TFMGet():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    <oWnd>, bSETGET(<uVar>), [\{|Self|(<uValid>)\}],;
    [{|Self|<uChange>}], [\{|c,o|(<uInc>)\}], [<cPicture>] ) ;
-   ; If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), )
+   ; [ If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
 		                                   
 #xcommand REDEFINE GET [ <oGet> VAR ] <uVar> ;
    [ ID <nId> ] ;
@@ -364,7 +364,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <oSay> := ] TSay():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    <oWnd>, <cText>, <.raised.>, [ Upper(<(cPostext)>) ],;
    [<nAutoResize>], [<cToolTip>], [<(oSay)>],, ,[<cPicture>] ) ;
-   ; If( <.liquid.>, <oSay>:SetLiquidGlass( .T. ), )
+   ; [ If( <.liquid.>, <oSay>:SetLiquidGlass( .T. ), ) ]
     
                 
 #xcommand @ <nRow>, <nCol> HIPERLINK [ <oSay> PROMPT ] <cText> ;
@@ -461,12 +461,13 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <update: UPDATE> ] ;
    [ AUTORESIZE <nAutoResize> ] ;
+   [ SWITCH <lSwitch> ] ;
    [ PIXEL ] ;
    => ;
    [ <oChk> := ] TCheckBox():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    [<oWnd>], bSETGET(<lVar>), [<cPrompt>],;
    [\{| lChecked, Self | <uAction> \}],;
-   <.update.>, <nAutoResize>, [<(oChk)>], [<(uAction)>] )
+   <.update.>, <nAutoResize>, [<(oChk)>], [<(uAction)>], <lSwitch> )
 		           
 #xcommand REDEFINE CHECKBOX [ <oChk> VAR ] <lVar> ;
    [ ID <nId> ] ;
@@ -662,7 +663,16 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [\{||(<uAction>)\}], < nValue> )   
               
 //----------------------------------------------------------------------------//
-                                                                      
+                                    
+#xcommand @ <nRow>, <nCol> PANEL [ <oPanel> ] ;
+   [ OF <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ AUTORESIZE <nAutoResize> ] ;
+   => ;
+   [ <oPanel> := ] TPanel():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd> ) ;
+   [; <oPanel>:nAutoResize := <nAutoResize> ]
+
+//----------------------------------------------------------------------------//                                  
 #xcommand @ <nRow>, <nCol> SEGMENTBTN [ <oBtn> ] ;
    [ OF <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
@@ -839,3 +849,12 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 
 //--------------------------------------------------------------------------//
 #endif
+
+//----------------------------------------------------------------------------//
+
+#xcommand @ <nWidth> SIDEBAR [ <oSidebar> ] ;
+   [ OF <oWnd> ] ;
+   => ;
+   [ <oSidebar> := ] TSidebar():New( <nWidth>, <oWnd> )
+
+//----------------------------------------------------------------------------//

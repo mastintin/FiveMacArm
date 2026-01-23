@@ -71,6 +71,7 @@ PRG_OBJS = \
   	./obj/picture.o \
   	./obj/printer.o \
 	./obj/pdfview.o	\
+	./obj/panel.o	\
 	./obj/pdmenu.o	\
   	./obj/plist.o	\
 	./obj/progres.o \
@@ -141,6 +142,7 @@ C_OBJS = ./objc/browses.o	\
 	./objc/objc.o \
 	./objc/or.o	\
 	./objc/outlines.o	\
+	./objc/panels.o	\
   	./objc/pdfviews.o \
   	./objc/popover.o \
 	./objc/preferences.o	\
