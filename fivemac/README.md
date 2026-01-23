@@ -82,6 +82,14 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **TSwiftList**: Simplified root list control that inherits from `TSwiftVStack`, optimized for high-performance data display using the new Batch API.
 - **Unified Action Bridge**: Centralized the `SwiftOnAction` callback mechanism to handle all button and interaction events across different Swift views, improving reliability and simplifying registration.
 
+### Glass Window & Sidebar Support (January 2026 - Part 9)
+- **Glass Effect**: Added full support for modern macOS "Glass" windows (translucent title bars and sidebars).
+    - **TWindow**: New property `lGlass` enables the `NSWindowStyleMaskFullSizeContentView` and transparent title bar style.
+    - **WNDGETGLASS**: New C function to query the Glass state of any window handle.
+- **TSidebar**: New dedicated class in `panel.prg` for building standard macOS sidebars. Inherits from `TPanel` but optimized for full-height, translucent "Vibrancy" effects.
+- **Shadow Fix**: Resolved a critical crash when using `SetShadow()` on `NSView` subclasses (like Panels). Moved the safe implementation to `TControl`, ensuring all custom views can have shadows without conflicting with `TWindow`'s shadow logic.
+- **Library Stability**: Fixed compilation issues in `FiveMac.ch` related to optional command clauses, ensuring robust builds.
+
 ## Building
 
 To build the library and samples:
