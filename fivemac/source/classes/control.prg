@@ -61,6 +61,11 @@ CLASS TControl FROM TWindow
    METHOD Hide() INLINE ViewHide( ::hWnd )
 
    METHOD Show() INLINE ViewShow( ::hWnd )
+
+   METHOD SetShadow( nOpacity, nRadius, nOffSetW, nOffSetH ) INLINE ;
+         PanelSetShadow( ::hWnd, If( nOpacity == nil, 50, nOpacity ),;
+         If( nRadius == nil, 5, nRadius ), If( nOffSetW == nil, 0, nOffSetW ),;
+      If( nOffSetH == nil, 0, nOffSetH ) )
       
 ENDCLASS
 
