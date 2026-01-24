@@ -33,13 +33,13 @@ function MenuEnd()
    local oMenu := ATail( aMenus )
 
    if Len( aMenus ) > 1
-      ASize( aMenus, Len( aMenus ) - 1 )
-      ATail( aMenus ):SetSubMenu( oMenu )
+   ASize( aMenus, Len( aMenus ) - 1 )
+   ATail( aMenus ):SetSubMenu( oMenu )
    else
-      if ! ATail( aMenus ):lPopup 
-         ATail( aMenus ):Activate() 
-      endif     
-      aMenus = {}
+   if ! ATail( aMenus ):lPopup 
+   ATail( aMenus ):Activate() 
+   endif     
+   aMenus = {}
    endif   
 
 return nil
@@ -48,12 +48,18 @@ return nil
 
 function ShowPopupMenu( oMenu, oWnd, nRow, nCol )
 
-  oWnd:oPopup = oMenu
-  
-  PopMnuShow( oMenu:hMenu, oWnd:hWnd,;
-              If( oWnd:lFlipped, oWnd:nHeight - nRow, nRow ), nCol )
+   if oWnd == nil
+   oWnd = GetWndDefault()
+   endif 
+   
+   if oWnd != nil .and. oMenu != nil
+   oWnd:oPopup = oMenu
+      
+   PopMnuShow( oMenu:hMenu, oWnd:hWnd,;
+      If( oWnd:lFlipped, oWnd:nHeight - nRow, nRow ), nCol )
 
-  oWnd:oPopup = nil
+   oWnd:oPopup = nil
+   endif
 
 return nil
 

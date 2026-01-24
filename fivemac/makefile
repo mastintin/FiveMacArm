@@ -8,8 +8,8 @@ FRAMEPATH=$(SDKPATH)/System/Library/Frameworks
 
 # Flags
 # Using 10.13 as a reasonable minimum for modern builds, or stick to what works for the user. 
-# The previous valid one was 10.12.
-MIN_VER=-mmacosx-version-min=10.12
+# The previous valid one was 10.15.
+MIN_VER=-mmacosx-version-min=10.15
 CFLAGS=$(MIN_VER)
 CVFLAGS=$(MIN_VER)
 CC=clang
@@ -37,6 +37,7 @@ PRG_OBJS = \
 	./obj/colors.o \
 	./obj/colorwell.o \
 	./obj/combobox.o \
+    ./obj/cvbrowse.o \
 	./obj/control.o	\
 	./obj/coverflow.o \
 	./obj/database.o \
@@ -94,6 +95,7 @@ PRG_OBJS = \
 	./obj/Tsound.o \
 	./obj/tabview.o \
 	./obj/tabItem.o \
+	./obj/stackitem.o \
         ./obj/tclipget.o \
         ./obj/textbox.o \
 	./obj/Ttimer.o	\
@@ -101,7 +103,9 @@ PRG_OBJS = \
 	./obj/toolbtn.o	\
 	./obj/TRect.o	\
    	./obj/valblank.o \
-  	./obj/View.o	\
+	./obj/View.o	\
+	./obj/viewstack.o \
+	./obj/viewstackbar.o \
   	./obj/window.o	\
 	./obj/webview.o
 
@@ -128,7 +132,7 @@ C_OBJS = ./objc/browses.o	\
   	./objc/funcs.o \
 	./objc/gets.o \
 	./objc/groups.o \
-    ./objc/IKImabr.o \
+    ./objc/cvbrowser.o \
 	./objc/images.o	\
 	./objc/ImageAndTextCell.o	\
   	./objc/ituness.o	\
@@ -169,6 +173,7 @@ C_OBJS = ./objc/browses.o	\
   	./objc/RoundedView.o	\
   	./objc/urls.o	\
   	./objc/tabviews.o	\
+	./objc/viewstackbar.o	\
   	./objc/views.o \
 	./objc/webviews.o \
     ./objc/windows.o

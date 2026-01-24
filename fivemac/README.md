@@ -101,3 +101,13 @@ To build the library and samples:
 ## Documentation
 
 See `whatsnew.txt` for a detailed history of changes and new features.
+
+### ViewStack & Modern Browsing (January 2026 - Part 10)
+- **TViewStack**: New native control for building modern, multi-view interfaces (like segmented views or tab replacements).
+    - **ViewStackBar**: A stylish, floating "capsule" navigation bar using `NSVisualEffectView` with rounded corners (16px) and vibrancy support. Supports customization via `SetColor()`.
+    - **Layout**: Flexible architecture allowing views to be added dynamically.
+- **TCVBrowse**: A completely rewritten Image Browser component.
+    - **Modern Backend**: Replaces the legacy `IKImageBrowserView` with `NSCollectionView` and Diffable Data Sources for stability and performance.
+    - **Features**: Supports selection callbacks (`bChange`), double-click actions (`bLDblClick`), and Core Animation effects ("Pulse" on selection).
+    - **Visuals**: Clean grid layout with customizable item sizing.
+- **Cleanup**: Extensive removal of debug logs (`NSLog`, `MsgInfo`) across the library ensuring a production-ready build.
