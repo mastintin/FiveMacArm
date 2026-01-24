@@ -644,15 +644,15 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 //----------------------------------------------------------------------------//
 
 #xcommand @ <nRow>, <nCol> SLIDER [ <oSlider> ] ;
-   [ VALUE <nValue> ] ;
+   [ VALUE <nVal> ] ;
    [ OF <oWnd> ] ;
    [ <change: ON CLICK, ON CHANGE> <uAction,...> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ AUTORESIZE <nAutoResize> ] ;
    => ;
    [ <oSlider> := ] TSlider():New( <nRow>, <nCol>, <nWidth>,;
-   <nHeight>, [<oWnd>], [\{| nValue | <uAction> \}],;
-   <nValue>, [<nAutoResize>], [<(oSlider)>] , <(uAction)> )
+   <nHeight>, [<oWnd>], [\{| self | <uAction> \}],;
+   <nVal>, [<nAutoResize>], [<(oSlider)>] , <(uAction)> )
  
 #xcommand REDEFINE SLIDER [ <oSlider> ] [ VALUE <nValue> ];
    [ ID <nId> ] ;
@@ -856,5 +856,19 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ OF <oWnd> ] ;
    => ;
    [ <oSidebar> := ] TSidebar():New( <nWidth>, <oWnd> )
+
+//----------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
+
+#xcommand @ <nRow>, <nCol> CVBROWSE [ <oBr> ] ;
+   [ OF <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ ON CHANGE <uChange> ] ;
+   [ ON DBLCLICK <uDblClick> ] ;
+   => ;
+   [ <oBr> := ] TCVBrowse():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd> ) ;
+   [; <oBr>:bChange := \{ | o, nIndex | <uChange> \} ] ;
+   [; <oBr>:bLDblClick := \{ | o, nIndex | <uDblClick> \} ]
 
 //----------------------------------------------------------------------------//
