@@ -37,15 +37,16 @@ CLASS TSwiftVStack FROM TControl
     METHOD SetInvertedColor( lInvert )
     METHOD SetSpacing( nSpacing )
     METHOD SetAlignment( nAlign )
+    METHOD AddSpacer( oParent )
     
     METHOD RegItem( cId, oItem ) INLINE SwiftRegisterItem( cId, oItem )
 
 ENDCLASS
 
-METHOD New( nRow, nCol, nWidth, nHeight, oWnd ) CLASS TSwiftVStack
+METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftVStack
 
     DEFAULT nWidth := 200, nHeight := 300
-    DEFAULT oWnd := GetWndDefault()
+    DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
     ::nIndex = Len( aSwiftControls ) + 1
     AAdd( aSwiftControls, Self )
@@ -53,6 +54,10 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd ) CLASS TSwiftVStack
 
     ::hWnd = SWIFTVSTACKCREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight )
    
+    if nAutoResize != 0
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    endif
+
     oWnd:AddControl( Self )
 
 return Self
@@ -97,7 +102,8 @@ METHOD AddBatch( aItems ) CLASS TSwiftVStack
     next
    
     cJson := hb_jsonEncode( aJsonData )
-    cJsonIds := SWIFTVSTACKADDBATCH( cJson, nil ) // nil parent for root
+    // Pass ::nIndex as rootID
+    cJsonIds := SWIFTVSTACKADDBATCH( ::nIndex, cJson, nil ) 
    
     aIds := hb_jsonDecode( cJsonIds )
    
@@ -118,12 +124,13 @@ METHOD AddBatch( aItems ) CLASS TSwiftVStack
 return aIds
 
 METHOD AddImage( cSystemName ) CLASS TSwiftVStack
-    SWIFTVSTACKADDSYSTEMIMAGE( cSystemName )
+    SWIFTVSTACKADDSYSTEMIMAGE( ::nIndex, cSystemName )
 return nil
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftVStack
     local cId, oItem
-    cId := SWIFTVSTACKADDBUTTON( cText )
+    // Pass ::nIndex as rootID, nil as parentID (root)
+    cId := SWIFTVSTACKADDBUTTON( ::nIndex, cText, nil )
     if bAction != nil .and. !Empty( cId )
     oItem := TSwiftStackItem():New( cId, Self )
     oItem:bAction := bAction
@@ -134,33 +141,44 @@ return nil
 METHOD AddList( oParent ) CLASS TSwiftVStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := SWIFTVSTACKADDLIST( cParentId )
+    // Pass ::nIndex
+    cId := SWIFTVSTACKADDLIST( ::nIndex, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD AddRow( cImage, cText ) CLASS TSwiftVStack
-    SWIFTVSTACKADDHSTACK( cImage, cText )
+    SWIFTVSTACKADDHSTACK( ::nIndex, cImage, cText )
 return nil
 
-METHOD AddHStack() CLASS TSwiftVStack
+METHOD AddHStack( cText, cImage ) CLASS TSwiftVStack
     local cId, oItem
-    cId := SWIFTVSTACKADDHSTACKCONTAINER( nil ) 
+    // Pass ::nIndex, nil parent
+    cId := SWIFTVSTACKADDHSTACKCONTAINER( ::nIndex, nil ) 
     oItem := TSwiftStackItem():New( cId, Self )
+    
+    if !Empty( cImage )
+    oItem:AddSystemImage( cImage )
+    endif
+    
+    if !Empty( cText )
+    oItem:AddText( cText )
+    endif
+    
 return oItem
 
 METHOD SetScroll( lScroll ) CLASS TSwiftVStack
     DEFAULT lScroll := .T.
-    SWIFTVSTACKSETSCROLL( lScroll )
+    SWIFTVSTACKSETSCROLL( ::nIndex, lScroll )
 return nil
 
 METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
     DEFAULT nRed := 0, nGreen := 0, nBlue := 0
     DEFAULT nAlpha := 1.0
-    SWIFTVSTACKSETBGCOLOR( nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+    SWIFTVSTACKSETBGCOLOR( ::nIndex, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
 return nil
 
 METHOD SetInvertedColor( lInvert ) CLASS TSwiftVStack
     DEFAULT lInvert := .T.
-    SWIFTVSTACKSETINVERTEDCOLOR( lInvert )
+    SWIFTVSTACKSETINVERTEDCOLOR( ::nIndex, lInvert )
 return nil
 
 //----------------------------------------------------------------//
@@ -180,13 +198,19 @@ return nil
 METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
     DEFAULT nRed := 0, nGreen := 0, nBlue := 0
     DEFAULT nAlpha := 1.0
-    SWIFTVSTACKSETFGCOLOR( nRed, nGreen, nBlue, nAlpha )
+    SWIFTVSTACKSETFGCOLOR( ::nIndex, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
 return nil
 
 METHOD SetSpacing( nSpacing ) CLASS TSwiftVStack
-    SWIFTVSTACKSETSPACING( nSpacing )
+    SWIFTVSTACKSETSPACING( ::nIndex, nSpacing )
 return nil
 
+
 METHOD SetAlignment( nAlign ) CLASS TSwiftVStack
-    SWIFTVSTACKSETALIGNMENT( nAlign )
+    SWIFTVSTACKSETALIGNMENT( ::nIndex, nAlign )
+return nil
+
+METHOD AddSpacer( oParent ) CLASS TSwiftVStack
+    local cParentId := If( oParent != nil, oParent:cId, nil )
+    SWIFTVSTACKADDSPACER( ::nIndex, cParentId )
 return nil

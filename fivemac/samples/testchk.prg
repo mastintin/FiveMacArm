@@ -6,7 +6,7 @@ function Main()
    
    DEFINE WINDOW oWnd TITLE "Test"
 
-   @ 20, 20 CHECKBOX lVar PROMPT "checkbox" OF oWnd ;
+   @ 20, 20 CHECKBOX lVar PROMPT "checkbox" OF oWnd SWITCH .t. ;
       ON CHANGE MsgInfo( cValToChar( lVar ) )
    
    ACTIVATE WINDOW oWnd ;

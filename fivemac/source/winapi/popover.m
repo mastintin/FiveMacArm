@@ -4,6 +4,33 @@
 - (NSSize)sizeWithWidth:(float)width andFont:(NSFont *)font;
 @end
 
+@implementation NSString (Size)
+- (NSSize)sizeWithWidth:(float)width andFont:(NSFont *)font {
+  NSSize size = NSMakeSize(width, FLT_MAX);
+  NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:self];
+  NSTextContainer *textContainer =
+      [[NSTextContainer alloc] initWithContainerSize:size];
+  NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+  [layoutManager addTextContainer:textContainer];
+  [textStorage addLayoutManager:layoutManager];
+  [textStorage addAttribute:NSFontAttributeName
+                      value:font
+                      range:NSMakeRange(0, [textStorage length])];
+  [textContainer setLineFragmentPadding:0.0];
+  [layoutManager glyphRangeForTextContainer:textContainer];
+
+  NSRect usedRect = [layoutManager usedRectForTextContainer:textContainer];
+  size.height = usedRect.size.height;
+  size.width = usedRect.size.width;
+
+  if (size.width < width)
+    size.width += 5; // Extra buffer
+
+  return size;
+}
+
+@end
+
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < 1070
 #define NSPopoverBehaviorTransient 1
 @interface NSPopover : NSObject
@@ -58,6 +85,12 @@
                         systemFontOfSize:[NSFont systemFontSizeForControlSize:
                                                      NSControlSizeRegular]]];
 
+  // Sanity check
+  if (size.width < 20)
+    size.width = 20;
+  if (size.height < 10)
+    size.height = 10;
+
   NSSize popoverSize =
       NSMakeSize(size.width + (padding * 2), size.height + (padding * 2));
   NSRect popoverRect = NSMakeRect(0, 0, popoverSize.width, popoverSize.height);
@@ -74,21 +107,32 @@
 
   NSView *container = [[NSView alloc] initWithFrame:popoverRect];
   [container addSubview:label];
-  [label setBounds:NSMakeRect(padding, padding, size.width, size.height)];
-  [container awakeFromNib];
+  // Ensure explicit frame
+  [label setFrame:NSMakeRect(padding, padding, size.width, size.height)];
 
   NSViewController *controller = [[NSViewController alloc] init];
   [controller setView:container];
 
-  //  NSPopover *popover = [[NSPopover alloc] init];
-
   [self setContentSize:popoverSize];
   [self setContentViewController:controller];
   [self setAnimates:YES];
-  [self setBehavior:NSPopoverBehaviorTransient];
+  [self setBehavior:NSPopoverBehaviorTransient]; // Auto-close
 
-  [self showRelativeToRect:rect ofView:view preferredEdge:edge];
-  return;
+  // Convert coordinates to Window Content View (Robust Anchor)
+  NSWindow *win = [view window];
+  if (win) {
+    NSView *contentView = [win contentView];
+    // 1. Convert view bounds to Window Coordinate Space
+    NSRect rectInWin = [view convertRect:rect toView:nil];
+    // 2. Convert Window Coords to Content View Coordinate Space
+    NSRect rectInContent = [contentView convertRect:rectInWin fromView:nil];
+
+    [self showRelativeToRect:rectInContent
+                      ofView:contentView
+               preferredEdge:edge];
+  } else {
+    [self showRelativeToRect:rect ofView:view preferredEdge:edge];
+  }
 }
 
 - (void)showWinRelativeToRect:(NSRect)rect
@@ -105,15 +149,18 @@
   NSRect popoverRect = NSMakeRect(0, 0, popoverSize.width, popoverSize.height);
 
   NSView *container = [[NSView alloc] initWithFrame:popoverRect];
-  [container addSubview:GetView(window)];
-  [GetView(window) setBounds:NSMakeRect(padding, padding, frame.size.width,
-                                        frame.size.height)];
-  [container awakeFromNib];
+  NSView *winView = GetView(window);
+
+  [container addSubview:winView];
+  [winView setFrame:NSMakeRect(padding, padding, frame.size.width,
+                               frame.size.height)];
+
+  if ([winView respondsToSelector:@selector(setOriginalWindow:)]) {
+    [winView performSelector:@selector(setOriginalWindow:) withObject:window];
+  }
 
   NSViewController *controller = [[NSViewController alloc] init];
   [controller setView:container];
-
-  // NSPopover *popover = [[NSPopover alloc] init];
 
   [self setContentSize:popoverSize];
   [self setContentViewController:controller];
@@ -121,7 +168,6 @@
   [self setBehavior:NSPopoverBehaviorTransient];
 
   [self showRelativeToRect:rect ofView:view preferredEdge:edge];
-  return;
 }
 
 @end
@@ -132,9 +178,15 @@ HB_FUNC(SHOWPOPOVER) {
   NSControl *theInput = (NSControl *)hb_parnll(1);
   NSString *mystring = hb_NSSTRING_par(2);
   NSPopover *popover = [[NSPopover alloc] init];
-  [popover showRelativeToRect:[theInput frame]
-                       ofView:[theInput superview]
-                preferredEdge:NSMaxXEdge // Show the popover on the right edge
+
+  // Try to retain to prevent release (MRC style)
+  [popover retain];
+
+  // We use [theInput bounds] as base rect, and theInput as view.
+  // The method within NSPopover will handle coordinate conversion.
+  [popover showRelativeToRect:[theInput bounds]
+                       ofView:theInput
+                preferredEdge:NSMaxYEdge // Show the popover BELOW the button
                        string:mystring
                      maxWidth:250.0];
 

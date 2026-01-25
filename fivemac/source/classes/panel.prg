@@ -67,8 +67,13 @@ return Self
 METHOD SetColor( nClrText, nClrBack ) CLASS TPanel
 
     if ! Empty( nClrBack )
-        PanelSetColor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
-            nRgbBlue( nClrBack ), 100 )
+        if nClrBack > 16777215
+            PanelSetColor( ::hWnd, GetRedFromRgba( nClrBack ), GetGreenFromRgba( nClrBack ),;
+                GetBlueFromRgba( nClrBack ), (GetAlphaFromRgba( nClrBack )*100/255) )
+        else
+            PanelSetColor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
+                nRgbBlue( nClrBack ), 100 )
+        endif
     endif
 
 return nil

@@ -325,14 +325,14 @@ SWIFT_CLASS_NAMED("SwiftGridLoader")
 @class NSImage;
 SWIFT_CLASS_NAMED("SwiftImageLoader")
 @interface SwiftImageLoader : NSObject
-+ (NSView * _Nonnull)makeImageWithSystemName:(NSString * _Nonnull)systemName index:(NSInteger)index callback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
-+ (void)setImageSystemName:(NSString * _Nonnull)name;
-+ (void)setImageName:(NSString * _Nonnull)name;
-+ (void)setImageFile:(NSString * _Nonnull)path;
-+ (void)setImageColor:(NSString * _Nonnull)colorHex;
-+ (void)setImageResizable:(NSNumber * _Nonnull)resizable;
-+ (void)setImageAspectRatio:(NSNumber * _Nonnull)mode;
-+ (void)setImageObj:(NSImage * _Nonnull)image;
++ (NSView * _Nonnull)makeImageWithSystemName:(NSString * _Nonnull)systemName index:(NSString * _Nonnull)index callback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)setImageSystemName:(NSString * _Nonnull)index name:(NSString * _Nonnull)name;
++ (void)setImageName:(NSString * _Nonnull)index name:(NSString * _Nonnull)name;
++ (void)setImageFile:(NSString * _Nonnull)index path:(NSString * _Nonnull)path;
++ (void)setImageColor:(NSString * _Nonnull)index colorHex:(NSString * _Nonnull)colorHex;
++ (void)setImageResizable:(NSString * _Nonnull)index resizable:(NSNumber * _Nonnull)resizable;
++ (void)setImageAspectRatio:(NSString * _Nonnull)index mode:(NSNumber * _Nonnull)mode;
++ (void)setImageObj:(NSString * _Nonnull)index image:(NSImage * _Nonnull)image;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -348,7 +348,9 @@ SWIFT_CLASS_NAMED("SwiftLabelLoader")
 
 SWIFT_CLASS_NAMED("SwiftListLoader")
 @interface SwiftListLoader : NSObject
-+ (NSView * _Nonnull)makeListWithIndex:(NSInteger)index callback:(void (^ _Nonnull)(NSInteger))callback SWIFT_WARN_UNUSED_RESULT;
++ (NSView * _Nonnull)makeListWithIndex:(NSString * _Nonnull)index callback:(void (^ _Nonnull)(NSInteger))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)selectIndex:(NSString * _Nonnull)id index:(NSInteger)index;
++ (void)setBackgroundColorRed:(NSString * _Nonnull)rootId red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -362,7 +364,9 @@ SWIFT_CLASS("_TtC9SwiftFive11SwiftLoader")
 
 SWIFT_CLASS_NAMED("SwiftSliderLoader")
 @interface SwiftSliderLoader : NSObject
-+ (NSView * _Nonnull)makeSliderWithValue:(NSNumber * _Nonnull)value index:(NSInteger)index callback:(void (^ _Nonnull)(NSNumber * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
++ (NSView * _Nonnull)makeSliderWithValue:(NSNumber * _Nonnull)value id:(NSString * _Nonnull)id showValue:(BOOL)showValue isGlass:(BOOL)isGlass index:(NSInteger)index callback:(void (^ _Nonnull)(NSNumber * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)setSliderValue:(double)value id:(NSString * _Nonnull)id;
++ (double)getSliderValueFromIndex:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -382,9 +386,41 @@ SWIFT_CLASS_NAMED("SwiftTextFieldLoader")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_CLASS_NAMED("SwiftToggleLoader")
+@interface SwiftToggleLoader : NSObject
++ (NSView * _Nonnull)makeToggleWithCaption:(NSString * _Nonnull)caption isOn:(BOOL)isOn id:(NSString * _Nonnull)id isSwitch:(BOOL)isSwitch index:(NSInteger)index callback:(void (^ _Nonnull)(BOOL))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)setToggle:(BOOL)isOn id:(NSString * _Nonnull)id;
++ (BOOL)getToggleFromIndex:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
 SWIFT_CLASS_NAMED("SwiftVStackLoader")
 @interface SwiftVStackLoader : NSObject
-+ (NSView * _Nonnull)makeVStackWithIndex:(NSInteger)index callback:(void (^ _Nonnull)(NSInteger))callback SWIFT_WARN_UNUSED_RESULT;
++ (NSView * _Nonnull)makeVStackWithIndex:(NSString * _Nonnull)index callback:(void (^ _Nonnull)(NSInteger))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)setActionCallback:(NSString * _Nonnull)rootId callback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
++ (void)addItem:(NSString * _Nonnull)rootId content:(NSString * _Nonnull)content;
++ (void)addTextItem:(NSString * _Nonnull)rootId content:(NSString * _Nonnull)content parentId:(NSString * _Nullable)parentId;
++ (void)addSpacerItem:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId;
++ (void)addSystemImage:(NSString * _Nonnull)rootId systemName:(NSString * _Nonnull)systemName;
++ (void)addSystemImageItem:(NSString * _Nonnull)rootId systemName:(NSString * _Nonnull)systemName parentId:(NSString * _Nullable)parentId;
++ (void)addHStackItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text systemName:(NSString * _Nonnull)systemName;
++ (void)setScrollable:(NSString * _Nonnull)rootId scrollable:(BOOL)scrollable;
++ (void)setBackgroundColorRed:(NSString * _Nonnull)rootId red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
++ (void)setForegroundColorRed:(NSString * _Nonnull)rootId red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
++ (void)setSpacing:(NSString * _Nonnull)rootId spacing:(double)spacing;
++ (void)setAlignment:(NSString * _Nonnull)rootId alignment:(NSInteger)alignment;
++ (void)setInvertedColor:(NSString * _Nonnull)rootId useInverted:(BOOL)useInverted;
++ (void)setLastItemId:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id;
++ (NSString * _Nonnull)addVStackItem:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addHStackContainer:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addLazyVGrid:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId columnsJson:(NSString * _Nonnull)columnsJson SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addList:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addTextItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (void)addSpacer:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (void)addDivider:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addButtonItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (void)setItem:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
++ (NSString * _Nonnull)addBatchToParent:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json SWIFT_WARN_UNUSED_RESULT;
 + (void)setActionCallback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
 + (void)addItem:(NSString * _Nonnull)text;
 + (void)addSystemImage:(NSString * _Nonnull)systemName;
@@ -428,6 +464,7 @@ SWIFT_CLASS_NAMED("ViewRegistry") SWIFT_AVAILABILITY(macos,introduced=10.15)
 + (void)registerObject:(id _Nonnull)object forIndex:(NSInteger)index;
 + (id _Nullable)getObject:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
 + (void)clean:(NSInteger)index;
++ (void)registerNSView:(NSView * _Nonnull)view forIndex:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 

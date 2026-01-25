@@ -2,62 +2,58 @@
 #include "FiveMac.ch"
 #include "SwiftControls.ch"
 
-static oImage
+static oImage1, oImage2
 
 function Main()
 
     local oWnd
-    local oBtnFile, oBtnExit
+    local oBtn1, oBtn2, oBtn3, oBtnExit
     local nMode := 0
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Image Loader" ;
-        FROM 200, 250 TO 600, 750 FLIPPED
+    DEFINE WINDOW oWnd TITLE "SwiftUI Image Loader (Multiple Images)" ;
+        FROM 200, 200 TO 700, 1000 
 
-    // Swift Image Control
-    @ 20, 20 SWIFTIMAGE oImage NAME "photo" SIZE 460, 280 OF oWnd ;
-        ACTION MsgInfo("Image Clicked")
+    // Image 1 (Left)
+    @ 20, 20 SWIFTIMAGE oImage1 NAME "star.fill" SIZE 250, 250 OF oWnd ;
+        ACTION MsgInfo("Image 1 Clicked")
     
-    oImage:SetResizable( .T. )
+    // Image 2 (Right)
+    @ 20, 300 SWIFTIMAGE oImage2 NAME "heart.fill" SIZE 250, 250 OF oWnd ;
+        ACTION MsgInfo("Image 2 Clicked")
 
-    // Load Image Button
-    @ 320, 20 BUTTON oBtnFile PROMPT "Load Image..." SIZE 150, 40 OF oWnd ;
-        ACTION LoadImageFromFile()
+    // Button to Change Image 1
+    @ 300, 20 BUTTON oBtn1 PROMPT "Set Img 1 (Sun)" SIZE 150, 30 OF oWnd ;
+        ACTION oImage1:SetSystemName( "sun.max.fill" )
 
-    // Aspect Ratio Button
-    @ 320, 180 BUTTON "Toggle Aspect" SIZE 140, 40 OF oWnd ;
-        ACTION ( nMode := If( nMode == 0, 1, 0 ), oImage:SetAspectRatio( nMode ) )
+    // Button to Change Image 2
+    @ 300, 300 BUTTON oBtn2 PROMPT "Set Img 2 (Moon)" SIZE 150, 30 OF oWnd ;
+        ACTION oImage2:SetSystemName( "moon.stars.fill" )
 
-    // Load Image via Pointer
-    @ 400, 20 BUTTON "Via NSImage" SIZE 150, 40 OF oWnd ;
-        ACTION LoadImageFromPointer( oImage )
+    // Button to Color Image 1 Red
+    @ 340, 20 BUTTON "Img 1 Red" SIZE 150, 30 OF oWnd ;
+        ACTION oImage1:SetColor( CLR_HRED )
+
+    // Button to Color Image 2 Blue
+    @ 340, 300 BUTTON "Img 2 Blue" SIZE 150, 30 OF oWnd ;
+        ACTION oImage2:SetColor( CLR_HBLUE )
+
+    // Load Image from File (Image 1)
+    @ 380, 20 BUTTON "Load File Img 1" SIZE 150, 30 OF oWnd ;
+        ACTION LoadImageFromFile( oImage1 )
 
     // Exit Button
-    @ 320, 330 BUTTON oBtnExit PROMPT "Exit" SIZE 150, 40 OF oWnd ;
+    @ 430, 280 BUTTON oBtnExit PROMPT "Exit" SIZE 150, 30 OF oWnd ;
         ACTION oWnd:End()
 
     ACTIVATE WINDOW oWnd
 
 return nil
 
-function LoadImageFromFile()
+function LoadImageFromFile( oImg )
     local cFile := cGetFile( "Image File | *.jpg;*.png", "Select Image" )
    
     if ! Empty( cFile )
-    oImage:SetFile( cFile )
+    oImg:SetFile( cFile )
     endif
    
-return nil
-
-function LoadImageFromPointer( oImage )
-    local cFile := cGetFile( "Image File | *.jpg;*.png", "Select Image (Handle)" )
-    local pImage
-    
-    if ! Empty( cFile )
-    // Use FiveMac's NSImgFromFile to get an NSImage pointer
-    pImage := NSImgFromFile( cFile )
-    if pImage != nil
-    oImage:SetImage( pImage )
-    endif
-    endif
-
 return nil

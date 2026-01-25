@@ -32,9 +32,6 @@ HB_FUNC(SWIFTBTNCREATE) {
     });
   };
 
-  NSLog(@"SWIFTBTNCREATE: Top=%f Left=%f Width=%f Height=%f", nTop, nLeft,
-        nWidth, nHeight);
-
   // Call Swift Factory
   // Signature: makeButton(title:index:callback:)
   SEL selector = NSSelectorFromString(@"makeButtonWithTitle:index:callback:");
@@ -57,14 +54,17 @@ HB_FUNC(SWIFTBTNCREATE) {
     [invocation getReturnValue:&btnView];
 
     if (btnView) {
-      NSLog(@"SWIFTBTNCREATE: View created: %@", btnView);
-      setupSwiftView(btnView, window, nTop, nLeft, nWidth, nHeight);
-      hb_retnl((HB_LONG)btnView);
-    } else {
-      NSLog(@"SWIFTBTNCREATE: View Creation Failed");
+      // setupSwiftView(btnView, window, nTop, nLeft, nWidth, nHeight);
+      [btnView setFrame:NSMakeRect(nLeft, nTop, nWidth, nHeight)];
+
+      id parent = (id)hb_parnl(6);
+      if ([parent isKindOfClass:[NSWindow class]]) {
+        [[(NSWindow *)parent contentView] addSubview:btnView];
+      } else if ([parent isKindOfClass:[NSView class]]) {
+        [(NSView *)parent addSubview:btnView];
+      }
+      hb_retnll((HB_LONGLONG)btnView);
     }
-  } else {
-    NSLog(@"SWIFTBTNCREATE: Selector not found on class %@", className);
   }
 }
 
@@ -194,7 +194,34 @@ HB_FUNC(SWIFTBTNSETGLASS) {
       [invocation setSelector:selector];
       [invocation setTarget:swiftClass];
 
-      [invocation setArgument:&isGlass atIndex:2];
+      [invocation setArgument:&nIndex atIndex:3];
+      [invocation invoke];
+    }
+  }
+}
+
+HB_FUNC(SWIFTBTNSETIMAGE) {
+  const char *cImage = hb_parc(1);
+  NSInteger nIndex = (NSInteger)hb_parni(2);
+
+  if (!cImage)
+    return;
+  NSString *imageName = [NSString stringWithUTF8String:cImage];
+
+  NSString *className = @"SwiftFive.SwiftButtonLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setButtonImage:index:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&imageName atIndex:2];
       [invocation setArgument:&nIndex atIndex:3];
 
       [invocation invoke];

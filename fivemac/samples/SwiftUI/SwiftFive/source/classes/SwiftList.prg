@@ -23,6 +23,8 @@ CLASS TSwiftList FROM TSwiftVStack
 
     METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha )
 
+    METHOD SetVibrancy( lOnOff )
+
 ENDCLASS
 
 
@@ -48,6 +50,10 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftList
 
     oWnd:AddControl( Self )
 
+    if __ObjHasData( oWnd, "lVibrancy" ) .and. oWnd:lVibrancy
+    ::SetVibrancy( .T. )
+    endif
+
 return Self
 
 //----------------------------------------------------------------//
@@ -72,6 +78,13 @@ METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftList
     DEFAULT nRed := 0, nGreen := 0, nBlue := 0
     DEFAULT nAlpha := 1.0
     SWIFTLISTSETBGCOLOR( ::nId, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+return nil
+
+METHOD SetVibrancy( lOnOff ) CLASS TSwiftList
+    DEFAULT lOnOff := .T.
+    if lOnOff
+    ::SetBackgroundColor( 0, 0, 0, 0.0 ) // Clear background for vibrancy
+    endif 
 return nil
 
 

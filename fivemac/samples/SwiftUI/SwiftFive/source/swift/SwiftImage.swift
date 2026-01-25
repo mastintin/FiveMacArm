@@ -72,13 +72,13 @@ extension View {
 @objc(SwiftImageLoader)
 public class SwiftImageLoader: NSObject {
     
-    static var lastCreatedState: Any? = nil
+    static var states: [String: SwiftImageState] = [:]
 
     @objc(makeImageWithSystemName:index:callback:)
-    public static func makeImage(systemName: String, index: Int, callback: ((String) -> Void)?) -> NSView {
+    public static func makeImage(systemName: String, index: String, callback: ((String) -> Void)?) -> NSView {
          if #available(OSX 10.15, *) {
              let state = SwiftImageState(systemName: systemName)
-             lastCreatedState = state
+             states[index] = state
              
              let action: () -> Void = {
                  _ = callback?("Click")
@@ -86,8 +86,10 @@ public class SwiftImageLoader: NSObject {
              
              let view = SwiftImageView(state: state, callback: action)
              
-             // Register
-             ViewRegistry.register(view, for: index)
+             // Register - converting string index to Int if possible for ViewRegistry legacy support
+             if let intIndex = Int(index) {
+                 ViewRegistry.register(view, for: intIndex)
+             }
 
              let hostingView = NSHostingView(rootView: view)
              hostingView.translatesAutoresizingMaskIntoConstraints = false
@@ -99,11 +101,11 @@ public class SwiftImageLoader: NSObject {
     
     // Setters
     
-    @objc(setImageSystemName:)
-    public static func setImageSystemName(_ name: String) {
+    @objc(setImageSystemName:name:)
+    public static func setImageSystemName(_ index: String, name: String) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftImageState {
+                if let state = states[index] {
                     state.systemName = name
                     state.name = ""
                     state.filePath = ""
@@ -113,11 +115,11 @@ public class SwiftImageLoader: NSObject {
         }
     }
 
-    @objc(setImageName:)
-    public static func setImageName(_ name: String) {
+    @objc(setImageName:name:)
+    public static func setImageName(_ index: String, name: String) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftImageState {
+                if let state = states[index] {
                     state.name = name
                     state.systemName = ""
                     state.filePath = ""
@@ -127,11 +129,11 @@ public class SwiftImageLoader: NSObject {
         }
     }
 
-    @objc(setImageFile:)
-    public static func setImageFile(_ path: String) {
+    @objc(setImageFile:path:)
+    public static func setImageFile(_ index: String, path: String) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftImageState {
+                if let state = states[index] {
                     state.filePath = path
                     state.systemName = ""
                     state.name = ""
@@ -141,44 +143,44 @@ public class SwiftImageLoader: NSObject {
         }
     }
     
-    @objc(setImageColor:)
-    public static func setImageColor(_ colorHex: String) {
+    @objc(setImageColor:colorHex:)
+    public static func setImageColor(_ index: String, colorHex: String) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftImageState {
+                if let state = states[index] {
                     state.foregroundColor = Color(hexImg: colorHex)
                 }
             }
         }
     }
     
-    @objc(setImageResizable:)
-    public static func setImageResizable(_ resizable: NSNumber) {
+    @objc(setImageResizable:resizable:)
+    public static func setImageResizable(_ index: String, resizable: NSNumber) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftImageState {
+                if let state = states[index] {
                     state.resizable = resizable.boolValue
                 }
             }
         }
     }
 
-    @objc(setImageAspectRatio:)
-    public static func setImageAspectRatio(_ mode: NSNumber) {
+    @objc(setImageAspectRatio:mode:)
+    public static func setImageAspectRatio(_ index: String, mode: NSNumber) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftImageState {
+                if let state = states[index] {
                     state.contentMode = mode.intValue
                 }
             }
         }
     }
 
-    @objc(setImageObj:)
-    public static func setImageObj(_ image: NSImage) {
+    @objc(setImageObj:image:)
+    public static func setImageObj(_ index: String, image: NSImage) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftImageState {
+                if let state = states[index] {
                     state.image = image
                     state.systemName = ""
                     state.name = ""

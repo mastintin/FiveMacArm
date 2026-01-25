@@ -111,3 +111,13 @@ See `whatsnew.txt` for a detailed history of changes and new features.
     - **Features**: Supports selection callbacks (`bChange`), double-click actions (`bLDblClick`), and Core Animation effects ("Pulse" on selection).
     - **Visuals**: Clean grid layout with customizable item sizing.
 - **Cleanup**: Extensive removal of debug logs (`NSLog`, `MsgInfo`) across the library ensuring a production-ready build.
+
+### Popover & Swift Integration Refinements (January 2026 - Part 11)
+- **Popover Mechanism**:
+    - **Robust Positioning**: Completely rewrote `popover.m` to use **Window-Relative** coordinates for anchor calculation. This fixes visibility issues when popovers are triggered from deeply nested views (e.g., inside SplitViews or Flipped Panels).
+    - **Styling**: Refined default padding and minimum size constraints for a cleaner, native look.
+    - **Event Routing**: Implemented `setOriginalWindow` propagation to ensure events (like button clicks) inside popovers are correctly routed back to the main Harbour event loop.
+- **SwiftButton**:
+    - **Stability**: Updated `SwiftButton.m` to use 64-bit pointer returns (`hb_retnll`) instead of 32-bit (`hb_retnl`), preventing potential crashes on modern architectures.
+    - **Cleanup**: Removed verbose debug logging (`SWIFTBTNCREATE`) for a silent production experience.
+- **Documentation**: Updated `task.md` and `walkthrough.md` to reflect the current stable state of the library.

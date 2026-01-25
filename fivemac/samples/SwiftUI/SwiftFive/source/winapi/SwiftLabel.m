@@ -81,7 +81,15 @@ HB_FUNC(SWIFTLABELCREATE) {
 
     if (labelView) {
       NSLog(@"Debug: makeLabelWithText returned a valid view: %@", labelView);
-      setupSwiftView(labelView, window, nTop, nLeft, nWidth, nHeight);
+      // setupSwiftView(labelView, window, nTop, nLeft, nWidth, nHeight);
+      [labelView setFrame:NSMakeRect(nLeft, nTop, nWidth, nHeight)];
+
+      id parent = (id)hb_parnl(6);
+      if ([parent isKindOfClass:[NSWindow class]]) {
+        [[(NSWindow *)parent contentView] addSubview:labelView];
+      } else if ([parent isKindOfClass:[NSView class]]) {
+        [(NSView *)parent addSubview:labelView];
+      }
       hb_retnl((HB_LONG)labelView);
     }
   }

@@ -18,13 +18,14 @@ CLASS TSwiftImage FROM TControl
     METHOD SetFile( cFile )
     METHOD SetAspectRatio( nMode )
     METHOD SetImage( pImage )
-
+    METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
+      
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable ) CLASS TSwiftImage
+METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable, nAutoResize ) CLASS TSwiftImage
 
     DEFAULT nWidth := 40, nHeight := 40, oWnd := GetWndDefault(), cName := "star.fill"
-    DEFAULT lResizable := .T.
+    DEFAULT lResizable := .T., nAutoResize := 0
 
     ::oWnd    = oWnd
     ::bAction = bAction
@@ -36,7 +37,11 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable ) CLA
     ::hWnd = SWIFTIMAGECREATE( nTop, nLeft, nWidth, nHeight, cName, oWnd:hWnd, ::nIndex )
     
     if !lResizable
-    ::SetResizable( .t. )
+        ::SetResizable( .t. )
+    endif
+
+    if nAutoResize != 0
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -46,44 +51,45 @@ return Self
 METHOD Click() CLASS TSwiftImage
    
     if ::bAction != nil
-    Eval( ::bAction, Self )
+        Eval( ::bAction, Self )
     endif
 
 return nil
 
+
 METHOD SetSystemName( cName ) CLASS TSwiftImage
-    SWIFTIMAGESETSYSTEMNAME( cName )
+    SWIFTIMAGESETSYSTEMNAME( ::nIndex, cName )
 return nil
 
 METHOD SetName( cName ) CLASS TSwiftImage
-    SWIFTIMAGESETNAME( cName )
+    SWIFTIMAGESETNAME( ::nIndex, cName )
 return nil
 
 METHOD SetColor( nColor ) CLASS TSwiftImage
-    SWIFTIMAGESETCOLOR( nColor )
+    SWIFTIMAGESETCOLOR( ::nIndex, nColor )
 return nil
 
 METHOD SetResizable( lResizable ) CLASS TSwiftImage
-    SWIFTIMAGESETRESIZABLE( lResizable )
+    SWIFTIMAGESETRESIZABLE( ::nIndex, lResizable )
 return nil
 
 METHOD SetFile( cFile ) CLASS TSwiftImage
-    SWIFTIMAGESETFILE( cFile )
+    SWIFTIMAGESETFILE( ::nIndex, cFile )
 return nil
 
 METHOD SetAspectRatio( nMode ) CLASS TSwiftImage
-    SWIFTIMAGESETASPECTRATIO( nMode )
+    SWIFTIMAGESETASPECTRATIO( ::nIndex, nMode )
 return nil
 
 METHOD SetImage( pImage ) CLASS TSwiftImage
-    SWIFTIMAGESETNSIMAGE( pImage )
+    SWIFTIMAGESETNSIMAGE( ::nIndex, pImage )
 return nil
 
 // Called from C callback
 function SwiftImageOnClick( nIndex )
    
     if nIndex > 0 .and. nIndex <= Len( aSwiftImages )
-    aSwiftImages[ nIndex ]:Click()
+        aSwiftImages[ nIndex ]:Click()
     endif
    
 return nil

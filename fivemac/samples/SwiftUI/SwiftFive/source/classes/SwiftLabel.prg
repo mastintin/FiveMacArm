@@ -11,12 +11,13 @@ CLASS TSwiftLabel FROM TControl
     METHOD SetText( cText )
     METHOD SetFont( nSize )
     METHOD SetColor( nColor )
-
+    METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
+      
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftLabel
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwiftLabel
 
-    DEFAULT nWidth := 100, nHeight := 20, oWnd := GetWndDefault(), cText := "Swift Label"
+    DEFAULT nWidth := 100, nHeight := 20, oWnd := GetWndDefault(), cText := "Swift Label", nAutoResize := 0
 
     ::oWnd    = oWnd
     ::nId     = ::GetCtrlIndex()
@@ -26,6 +27,10 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftLabel
    
     // Pass ::nIndex (Param 7)
     ::hWnd = SWIFTLABELCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nIndex )
+
+    if nAutoResize != 0
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    endif
 
     oWnd:AddControl( Self )
 
