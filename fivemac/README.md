@@ -82,6 +82,26 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **TSwiftList**: Simplified root list control that inherits from `TSwiftVStack`, optimized for high-performance data display using the new Batch API.
 - **Unified Action Bridge**: Centralized the `SwiftOnAction` callback mechanism to handle all button and interaction events across different Swift views, improving reliability and simplifying registration.
 
+### ViewStack & Modern Browsing (January 2026 - Part 10)
+- **TViewStack**: New native control for building modern, multi-view interfaces (like segmented views or tab replacements).
+    - **ViewStackBar**: A stylish, floating "capsule" navigation bar using `NSVisualEffectView` with rounded corners (16px) and vibrancy support. Supports customization via `SetColor()`.
+    - **Layout**: Flexible architecture allowing views to be added dynamically.
+- **TCVBrowse**: A completely rewritten Image Browser component.
+    - **Modern Backend**: Replaces the legacy `IKImageBrowserView` with `NSCollectionView` and Diffable Data Sources for stability and performance.
+    - **Features**: Supports selection callbacks (`bChange`), double-click actions (`bLDblClick`), and Core Animation effects ("Pulse" on selection).
+    - **Visuals**: Clean grid layout with customizable item sizing.
+- **Cleanup**: Extensive removal of debug logs (`NSLog`, `MsgInfo`) across the library ensuring a production-ready build.
+
+### Popover & Swift Integration Refinements (January 2026 - Part 11)
+- **Popover Mechanism**:
+    - **Robust Positioning**: Completely rewrote `popover.m` to use **Window-Relative** coordinates for anchor calculation. This fixes visibility issues when popovers are triggered from deeply nested views (e.g., inside SplitViews or Flipped Panels).
+    - **Styling**: Refined default padding and minimum size constraints for a cleaner, native look.
+    - **Event Routing**: Implemented `setOriginalWindow` propagation to ensure events (like button clicks) inside popovers are correctly routed back to the main Harbour event loop.
+- **SwiftButton**:
+    - **Stability**: Updated `SwiftButton.m` to use 64-bit pointer returns (`hb_retnll`) instead of 32-bit (`hb_retnl`), preventing potential crashes on modern architectures.
+    - **Cleanup**: Removed verbose debug logging (`SWIFTBTNCREATE`) for a silent production experience.
+- **Documentation**: Updated `task.md` and `walkthrough.md` to reflect the current stable state of the library.
+
 ### Glass Window & Sidebar Support (January 2026 - Part 9)
 - **Glass Effect**: Added full support for modern macOS "Glass" windows (translucent title bars and sidebars).
     - **TWindow**: New property `lGlass` enables the `NSWindowStyleMaskFullSizeContentView` and transparent title bar style.
@@ -102,22 +122,3 @@ To build the library and samples:
 
 See `whatsnew.txt` for a detailed history of changes and new features.
 
-### ViewStack & Modern Browsing (January 2026 - Part 10)
-- **TViewStack**: New native control for building modern, multi-view interfaces (like segmented views or tab replacements).
-    - **ViewStackBar**: A stylish, floating "capsule" navigation bar using `NSVisualEffectView` with rounded corners (16px) and vibrancy support. Supports customization via `SetColor()`.
-    - **Layout**: Flexible architecture allowing views to be added dynamically.
-- **TCVBrowse**: A completely rewritten Image Browser component.
-    - **Modern Backend**: Replaces the legacy `IKImageBrowserView` with `NSCollectionView` and Diffable Data Sources for stability and performance.
-    - **Features**: Supports selection callbacks (`bChange`), double-click actions (`bLDblClick`), and Core Animation effects ("Pulse" on selection).
-    - **Visuals**: Clean grid layout with customizable item sizing.
-- **Cleanup**: Extensive removal of debug logs (`NSLog`, `MsgInfo`) across the library ensuring a production-ready build.
-
-### Popover & Swift Integration Refinements (January 2026 - Part 11)
-- **Popover Mechanism**:
-    - **Robust Positioning**: Completely rewrote `popover.m` to use **Window-Relative** coordinates for anchor calculation. This fixes visibility issues when popovers are triggered from deeply nested views (e.g., inside SplitViews or Flipped Panels).
-    - **Styling**: Refined default padding and minimum size constraints for a cleaner, native look.
-    - **Event Routing**: Implemented `setOriginalWindow` propagation to ensure events (like button clicks) inside popovers are correctly routed back to the main Harbour event loop.
-- **SwiftButton**:
-    - **Stability**: Updated `SwiftButton.m` to use 64-bit pointer returns (`hb_retnll`) instead of 32-bit (`hb_retnl`), preventing potential crashes on modern architectures.
-    - **Cleanup**: Removed verbose debug logging (`SWIFTBTNCREATE`) for a silent production experience.
-- **Documentation**: Updated `task.md` and `walkthrough.md` to reflect the current stable state of the library.
