@@ -8,13 +8,13 @@ CLASS TSwiftGrid FROM TSwiftList
 
 ENDCLASS
 
-METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd ) CLASS TSwiftGrid
+METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd, nAutoResize ) CLASS TSwiftGrid
 
     local cJson := "["
     local n
 
     DEFAULT nWidth := 200, nHeight := 200, oWnd := GetWndDefault()
-    DEFAULT aColumns := {}
+    DEFAULT aColumns := {}, nAutoResize := 0
 
     ::oWnd = oWnd
     
@@ -45,6 +45,10 @@ METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd ) CLASS TSwiftGrid
     cJson += "]"
 
     ::hWnd = SWIFTGRIDCREATE( oWnd:hWnd, ::nId, nRow, nCol, nWidth, nHeight, cJson )
+
+    if nAutoResize != 0
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    endif
     
     oWnd:AddControl( Self )
 

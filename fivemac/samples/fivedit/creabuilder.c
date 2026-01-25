@@ -1,7 +1,7 @@
 /*
  * Harbour 3.2.0dev (r2512222342)
  * LLVM/Clang C 17.0 (clang-1700.6.3.2) ARM64
- * Generated C source from "CreaBuilder.prg"
+ * Generated C source from "creabuilder.prg"
  */
 
 #include "hbvmpub.h"
@@ -150,7 +150,7 @@ HB_INIT_SYMBOLS_BEGIN( hb_vm_SymbolInit_CREABUILDER )
 { "ERRORLINK", {HB_FS_PUBLIC}, {HB_FUNCNAME( ERRORLINK )}, NULL },
 { "MSGBEEP", {HB_FS_PUBLIC}, {HB_FUNCNAME( MSGBEEP )}, NULL },
 { "(_INITSTATICS00005)", {HB_FS_INITEXIT | HB_FS_LOCAL}, {hb_INITSTATICS}, NULL }
-HB_INIT_SYMBOLS_EX_END( hb_vm_SymbolInit_CREABUILDER, "CreaBuilder.prg", 0x0, 0x0003 )
+HB_INIT_SYMBOLS_EX_END( hb_vm_SymbolInit_CREABUILDER, "creabuilder.prg", 0x0, 0x0003 )
 
 #if defined( HB_PRAGMA_STARTUP )
    #pragma startup hb_vm_SymbolInit_CREABUILDER

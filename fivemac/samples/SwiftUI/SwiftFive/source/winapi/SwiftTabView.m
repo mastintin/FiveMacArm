@@ -64,3 +64,30 @@ HB_FUNC(SWIFTTABVIEWCREATE) {
     hb_retnl(0);
   }
 }
+
+HB_FUNC(SWIFTREGISTERVIEW) { // ( hWnd, nIndex )
+  NSView *view = (NSView *)hb_parnll(1);
+  int nIndex = hb_parni(2);
+
+  NSString *className = @"SwiftFive.ViewRegistry";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"registerNSView:forIndex:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      NSInteger idx = (NSInteger)nIndex;
+      [invocation setArgument:&view atIndex:2];
+      [invocation setArgument:&idx atIndex:3];
+
+      [invocation invoke];
+    }
+  }
+}

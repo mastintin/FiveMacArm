@@ -13,20 +13,21 @@ CLASS TSwiftButton FROM TControl
 
     DATA bAction
     DATA nIndex
+    DATA lGlass
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction )
     METHOD Click()
     METHOD SetColor( nFgColor, nBgColor )
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
-    DATA lGlass
     METHOD SetGlass( lGlass )
-
+    METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
+      
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction ) CLASS TSwiftButton
+METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) CLASS TSwiftButton
 
-    DEFAULT nWidth := 90, nHeight := 30, oWnd := GetWndDefault(), cPrompt := "SwiftBtn"
+    DEFAULT nWidth := 90, nHeight := 30, oWnd := GetWndDefault(), cPrompt := "SwiftBtn", nAutoResize := 0
 
     ::bAction = bAction
     ::oWnd    = oWnd
@@ -37,6 +38,10 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction ) CLASS TSwiftB
 
     // Pass ::nIndex (Param 7) instead of Action String
     ::hWnd = SWIFTBTNCREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::nIndex )
+
+    if nAutoResize != 0
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    endif
 
     oWnd:AddControl( Self )
 
@@ -73,6 +78,12 @@ METHOD SetGlass( lGlass ) CLASS TSwiftButton
     DEFAULT lGlass := .T.
     ::lGlass := lGlass
     SWIFTBTNSETGLASS( lGlass, ::nIndex )
+return nil
+
+METHOD SetImage( cImage ) CLASS TSwiftButton
+    if cImage != nil
+    SWIFTBTNSETIMAGE( cImage, ::nIndex )
+    endif
 return nil
 
 // Called from C callback

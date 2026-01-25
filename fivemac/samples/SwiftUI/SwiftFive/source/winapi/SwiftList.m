@@ -91,7 +91,13 @@ HB_FUNC(SWIFTLISTCREATE) {
     if (view) {
       [view setFrame:NSMakeRect(hb_parnl(4), hb_parnl(3), hb_parnl(5),
                                 hb_parnl(6))];
-      [[window contentView] addSubview:view];
+
+      id parent = (id)hb_parnl(1);
+      if ([parent isKindOfClass:[NSWindow class]]) {
+        [[(NSWindow *)parent contentView] addSubview:view];
+      } else if ([parent isKindOfClass:[NSView class]]) {
+        [(NSView *)parent addSubview:view];
+      }
       hb_retnl((HB_LONG)view);
     } else {
       hb_retnl(0);

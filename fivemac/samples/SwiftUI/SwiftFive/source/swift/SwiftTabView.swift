@@ -34,32 +34,68 @@ public class ViewRegistry: NSObject {
         views.removeValue(forKey: Int(index))
         objects.removeValue(forKey: Int(index))
     }
+
+    @objc(registerNSView:forIndex:)
+    public static func registerNSView(_ view: NSView, for index: NSInteger) {
+        let idx = Int(index)
+        let wrapper = GenericNSViewWrapper(view: view)
+        views[idx] = AnyView(wrapper)
+    }
+}
+
+struct GenericNSViewWrapper: NSViewRepresentable {
+    let view: NSView
+    
+    func makeNSView(context: Context) -> NSView {
+        return view
+    }
+    
+    func updateNSView(_ nsView: NSView, context: Context) {
+    }
 }
 
 @available(OSX 10.15, *)
+@available(OSX 10.15, *)
 struct SwiftTabView: View {
     var tabData: [(id: Int, title: String, icon: String)]
+    @State private var selectedTab: Int
+    
+    init(tabData: [(id: Int, title: String, icon: String)]) {
+        self.tabData = tabData
+        _selectedTab = State(initialValue: tabData.first?.id ?? 0)
+    }
     
     var body: some View {
         if #available(OSX 11.0, *) {
-            TabView {
-                ForEach(tabData, id: \.id) { item in
-                    if let view = ViewRegistry.getView(for: item.id) {
-                        view
-                            .tabItem {
-                                Label(item.title, systemImage: item.icon)
+            VStack(spacing: 0) {
+                // Top Segmented Control using Picker
+                if !tabData.isEmpty {
+                    Picker("", selection: $selectedTab) {
+                        ForEach(tabData, id: \.id) { item in
+                            Text(item.title).tag(item.id)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                }
+                
+                // Content Area
+                ZStack {
+                    ForEach(tabData, id: \.id) { item in
+                        if selectedTab == item.id {
+                             if let view = ViewRegistry.getView(for: item.id) {
+                                view
+                            } else {
+                                Text("View \(item.id) not found")
                             }
-                    } else {
-                        Text("View \(item.id) not found")
-                            .tabItem {
-                                Text(item.title)
-                            }
+                        }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .padding()
         } else {
-            Text("TabView requires macOS 11.0+")
+            Text("Modern TabView requires macOS 11.0+")
         }
     }
 }

@@ -74,7 +74,7 @@ METHOD AddView( cTitle, cImage ) CLASS TViewStack
     oPanel:SetFlipped( .T. )
     endif
    
-    oPanel:nAutoResize := 18 // Width (2) + Height (16)
+    oPanel:_nAutoResize( 18 ) // Width (2) + Height (16)
 
    
     AAdd( ::aViews, oPanel )

@@ -21,7 +21,9 @@ void CocoaInit(void);
 @public
   BOOL bDesign;
   BOOL bVibrancy;
+  NSWindow *originalWindow;
 }
+- (void)setOriginalWindow:(NSWindow *)window;
 - (BOOL)windowShouldClose:(NSNotification *)notification;
 - (void)windowWillClose:(NSNotification *)notification;
 - (BOOL)acceptsFirstResponder;
@@ -53,6 +55,10 @@ void CocoaInit(void);
 
 @implementation View
 
+- (void)setOriginalWindow:(NSWindow *)window {
+  originalWindow = window;
+}
+
 - (BOOL)allowsVibrancy {
   return bVibrancy;
 }
@@ -62,9 +68,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_WNDVALID);
   hb_vmDo(2);
 
@@ -85,9 +93,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_WHEN);
   hb_vmDo(2);
 
@@ -99,38 +109,32 @@ void CocoaInit(void);
 
 - (void)windowDidResignKey:(NSNotification *)notification;
 {
-
-  //   NSLog(@"Lost Focus for content: %@", [[ self window ] title ] ) ;
-
-  //    NSLog( @"%i", ( int ) [ self window ] );
-
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_LOSTFOCUS);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmDo(3);
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification
 
 {
-
-  //   NSLog(@"Get Focus for content: %@", [[ self window ] title ] ) ;
-
-  //   NSLog( @"%i", ( int ) [ self window ] );
-
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_GETFOCUS);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmDo(3);
 }
 
@@ -138,9 +142,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_PAINT);
   hb_vmDo(2);
 }
@@ -151,11 +157,13 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_LBUTTONDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -165,11 +173,13 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_FLIPPED);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmDo(3);
 
   return hb_parl(-1);
@@ -181,11 +191,13 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_LBUTTONUP);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -197,11 +209,13 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_RBUTTONDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -218,11 +232,13 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_MOUSEMOVED);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -239,35 +255,32 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_MOUSEMOVED);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
 }
 
 - (void)keyDown:(NSEvent *)theEvent {
-  // unsigned int flags = [ theEvent modifierFlags ];
   NSString *key = [theEvent characters];
   int unichar = [key characterAtIndex:0];
-
-  // if ( flags & NSAlternateKeyMask)
-  //    NSLog(@"Option key on");
-
-  //        NSRunAlertPanel( @"Attention", @"key pressed", @"Ok", NULL, NULL,
-  //        NULL );
 
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_KEYDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(unichar);
   hb_vmDo(4);
 
@@ -276,25 +289,6 @@ void CocoaInit(void);
 }
 
 - (void)flagsChanged:(NSEvent *)theEvent {
-  /*
-   unsigned flags = [ theEvent modifierFlags ];
-
-   if( [ theEvent keyCode ] == 0x39 ) // 57 = key code for caps lock
-   {
-      if( flags & NSAlphaShiftKeyMask )
-         NSLog( @"capsLock on" );
-      else
-         NSLog( @"capsLock off" );
-   }
-   */
-
-  /*
-   if ( flags & NSAlternateKeyMask) NSLog(@"Option key on");
-   if ( flags & NSShiftKeyMask) NSLog(@"shift key has been  presseed");
-   if ( flags &  NSControlKeyMask ) NSLog(@"Control key has been presseed");
-   if ( flags &  NSCommandKeyMask ) NSLog(@"Command key has been presseed");
-  */
-
   [super flagsChanged:theEvent];
 }
 
@@ -302,11 +296,13 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_RESIZE);
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmDo(3);
 }
 
@@ -314,9 +310,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_MENUITEM);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
@@ -327,9 +325,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_BTNCLICK);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
@@ -340,9 +340,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_BRWDBLCLICK);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
@@ -352,9 +354,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_CBXCHANGE);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
@@ -365,9 +369,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_CHKCLICK);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
@@ -377,9 +383,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_CLRCHANGE);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
@@ -390,9 +398,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_TBRCLICK);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);
@@ -402,9 +412,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_TIMER);
   hb_vmPushNumInt((HB_LONGLONG)timer);
   hb_vmDo(3);
@@ -415,9 +427,11 @@ void CocoaInit(void);
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));
 
+  NSWindow *win = (originalWindow ? originalWindow : [self window]);
+
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNumInt((HB_LONGLONG)win);
   hb_vmPushLong(WM_SLIDERCHANGE);
   hb_vmPushNumInt((HB_LONGLONG)sender);
   hb_vmDo(3);

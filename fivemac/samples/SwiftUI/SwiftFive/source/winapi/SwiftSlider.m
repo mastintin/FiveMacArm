@@ -7,7 +7,14 @@ HB_FUNC(SWIFTSLIDERCREATE) {
   CGFloat nHeight = (CGFloat)hb_parnd(4);
   double nValue = hb_parnd(5);
   NSWindow *window = (NSWindow *)hb_parnl(6);
-  int nIndex = hb_parni(7); // Control Index
+  NSInteger nIndex =
+      (NSInteger)hb_parnl(7);         // Control Index (64-bit for NSInvocation)
+  NSString *cId = hb_NSSTRING_par(8); // UUID
+  BOOL bShowValue = hb_parl(9);       // Show Value
+  BOOL bGlass = hb_parl(10);          // Is Glass
+
+  NSLog(@"DEBUG: SWIFTSLIDERCREATE. Index: %ld, ID: %@, ShowVal: %d, Glass: %d",
+        (long)nIndex, cId, bShowValue, bGlass);
 
   NSString *className = @"SwiftFive.SwiftSliderLoader";
   Class swiftClass = NSClassFromString(className);
@@ -24,14 +31,15 @@ HB_FUNC(SWIFTSLIDERCREATE) {
       if (pDynSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
         hb_vmPushNil();
-        hb_vmPushInteger(nIndex);
+        hb_vmPushInteger((int)nIndex);
         hb_vmPushDouble([val doubleValue], 0);
         hb_vmDo(2);
       }
     });
   };
 
-  SEL selector = NSSelectorFromString(@"makeSliderWithValue:index:callback:");
+  SEL selector = NSSelectorFromString(
+      @"makeSliderWithValue:id:showValue:isGlass:index:callback:");
 
   if ([swiftClass respondsToSelector:selector]) {
     NSMethodSignature *signature =
@@ -41,17 +49,13 @@ HB_FUNC(SWIFTSLIDERCREATE) {
     [invocation setSelector:selector];
     [invocation setTarget:swiftClass];
 
-    [invocation setArgument:&nValue
-                    atIndex:2]; // Note: makeSlider takes NSNumber, but Swift
-                                // side might expect primitive if changed?
-    // Wait, Swift `makeSlider(value: NSNumber, ...)`
-    // In NSInvocation, if arg is object, we pass pointer to object.
-    // `nValue` is double. We should create NSNumber.
     NSNumber *numVal = @(nValue);
     [invocation setArgument:&numVal atIndex:2];
-
-    [invocation setArgument:&nIndex atIndex:3];
-    [invocation setArgument:&callbackBlock atIndex:4];
+    [invocation setArgument:&cId atIndex:3];
+    [invocation setArgument:&bShowValue atIndex:4];
+    [invocation setArgument:&bGlass atIndex:5];
+    [invocation setArgument:&nIndex atIndex:6];
+    [invocation setArgument:&callbackBlock atIndex:7];
 
     [invocation invoke];
 
@@ -62,5 +66,33 @@ HB_FUNC(SWIFTSLIDERCREATE) {
       setupSwiftView(sliderView, window, nTop, nLeft, nWidth, nHeight);
       hb_retnl((HB_LONG)sliderView);
     }
+  } else {
+    NSLog(@"ERROR: Selector %@ not found in class %@",
+          NSStringFromSelector(selector), className);
+  }
+}
+
+HB_FUNC(SWIFTSLIDERSETVALUE) {
+  double nValue = hb_parnd(1);
+  NSString *cId = hb_NSSTRING_par(2);
+
+  NSString *className = @"SwiftFive.SwiftSliderLoader";
+  Class swiftClass = NSClassFromString(className);
+  if (!swiftClass)
+    return;
+
+  SEL selector = NSSelectorFromString(@"setSliderValue:id:");
+  if ([swiftClass respondsToSelector:selector]) {
+    NSMethodSignature *signature =
+        [swiftClass methodSignatureForSelector:selector];
+    NSInvocation *invocation =
+        [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setSelector:selector];
+    [invocation setTarget:swiftClass];
+    [invocation setArgument:&nValue atIndex:2];
+    [invocation setArgument:&cId atIndex:3];
+    [invocation invoke];
+  } else {
+    NSLog(@"ERROR: Selector setSliderValue:id: NOT found.");
   }
 }

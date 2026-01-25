@@ -21,10 +21,10 @@ CLASS TSwiftTextField
 
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, oBatch ) CLASS TSwiftTextField
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, nAutoResize, oBatch ) CLASS TSwiftTextField
 
     DEFAULT nWidth := 200, nHeight := 24, oWnd := GetWndDefault()
-    DEFAULT cText := "", cPlaceholder := "Enter text..."
+    DEFAULT cText := "", cPlaceholder := "Enter text...", nAutoResize := 0
 
     ::nTop      = nTop
     ::nLeft     = nLeft
@@ -40,13 +40,17 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
     AAdd( aTextFields, Self )
     
     if oBatch == nil .and. oWnd != nil 
-        oBatch := oWnd:oSwiftBatch
+    oBatch := oWnd:oSwiftBatch
     endif
 
     if oBatch != nil
-        oBatch:Add( Self )
+    oBatch:Add( Self )
     else
-        ::hWnd = SWIFTTEXTFIELDCREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::nIndex, ::cId )
+    ::hWnd = SWIFTTEXTFIELDCREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::nIndex, ::cId )
+    endif
+
+    if nAutoResize != 0
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     // We do NOT call oWnd:AddControl( Self ) anymore because we want to avoid 
@@ -72,25 +76,25 @@ return hConfig
 METHOD SetText( cText ) CLASS TSwiftTextField
     ::cText = cText
     if ! Empty( ::hWnd )
-        SWIFTTEXTFIELDSETTEXT( ::nIndex, cText )
+    SWIFTTEXTFIELDSETTEXT( ::nIndex, cText )
     endif
 return nil
 
 METHOD GetText() CLASS TSwiftTextField
     if ! Empty( ::hWnd )
-        ::cText = SWIFTTEXTFIELDGETTEXT( ::nIndex )
+    ::cText = SWIFTTEXTFIELDGETTEXT( ::nIndex )
     endif
 return ::cText
 
 METHOD OnChange( cNewText ) CLASS TSwiftTextField
     if ::bOnChange != nil
-        Eval( ::bOnChange, cNewText, Self )
+    Eval( ::bOnChange, cNewText, Self )
     endif
 return nil
 
 // Callback from C
 function SWIFTTEXTFIELDONCHANGE( nIndex, cNewText )
     if nIndex > 0 .and. nIndex <= Len( aTextFields )
-        aTextFields[ nIndex ]:OnChange( cNewText )
+    aTextFields[ nIndex ]:OnChange( cNewText )
     endif
 return nil

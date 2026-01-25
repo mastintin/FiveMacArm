@@ -194,3 +194,10 @@ HB_FUNC(SWIFT_UUID) {
   NSString *uuid = [[NSUUID UUID] UUIDString];
   hb_retc([uuid UTF8String]);
 }
+
+HB_FUNC(SWIFTAUTORESIZE) {
+  NSView *view = (NSView *)hb_parnll(1);
+  if (view) {
+    [view setAutoresizingMask:hb_parnl(2)];
+  }
+}

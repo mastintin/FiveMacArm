@@ -3,50 +3,42 @@
 
 function Main()
 
-    local oWnd, oZStack
-    local oVStack, oList
+    local oWnd
+    local oList1, oList2
     local oRow, oItem
-    local nW := 500
+    local nW := 1000
     local nH := 600
     local i
 
-    DEFINE WINDOW oWnd TITLE "Testing SwiftUI List (Table)" SIZE nW, nH FLIPPED
+    DEFINE WINDOW oWnd TITLE "Testing Two Independent Lists" SIZE nW, nH FLIPPED
 
-    // Standalone List Control
-    @ 20, 20 SWIFTLIST oList SIZE 460, 500 OF oWnd
+    // List 1: Employees (Left)
+    @ 20, 20 SWIFTLIST oList1 SIZE 460, 500 OF oWnd
     
-    oList:bAction := { | nIndex | MsgInfo( "Selected Row: " + Str( nIndex ) ) }
+    oList1:bAction := { | nIndex | MsgInfo( "List 1 Selected: " + Str( nIndex ) ) }
     
-    // MsgInfo( "List Handle: " + ValType( oList:hWnd ) + " " + cValToChar( oList:hWnd ) )
-
-    
-    // Add Rows (HStacks) to List
-    // Note: Since TSwiftList inherits from TSwiftVStack, we can use AddHStack, AddText, etc.
-    // They will be added to the List because SwiftListLoader sets the global state.
-
-    for i := 1 to 20
-    oRow := oList:AddHStack()
-       
-    // Column 1: Icon
-    oRow:AddSystemImage( "person.circle.fill" )
-       
-    // Column 2: Name
+    for i := 1 to 10
+    oRow := oList1:AddHStack()
+    oRow:AddSystemImage( "person.fill" )
     oRow:AddText( "Employee " + AllTrim( Str( i ) ) )
-
-    // Column 3: Detail (Button) - Now before spacer (or remove spacer if user wants it left)
-    // User said "a la derecha en vez de la izquierda", implying they want it Left.
-    // So I will place it immediately after text.
-    //oRow:AddButton( "Details", MakeBlock( i ) )
-       
-    // Spacer to push anything else to right? (Nothing else)
     oRow:AddSpacer()
     next
 
-    @ 550, 380 BUTTON "Exit" SIZE 100, 30 OF oWnd ACTION oWnd:End()
+    // List 2: Departments (Right)
+    @ 20, 500 SWIFTLIST oList2 SIZE 460, 500 OF oWnd
+    
+    oList2:bAction := { | nIndex | MsgInfo( "List 2 Selected: " + Str( nIndex ) ) }
+
+    for i := 1 to 5
+    oRow := oList2:AddHStack()
+    oRow:AddSystemImage( "building.2.fill" )
+    oRow:AddText( "Department " + AllTrim( Str( i ) ) )
+    oRow:AddSpacer()
+    oRow:AddButton( "View", { || MsgAlert( "View Dept " + AllTrim( Str( i ) ) ) } )
+    next
+
+    @ 540, 450 BUTTON "Exit" SIZE 100, 30 OF oWnd ACTION oWnd:End()
 
     ACTIVATE WINDOW oWnd 
 
 return nil
-
-function MakeBlock( nRow )    
-return { || MsgAlert( "Button clicked in Row: " + AllTrim( Str( nRow ) ) ) }

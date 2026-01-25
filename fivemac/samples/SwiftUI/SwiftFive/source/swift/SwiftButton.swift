@@ -9,14 +9,16 @@ class ButtonState: ObservableObject {
     @Published var cornerRadius: CGFloat
     @Published var padding: CGFloat
     @Published var isGlass: Bool
+    @Published var imageName: String
 
-    init(title: String, backgroundColor: Color = .blue, foregroundColor: Color = .white, cornerRadius: CGFloat = 8, padding: CGFloat = 0, isGlass: Bool = false) {
+    init(title: String, backgroundColor: Color = .blue, foregroundColor: Color = .white, cornerRadius: CGFloat = 8, padding: CGFloat = 0, isGlass: Bool = false, imageName: String = "") {
         self.title = title
         self.backgroundColor = backgroundColor
         self.foregroundColor = foregroundColor
         self.cornerRadius = cornerRadius
         self.padding = padding
         self.isGlass = isGlass
+        self.imageName = imageName
     }
 }
 
@@ -58,8 +60,13 @@ struct SwiftButtonView: View {
             Button(action: {
                 self.callback?()
             }) {
-                Text(state.title)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                HStack {
+                    if !state.imageName.isEmpty {
+                        Image(systemName: state.imageName)
+                    }
+                    Text(state.title)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .tint(state.backgroundColor.opacity(0.8))
@@ -71,12 +78,17 @@ struct SwiftButtonView: View {
              Button(action: {
                  self.callback?()
              }) {
-                 Text(state.title)
-                     .padding(state.padding > 0 ? state.padding : 10)
-                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                     .background(state.backgroundColor)
-                     .foregroundColor(state.foregroundColor)
-                     .cornerRadius(state.cornerRadius)
+                 HStack {
+                    if !state.imageName.isEmpty {
+                        Image(systemName: state.imageName)
+                    }
+                    Text(state.title)
+                 }
+                 .padding(state.padding > 0 ? state.padding : 10)
+                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                 .background(state.backgroundColor)
+                 .foregroundColor(state.foregroundColor)
+                 .cornerRadius(state.cornerRadius)
              }
              .buttonStyle(PlainButtonStyle())
              .contentShape(Rectangle())
@@ -168,6 +180,18 @@ public class SwiftButtonLoader: NSObject {
             DispatchQueue.main.async {
                 if let state = states[key] {
                     state.isGlass = isGlass
+                }
+            }
+        }
+    }
+
+    @objc(setButtonImage:index:)
+    public static func setButtonImage(_ imageName: String, index: Int) {
+        if #available(OSX 10.15, *) {
+            let key = String(index)
+            DispatchQueue.main.async {
+                if let state = states[key] {
+                    state.imageName = imageName
                 }
             }
         }

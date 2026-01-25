@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-APP_NAME="TestSwiftGet.prg"
+APP_NAME="TestSwiftToggle.prg"
 HARBOUR_PATH="../../../harbour"
 FIVEMAC_PATH="../.."
 SDK_PATH=$(xcrun --show-sdk-path)

@@ -54,11 +54,11 @@ CLASS TSwiftZStack FROM TControl
 
 ENDCLASS
 
-METHOD New( nRow, nCol, nWidth, nHeight, oWnd ) CLASS TSwiftZStack
+METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftZStack
 
     DEFAULT nWidth := 200
     DEFAULT nHeight := 200
-    DEFAULT oWnd := GetWndDefault()
+    DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
     ::oWnd = oWnd
     
@@ -68,6 +68,10 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd ) CLASS TSwiftZStack
     ::aBatch := {}
 
     ::hWnd = SWIFTZSTACKCREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight )
+
+    if nAutoResize != 0
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    endif
 
     oWnd:AddControl( Self )
 
@@ -291,8 +295,19 @@ METHOD AddText( cText, bAction ) CLASS TSwiftStackItem
     local cId, oItem
     ::nChildCount++
     
+    if ::Root():IsKindOf( "TSWIFTZSTACK" )
     // Use the ID returned by Swift
     cId := SWIFTZSTACKADDTEXTTO( cText, ::cId )
+    else 
+    // SwiftVStack implementation returns void/nil usually, but assumes success?
+    // Wait, SWIFTVSTACKADDTEXTTO (new) is void.
+    // We need items to have logical IDs.
+    // Swift ZStack generates IDs, VStack uses UUIDs internally.
+    // We can't easily get the ID back unless we change C func to return it.
+    // For now, assume it works for display.
+    SWIFTVSTACKADDTEXTTO( ::Root():nIndex, cText, ::cId )
+    cId := ::cId + "_Txt_" + AllTrim( Str( ::nChildCount ) ) // Fake ID for registry?
+    endif
     
     if bAction != nil .and. !Empty( cId )
     oItem := TSwiftStackItem():New( cId, ::oOwner )
@@ -310,7 +325,12 @@ METHOD AddSystemImage( cName ) CLASS TSwiftStackItem
     ::nChildCount++
     cId := ::cId + "_Img_" + AllTrim( Str( ::nChildCount ) )
     
+    if ::Root():IsKindOf( "TSWIFTZSTACK" )
     SWIFTZSTACKADDSYSTEMIMAGETO( cName, ::cId )
+    else
+    SWIFTVSTACKADDSYSTEMIMAGETO( ::Root():nIndex, cName, ::cId )
+    endif
+
     SWIFTSETID( cId )
     
     ::RegItem( cId, { Self, ::nChildCount } )
@@ -327,7 +347,11 @@ METHOD AddButton( cText, bAction ) CLASS TSwiftStackItem
 return nil
 
 METHOD AddSpacer() CLASS TSwiftStackItem
+    if ::Root():IsKindOf( "TSWIFTZSTACK" )
     SWIFTZSTACKADDSPACER( ::cId )
+    else 
+    SWIFTVSTACKADDSPACERTO( ::Root():nIndex, ::cId )
+    endif
 return nil
 
 METHOD AddDivider() CLASS TSwiftStackItem
