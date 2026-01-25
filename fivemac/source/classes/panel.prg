@@ -15,6 +15,13 @@ CLASS TPanel FROM TControl
 
     METHOD cGenPrg()
 
+    METHOD SetVibrancy( lOnOff ) INLINE PnlAllowVibrancy( ::hWnd, lOnOff )
+    
+    METHOD SetFlipped( lOnOff ) INLINE ::lFlipped := lOnOff // Support for dynamic flipped state check?
+
+    METHOD SetGradientColor(nR1, nG1,nB1,nAlpha1, nR2, nG2,nB2,nAlpha2) 
+    METHOD SetCornerRadius( nRadius )    
+
 ENDCLASS
 
 //----------------------------------------------------------------------------//
@@ -28,6 +35,10 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd ) CLASS TPanel
     ::hWnd = PanelCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, ::lFlipped )
     ::oWnd = oWnd
     
+    if __ObjHasData( oWnd, "lVibrancy" ) .and. oWnd:lVibrancy
+        ::SetVibrancy( .T. )
+    endif
+
     ::aControls = {}
 
     oWnd:AddControl( Self )
@@ -45,6 +56,12 @@ return nil
 
 //----------------------------------------------------------------------------//
 
+METHOD SetGradientColor(nR1, nG1,nB1,nAlpha1, nR2, nG2,nB2,nAlpha2) CLASS TPanel
+    DEFAULT nR1 := 0, nG1 := 50,nB1 := 150,nAlpha1 := 0.9
+    DEFAULT nR2 := 0, nG2 := 0,nB2 := 255,nAlpha2 := 0.6 
+    ViewSetGradientColor( ::hWnd, nR1, nG1,nB1,nAlpha1, nR2, nG2,nB2,nAlpha2 )
+return Self
+
 //----------------------------------------------------------------------------//
 
 METHOD SetColor( nClrText, nClrBack ) CLASS TPanel
@@ -54,6 +71,12 @@ METHOD SetColor( nClrText, nClrBack ) CLASS TPanel
             nRgbBlue( nClrBack ), 100 )
     endif
 
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD SetCornerRadius( nRadius ) CLASS TPanel
+    ViewSetCornerRadius( ::hWnd, nRadius )
 return nil
 
 //----------------------------------------------------------------------------//

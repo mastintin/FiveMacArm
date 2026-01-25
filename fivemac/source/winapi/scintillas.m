@@ -17,6 +17,11 @@ typedef enum {
   IBNStatusChanged, // The application set a new status message.
 } NotificationType;
 
+// --- ESTO VA AQUÍ ---
+@interface NSView (ScintillaTextInput)
+- (void)insertText:(id)string replacementRange:(NSRange)replacementRange;
+@end
+
 @interface ScintillaView : NSView {
 }
 

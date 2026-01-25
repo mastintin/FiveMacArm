@@ -20,6 +20,7 @@ void CocoaInit(void);
 {
 @public
   BOOL bDesign;
+  BOOL bVibrancy;
 }
 - (BOOL)windowShouldClose:(NSNotification *)notification;
 - (void)windowWillClose:(NSNotification *)notification;
@@ -51,6 +52,10 @@ void CocoaInit(void);
 @end
 
 @implementation View
+
+- (BOOL)allowsVibrancy {
+  return bVibrancy;
+}
 
 - (BOOL)windowShouldClose:(NSNotification *)notification // VALID clause !
 {
@@ -1184,11 +1189,22 @@ HB_FUNC(WNDGETGLASS) {
       if ([window titlebarAppearsTransparent]) {
         // Also check for NSWindowStyleMaskFullSizeContentView (1 << 15 = 32768)
         if ([window styleMask] & 32768) {
-           hb_retl(YES);
-           return;
+          hb_retl(YES);
+          return;
         }
       }
     }
   }
   hb_retl(NO);
+}
+
+HB_FUNC(WNDALLOWVIBRANCY) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  if (window) {
+    NSView *content = [window contentView];
+    if ([content isKindOfClass:[View class]]) {
+      ((View *)content)->bVibrancy = hb_parl(2);
+      [content setNeedsDisplay:YES];
+    }
+  }
 }

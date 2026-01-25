@@ -1,9 +1,22 @@
 #include <fivemac.h>
 
+@interface FiveBox : NSBox {
+@public
+  BOOL bVibrancy;
+}
+- (BOOL)allowsVibrancy;
+@end
+
+@implementation FiveBox
+- (BOOL)allowsVibrancy {
+  return bVibrancy;
+}
+@end
+
 HB_FUNC(BOXCREATE) {
-  NSBox *box =
-      [[NSBox alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
-                                              hb_parnl(3), hb_parnl(4))];
+  FiveBox *box =
+      [[FiveBox alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
+                                                hb_parnl(3), hb_parnl(4))];
   NSWindow *window = (NSWindow *)hb_parnll(5);
   NSString *string = hb_NSSTRING_par(6);
 
@@ -176,4 +189,12 @@ HB_FUNC(MATRIXADDROW) {
   NSMatrix *matrix = (NSMatrix *)hb_parnll(1);
 
   [matrix addRow];
+}
+
+HB_FUNC(BOXALLOWVIBRANCY) {
+  NSBox *box = (NSBox *)hb_parnll(1);
+  if ([box isKindOfClass:[FiveBox class]]) {
+    ((FiveBox *)box)->bVibrancy = hb_parl(2);
+    [box setNeedsDisplay:YES];
+  }
 }

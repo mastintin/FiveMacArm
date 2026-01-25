@@ -5,11 +5,12 @@
 CLASS TCheckBox FROM TControl
 
    DATA   bChange
+   DATA   lSwitch
    
    DATA   aEvents INIT { { { "OnClick", "lChecked", "Self" }, nil } } 
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bSetGet, cPrompt, bChange,;
-               lUpdate, nAutoResize, cVarName, cOnClick )
+      lUpdate, nAutoResize, cVarName, cOnClick, lSwitch )
    
    METHOD Redefine( nId, oWnd, bSetGet, bChange, lUpdate )
    
@@ -32,12 +33,12 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bSetGet, cPrompt, bChange,;
-            lUpdate, nAutoResize, cVarName, cOnClick ) CLASS TCheckBox
+      lUpdate, nAutoResize, cVarName, cOnClick, lSwitch ) CLASS TCheckBox
 
    DEFAULT nWidth := 90, nHeight := 30, oWnd := GetWndDefault(),;
-           cPrompt := "CheckBox", lUpdate := .F.
+      cPrompt := "CheckBox", lUpdate := .F., lSwitch := .F.
  
-   ::hWnd    = ChkCreate( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd )
+   ::hWnd    = ChkCreate( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, lSwitch )
    ::oWnd    = oWnd
    ::bSetGet = bSetGet
    ::bChange = bChange
@@ -85,7 +86,7 @@ METHOD Initiate() CLASS TCheckBox
       ::hWnd = hWnd
    else
       MsgAlert( "Non defined ID " + AllTrim( Str( ::nId ) ) + ;
-                " in resource " + ::oWnd:cNibName )
+         " in resource " + ::oWnd:cNibName )
    endif
 
    ChkSetState( ::hWnd, Eval( ::bSetGet ) )
@@ -96,13 +97,13 @@ return nil
 
 METHOD Click() CLASS TCheckBox
 
- //  if ! Empty( ::GetEventCode( "OnClick" ) )
- //     Eval( ::GetEventBlock( "OnClick" ), ::Checked(), Self )
- //  else
-      if ! Empty( ::bChange )
-         Eval( ::bChange, ::Checked(), Self )
-      endif      
- //  endif   
+   //  if ! Empty( ::GetEventCode( "OnClick" ) )
+   //     Eval( ::GetEventBlock( "OnClick" ), ::Checked(), Self )
+   //  else
+   if ! Empty( ::bChange )
+      Eval( ::bChange, ::Checked(), Self )
+   endif      
+   //  endif   
 
    if ::bSetGet != nil
       Eval( ::bSetGet, ::Checked() )
@@ -115,12 +116,12 @@ return nil
 METHOD cGenPrg() CLASS TCheckBox
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " CHECKBOX " + ::cVarName + ;
-                  ' PROMPT "' + ::GetText() + '" OF ' + ::oWnd:cVarName + ;
-                  " ;" + CRLF + "      SIZE " + ;
-                  AllTrim( Str( ::nWidth ) ) + ", " + ;
-                  AllTrim( Str( ::nHeight ) ) 
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " CHECKBOX " + ::cVarName + ;
+      ' PROMPT "' + ::GetText() + '" OF ' + ::oWnd:cVarName + ;
+      " ;" + CRLF + "      SIZE " + ;
+      AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) ) 
                   
    local cEventCode := ::GetEventCode( "OnClick" )    
        

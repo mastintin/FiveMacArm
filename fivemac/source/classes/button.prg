@@ -95,9 +95,13 @@ CLASS TButton FROM TControl
    METHOD setHighlight( lhighlight) INLINE BtnSetHighLight(::hWnd, lhighlight )
 
    METHOD SetGlass( lOnOff ) INLINE If( lOnOff, BtnSetGlass( ::hWnd ),)
+   
+   METHOD SetLiquidGlass( lOnOff ) INLINE ::SetGlass( lOnOff )
 
    METHOD SetBezelColor( nRed, nGreen, nBlue, nAlpha ) INLINE ;
       BtnSetBezelColor( ::hWnd, nRed, nGreen, nBlue, nAlpha )
+
+   METHOD SetCapsule( nColor ) INLINE BtnSetCapsule( ::hWnd, nColor )
 
 ENDCLASS
 

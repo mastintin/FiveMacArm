@@ -810,6 +810,11 @@ HB_FUNC(GETMACADDRESS) {
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
+HB_FUNC(CREATE_UUID) {
+  NSString *uuid = [[NSUUID UUID] UUIDString];
+  hb_retc([uuid UTF8String]);
+}
+
 HB_FUNC(GETSDKPATH) {
   NSPipe *outPipe = [NSPipe pipe];
   NSTask *task = [[NSTask alloc] init];
