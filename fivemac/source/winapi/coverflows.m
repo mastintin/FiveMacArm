@@ -1,7 +1,10 @@
 #import "Quartz/Quartz.h"
 #include <fivemac.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 @interface IKImageFlowView : NSOpenGLView {
+#pragma clang diagnostic pop
   id _dataSource;
   id _dragDestinationDelegate;
   id _delegate;

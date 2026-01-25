@@ -188,22 +188,106 @@ HB_FUNC(BTNSETTOOLTIP) {
 HB_FUNC(BTNSETGLASS) {
   NSButton *button = (NSButton *)hb_parnll(1);
   if (button) {
-    // NSBezelStyleTexturedRounded (11) is the modern equivalent for glass look
-    [button setBezelStyle:11];
-    if (@available(macOS 10.12.2, *)) {
-      [button setBezelColor:[[NSColor systemBlueColor]
-                                colorWithAlphaComponent:0.8]];
+
+    button.bezelStyle = NSBezelStyleGlass;
+    button.bezelColor = [NSColor systemBlueColor];
+
+    [button setBordered:NO];
+
+    NSVisualEffectView *vView =
+        [[NSVisualEffectView alloc] initWithFrame:[button bounds]];
+
+    [vView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+    [vView setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
+
+    if (@available(macOS 10.14, *)) {
+      [vView setMaterial:NSVisualEffectMaterialHUDWindow];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+      [vView setMaterial:NSVisualEffectMaterialLight];
+#pragma clang diagnostic pop
     }
+
+    [vView setState:NSVisualEffectStateActive];
+    [vView setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
+
+    [vView setWantsLayer:YES];
+    vView.layer.cornerRadius = 5.0; // Standard rounded corner
+    vView.layer.masksToBounds = YES;
+
+    // Border for Glass
+    vView.layer.borderColor =
+        [[NSColor whiteColor] colorWithAlphaComponent:0.6].CGColor;
+    vView.layer.borderWidth = 1.0;
+
+    [button addSubview:vView positioned:NSWindowBelow relativeTo:nil];
   }
 }
 
 HB_FUNC(BTNSETBEZELCOLOR) {
   NSButton *button = (NSButton *)hb_parnll(1);
-  if (button && @available(macOS 10.12.2, *)) {
-    NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
-                                               green:hb_parnd(3) / 255.0
-                                                blue:hb_parnd(4) / 255.0
-                                               alpha:hb_parnd(5)];
-    [button setBezelColor:color];
+  if (button) {
+    if (@available(macOS 10.12.2, *)) {
+      NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
+                                                 green:hb_parnd(3) / 255.0
+                                                  blue:hb_parnd(4) / 255.0
+                                                 alpha:hb_parnd(5)];
+      [button setBezelColor:color];
+    }
+  }
+}
+HB_FUNC(BTNSETCAPSULE) {
+  NSButton *button = (NSButton *)hb_parnll(1);
+  long nColor = hb_parnl(2);
+
+  if (button) {
+    [button setWantsLayer:YES];
+    [button setBordered:NO];
+    button.layer.masksToBounds = NO;
+
+    // Color (Tint)
+    int r = nColor & 0xFF;
+    int g = (nColor >> 8) & 0xFF;
+    int b = (nColor >> 16) & 0xFF;
+    float alpha = 1.0;
+
+    NSColor *col = [NSColor colorWithCalibratedRed:r / 255.0
+                                             green:g / 255.0
+                                              blue:b / 255.0
+                                             alpha:alpha];
+
+    button.layer.backgroundColor = col.CGColor;
+    button.layer.cornerRadius = button.frame.size.height / 2.0;
+
+    // Border
+    button.layer.borderColor =
+        [[NSColor whiteColor] colorWithAlphaComponent:0.6].CGColor;
+    button.layer.borderWidth = 1.5;
+
+    // Shadow
+    button.layer.shadowColor = [NSColor blackColor].CGColor;
+    button.layer.shadowOpacity = 0.3;
+    button.layer.shadowOffset = CGSizeMake(0, -2);
+    button.layer.shadowRadius = 4;
+
+    // Text Color White
+    if ([button title]) {
+      NSMutableAttributedString *attrTitle =
+          [[NSMutableAttributedString alloc] initWithString:[button title]];
+      [attrTitle addAttribute:NSForegroundColorAttributeName
+                        value:[NSColor whiteColor]
+                        range:NSMakeRange(0, [attrTitle length])];
+      // Center alignment
+      NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
+      [style setAlignment:NSTextAlignmentCenter];
+      [attrTitle addAttribute:NSParagraphStyleAttributeName
+                        value:style
+                        range:NSMakeRange(0, [attrTitle length])];
+
+      [button setAttributedTitle:attrTitle];
+      [attrTitle release];
+      [style release];
+    }
   }
 }

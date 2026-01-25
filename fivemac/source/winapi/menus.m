@@ -180,7 +180,7 @@ HB_FUNC(POPMNUCONTEXT) {
                                  modifierFlags:0 // NSLeftMouseDownMask // 0x100
                                      timestamp:0
                                   windowNumber:windowNumber
-                                       context:[[view window] graphicsContext]
+                                       context:nil
                                    eventNumber:0
                                     clickCount:1
                                       pressure:1];
@@ -194,15 +194,25 @@ HB_FUNC(POPMNUSHOW) {
   NSPoint menuOrigin =
       [[window contentView] convertPoint:NSMakePoint(hb_parnl(4), hb_parnl(3))
                                   toView:nil];
+
+  // Debug log to Console
+  NSLog(@"FiveMac Debug: POPMNUSHOW Row=%ld Col=%ld Origin=(%f,%f) Window#=%ld "
+        @"Context=%@",
+        hb_parnl(3), hb_parnl(4), menuOrigin.x, menuOrigin.y,
+        (long)[window windowNumber], [NSGraphicsContext currentContext]);
+
   NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown
                                       location:menuOrigin
                                  modifierFlags:0 // NSLeftMouseDownMask // 0x100
                                      timestamp:0
                                   windowNumber:[window windowNumber]
-                                       context:[window graphicsContext]
+                                       context:nil
                                    eventNumber:0
                                     clickCount:1
                                       pressure:1];
+
+  if (!event)
+    NSLog(@"FiveMac Debug: Failed to create NSEvent");
 
   [NSMenu popUpContextMenu:menu withEvent:event forView:[window contentView]];
 }

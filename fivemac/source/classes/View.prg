@@ -11,6 +11,8 @@ CLASS TView FROM TControl
    METHOD New( oWnd )
    METHOD Hide() INLINE ViewHide( ::hWnd )
    METHOD Show() INLINE ViewShow( ::hWnd )   
+   METHOD SetGradientColor(nR1, nG1,nB1,nAlpha1, nR2, nG2,nB2,nAlpha2)
+   METHOD SetCornerRadius( nRadius )
 ENDCLASS
 
 //----------------------------------------------------------------------------//
@@ -31,3 +33,15 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cTitle ) CLASS TView
 return Self
 
 //----------------------------------------------------------------------------//
+
+METHOD SetGradientColor(nR1, nG1,nB1,nAlpha1, nR2, nG2,nB2,nAlpha2) CLASS TView
+   DEFAULT nR1 := 0, nG1 := 50,nB1 := 150,nAlpha1 := 0.9
+   DEFAULT nR2 := 0, nG2 := 0,nB2 := 255,nAlpha2 := 0.6 
+   ViewSetGradientColor( ::hWnd, nR1, nG1,nB1,nAlpha1, nR2, nG2,nB2,nAlpha2 )
+return Self
+
+//----------------------------------------------------------------------------//
+
+METHOD SetCornerRadius( nRadius ) CLASS TView
+   ViewSetCornerRadius( ::hWnd, nRadius )
+return nil

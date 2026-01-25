@@ -2,6 +2,8 @@
 
 @interface FiveFlippedView : NSView {
   BOOL _isFlipped;
+@public
+  BOOL bVibrancy;
 }
 - (id)initWithFrame:(NSRect)frame flipped:(BOOL)flipped;
 - (BOOL)isFlipped;
@@ -82,4 +84,12 @@ HB_FUNC(PANELSETSHADOW) {
   view.layer.shadowOpacity = fOpacity;
   view.layer.shadowRadius = fRadius;
   view.layer.shadowOffset = CGSizeMake(fOffSetW, fOffSetH);
+}
+
+HB_FUNC(PNLALLOWVIBRANCY) {
+  NSView *view = (NSView *)hb_parnll(1);
+  if ([view isKindOfClass:[FiveFlippedView class]]) {
+    ((FiveFlippedView *)view)->bVibrancy = hb_parl(2);
+    [view setNeedsDisplay:YES];
+  }
 }

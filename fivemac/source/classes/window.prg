@@ -39,6 +39,7 @@ CLASS TWindow
    DATA  oPopup
    DATA  lFlipped INIT .F.
    DATA  lGlass INIT .F.
+   DATA  lVibrancy INIT .F.
    DATA  cCursor
    DATA  bLostFocus, bGetFocus
    DATA  oSwiftBatch
@@ -205,6 +206,8 @@ CLASS TWindow
    METHOD SetGlass() INLINE WNDSETGLASS( ::hWnd )
 
    
+   METHOD SetVibrancy( lOnOff ) INLINE WndAllowVibrancy( ::hWnd, lOnOff )
+   
 ENDCLASS
 
 //----------------------------------------------------------------------------//
@@ -227,18 +230,20 @@ METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled, lNoBorder
       If( lPaneled, NSUtilityWindowMask, 0 ) ) ) )
    
    if nWidth != nil
-      ::SetPos( ScreenHeight() / 2 - nHeight / 2,;
-         ScreenWidth() / 2 - nWidth / 2 )
-      ::SetSize( nWidth, nHeight )
+   ::SetPos( ScreenHeight() / 2 - nHeight / 2,;
+      ScreenWidth() / 2 - nWidth / 2 )
+   ::SetSize( nWidth, nHeight )
    endif   
       
    if lRounded
-      ::SetRounded() 
+   ::SetRounded() 
    endif
    
    ::lGlass = lGlass
    if lGlass
-      ::SetGlass()
+   ::SetGlass()
+   ::lVibrancy = .t.
+   ::SetVibrancy( ::lVibrancy )
    endif
    
    WndSetText( ::hWnd, cTitle )
@@ -249,7 +254,7 @@ METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled, lNoBorder
    SetWndDefault( Self )
 
    if lFullScreen
-      ::FullScreen()
+   ::FullScreen()
    endif
 
    DEFAULT cVarName := "oWnd"
@@ -266,49 +271,49 @@ METHOD Activate( bLClicked, bValid, lMaximized, bPainted, lCentered, bInit,;
    DEFAULT lMaximized := .F., lCentered := .F.
 
    if bLClicked != nil
-      ::bLButtonDown = bLClicked
+   ::bLButtonDown = bLClicked
    endif
 
    if bRClicked != nil
-      ::bRClicked = bRClicked
+   ::bRClicked = bRClicked
    endif
    
    if bValid != nil   
-      ::bValid = bValid
+   ::bValid = bValid
    endif
    
    if bPainted != nil   
-      ::bPainted = bPainted
+   ::bPainted = bPainted
    endif   
 
    if bResized != nil   
-      ::bResized = bResized
+   ::bResized = bResized
    endif   
 
    if lMaximized
-      ::Maximize()
+   ::Maximize()
    endif
 
    if lCentered
-      ::Center()
+   ::Center()
    endif   
 
    if ! Empty( bInit )
-      ::bInit = bInit
+   ::bInit = bInit
    endif
    if ! Empty( ::bInit )
-      Eval( ::bInit, self )
+   Eval( ::bInit, self )
    endif
 
    if ::oSwiftBatch != nil
-      ::oSwiftBatch:Create()
+   ::oSwiftBatch:Create()
    endif
 
    if Empty( ::cNibName )
-      WndRun( ::hWnd )
+   WndRun( ::hWnd )
    else
-      ::hWnd = WndFromNib( ::cNibName )
-      ::Initiate()
+   ::hWnd = WndFromNib( ::cNibName )
+   ::Initiate()
    endif      
 
 return nil
@@ -331,9 +336,9 @@ METHOD AtControl( nRow, nCol ) CLASS TWindow
    local nAt := AScan( ::aControls, { | oCtrl | oCtrl:hWnd == hCtrl } )
 
    if nAt == 0
-      if ( oCtrl := ::FindControl( hCtrl ) ) != nil
-         return oCtrl
-      endif    
+   if ( oCtrl := ::FindControl( hCtrl ) ) != nil
+   return oCtrl
+   endif    
    endif             
 
 return If( nAt != 0, ::aControls[ nAt ],)
@@ -345,13 +350,13 @@ METHOD DefControl( oCtrl ) CLASS TWindow
    // DEFAULT oCtrl:nId := oCtrl:GetNewId()
 
    if AScan( ::aControls, { | o | o:nId == oCtrl:nId } ) > 0
-      MsgAlert( "Duplicated control ID " + Str( oCtrl:nId ) )
-      // #define DUPLICATED_CONTROLID  2
-      // Eval( ErrorBlock(), _FWGenError( DUPLICATED_CONTROLID, ;
-      //                     "No: " + Str( oCtrl:nId, 6 ) ) )
+   MsgAlert( "Duplicated control ID " + Str( oCtrl:nId ) )
+   // #define DUPLICATED_CONTROLID  2
+   // Eval( ErrorBlock(), _FWGenError( DUPLICATED_CONTROLID, ;
+   //                     "No: " + Str( oCtrl:nId, 6 ) ) )
    else
-      AAdd( ::aControls, oCtrl )
-      oCtrl:hWnd = 0
+   AAdd( ::aControls, oCtrl )
+   oCtrl:hWnd = 0
    endif
 
 return nil 
@@ -373,13 +378,13 @@ return Self
 METHOD End() CLASS TWindow
 
    if ::lRounded
-      WndDestroy( ::hWnd )
-      ::UnLink()
+   WndDestroy( ::hWnd )
+   ::UnLink()
    else
-      WndClose( ::hWnd )
-      if ::lValidResult
-         ::UnLink()
-      endif
+   WndClose( ::hWnd )
+   if ::lValidResult
+   ::UnLink()
+   endif
    endif
 
 return nil
@@ -417,10 +422,10 @@ return nil
 METHOD MenuItemClick( hMenuItem ) CLASS TWindow
 
    if ::oPopup != nil
-      ::oPopup:Click( hMenuItem )
+   ::oPopup:Click( hMenuItem )
 	 
    elseif GetMenu() != nil
-      GetMenu():Click( hMenuItem )
+   GetMenu():Click( hMenuItem )
 
    endif
 
@@ -433,8 +438,8 @@ METHOD UnLink() CLASS TWindow
    local nAt
 
    if ( nAt := AScan( aWindows, { | o | o:hWnd == ::hWnd } ) ) != 0
-      ADel( aWindows, nAt )
-      ASize( aWindows, Len( aWindows ) - 1 )
+   ADel( aWindows, nAt )
+   ASize( aWindows, Len( aWindows ) - 1 )
    endif
 
 return nil
@@ -446,7 +451,7 @@ METHOD SetEventCode( cEventName, cCode ) CLASS TWindow
    local nAt := AScan( ::aEvents, { | aEvent | aEvent[ 1 ][ 1 ] == cEventName } )
    
    if nAt != 0
-      ::aEvents[ nAt ][ 2 ] = cCode
+   ::aEvents[ nAt ][ 2 ] = cCode
    endif
    
 return nil      
@@ -472,16 +477,16 @@ METHOD FindControl( hWnd ) CLASS TWindow
    local n, oControl
 
    if ::aControls == nil .or. Len( ::aControls ) == 0
-      return nil
+   return nil
    endif
 
    for n = 1 to Len( ::aControls )
    if ::aControls[ n ]:hWnd == hWnd
-      return ::aControls[ n ]
+   return ::aControls[ n ]
    else
-      if ( oControl := ::aControls[ n ]:FindControl( hWnd ) ) != nil
-         return oControl
-      endif
+   if ( oControl := ::aControls[ n ]:FindControl( hWnd ) ) != nil
+   return oControl
+   endif
    endif
    next
 
@@ -515,7 +520,7 @@ METHOD cGenPrg() CLASS TWindow
       ", " + AllTrim( Str( ::nHeight ) )
                 
    if ::lFlipped
-      cCode += " FLIPPED"
+   cCode += " FLIPPED"
    endif                
 
    AEval( ::aControls, { | o | cCode += o:cGenPrg() } )
@@ -534,11 +539,11 @@ METHOD GetEventBlock( cEventName ) CLASS TWindow
    local cCode := "{ | ", n
    
    if nAt != 0
-      for n = 2 to Len( ::aEvents[ nAt ][ 1 ] ) - 1
-      cCode += ::aEvents[ nAt ][ 1 ][ n ] + ", " 
-      next  
-      return &( SubStr( cCode, 1, Len( cCode ) - 2 ) + ;
-         "| " + ::aEvents[ nAt ][ 2 ] + " }" )  
+   for n = 2 to Len( ::aEvents[ nAt ][ 1 ] ) - 1
+   cCode += ::aEvents[ nAt ][ 1 ][ n ] + ", " 
+   next  
+   return &( SubStr( cCode, 1, Len( cCode ) - 2 ) + ;
+      "| " + ::aEvents[ nAt ][ 2 ] + " }" )  
    endif
    
 return nil      
@@ -550,7 +555,7 @@ METHOD GetEventCode( cEventName ) CLASS TWindow
    local nAt := AScan( ::aEvents, { | aEvent | aEvent[ 1 ][ 1 ] == cEventName } )
    
    if nAt != 0
-      return ::aEvents[ nAt ][ 2 ]  
+   return ::aEvents[ nAt ][ 2 ]  
    endif
    
 return nil      
@@ -562,180 +567,185 @@ METHOD HandleEvent( nMsg, nSender, uParam1, uParam2, uParam3, uParam4 ) CLASS TW
    local oControl := If( nSender != nil, ::FindControl( nSender ),), oCtrl
 
    if oControl == nil
-      if nMsg == WM_BRWROWS // the request is sent before its hWnd has been assigned
-         for each oCtrl in ::aControls
-         if oCtrl:IsKindOf( "TWBROWSE" ) .and. Empty( oCtrl:hWnd )
-            oCtrl:hWnd = uParam2
-            oControl = oCtrl
-            exit
-         endif
-         next
-      endif
+   if nMsg == WM_BRWROWS // the request is sent before its hWnd has been assigned
+   for each oCtrl in ::aControls
+   if oCtrl:IsKindOf( "TWBROWSE" ) .and. Empty( oCtrl:hWnd )
+   oCtrl:hWnd = uParam2
+   oControl = oCtrl
+   exit
+   endif
+   next
+   endif
    endif
 
    do case
-      case nMsg == WM_PAINT
-         return ::Paint()
+   case nMsg == WM_PAINT
+   return ::Paint()
 
-      case nMsg == WM_FLIPPED
-         return ::lFlipped // .and. Upper( ::ClassName() ) == "TWINDOW"
+   case nMsg == WM_FLIPPED
+   return ::lFlipped // .and. Upper( ::ClassName() ) == "TWINDOW"
 
-      case nMsg == WM_KEYDOWN
-         if oControl != nil
-            return oControl:KeyDown( uParam1 )
-         else
-            return ::KeyDown( uParam1 ) 
-         endif
+   case nMsg == WM_KEYDOWN
+   if oControl != nil
+   return oControl:KeyDown( uParam1 )
+   else
+   return ::KeyDown( uParam1 ) 
+   endif
 
-      case nMsg == WM_MOUSEDOWN
-         if oControl != nil
-            oControl:MouseDown( uParam1, uParam2 )
-         endif 
+   case nMsg == WM_MOUSEDOWN
+   if oControl != nil
+   oControl:MouseDown( uParam1, uParam2 )
+   endif 
 
-      case nMsg == WM_WNDSETCURSOR
-         ::CursorChange()
-      case nMsg == WM_MOUSEMOVED
-         return ::MouseMove( uParam1, uParam2 )
+   case nMsg == WM_WNDSETCURSOR
+   ::CursorChange()
+   case nMsg == WM_MOUSEMOVED
+   return ::MouseMove( uParam1, uParam2 )
 
-      case nMsg == WM_LBUTTONDOWN
-         // MsgInfo( "Window Click: " + Str( nMsg ) )
-         if oControl != nil
-            return oControl:LButtonDown( uParam1, uParam2 )
-         else
-            return ::LButtonDown( uParam1, uParam2 ) 
-         endif
+   case nMsg == WM_LBUTTONDOWN
+   // MsgInfo( "Window Click: " + Str( nMsg ) )
+   if oControl != nil
+   return oControl:LButtonDown( uParam1, uParam2 )
+   else
+   return ::LButtonDown( uParam1, uParam2 ) 
+   endif
 
-      case nMsg == WM_LBUTTONUP
-         if oControl != nil
-            return oControl:LButtonUp( uParam1, uParam2 )
-         else
-            return ::LButtonUp( uParam1, uParam2 ) 
-         endif
+   case nMsg == WM_LBUTTONUP
+   if oControl != nil
+   return oControl:LButtonUp( uParam1, uParam2 )
+   else
+   return ::LButtonUp( uParam1, uParam2 ) 
+   endif
 
-      case nMsg == WM_RBUTTONDOWN
-         if oControl != nil
+   case nMsg == WM_RBUTTONDOWN
+   if oControl != nil
 
-            oControl:RButtonDown( uParam1, uParam2, uParam3, uParam4 )
-         else
-            ::RButtonDown( uParam1, uParam2 )
-         endif
+   oControl:RButtonDown( uParam1, uParam2, uParam3, uParam4 )
+   else
+   ::RButtonDown( uParam1, uParam2 )
+   endif
 
-      case nMsg == WM_RESIZE
-         return ::Resize()
+   case nMsg == WM_RESIZE
+   return ::Resize()
              
-      case nMsg == WM_WNDVALID
-         return ::lValid()
+   case nMsg == WM_WNDVALID
+   return ::lValid()
              
-      case nMsg == WM_WHEN
-         return ::lWhen()
+   case nMsg == WM_WHEN
+   return ::lWhen()
         
-      case nMsg == WM_BTNCLICK
-         if oControl != nil
-            oControl:Click()
-         endif
+   case nMsg == WM_BTNCLICK
+   if oControl != nil
+   oControl:Click()
+   endif
 
-      case nMsg == WM_CHKCLICK
-         if oControl != nil
-            oControl:Click()
-         endif
+   case nMsg == WM_CHKCLICK
+   if oControl != nil
+   oControl:Click()
+   endif
                
-      case nMsg == WM_FLIPPED
-         if oControl != nil
-            return oControl:lFlipped
-         else   
-            return ::lFlipped
-         endif   
+   case nMsg == WM_FLIPPED
+   if oControl != nil
+   return oControl:lFlipped
+   else   
+   return ::lFlipped
+   endif   
 	           
-      case nMsg == WM_CBXCHANGE
-         if oControl != nil
-            oControl:Change()
-         endif
+   case nMsg == WM_CBXCHANGE
+   if oControl != nil
+   oControl:Change()
+   endif
 	
-      case nMsg == WM_MENUITEM
-         ::MenuItemClick( nSender )
+   case nMsg == WM_MENUITEM
+   ::MenuItemClick( nSender )
 
-      case nMsg == WM_BRWROWS
-         if oControl != nil
-            return oControl:Rows()
-         endif
+   case nMsg == WM_BRWROWS
+   if oControl != nil
+   return oControl:Rows()
+   endif
 		
-      case nMsg == WM_BRWVALUE
-         if oControl != nil
-            return oControl:GetValue( uParam1, uParam2 )
-         else
-            MsgInfo( "oControl is nil" )
-         endif
+   case nMsg == WM_BRWVALUE
+   if oControl != nil
+   return oControl:GetValue( uParam1, uParam2 )
+   else
+   MsgInfo( "oControl is nil" )
+   endif
 
-      case nMsg == WM_BRWSETVALUE
-         if oControl != nil
-            return oControl:SetValue( uParam1, uParam2, uParam3 )
-         else
-            MsgInfo( "oControl is nil" )
-         endif	
+   case nMsg == WM_BRWSETVALUE
+   if oControl != nil
+   return oControl:SetValue( uParam1, uParam2, uParam3 )
+   else
+   MsgInfo( "oControl is nil" )
+   endif	
   
-      case nMsg == WM_BRWCLRTEXT
-         if oControl != nil
-            return oControl:GetTextColor( uParam1, uParam2 )
-         endif  
+   case nMsg == WM_BRWCLRTEXT
+   if oControl != nil
+   return oControl:GetTextColor( uParam1, uParam2 )
+   endif  
 
-      case nMsg == WM_TBRCLICK
-         if ::oBar != nil
-            ::oBar:Click( nSender )
-         endif
+   case nMsg == WM_TBRCLICK
+   if ::oBar != nil
+   ::oBar:Click( nSender )
+   endif
 
-      case nMsg == WM_TIMER
-         ::Timer( nSender )
+   case nMsg == WM_TIMER
+   ::Timer( nSender )
 
-      case nMsg == WM_SLIDERCHANGE
-         if oControl != nil
-            oControl:Change()
-         endif
+   case nMsg == WM_SLIDERCHANGE
+   if oControl != nil
+   oControl:Change()
+   endif
            
-      case nMsg == WM_BRWDBLCLICK
-         if oControl != nil
-            oControl:Click()
-         endif  
+   case nMsg == WM_BRWDBLCLICK
+   if oControl != nil
+   oControl:Click()
+   endif  
       
-      case nMsg == 18 // WM_BRWCHANGED
-         if oControl != nil
-            oControl:HandleEvent( nMsg, nSender, uParam1, uParam2 )
-         endif
-      case nMsg == WM_BRWDRAWRECT
-         if oControl != nil 
-            oControl:drawrect( uParam1 )
-         endif
-      case nMsg == WM_HEADCLICK
-         if oControl != nil
-            oControl:HeadClick( uParam1 + 1 ) 					
-         endif
+   case nMsg == 18 // WM_BRWCHANGED
+   if oControl != nil
+   oControl:HandleEvent( nMsg, nSender, uParam1, uParam2 )
+   endif
+   case nMsg == WM_BRWDRAWRECT
+   if oControl != nil 
+   oControl:drawrect( uParam1 )
+   endif
+   case nMsg == WM_HEADCLICK
+   if oControl != nil
+   oControl:HeadClick( uParam1 + 1 ) 					
+   endif
 
-      case nMsg == WM_SHEETOK
-         if oControl != nil
-            oControl:Click( uParam1, uParam2 ) 					
-         endif
+   case nMsg == WM_SHEETOK
+   if oControl != nil
+   oControl:Click( uParam1, uParam2 ) 					
+   endif
 
-      case nMsg == WM_SCINOTIFY
-         if oControl != nil
-            oControl:Notify( uParam1, uParam2 )
-         else
-            MsgInfo( GetClassName( nSender ) )   
-         endif   
+   case nMsg == WM_SCINOTIFY
+   if oControl != nil
+   oControl:Notify( uParam1, uParam2 )
+   else
+   MsgInfo( GetClassName( nSender ) )   
+   endif   
            
-      case nMsg == WM_CLRCHANGE
-         if oControl != nil
-            oControl:Change()
-         endif    
+   case nMsg == WM_CLRCHANGE
+   if oControl != nil
+   oControl:Change()
+   endif    
            
-      case nMsg == WM_TABITEMSEL
-         if oControl != nil
-            oControl:Change( uParam1 )
-         endif   
+   case nMsg == WM_TABITEMSEL
+   if oControl != nil
+   oControl:Change( uParam1 )
+   endif   
 
-      case nMsg == WM_GETFOCUS
-         ::GetFocus()
+   case nMsg == WM_CVDBLCLICK
+   if oControl != nil
+   oControl:HandleEvent( nMsg, nSender, uParam1, uParam2 )
+   endif   
+
+   case nMsg == WM_GETFOCUS
+   ::GetFocus()
        
-      case nMsg == WM_LOSTFOCUS
-         ::LostFocus()
+   case nMsg == WM_LOSTFOCUS
+   ::LostFocus()
    endcase
 
 return nil
@@ -744,7 +754,7 @@ return nil
 
 METHOD GetFocus() CLASS TWindow
    if ! Empty( ::bGetFocus )
-      return Eval( ::bGetFocus, Self )
+   return Eval( ::bGetFocus, Self )
    endif
 
 return nil
@@ -754,7 +764,7 @@ return nil
 
 METHOD lostFocus() CLASS TWindow
    if ! Empty( ::blostFocus )
-      return Eval( ::bLostFocus, Self )
+   return Eval( ::bLostFocus, Self )
    endif
 
 return nil
@@ -764,7 +774,7 @@ return nil
 METHOD KeyDown( nKey ) CLASS TWindow
 
    if ! Empty( ::bKeyDown )
-      return Eval( ::bKeyDown, nKey, Self )
+   return Eval( ::bKeyDown, nKey, Self )
    endif
 
 return nil
@@ -776,9 +786,9 @@ function _FMH( hWnd, nMsg, hSender, uParam1, uParam2 ,uParam3, uParam4 )
    local nAt := AScan( aWindows, { | o | o:hWnd == hWnd } )
 
    if nAt != 0
-      return aWindows[ nAt ]:HandleEvent( nMsg, hSender, uParam1, uParam2, uParam3, uParam4 )
-      // else
-      //     MsgInfo( "nAt is zero in _FMH" )
+   return aWindows[ nAt ]:HandleEvent( nMsg, hSender, uParam1, uParam2, uParam3, uParam4 )
+   // else
+   //     MsgInfo( "nAt is zero in _FMH" )
    endif
 
 return nil
@@ -790,12 +800,12 @@ function _FMO( hWnd, nMsg, hSender, uParam1, uParam2 )
    local oControl, nAt := AScan( aWindows, { | o | o:hWnd == hWnd } )
 
    if nAt != 0
-      oControl := aWindows[ nAt ]:FindControl( hSender )
-      if oControl != nil
-         return oControl:HandleEvent( nMsg, uParam1, uParam2 )
-      endif
+   oControl := aWindows[ nAt ]:FindControl( hSender )
+   if oControl != nil
+   return oControl:HandleEvent( nMsg, uParam1, uParam2 )
+   endif
    else
-      MsgInfo( "nAt is zero in FMO" )
+   MsgInfo( "nAt is zero in FMO" )
    endif
 
 return nil
