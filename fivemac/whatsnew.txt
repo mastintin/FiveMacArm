@@ -1,6 +1,23 @@
 January 2026
 ============
 
+* New: SwiftUI SwiftPicker component.
+  - Native picklist with integrated search field.
+  - Scrollable results popover with custom label/title support.
+  - New `SWIFTPICKER` command in `SwiftControls.ch`.
+
+* Enhancement: Focus Reliability & Application Activation.
+  - Global Activation: `CocoaInit` (msgs.m) now forces app activation (`activateIgnoringOtherApps:YES`), ensuring keyboard focus on launch.
+  - Browse Editor Focus: `TWBrowse:Edit()` (browses.m) now uses a delayed focus mechanism to ensure the inline text editor receives the caret correctly.
+
+* Improvement: Browse Editor Safety.
+  - Default Column Behavior: Modified `BRWADDCOLUMN` and `BRWRESCREATE` to create non-editable columns by default, preventing unintended edits unless explicitly enabled via `SetColEditable()`.
+
+* UI: Adjusted Popover default presentation to appear below the anchor view for better visibility.
+
+January 2026
+============
+
 * Enhancement: Fivedit sample significantly improved:
   - Integrated Manual Search: Search icon click detection in Toolbar search field for non-intrusive searching.
   - Enhanced Replace Dialog: Improved layout (bottom-up coordinates) and Wrap Around search logic.
