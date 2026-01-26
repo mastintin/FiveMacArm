@@ -23,15 +23,15 @@ CLASS TWBrowse FROM TControl
    DATA   bMouseDown
 
    CLASSDATA aProps INIT { "nTop", "nLeft", "nWidth", "nHeight", "cVarName",;
-                             "nClrText", "nClrBack", "nAutoResize" }
+      "nClrText", "nClrBack", "nAutoResize" }
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bLine, aHeaders, cAlias ,;
-                      nAutoResize, aSizes, nClrText, nClrBack, cVarName )
+      nAutoResize, aSizes, nClrText, nClrBack, cVarName )
 
    METHOD cGenPrg()
 
    METHOD GetTextColor( pColumn, nRowIndex ) INLINE ;
-                    If( ::bClrText != nil, Eval( ::bClrText, pColumn, nRowIndex ),)
+      If( ::bClrText != nil, Eval( ::bClrText, pColumn, nRowIndex ),)
 
    METHOD GetValue( nCol, nRow )
 
@@ -139,6 +139,10 @@ CLASS TWBrowse FROM TControl
    METHOD SetFont( cFaceName, nSize ) INLINE BrwSetFont( ::hWnd, cFaceName, nSize )
 
    METHOD SetDblclick() INLINE BrwSetDblAction( ::hWnd )
+   
+   METHOD ClrDblClick() INLINE BrwClrDblAction( ::hWnd )
+   
+   METHOD Edit( nCol ) INLINE BrwEdit( ::hWnd, nCol )
 
    METHOD SetSize( nWidth, nHeight ) INLINE BrwSetSize( ::hWnd, nWidth, nHeight )
 
@@ -149,27 +153,27 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bLine, aHeaders, bChange,;
-            cAlias, nAutoResize, aSizes, nClrText, nClrBack, cVarName ) CLASS TWBrowse
+      cAlias, nAutoResize, aSizes, nClrText, nClrBack, cVarName ) CLASS TWBrowse
 
    local n
 
    DEFAULT nWidth := 300, nHeight := 100, cAlias := Alias()
 
    if ! Empty( cAlias )
-      ::cAlias = cAlias
+   ::cAlias = cAlias
 
-      if ValType( cAlias ) == "O"
-          ::cAlias = "_DATASET"
-           ::oDataSet = cAlias
-          ::bLogicLen = { || ::oDataSet:LastRec() }
-       else
-         ::bLogicLen = { || ( ::cAlias )->( RecCount() ) }
-       endif
-
-      DEFAULT bLine := { || ( ::cAlias )->( GetFields() ) }
-      DEFAULT aHeaders := ASize( ( ::cAlias )->( GetHeaders( bLine ) ), Len( Eval( bLine ) ) )
+   if ValType( cAlias ) == "O"
+   ::cAlias = "_DATASET"
+   ::oDataSet = cAlias
+   ::bLogicLen = { || ::oDataSet:LastRec() }
    else
-      DEFAULT aHeaders := AFill( Array( Len( Eval( bLine ) ) ), "" )
+   ::bLogicLen = { || ( ::cAlias )->( RecCount() ) }
+   endif
+
+   DEFAULT bLine := { || ( ::cAlias )->( GetFields() ) }
+   DEFAULT aHeaders := ASize( ( ::cAlias )->( GetHeaders( bLine ) ), Len( Eval( bLine ) ) )
+   else
+   DEFAULT aHeaders := AFill( Array( Len( Eval( bLine ) ) ), "" )
    endif
 
    oWnd:AddControl( Self )
@@ -189,21 +193,21 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bLine, aHeaders, bChange,;
    ::bChange  = bChange
 
    for n = 1 to Len( aHeaders )
-      AAdd( ::aCols, TBrwColumn():New( BrwAddColumn( ::hWnd, aHeaders[ n ] ), self, aHeaders[ n ] ) )
+   AAdd( ::aCols, TBrwColumn():New( BrwAddColumn( ::hWnd, aHeaders[ n ] ), self, aHeaders[ n ] ) )
    next
 
    if ! Empty( aSizes )
-      for n = 1 to Len( aSizes )
-         ::SetColWidth( n, aSizes[ n ] )
-      next
+   for n = 1 to Len( aSizes )
+   ::SetColWidth( n, aSizes[ n ] )
+   next
    endif
 
 
-  ::SetColor( nClrText, nClrBack )
+   ::SetColor( nClrText, nClrBack )
    
-  ::nAutoResize = nAutoResize
+   ::nAutoResize = nAutoResize
 
- // ::bDrawRect:= { |row| BrwSetGrayColors(::hWnd ,row ) }
+   // ::bDrawRect:= { |row| BrwSetGrayColors(::hWnd ,row ) }
 
 return Self
 
@@ -217,19 +221,19 @@ METHOD Redefine( nId, oWnd, bLine, aHeaders, bChange , cAlias ) CLASS TWBrowse
    ::oWnd    = oWnd
 
    if ! Empty( cAlias )
-      ::cAlias = cAlias
-      if ValType( cAlias ) == "O"
-         ::cAlias = "_DATASET"
-         ::oDataSet = cAlias
-         ::bLogicLen = { || ::oDataSet:LastRec() }
-      else
-         ::bLogicLen = { || ( ::cAlias )->( RecCount() ) }
-      endif
-
-      DEFAULT bLine := { || ( ::cAlias )->( GetFields() ) }
-      DEFAULT aHeaders := ASize( ( ::cAlias )->( GetHeaders( bLine ) ), Len( Eval( bLine ) ) )
+   ::cAlias = cAlias
+   if ValType( cAlias ) == "O"
+   ::cAlias = "_DATASET"
+   ::oDataSet = cAlias
+   ::bLogicLen = { || ::oDataSet:LastRec() }
    else
-      DEFAULT aHeaders := AFill( Array( Len( Eval( bLine ) ) ), "" )
+   ::bLogicLen = { || ( ::cAlias )->( RecCount() ) }
+   endif
+
+   DEFAULT bLine := { || ( ::cAlias )->( GetFields() ) }
+   DEFAULT aHeaders := ASize( ( ::cAlias )->( GetHeaders( bLine ) ), Len( Eval( bLine ) ) )
+   else
+   DEFAULT aHeaders := AFill( Array( Len( Eval( bLine ) ) ), "" )
    endif
 
    ::bLine  = bLine
@@ -248,10 +252,10 @@ METHOD Initiate() CLASS TWBrowse
    local hWnd := BrwResCreate( ::oWnd:hWnd, ::nId )
 
    if hWnd != 0
-      ::hWnd = hWnd
+   ::hWnd = hWnd
    else
-      MsgAlert( "Non defined ID " + AllTrim( Str( ::nId ) ) + ;
-                " in resource " + ::oWnd:cNibName )
+   MsgAlert( "Non defined ID " + AllTrim( Str( ::nId ) ) + ;
+      " in resource " + ::oWnd:cNibName )
    endif
 
 return nil
@@ -263,44 +267,44 @@ METHOD GetValue( nCol, nRow ) CLASS TWBrowse
    local nField, cString, nOldRec, uVal
 
    do case
-      case ::cAlias == "_EDIT"
-            DbGoTop()
-            DbSkip( Int( nRow / ( FCount() + 1 ) ) )
-             nField = ( nRow + 1 ) % ( FCount() + 1 )
-           return If( nField == 0, If( nCol == 0, "-------------", "-------------------------------------" ),;
-                    If( nCol == 0, FieldName( nField ), cValToChar( FieldGet( nField ) ) ) )
+   case ::cAlias == "_EDIT"
+   DbGoTop()
+   DbSkip( Int( nRow / ( FCount() + 1 ) ) )
+   nField = ( nRow + 1 ) % ( FCount() + 1 )
+   return If( nField == 0, If( nCol == 0, "-------------", "-------------------------------------" ),;
+      If( nCol == 0, FieldName( nField ), cValToChar( FieldGet( nField ) ) ) )
 
-      case ::cAlias == "_ARRAY"
-            if nRow >= 0 .and. nRow < Eval( ::bLogicLen )
-               ::nArrayAt = nRow + 1
-              return Eval( ::bLine, nRow + 1 )[ nCol + 1 ]
-             endif
+   case ::cAlias == "_ARRAY"
+   if nRow >= 0 .and. nRow < Eval( ::bLogicLen )
+   ::nArrayAt = nRow + 1
+   return Eval( ::bLine, nRow + 1 )[ nCol + 1 ]
+   endif
 
-       case ::cAlias == "_DATASET"
-            ::oDataSet:GoTop()
-            ::oDataSet:Skip( nRow )
-            if nRow >= 0 .and. nRow < Eval( ::bLogicLen )
-                 cString = cValToChar( Eval( ::bLine )[ nCol + 1 ] )
-                 //LogFile( "info.txt", { nRow, nCol, cString } )
-              return cString
-             endif
+   case ::cAlias == "_DATASET"
+   ::oDataSet:GoTop()
+   ::oDataSet:Skip( nRow )
+   if nRow >= 0 .and. nRow < Eval( ::bLogicLen )
+   cString = cValToChar( Eval( ::bLine )[ nCol + 1 ] )
+   //LogFile( "info.txt", { nRow, nCol, cString } )
+   return cString
+   endif
 
-         case ::cAlias == "_INSPECT"
-              if ! Empty( ::bGetValue )
-                 ::nArrayAt = nRow + 1
-                 return Eval( ::bGetValue, nRow, nCol )
-              endif
+   case ::cAlias == "_INSPECT"
+   if ! Empty( ::bGetValue )
+   ::nArrayAt = nRow + 1
+   return Eval( ::bGetValue, nRow, nCol )
+   endif
 
-      case ! Empty( ::cAlias )
-           if Select( ::cAlias ) == 0
-              return Array( Len( ::aCols ) )
-           endif
-            nOldRec = ( ::cAlias )->( RecNo() )
-            ( ::cAlias )->( DbGoTop() )
-            ( ::cAlias )->( DbSkip( nRow ) )
-            uVal    = cValToChar( Eval( ::bLine )[ nCol + 1 ] )
-            ( ::cAlias )->( DbGoto( nOldRec ) )
-            return uVal
+   case ! Empty( ::cAlias )
+   if Select( ::cAlias ) == 0
+   return Array( Len( ::aCols ) )
+   endif
+   nOldRec = ( ::cAlias )->( RecNo() )
+   ( ::cAlias )->( DbGoTop() )
+   ( ::cAlias )->( DbSkip( nRow ) )
+   uVal    = cValToChar( Eval( ::bLine )[ nCol + 1 ] )
+   ( ::cAlias )->( DbGoto( nOldRec ) )
+   return uVal
    endcase
 
 return nil
@@ -309,17 +313,17 @@ return nil
 
 METHOD SetColor( nClrText, nClrBack ) CLASS TWBrowse
 
-if ! Empty( nClrText ) 
+   if ! Empty( nClrText ) 
 
-  BrwSetTextcolor( ::hWnd, nRgbRed( nClrText ), nRgbGreen( nClrText ),;
-                         nRgbBlue( nClrText ), 100 )
-endif
+   BrwSetTextcolor( ::hWnd, nRgbRed( nClrText ), nRgbGreen( nClrText ),;
+      nRgbBlue( nClrText ), 100 )
+   endif
 
-if ! Empty( nClrBack ) 
+   if ! Empty( nClrBack ) 
 
-  BrwSetBkcolor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
-                           nRgbBlue( nClrBack ), 100 )
-endif    
+   BrwSetBkcolor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
+      nRgbBlue( nClrBack ), 100 )
+   endif    
 
 return nil
 
@@ -330,24 +334,24 @@ METHOD SetValue( nCol, nRow, oObj ) CLASS TWBrowse
    local cVal := NSStringToString( oObj )
 
    do case
-      case ::cAlias == "_INSPECT"
-           if ! Empty( ::bSetValue )
-              ::nArrayAt = nRow + 1
-              Eval( ::bSetValue, nRow, nCol, cVal )
-           endif
+   case ::cAlias == "_INSPECT"
+   if ! Empty( ::bSetValue )
+   ::nArrayAt = nRow + 1
+   Eval( ::bSetValue, nRow, nCol, cVal )
+   endif
 
-      case ::cAlias == "_ARRAY"
-           if ! Empty( ::bSetValue )
-              ::nArrayAt = nRow + 1
-              Eval( ::bSetValue, nRow + 1, nCol + 1, cVal )
-           endif
+   case ::cAlias == "_ARRAY"
+   if ! Empty( ::bSetValue )
+   ::nArrayAt = nRow + 1
+   Eval( ::bSetValue, nRow + 1, nCol + 1, cVal )
+   endif
 
-      case ! Empty( ::cAlias )
-           if Select( ::cAlias ) != 0
-              ( ::cAlias )->( DbGoTop() )
-              ( ::cAlias )->( DbSkip( nRow ) )
-              ( ::cAlias )->( FieldPut( nCol + 1, cVal ) )
-           endif
+   case ! Empty( ::cAlias )
+   if Select( ::cAlias ) != 0
+   ( ::cAlias )->( DbGoTop() )
+   ( ::cAlias )->( DbSkip( nRow ) )
+   ( ::cAlias )->( FieldPut( nCol + 1, cVal ) )
+   endif
    endcase
 
 return nil
@@ -357,15 +361,15 @@ return nil
 METHOD cGenPrg() CLASS TWBrowse
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " BROWSE " + ::cVarName + ;
-                  " OF " + ::oWnd:cVarName + " ;" + CRLF + ;
-                  '      FIELDS "";' + CRLF + ;
-                  '      HEADERS "Header";' + CRLF + ;
-                  "      SIZE " + AllTrim( Str( ::nWidth ) ) + ", " + ;
-                                  AllTrim( Str( ::nHeight ) )
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " BROWSE " + ::cVarName + ;
+      " OF " + ::oWnd:cVarName + " ;" + CRLF + ;
+      '      FIELDS "";' + CRLF + ;
+      '      HEADERS "Header";' + CRLF + ;
+      "      SIZE " + AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) )
    if ::nAutoResize != 0
-   		cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
+   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
    endif
    							
 return cCode
@@ -377,22 +381,22 @@ METHOD HandleEvent( nMsg, hWnd, uParam1, uParam2 ) CLASS TWBrowse
    local oControl := Self
 
    do case
-      case nMsg == WM_BRWVALUE
-           if oControl != nil
-                return oControl:GetValue( uParam1, uParam2 )
-            else
-               MsgInfo( "oControl is nil" )
-            endif
+   case nMsg == WM_BRWVALUE
+   if oControl != nil
+   return oControl:GetValue( uParam1, uParam2 )
+   else
+   MsgInfo( "oControl is nil" )
+   endif
             
-       case nMsg == WM_BRWCHANGED
-               if ! Empty( ::cAlias ) .and. Select( ::cAlias ) > 0
-                  ( ::cAlias )->( DbGoTop() )
-                  ( ::cAlias )->( DbSkip( ::GetSelect() ) )
-               endif
-               return oControl:Change()
+   case nMsg == WM_BRWCHANGED
+   if ! Empty( ::cAlias ) .and. Select( ::cAlias ) > 0
+   ( ::cAlias )->( DbGoTop() )
+   ( ::cAlias )->( DbSkip( ::GetSelect() ) )
+   endif
+   return oControl:Change()
                         
-      otherwise
-           return super:HandleEvent( nMsg, uParam1, uParam2 )
+   otherwise
+   return super:HandleEvent( nMsg, uParam1, uParam2 )
    endcase
 
 return nil
@@ -423,8 +427,8 @@ return nil
 
 METHOD SetColorsForAlternate( nColorIni, nColorEnd ) CLASS TWBrowse
 
-  ::bDrawRect:= { | nRow | BrwSetColorsForalternate( ::hWnd, nRow,;
-                  COLORFROMNRGB( nColorIni ), COLORFROMNRGB( nColorEnd ) ) }
+   ::bDrawRect:= { | nRow | BrwSetColorsForalternate( ::hWnd, nRow,;
+      COLORFROMNRGB( nColorIni ), COLORFROMNRGB( nColorEnd ) ) }
 
 return nil
 
@@ -435,11 +439,11 @@ static function GetFields()
    local aFields := {}, n
 
    for n = 1 to FCount()
-      if FieldType( n ) != "M"
-         AAdd( aFields, cValToChar( FieldGet( n ) ) )
-      else
-         AAdd( aFields, If( Len( FieldGet( n ) ) == 0, "memo", "Memo" ) )
-      endif
+   if FieldType( n ) != "M"
+   AAdd( aFields, cValToChar( FieldGet( n ) ) )
+   else
+   AAdd( aFields, If( Len( FieldGet( n ) ) == 0, "memo", "Memo" ) )
+   endif
    next
 
 return aFields
@@ -451,7 +455,7 @@ static function GetHeaders()
    local aHeaders := {}, n
 
    for n = 1 to FCount()
-      AAdd( aHeaders, FieldName( n ) )
+   AAdd( aHeaders, FieldName( n ) )
    next n
 
 return aHeaders
@@ -467,7 +471,7 @@ CLASS TBrwColumn
    METHOD New( hWnd, cHeader, oWnd )
 
    METHOD SetHeader( cHeader ) INLINE ::cHeader := cHeader,;
-                                      ColSetHeader( ::hWnd, cHeader )
+      ColSetHeader( ::hWnd, cHeader )
 
 ENDCLASS
 

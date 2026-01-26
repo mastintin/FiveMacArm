@@ -105,4 +105,16 @@
 
 //----------------------------------------------------------------------------//
 
+#xcommand @ <nRow>, <nCol> SWIFTPICKER [ <oPick> VAR ] <cVar> ;
+    [ ITEMS <aItems> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    [ ON CHANGE <uChange> ] ;
+    [ AUTORESIZE <nAutoResize> ] ;
+    => ;
+    [ <oPick> := ] TSwiftPicker():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>,;
+    <aItems>, [\{| cVal, o |(<uChange>)\}], bSETGET(<cVar>),, <nAutoResize> )
+
+//----------------------------------------------------------------------------//
+
 #endif

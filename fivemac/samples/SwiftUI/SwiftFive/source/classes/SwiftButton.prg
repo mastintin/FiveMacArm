@@ -21,6 +21,7 @@ CLASS TSwiftButton FROM TControl
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
     METHOD SetGlass( lGlass )
+    METHOD SetImage( cImage ) 
     METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
       
 ENDCLASS
@@ -40,7 +41,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
     ::hWnd = SWIFTBTNCREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::nIndex )
 
     if nAutoResize != 0
-    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -50,7 +51,7 @@ return Self
 METHOD Click() CLASS TSwiftButton
    
     if ::bAction != nil
-    Eval( ::bAction, Self )
+        Eval( ::bAction, Self )
     endif
 
     return nil
@@ -59,10 +60,10 @@ return nil
 
 METHOD SetColor( nFgColor, nBgColor ) CLASS TSwiftButton
     if nBgColor != nil
-    SWIFTBTNSETBGCOLOR( nBgColor, ::nIndex )
+        SWIFTBTNSETBGCOLOR( nBgColor, ::nIndex )
     endif
     if nFgColor != nil
-    SWIFTBTNSETFGCOLOR( nFgColor, ::nIndex )
+        SWIFTBTNSETFGCOLOR( nFgColor, ::nIndex )
     endif
 return nil
 
@@ -82,7 +83,7 @@ return nil
 
 METHOD SetImage( cImage ) CLASS TSwiftButton
     if cImage != nil
-    SWIFTBTNSETIMAGE( cImage, ::nIndex )
+        SWIFTBTNSETIMAGE( cImage, ::nIndex )
     endif
 return nil
 
@@ -90,7 +91,7 @@ return nil
 function SwiftBtnOnClick( nIndex )
    
     if nIndex > 0 .and. nIndex <= Len( aSwiftButtons )
-    aSwiftButtons[ nIndex ]:Click()
+        aSwiftButtons[ nIndex ]:Click()
     endif
    
 return nil
