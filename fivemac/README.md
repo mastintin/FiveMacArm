@@ -111,6 +111,17 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Documentation**: Updated `task.md` and `walkthrough.md` to reflect the current stable state of the library.
 
 
+### SwiftUI & Focus Reliability (January 2026 - Part 12)
+- **SwiftPicker**: New native picklist component with integrated search, scrollable popover, and dynamic label support (`SWIFTPICKER` command).
+- **Focus Reliability**:
+    - **Delayed Editor Focus**: Enhanced `TWBrowse:Edit()` logic to ensure the inline text editor receives focus correctly, bypassing OS event race conditions.
+    - **Global Activation**: Modified `CocoaInit` to explicitly activate the application (`activateIgnoringOtherApps:YES`), ensuring keyboard focus on launch and when switching windows.
+- **Browse Safety**: Changed default column behavior to non-editable. Editing now requires explicit `SetColEditable()` per column, preventing unintended data entry during standard navigation.
+- **Popover UX**: Adjusted popover presentation to appear below controls (`NSMaxYEdge`) for better visibility in complex layouts.
+
+### Architecture
+- **64-bit Core**: Finalized pointer size migration for button and picklist handles to ensure absolute stability on modern macOS.
+
 ## Building
 
 To build the library and samples:

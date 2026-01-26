@@ -279,6 +279,7 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #if __has_warning("-Watimport-in-framework-header")
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
+@import Foundation;
 @import ObjectiveC;
 #endif
 
@@ -312,6 +313,7 @@ SWIFT_CLASS_NAMED("SwiftButtonLoader")
 + (void)setButtonCornerRadius:(double)radius index:(NSInteger)index;
 + (void)setButtonPadding:(double)padding index:(NSInteger)index;
 + (void)setButtonGlass:(BOOL)isGlass index:(NSInteger)index;
++ (void)setButtonImage:(NSString * _Nonnull)imageName index:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -359,6 +361,15 @@ SWIFT_CLASS("_TtC9SwiftFive11SwiftLoader")
 + (NSView * _Nonnull)makeView SWIFT_WARN_UNUSED_RESULT;
 + (NSView * _Nonnull)makeViewWithCallback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
 + (void)updateLabel:(NSString * _Nonnull)text;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+SWIFT_CLASS_NAMED("SwiftPickerLoader")
+@interface SwiftPickerLoader : NSObject
++ (NSView * _Nonnull)makePickerWithTitle:(NSString * _Nonnull)title items:(NSArray<NSString *> * _Nonnull)items index:(NSInteger)index callback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
++ (void)setPickerSelection:(NSString * _Nonnull)value index:(NSInteger)index;
++ (void)setPickerItems:(NSArray<NSString *> * _Nonnull)items index:(NSInteger)index;
++ (void)setPickerGlass:(BOOL)isGlass index:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 

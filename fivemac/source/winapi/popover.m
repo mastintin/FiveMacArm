@@ -198,12 +198,11 @@ HB_FUNC(SHOWWINPOPOVER) {
   NSWindow *window = (NSWindow *)hb_parnll(2);
   NSPopover *popover = [[NSPopover alloc] init];
 
-  [popover
-      showWinRelativeToRect:[theInput frame]
-                     ofView:[theInput superview]
-              preferredEdge:NSMaxXEdge // Show the popover on the right edge
-                     window:window
-                   maxWidth:250.0];
+  [popover showWinRelativeToRect:[theInput frame]
+                          ofView:[theInput superview]
+                   preferredEdge:NSMaxYEdge // Show the popover BELOW
+                          window:window
+                        maxWidth:250.0];
 
   hb_retnll((HB_LONGLONG)popover);
 }

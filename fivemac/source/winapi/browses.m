@@ -165,6 +165,20 @@ static PHB_SYMB symFMH = NULL;
   }
 }
 
+- (BOOL)tableView:(NSTableView *)tableView
+    shouldEditTableColumn:(NSTableColumn *)tableColumn
+                      row:(NSInteger)row {
+  return [tableColumn isEditable];
+}
+
+- (void)forceEditFocus {
+  NSText *editor = [self currentEditor];
+  if (editor) {
+    [[self window] makeFirstResponder:editor];
+    [editor selectAll:nil];
+  }
+}
+
 @end
 
 @interface BrwImageAndTextCell : NSTextFieldCell {
@@ -380,6 +394,7 @@ HB_FUNC(BRWRESCREATE) {
     column = [[browse tableColumns] objectAtIndex:i];
     // column->id = i ;
     [column setIdentifier:[NSString stringWithFormat:@"%i", i]];
+    [column setEditable:NO];
   }
 
   hb_retnll((HB_LONGLONG)browse);
@@ -436,6 +451,7 @@ HB_FUNC(BRWADDCOLUMN) {
 
   [column setIdentifier:[NSString stringWithFormat:@"%i", nCol]];
   [column setWidth:100];
+  [column setEditable:NO];
   [[column headerCell] setStringValue:string];
 
   [browse addTableColumn:column];
@@ -882,6 +898,24 @@ HB_FUNC(BRWSETDBLACTION) {
   Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 
   [browse setDoubleAction:@selector(BrwDblClick:)];
+}
+
+HB_FUNC(BRWCLRDBLACTION) {
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
+  [browse setDoubleAction:nil];
+}
+
+HB_FUNC(BRWEDIT) {
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
+  NSInteger nCol = hb_parnl(2) - 1;
+  NSInteger nRow = [browse selectedRow];
+
+  if (nRow >= 0 && nCol >= 0) {
+    [browse editColumn:nCol row:nRow withEvent:nil select:YES];
+    [browse performSelector:@selector(forceEditFocus)
+                 withObject:nil
+                 afterDelay:0.1];
+  }
 }
 
 HB_FUNC(BRWSETACTION) {
