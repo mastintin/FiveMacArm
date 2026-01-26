@@ -796,7 +796,8 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ MESSAGE <cMsg> ];
    [ ATTACHS <attachs, ...> ] ;
    => ;
-   //----------------------------------------------------------------------------//
+   [ <oMail> := ] TMail():New( <cTo> ,<cSubject>, <cFrom>, <cMsg>,;
+   [\{ <attachs> \}] )
 
 
    
