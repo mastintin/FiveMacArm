@@ -29,6 +29,12 @@ HB_FUNC(FONTISVERTICAL) {
 #endif
 }
 
+HB_FUNC(SETBOLDSYSTEMFONT) {
+  NSControl *ctrl = (NSControl *)hb_parnll(1);
+  CGFloat size = hb_parnl(2);
+  [ctrl setFont:[NSFont boldSystemFontOfSize:size]];
+}
+
 HB_FUNC(FONTSETVERTICAL) {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
   NSFont *font = [NSFont systemFontOfSize:hb_parnll(1)];

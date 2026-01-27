@@ -145,3 +145,13 @@ HB_FUNC(VIEWSETGRADIENTCOLOR) {
   view.layer.sublayers = nil;
   [view.layer addSublayer:gradient];
 }
+
+HB_FUNC(VIEWSETPOS) {
+  NSView *view = (NSView *)hb_parnll(1);
+  // macOS coordinates: (x, y).
+  // Standard Cocoa uses Bottom-Left origin, but FiveMac often simulates
+  // Top-Left or uses Flipped Views. setFrameOrigin sets the origin relative to
+  // superview.
+
+  [view setFrameOrigin:NSMakePoint(hb_parnl(3), hb_parnl(2))];
+}

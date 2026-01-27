@@ -31,6 +31,7 @@ PRG_OBJS = \
 	./obj/brush.o	\
 	./obj/brImage.o	\
 	./obj/capture.o	\
+    ./obj/card.o   \
 	./obj/checkbox.o \
         ./obj/clipboard.o \
    	./obj/code.o \

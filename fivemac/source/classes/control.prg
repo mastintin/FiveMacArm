@@ -58,6 +58,8 @@ CLASS TControl FROM TWindow
    
    METHOD SetSize( nWidth, nHeight ) INLINE ViewSetSize( ::hWnd, nWidth, nHeight )
 
+   METHOD SetPos( nTop, nLeft ) INLINE ViewSetPos( ::hWnd, nTop, nLeft )
+
    METHOD Hide() INLINE ViewHide( ::hWnd )
 
    METHOD Show() INLINE ViewShow( ::hWnd )
