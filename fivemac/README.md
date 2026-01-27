@@ -119,6 +119,14 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Browse Safety**: Changed default column behavior to non-editable. Editing now requires explicit `SetColEditable()` per column, preventing unintended data entry during standard navigation.
 - **Popover UX**: Adjusted popover presentation to appear below controls (`NSMaxYEdge`) for better visibility in complex layouts.
 
+### TCard & Control Enhancements (January 2026 - Part 13)
+- **TCard Class**: New native "Card" component (`card.prg`) inheriting from `TPanel`.
+    - **Features**: Built-in Title support (using native Bold System Font), Icon support (SF Symbols), and colored top border.
+    - **Design**: Implements a Container/Body pattern for proper shadow casting without clipping content.
+- **TControl:SetPos**: Added `SetPos( nTop, nLeft )` method to `TControl`, enabling dynamic runtime repositioning of any control.
+- **TImage Scaling**: Updated `TImage` to use `NSImageScaleProportionallyUpOrDown` (3), allowing icons to resize correctly via `SetSize`.
+- **SF Symbol Fix**: Corrected `TImage` instantiation logic to properly handle SF Symbols (`ImgSymbols`) without treating them as missing files.
+
 ### Architecture
 - **64-bit Core**: Finalized pointer size migration for button and picklist handles to ensure absolute stability on modern macOS.
 

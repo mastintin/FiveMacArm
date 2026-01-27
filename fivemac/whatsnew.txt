@@ -15,6 +15,17 @@ January 2026
 
 * UI: Adjusted Popover default presentation to appear below the anchor view for better visibility.
 
+* New: Class TCard (`card.prg`) for dashboard-style cards.
+  - Supports Title (Bold System Font), Icon (SF Symbols), and colored top border.
+  - Implements standard "Container with Shadow + Clipped Body" design pattern.
+
+* New: Method `TControl:SetPos( nTop, nLeft )` (implemented in `views.m` as `VIEWSETPOS`).
+  - Allows moving any control dynamically at runtime.
+
+* Fix: `TImage` scaling and loading.
+  - Changed scaling mode to `NSImageScaleProportionallyUpOrDown` (3) to support `SetSize`.
+  - Fixed logic to properly load SF Symbols (`ImgSymbols`) by avoiding file existence check in `New`.
+
 January 2026
 ============
 

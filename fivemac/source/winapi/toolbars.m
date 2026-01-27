@@ -41,11 +41,11 @@
 }
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)aToolbar {
-  return [NSArray arrayWithObject:@""]; // s @"New", @"Open", @"Save", nil ];
+  return [NSArray array];
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)aToolbar {
-  return [NSArray arrayWithObject:@""]; // s @"New", @"Open", @"Save", nil ];
+  return [NSArray array];
 }
 
 - (NSArray *)toolbarSelectableItemIdentifiers:(NSToolbar *)toolbar {
