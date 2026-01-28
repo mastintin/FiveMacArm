@@ -1,5 +1,59 @@
 #import <WebKit/WebKit.h>
 #include <fivemac.h>
+#include <hbapi.h>
+#include <hbapiitm.h>
+#include <hbvm.h>
+
+@interface FMVScriptHandler : NSObject <WKScriptMessageHandler>
+@property(nonatomic, assign) PHB_ITEM phbWebview;
+@end
+
+extern PHB_ITEM hb_itemNew(PHB_ITEM pNull);
+
+@implementation FMVScriptHandler
+- (void)userContentController:(WKUserContentController *)userContentController
+      didReceiveScriptMessage:(WKScriptMessage *)message {
+
+  static PHB_SYMB pSym = NULL;
+
+  NSLog(@"Bridge: Message Received: %@", message.name);
+
+  if (self.phbWebview) {
+
+    if (!pSym) {
+      NSLog(@"Bridge: looking up symbol...");
+      pSym = hb_dynsymSymbol(hb_dynsymFindName("WEBVIEWONMESSAGE"));
+    }
+
+    if (!pSym) {
+      NSLog(@"Bridge Error: WEBVIEWONMESSAGE symbol not found!");
+      return;
+    }
+
+    hb_vmPushSymbol(pSym);
+    hb_vmPushNil();
+
+    hb_vmPush(self.phbWebview);
+
+    NSString *sBody = [NSString stringWithFormat:@"%@", message.body];
+    const char *cBody = [sBody UTF8String];
+    if (!cBody)
+      cBody = "";
+    unsigned long nLenBody = (unsigned long)strlen(cBody);
+    hb_vmPushString(cBody, nLenBody);
+
+    const char *cName = [message.name UTF8String];
+    if (!cName)
+      cName = "";
+    unsigned long nLenName = (unsigned long)strlen(cName);
+    hb_vmPushString(cName, nLenName);
+
+    hb_vmDo(3);
+  } else {
+    NSLog(@"Bridge Error: self.phbWebview is NULL");
+  }
+}
+@end
 
 HB_FUNC(WEBVIEWCREATE) {
   NSScrollView *sv =
@@ -7,9 +61,20 @@ HB_FUNC(WEBVIEWCREATE) {
                                                      hb_parnl(3), hb_parnl(4))];
 
   WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
+  WKUserContentController *userContentController =
+      [[WKUserContentController alloc] init];
+
+  // Store Harbour Object (Self)
+  PHB_ITEM pSelf = hb_itemNew(hb_param(5, HB_IT_OBJECT));
+
+  FMVScriptHandler *scriptHandler = [[FMVScriptHandler alloc] init];
+  scriptHandler.phbWebview = pSelf;
+
+  [userContentController addScriptMessageHandler:scriptHandler name:@"fivemac"];
+  config.userContentController = userContentController;
 
   WKWebView *Wview;
-  NSWindow *window = (NSWindow *)hb_parnll(5);
+  NSWindow *window = (NSWindow *)hb_parnll(6); // Now param 6 is Window
 
   [sv setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   [sv setHasVerticalScroller:YES];
@@ -34,6 +99,20 @@ HB_FUNC(WEBVIEWLOADREQUEST) {
   NSURL *url = [NSURL URLWithString:string];
   NSURLRequest *request = [NSURLRequest requestWithURL:url];
   [Wview loadRequest:request];
+}
+
+HB_FUNC(WEBVIEWLOADHTML) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+
+  NSString *string = hb_NSSTRING_par(2);
+  NSString *base = hb_NSSTRING_par(3);
+  NSURL *baseUrl = nil;
+
+  if (base)
+    baseUrl = [NSURL URLWithString:base];
+
+  [Wview loadHTMLString:string baseURL:baseUrl];
 }
 
 HB_FUNC(WEBVIEWGOBACK) {

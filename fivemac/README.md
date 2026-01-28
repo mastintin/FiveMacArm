@@ -126,6 +126,16 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Data Table**: High-performance `TNiceTable` for displaying complex Harbour data with automatic JSON serialization and column width control.
 - **Offline Reliability**: Full support for self-contained, offline operation by bundling Vue/Quasar/Material Icons resources within the App's `.app` bundle.
 - **Build System**: New `build_app.sh` script for packaging hybrid apps and `makelib.sh` for generating the static library `libnice.a`.
+- **Hybrid Dashboard**: High-level commands for building navigation-driven apps with multiple cards, KPIs and responsive sidebars.
+
+### NiceGUI Sidebar & Advanced Borders (January 2026 - Part 15)
+- **Navigation Sidebars**: New `NICE DRAWER` and `NICE DRAWER ITEM` commands for building modern, desktop-style dashboards. Supports "Push" layout mode to prevent content overlapping.
+- **Advanced Card Styling**: Enhanced `DEFINE NICE CARD` with granular border control:
+    - **Single-Side Borders**: Specify `SIDE "left"`, `SIDE "top"`, etc., for decorative colored frills.
+    - **Radius & Borders**: Custom corner rounding and colored border width support.
+- **Direct JS Actions**: Added `JS` clause to buttons and items for high-performance, lag-free client-side interactions (e.g., toggling menus instantly).
+- **Offline Reliability**: Automated fallback to local `nicegui_dist` assets for icons and framework dependencies.
+- **Layout Precision**: Fine-tuned WebView height calculation to ensure pixel-perfect Footer alignment in `FLIPPED` window modes.
 
 ### Architecture
 - **64-bit Core**: Finalized pointer size migration for button and picklist handles to ensure absolute stability on modern macOS.
