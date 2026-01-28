@@ -4,37 +4,42 @@
 
 CLASS TWebview FROM TControl
 
-   DATA cUrl
+    DATA cUrl
+    DATA bOnMessage
  
-   METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName )
+    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName )
 
-   METHOD GoBack() INLINE WebViewGoBack( ::hWnd )
+    METHOD GoBack() INLINE WebViewGoBack( ::hWnd )
    
-   METHOD GoForward() INLINE WebViewGoForward( ::hWnd )
+    METHOD GoForward() INLINE WebViewGoForward( ::hWnd )
    
-   METHOD SetURL( cUrlName ) INLINE ( ::cUrl := cUrlName , WebViewloadRequest( ::hWnd, ::cUrl ) )
+    METHOD SetURL( cUrlName ) INLINE ( ::cUrl := cUrlName , WebViewloadRequest( ::hWnd, ::cUrl ) )
    
-   METHOD Stopload()   INLINE WebViewstopLoading( ::hWnd  )
+    METHOD Stopload()   INLINE WebViewstopLoading( ::hWnd  )
    
-   METHOD IsLoading() INLINE WebViewIsLoading( ::hWnd )
+    METHOD IsLoading() INLINE WebViewIsLoading( ::hWnd )
    
-   METHOD StartSpeaking() INLINE WebViewStartSpeaking( ::hWnd )
+    METHOD StartSpeaking() INLINE WebViewStartSpeaking( ::hWnd )
  
-   METHOD StopSpeaking() INLINE WebViewStopSpeaking( ::hWnd )
+    METHOD StopSpeaking() INLINE WebViewStopSpeaking( ::hWnd )
        
-   METHOD SetTextSize( nPercentage ) INLINE ;
-          WebViewsetTextSizeMultiplier( ::hWnd, nPercentage )
+    METHOD SetTextSize( nPercentage ) INLINE ;
+        WebViewsetTextSizeMultiplier( ::hWnd, nPercentage )
    
     METHOD Reload()     INLINE WebViewReload( ::hWnd  )
    
-   METHOD Progress() INLINE WebViewProgress( ::hWnd )
+    METHOD Progress() INLINE WebViewProgress( ::hWnd )
 
-   METHOD ScriptCallMethod(cMethod) INLINE WebScripCallMethod(::hWnd,cMethod)
+    METHOD ScriptCallMethod(cMethod) INLINE WebScripCallMethod(::hWnd,cMethod)
 
-   METHOD ScriptCallMethodArg(cMethod,cArgumento) INLINE WebScripCallMethodArg(::hWnd,cMethod,cArgumento) 
+    METHOD ScriptCallMethodArg(cMethod,cArgumento) INLINE WebScripCallMethodArg(::hWnd,cMethod,cArgumento) 
+    
+    METHOD SetHtml( cHtml, cBaseUrl ) INLINE WebViewLoadHtml( ::hWnd, cHtml, cBaseUrl )
    
-   METHOD Redefine( nId, oWnd, cUrlName )
-   METHOD Initiate()
+    METHOD OnMessage( cBody, cName ) 
+   
+    METHOD Redefine( nId, oWnd, cUrlName )
+    METHOD Initiate()
    
    
 
@@ -44,49 +49,71 @@ ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName ) CLASS TWebview
 
-   DEFAULT nWidth := 300, nHeight := 100, oWnd := GetWndDefault()
+    DEFAULT nWidth := 300, nHeight := 100, oWnd := GetWndDefault()
       
-   ::hWnd = WebviewCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
-   ::oWnd = oWnd
+    // Param 5: Self (Harbour Object)
+    // Param 6: Parent Window Handle
+    ::hWnd = WebviewCreate( nTop, nLeft, nWidth, nHeight, Self, oWnd:hWnd )
+    ::oWnd = oWnd
   
-   ::SetURL( cUrlName )
+    ::SetURL( cUrlName )
    
-   oWnd:AddControl( Self ) 
+    oWnd:AddControl( Self ) 
+
+return Self   
+
+//----------------------------------------------------------------------------//
+
+METHOD OnMessage( cBody, cName ) CLASS TWebview
+
+    if ::bOnMessage != nil
+    Eval( ::bOnMessage, cBody, cName, Self )
+    endif
+
+    return nil 
 	    
 return Self   
 
 //----------------------------------------------------------------------------//
 
+function WebViewOnMessage( oWebView, cBody, cName )
+
+    oWebView:OnMessage( cBody, cName )
+
+return nil
+
+//----------------------------------------------------------------------------//
+
 METHOD Redefine( nId, oWnd, cUrlName ) CLASS TWebview
 
-DEFAULT oWnd := GetWndDefault()
+    DEFAULT oWnd := GetWndDefault()
 
-::nId     = nId
-::oWnd  := oWnd
-::cUrl  := cUrlName
+    ::nId     = nId
+    ::oWnd  := oWnd
+    ::cUrl  := cUrlName
 
-oWnd:DefControl( Self )
+    oWnd:DefControl( Self )
 
 return Self
 //----------------------------------------------------------------------------//
 
 METHOD Initiate() CLASS TWebview
 
-local hWnd:= WNDGETIDENTFROMNIB (::oWnd:hWnd,alltrim(str( ::nId )) )   
-if hWnd = -1
+    local hWnd:= WNDGETIDENTFROMNIB (::oWnd:hWnd,alltrim(str( ::nId )) )   
+    if hWnd = -1
     MsgAlert( "Non found WEBVIEW cID " + ;
-    AllTrim( Str( ::nId ) ) + ;
-    " in resource " + ::oWnd:cNibName )
+        AllTrim( Str( ::nId ) ) + ;
+        " in resource " + ::oWnd:cNibName )
     return nil
-endif 
-if hWnd != 0 
+    endif 
+    if hWnd != 0 
     ::hWnd = hWnd
-else
+    else
     MsgAlert( "Non defined WEBVIEW cID " + ;
-    AllTrim( Str( ::nId ) ) + ;
-    " in resource " + ::oWnd:cNibName )
-endif
+        AllTrim( Str( ::nId ) ) + ;
+        " in resource " + ::oWnd:cNibName )
+    endif
 
-::SetURL( ::cUrl )
+    ::SetURL( ::cUrl )
 
 return nil
