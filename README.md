@@ -15,12 +15,20 @@
 
 ## 📂 Project Structure
 
-- **`fivemac/`**: Core source code.
-  - `source/classes/`: Harbour class definitions (prg).
-  - `source/winapi/`: Objective-C low-level API wrappers.
-  - `include/`: Header files (`fivemac.ch`, etc.).
-- **`samples/`**: Example applications showing how to use various controls.
-- **`bitmaps/`**: Shared image resources for samples.
+The project is organized to separate the native core from high-level modern GUI wrappers.
+
+- **`fivemac/`**: Main development folder.
+  - **`nativo/`**: Core native components.
+    - `source/`: Harbour class definitions and Objective-C wrappers.
+    - `include/`: Framework header files.
+    - `lib/`: Compiled static libraries.
+    - `samples/`: Classic native samples (Cocoa).
+    - `Fivedit/`: The native FiveMac IDE.
+    - `makefile`: Root build system for the native core.
+  - **`NiceGui/`**: Modern web-based GUI wrapper (Vue/Quasar).
+  - **`SwiftUI/`**: Modern SwiftUI-based GUI wrapper.
+- **`harbour/`**: The Harbour compiler and its libraries.
+- **`bitmaps/`**: Shared image resources.
 
 ## 🛠️ Build & Installation
 
@@ -32,15 +40,15 @@
 To build the static libraries (`libfive.a` and `libfivec.a`):
 
 ```bash
-cd fivemac
+cd fivemac/nativo
 make
 ```
 
 ### Building Samples
-Samples are located in the `fivemac/samples` directory. Use the provided `build.sh` script:
+Native samples are located in `fivemac/nativo/samples`. Modern UI samples are in `fivemac/NiceGui` or `fivemac/SwiftUI`.
 
 ```bash
-cd fivemac/samples
+cd fivemac/nativo/samples
 ./build.sh testweb
 ```
 *(Replace `testweb` with the name of the sample you want to build)*
@@ -75,7 +83,7 @@ RETURN NIL
 
 ## 🖥️ IDE: Fivedit
 
-FiveMac includes `fivedit`, a fully functional IDE written in FiveMac itself (`samples/fivedit.prg`).
+FiveMac includes `fivedit`, a fully functional IDE written in FiveMac itself (`fivemac/nativo/Fivedit`).
 - **Syntax Highlighting**: Powered by Scintilla (recompiled for macOS).
 - **Project Building**: "Run" button compiles and runs the current PRG.
 - **App Bundling**: Automatically generates `.app` bundles, copying necessary Frameworks (`Contents/Frameworks`) and Resources.
