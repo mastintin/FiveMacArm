@@ -131,8 +131,4 @@ function Main()
     
 return nil
 
-// Include source files for standalone build
-#include "NiceCore.prg"
-#include "NiceControls.prg"
-#include "NiceLayout.prg"
-#include "NiceTable.prg"
+

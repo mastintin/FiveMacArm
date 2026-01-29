@@ -5,32 +5,39 @@ HARBOUR_PATH="../../../harbour"
 FIVEMAC_PATH="../.."
 SDK_PATH=$(xcrun --show-sdk-path)
 
+# Check Parameter
 if [ -z "$1" ]; then
-  echo "Syntax: ./build.sh <file>"
-  exit 1
+    echo "Usage: ./BuildTest.sh <PRG_NAME_WITHOUT_EXTENSION>"
+    echo "Example: ./BuildTest.sh TestSwiftImage"
+    exit 1
 fi
 
-APP_NAME=$(basename "$1")
-PRG_FILE=$1.prg
+PRG_NAME="$1"
+APP_NAME="$PRG_NAME"
+SRC_PRG="$PRG_NAME.prg"
+
+if [ ! -f "$SRC_PRG" ]; then
+    echo "Error: File $SRC_PRG not found."
+    exit 1
+fi
 
 echo "Building $APP_NAME..."
 
-# 1. Clean previous build
+# 1. Clean previous build (only for this app)
 rm -rf "$APP_NAME.app"
 rm -rf obj
 mkdir -p obj
 
-# 2. Build the Library First (Optional but recommended)
-echo "== Building SwiftFive Library =="
+# 2. Build the Library First (Ensure it is up to date)
+echo "== Checking SwiftFive Library =="
 pushd ..
 make
+echo "== Library Ready =="
 popd
-if [ $? -ne 0 ]; then echo "Library build failed"; exit 1; fi
-echo "== Library Built =="
 
 # 3. Compile App
-echo "Compiling App..."
-"$HARBOUR_PATH/bin/harbour" "$PRG_FILE" -n -w -o"obj/$APP_NAME.c" -I"../include" -I"$FIVEMAC_PATH/nativo/include" -I"$HARBOUR_PATH/include"
+echo "Compiling '$SRC_PRG'..."
+"$HARBOUR_PATH/bin/harbour" "$SRC_PRG" -n -w -o"obj/$APP_NAME.c" -I"../include" -I"$FIVEMAC_PATH/nativo/include" -I"$HARBOUR_PATH/include"
 
 if [ $? -ne 0 ]; then echo "Error compiling Harbour App"; exit 1; fi
 
@@ -55,7 +62,6 @@ FRAMEWORKS="-framework Cocoa -framework SwiftUI -framework WebKit -framework AVF
 HARBOUR_LIBS="-L$HARBOUR_PATH/lib -lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx"
 FIVEMAC_LIBS="-L$FIVEMAC_PATH/nativo/lib -lfive -lfivec"
 
-# Linking the sample with the lib
 swiftc -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
     "obj/$APP_NAME.o" \
     -L"../lib" -Xlinker -force_load -Xlinker ../lib/libSwiftFive.a \
@@ -117,4 +123,4 @@ if [ -d "$FIVEMAC_PATH/Resources/frameworks" ]; then
 fi
 
 echo "Build done! Run with: open $APP_NAME.app"
-chmod +x build.sh
+chmod +x BuildTest.sh

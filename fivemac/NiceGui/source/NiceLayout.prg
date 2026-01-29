@@ -1,3 +1,5 @@
+#include "Nice.ch"
+
 // NiceLayout.prg - Containers and Layouts
 
 //----------------------------------------------------------------------------//

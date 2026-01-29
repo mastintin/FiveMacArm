@@ -1,5 +1,9 @@
 // Nice.ch - Preprocessor commands for NiceGUI Framework
 
+#include "hbclass.ch"
+#include "common.ch"
+#include "FiveMac.ch"
+
 #xcommand DEFINE NICE PAGE <oPage> [ OF <oParent> ] ;
     => ;
     <oPage> := TNicePage():New( <oParent> )
