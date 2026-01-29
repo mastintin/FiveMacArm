@@ -2,14 +2,15 @@
 
 # Configuration
 LIB_NAME="libSwiftFive.a"
-HARBOUR_PATH="../../../../harbour"
-FIVEMAC_PATH="../../.."
+HARBOUR_PATH="../../harbour"
+FIVEMAC_PATH=".."
 SWIFT_MODULE_NAME="SwiftFive"
 
 # Clean
-rm -f $LIB_NAME
-rm -f *.o *.c
-rm -f lib/$LIB_NAME
+rm -rf obj
+mkdir -p obj
+mkdir -p include
+mkdir -p lib
 
 echo "Building Library $LIB_NAME..."
 
@@ -30,7 +31,7 @@ swiftc source/swift/*.swift \
     -parse-as-library \
     -module-name "$SWIFT_MODULE_NAME" \
     $TARGET_FLAG \
-    -o SwiftFive.o
+    -o obj/SwiftFive.o
 
 if [ $? -ne 0 ]; then echo "Error compiling Swift"; exit 1; fi
 
@@ -46,7 +47,7 @@ for f in source/winapi/*.m; do
         -I"$FIVEMAC_PATH/nativo/include" \
         -I"$HARBOUR_PATH/include" \
         -fmodules \
-        -o "ObjC_${name}.o"
+        -o "obj/ObjC_${name}.o"
         
     if [ $? -ne 0 ]; then echo "Error compiling ObjC: $f"; exit 1; fi
 done
@@ -58,25 +59,18 @@ for f in source/classes/*.prg; do
     name="${filename%.*}"
     
     echo "  $f..."
-    "$HARBOUR_PATH/bin/harbour" "$f" -n -w -Iinclude -I"$FIVEMAC_PATH/nativo/include" -I"$HARBOUR_PATH/include" -o"${name}.c"
+    "$HARBOUR_PATH/bin/harbour" "$f" -n -w -Iinclude -I"$FIVEMAC_PATH/nativo/include" -I"$HARBOUR_PATH/include" -o"obj/${name}.c"
     
-    clang -c "${name}.c" \
+    clang -c "obj/${name}.c" \
         -I"$FIVEMAC_PATH/nativo/include" \
         -I"$HARBOUR_PATH/include" \
-        -o "Hrb_${name}.o"
-        
-    rm "${name}.c"
+        -o "obj/Hrb_${name}.o"
 done
 
 # 4. Create Static Library
 echo "Archiving to lib/$LIB_NAME..."
 # Archive Swift object, ObjC objects, and Harbour objects
-ar rc lib/$LIB_NAME SwiftFive.o ObjC_*.o Hrb_*.o
+ar rc lib/$LIB_NAME obj/*.o
 ranlib lib/$LIB_NAME
-
-# Cleanup intermediate objects
-rm *.o
-rm -f ObjC_*.o
-rm -f Hrb_*.o
 
 echo "Library built: lib/$LIB_NAME"

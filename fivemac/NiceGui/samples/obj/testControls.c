@@ -1,7 +1,7 @@
 /*
  * Harbour 3.2.0dev (r2512222342)
  * LLVM/Clang C 17.0 (clang-1700.6.3.2) ARM64
- * Generated C source from "TestControls.prg"
+ * Generated C source from "testControls.prg"
  */
 
 #include "hbvmpub.h"
@@ -63,7 +63,7 @@ HB_INIT_SYMBOLS_BEGIN( hb_vm_SymbolInit_TESTCONTROLS )
 { "HB_GT_NUL_DEFAULT", {HB_FS_PUBLIC}, {HB_FUNCNAME( HB_GT_NUL_DEFAULT )}, NULL },
 { "ERRORLINK", {HB_FS_PUBLIC}, {HB_FUNCNAME( ERRORLINK )}, NULL },
 { "MSGBEEP", {HB_FS_PUBLIC}, {HB_FUNCNAME( MSGBEEP )}, NULL }
-HB_INIT_SYMBOLS_EX_END( hb_vm_SymbolInit_TESTCONTROLS, "TestControls.prg", 0x0, 0x0003 )
+HB_INIT_SYMBOLS_EX_END( hb_vm_SymbolInit_TESTCONTROLS, "testControls.prg", 0x0, 0x0003 )
 
 #if defined( HB_PRAGMA_STARTUP )
    #pragma startup hb_vm_SymbolInit_TESTCONTROLS

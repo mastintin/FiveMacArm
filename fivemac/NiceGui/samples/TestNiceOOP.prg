@@ -1,7 +1,5 @@
 #include "FiveMac.ch"
 
-#include "Nice.prg" 
-
 function Main()
 
     local oWnd, oPanel, oPage, oCard, oRow, oInput
