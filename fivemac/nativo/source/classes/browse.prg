@@ -90,6 +90,8 @@ CLASS TWBrowse FROM TControl
 
    METHOD SetHeadTooltip( nColumn, cText ) INLINE BrwSetHeadTooltip( ::hWnd, nColumn, cText )
 
+   METHOD SetHeader( nCol, cHeader ) INLINE ::aCols[ nCol ]:SetHeader( cHeader )
+
    METHOD SetNoHead() INLINE BrwSetNoHead( ::hWnd )
 
    METHOD SetIndicatorDescent( nColumn ) INLINE BrwSetIndicatorDescent( ::hWnd, nColumn )
@@ -193,7 +195,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bLine, aHeaders, bChange,;
    ::bChange  = bChange
 
    for n = 1 to Len( aHeaders )
-   AAdd( ::aCols, TBrwColumn():New( BrwAddColumn( ::hWnd, aHeaders[ n ] ), self, aHeaders[ n ] ) )
+   AAdd( ::aCols, TBrwColumn():New( BrwAddColumn( ::hWnd, aHeaders[ n ] ), aHeaders[ n ], self ) )
    next
 
    if ! Empty( aSizes )

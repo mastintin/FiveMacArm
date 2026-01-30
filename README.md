@@ -80,6 +80,7 @@ RETURN NIL
 - **Improved Build Scripts**: Automatic detection of SDK and Swift paths.
 - **Webview Improvements**: Fixed ATS issues for loading external websites.
 - **Fivedit IDE**: Now capable of self-hosting! built-in compiling and linking of native apps, generating fully bundled `.app` structures with correct dependencies and Frameworks.
+- **TWBrowse Improvements**: Fixed `TBrwColumn` and implemented `SetHeader` method for dynamic column header updates.
 
 ## 🖥️ IDE: Fivedit
 
