@@ -15,9 +15,10 @@ OBJS=""
 PRG_FILES=""
 
 # Loop through all arguments (files)
+HB_DIR=../../../harbour
 for FILE in "$@"; do
     echo "Compiling $FILE.prg..."
-    ./../../harbour/bin/harbour "$FILE" -n -w -oobj/ -I./../include:./../../harbour/include
+    $HB_DIR/bin/harbour "$FILE" -n -w -oobj/ -I./../include -I$HB_DIR/include 
     if [ $? -ne 0 ]; then
        echo "Error compiling $FILE.prg"
        exit 1
@@ -26,7 +27,7 @@ for FILE in "$@"; do
     echo "Compiling C module obj/$FILE.c..."
     #  add -arch ppc -arch i386 for universal binaries
     SDKPATH=$(xcrun --show-sdk-path)
-    clang -ObjC "obj/$FILE.c" -c -I./../include -I./../../harbour/include -o "obj/$FILE.o"
+    clang -ObjC "obj/$FILE.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/$FILE.o"
     if [ $? -ne 0 ]; then
        echo "Error compiling $FILE.c"
        exit 1
@@ -35,6 +36,18 @@ for FILE in "$@"; do
     OBJS="$OBJS obj/$FILE.o"
     PRG_FILES="$PRG_FILES $FILE.prg"
 done
+
+# Force compilation of modified TWebview components
+echo "Compiling modified WebView components (classes and winapi)..."
+
+# Compile webview.prg
+$HB_DIR/bin/harbour "../source/classes/webview.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+clang -ObjC "obj/webview.c" -c -target arm64-apple-macosx11.0 -I./../include -I$HB_DIR/include -o "obj/webview_mod.o"
+OBJS="$OBJS obj/webview_mod.o"
+
+# Compile webviews.m
+clang -ObjC "../source/winapi/webviews.m" -c -target arm64-apple-macosx11.0 -I./../include -I$HB_DIR/include -o "obj/webviews_mod.o"
+OBJS="$OBJS obj/webviews_mod.o"
 
 if [ ! -d $APPName.app ]; then
    mkdir $APPName.app
@@ -86,7 +99,7 @@ if [ ! -d $APPName.app/Contents/MacOS ]; then
 fi  
 if [ ! -d $APPName.app/Contents/Resources ]; then
    mkdir $APPName.app/Contents/Resources
-   cp ./../icons/fivetech.icns $APPName.app/Contents/Resources/
+   cp ./../../Resources/icons/fivetech.icns $APPName.app/Contents/Resources/
 fi 
 
 # Smart Copy: Only copy images referenced in the source code
@@ -143,7 +156,7 @@ fi
 
 if [ ! -d $APPName.app/Contents/frameworks ]; then
    mkdir $APPName.app/Contents/frameworks
-   cp -r ./../frameworks/* $APPName.app/Contents/frameworks/
+   cp -r ./../../Resources/frameworks/* $APPName.app/Contents/frameworks/
 fi 
 
 echo linking...
@@ -159,10 +172,9 @@ fi
 
 WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks"
 
-#  add -arch ppc -arch i386 for universal binaries
-#  add -arch ppc -arch i386 for universal binaries
 # Link ALL OBJS
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L./../lib -lfive -lfivec -L./../../harbour/lib $HRBLIBS $FRAMEWORKS  -F./../frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+# Add target and min-version to link step too
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -target arm64-apple-macosx26.0 -L$CRTLIB -L./../lib -lfive -lfivec -L$HB_DIR/lib $HRBLIBS $FRAMEWORKS  -F./../../Resources/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c

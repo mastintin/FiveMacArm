@@ -839,3 +839,16 @@ HB_FUNC(GETSDKPATH) {
   [string release];
   [task release];
 }
+// Helper to pump the event loop
+// preventing the "beach ball" during long blocking operations (like curl)
+HB_FUNC(PUMPEVENTS) {
+  NSEvent *event;
+
+  // Process all pending events
+  while ((event = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                     untilDate:[NSDate distantPast]
+                                        inMode:NSDefaultRunLoopMode
+                                       dequeue:YES]) != nil) {
+    [NSApp sendEvent:event];
+  }
+}

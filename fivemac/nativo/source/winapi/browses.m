@@ -72,6 +72,9 @@ static PHB_SYMB symFMH = NULL;
   hb_vmPushLong(unichar);
   hb_vmDo(4);
 
+  NSLog(@"FiveMac Debug: Wbrowse keyDown unichar=%d hb_parnl=%ld", unichar,
+        hb_parnl(-1));
+
   if (hb_parnl(-1) != 1)
     [super keyDown:theEvent];
 }
@@ -169,6 +172,11 @@ static PHB_SYMB symFMH = NULL;
     shouldEditTableColumn:(NSTableColumn *)tableColumn
                       row:(NSInteger)row {
   return [tableColumn isEditable];
+}
+
+- (void)cancelOperation:(id)sender {
+  if ([self currentEditor] != nil)
+    [self abortEditing];
 }
 
 - (void)forceEditFocus {

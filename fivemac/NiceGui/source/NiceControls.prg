@@ -10,12 +10,12 @@ CLASS TNiceButton FROM TNiceControl
     DATA cLabel
     DATA cIcon
    
-    METHOD New( oParent, cLabel, bAction, cIcon, cClass, cStyle )
+    METHOD New( oParent, cLabel, bAction, cIcon, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, cLabel, bAction, cIcon, cClass, cStyle, cJs ) CLASS TNiceButton
-    ::Super:New( oParent, cClass, cStyle, cJs )
+METHOD New( oParent, cLabel, bAction, cIcon, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor ) CLASS TNiceButton
+    ::Super:New( oParent, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor )
     ::cLabel  := cLabel
     ::bAction := bAction
     ::cIcon   := cIcon
@@ -24,9 +24,10 @@ return Self
 
 METHOD GetHtml() CLASS TNiceButton
     local cHtml := '<q-btn color="primary" '
+    local cFullClass := ::GetFullClass()
     
-    if !Empty( ::cClass )
-    cHtml += 'class="' + ::cClass + '" '
+    if !Empty( cFullClass )
+    cHtml += 'class="' + cFullClass + '" '
     endif
     if !Empty( ::cStyle )
     cHtml += 'style="' + ::cStyle + '" '
@@ -49,13 +50,13 @@ CLASS TNiceInput FROM TNiceControl
     DATA cLabel
     DATA cValue
    
-    METHOD New( oParent, cLabel, cValue, cClass, cStyle )
+    METHOD New( oParent, cLabel, cValue, cClass, cStyle, lBold, cSize, cColor, cBgColor )
     METHOD GetHtml()
     METHOD GetModelName()
 ENDCLASS
 
-METHOD New( oParent, cLabel, cValue, cClass, cStyle ) CLASS TNiceInput
-    ::Super:New( oParent, cClass, cStyle )
+METHOD New( oParent, cLabel, cValue, cClass, cStyle, lBold, cSize, cColor, cBgColor ) CLASS TNiceInput
+    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
     ::cLabel := cLabel
     ::cValue := cValue
     DEFAULT ::cValue := ""
@@ -94,12 +95,12 @@ CLASS TNiceIcon FROM TNiceControl
     DATA cSize
     DATA cColor
     
-    METHOD New( oParent, cName, cSize, cColor, cClass, cStyle )
+    METHOD New( oParent, cName, cSize, cColor, cClass, cStyle, lBold, cSizeAttr, cColorAttr, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, cName, cSize, cColor, cClass, cStyle ) CLASS TNiceIcon
-    ::Super:New( oParent, cClass, cStyle )
+METHOD New( oParent, cName, cSize, cColor, cClass, cStyle, lBold, cSizeAttr, cColorAttr, cBgColor ) CLASS TNiceIcon
+    ::Super:New( oParent, cClass, cStyle, , lBold, cSizeAttr, cColorAttr, cBgColor )
     ::cName  := cName
     ::cSize  := cSize
     ::cColor := cColor
@@ -126,19 +127,20 @@ return cHtml
 CLASS TNiceLabel FROM TNiceControl
     DATA cText
     
-    METHOD New( oParent, cText, cClass, cStyle )
+    METHOD New( oParent, cText, cClass, cStyle, lBold, cSize, cColor, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, cText, cClass, cStyle ) CLASS TNiceLabel
-    ::Super:New( oParent, cClass, cStyle )
+METHOD New( oParent, cText, cClass, cStyle, lBold, cSize, cColor, cBgColor ) CLASS TNiceLabel
+    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
     ::cText := cText
 return Self
 
 METHOD GetHtml() CLASS TNiceLabel
     local cHtml := '<div '
-    if !Empty( ::cClass )
-    cHtml += 'class="' + ::cClass + '" '
+    local cFullClass := ::GetFullClass()
+    if !Empty( cFullClass )
+    cHtml += 'class="' + cFullClass + '" '
     endif
     if !Empty( ::cStyle )
     cHtml += 'style="' + ::cStyle + '" '
@@ -576,53 +578,4 @@ return ::cId + "_val"
 METHOD GetModelValue() CLASS TNiceSlider
 return AllTrim( Str( ::nValue ) )
 
-//----------------------------------------------------------------------------//
-// Nice Chart (ECharts wrapper)
-//----------------------------------------------------------------------------//
-
-CLASS TNiceChart FROM TNiceControl
-    DATA cOptions // JSON String
-    DATA nWidth
-    DATA nHeight
-    
-    METHOD New( oParent, cOptions, nWidth, nHeight, cClass, cStyle )
-    METHOD GetHtml()
-    METHOD SetOptions( cOptions )
-ENDCLASS
-
-METHOD New( oParent, cOptions, nWidth, nHeight, cClass, cStyle ) CLASS TNiceChart
-    ::Super:New( oParent, cClass, cStyle )
-    ::cOptions := cOptions
-    ::nWidth   := nWidth
-    ::nHeight  := nHeight
-    DEFAULT ::cOptions := "{}"
-    DEFAULT ::nWidth   := 400
-    DEFAULT ::nHeight  := 300
-return Self
-
-METHOD GetHtml() CLASS TNiceChart
-    local cHtml := '<div id="' + ::cId + '" '
-    if !Empty( ::cClass )
-    cHtml += 'class="' + ::cClass + '" '
-    endif
-    cHtml += 'style="'
-    if !Empty( ::cStyle )
-    cHtml += ::cStyle + ';'
-    endif
-    cHtml += 'width:' + AllTrim(Str(::nWidth)) + 'px;height:' + AllTrim(Str(::nHeight)) + 'px;" '
-    cHtml += 'v-on:vnode-mounted="() => { '
-    cHtml += '  let chart = echarts.init(document.getElementById(' + "'" + ::cId + "'" + ')); '
-    cHtml += '  chart.setOption(' + ::cOptions + '); '
-    cHtml += '  window.charts[' + "'" + ::cId + "'" + '] = chart; '
-    cHtml += '}" '
-    cHtml += '></div>'
-return cHtml
-
-METHOD SetOptions( cOptions ) CLASS TNiceChart
-    local oPage := ::GetPage()
-    ::cOptions := cOptions
-    if oPage != nil .and. oPage:oWeb != nil
-    // Update live chart if possible
-    oPage:oWeb:ScriptCallMethodArg( "eval", "if(window.charts['" + ::cId + "']) window.charts['" + ::cId + "'].setOption(" + cOptions + ")" )
-    endif
-return nil
+// TNiceChart moved to NiceChart.prg

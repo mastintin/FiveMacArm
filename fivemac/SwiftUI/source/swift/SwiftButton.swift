@@ -55,43 +55,52 @@ struct SwiftButtonView: View {
     var callback: (() -> Void)?
     
     var body: some View {
-        if #available(macOS 26.2, *), state.isGlass {
-            // 1. Native Tahoe Glass (User provided implementation)
-            Button(action: {
-                self.callback?()
-            }) {
-                HStack {
-                    if !state.imageName.isEmpty {
-                        Image(systemName: state.imageName)
-                    }
-                    Text(state.title)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(state.backgroundColor.opacity(0.8))
-            .clipShape(Capsule())
-            .glassEffect(.regular, in: Capsule())
-            .contentShape(Capsule())
-        } else {
-             // 2. Normal / Standard Style
-             Button(action: {
-                 self.callback?()
-             }) {
+        if state.isGlass {
+             Button(action: { self.callback?() }) {
                  HStack {
-                    if !state.imageName.isEmpty {
-                        Image(systemName: state.imageName)
-                    }
-                    Text(state.title)
+                     if #available(macOS 11.0, *), !state.imageName.isEmpty {
+                         Image(systemName: state.imageName)
+                     }
+                     Text(state.title)
+                 }
+                 .padding(.horizontal, 12)
+                 .padding(.vertical, 8)
+                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                 .background(state.backgroundColor.opacity(0.8))
+                 .clipShape(Capsule())
+                 .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 0.5))
+             }
+             .buttonStyle(PlainButtonStyle())
+             .foregroundColor(state.foregroundColor)
+             .contentShape(Capsule())
+             .ifAvailable_glassEffect()
+        } else {
+             Button(action: { self.callback?() }) {
+                 HStack {
+                     if #available(macOS 11.0, *), !state.imageName.isEmpty {
+                         Image(systemName: state.imageName)
+                     }
+                     Text(state.title)
                  }
                  .padding(state.padding > 0 ? state.padding : 10)
                  .frame(maxWidth: .infinity, maxHeight: .infinity)
                  .background(state.backgroundColor)
-                 .foregroundColor(state.foregroundColor)
                  .cornerRadius(state.cornerRadius)
              }
              .buttonStyle(PlainButtonStyle())
+             .foregroundColor(state.foregroundColor)
              .contentShape(Rectangle())
+        }
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func ifAvailable_glassEffect() -> some View {
+        if #available(macOS 26.0, *) {
+             self.glassEffect(.regular, in: Capsule())
+        } else {
+            self
         }
     }
 }
@@ -176,10 +185,13 @@ public class SwiftButtonLoader: NSObject {
     @objc(setButtonGlass:index:)
     public static func setButtonGlass(_ isGlass: Bool, index: Int) {
         if #available(OSX 10.15, *) {
+            NSLog("DEBUG: SwiftButton setButtonGlass: \(isGlass) for index: \(index)")
             let key = String(index)
             DispatchQueue.main.async {
                 if let state = states[key] {
                     state.isGlass = isGlass
+                } else {
+                    NSLog("DEBUG: SwiftButton setButtonGlass: State NOT found for index: \(index)")
                 }
             }
         }

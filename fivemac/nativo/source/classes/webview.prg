@@ -36,6 +36,8 @@ CLASS TWebview FROM TControl
     
     METHOD SetHtml( cHtml, cBaseUrl ) INLINE WebViewLoadHtml( ::hWnd, cHtml, cBaseUrl )
    
+    METHOD SaveToPDF( cPath ) INLINE WebViewSaveToPDF( ::hWnd, cPath )
+
     METHOD OnMessage( cBody, cName ) 
    
     METHOD Redefine( nId, oWnd, cUrlName )

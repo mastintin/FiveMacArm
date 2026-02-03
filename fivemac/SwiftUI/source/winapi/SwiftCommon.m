@@ -11,23 +11,37 @@ void SwiftMsgAlert(NSString *title, NSString *msg) {
   [alert runModal];
 }
 
-void setupSwiftView(NSView *swiftView, NSWindow *window, CGFloat top,
-                    CGFloat left, CGFloat w, CGFloat h) {
-  if (!window) {
-    NSLog(@"Error: setupSwiftView called with NULL window");
+void setupSwiftView(NSView *swiftView, id parent, CGFloat top, CGFloat left,
+                    CGFloat w, CGFloat h) {
+  if (!parent) {
+    NSLog(@"Error: setupSwiftView called with NULL parent");
     return;
   }
-  NSView *contentView = [window contentView];
+
+  NSView *contentView = nil;
+  if ([parent isKindOfClass:[NSWindow class]]) {
+    contentView = [(NSWindow *)parent contentView];
+  } else if ([parent isKindOfClass:[NSView class]]) {
+    contentView = (NSView *)parent;
+  }
+
   if (!contentView) {
-    NSLog(@"Error: setupSwiftView - Window has no contentView");
+    NSLog(@"Error: setupSwiftView - Parent provides no content view");
     return;
   }
 
   CGFloat winHeight = contentView.frame.size.height;
-  CGFloat cocoaY = winHeight - top - h;
+  CGFloat cocoaY;
 
-  NSLog(@"setupSwiftView: Adding view %@ (Frame: %f %f %f %f) CocoaY: %f",
-        [swiftView class], left, cocoaY, w, h, cocoaY);
+  if ([contentView isFlipped]) {
+    cocoaY = top;
+  } else {
+    cocoaY = winHeight - top - h;
+  }
+
+  NSLog(@"setupSwiftView: Adding view %@ (Frame: %f %f %f %f) CocoaY: %f "
+        @"(Flipped: %d)",
+        [swiftView class], left, cocoaY, w, h, cocoaY, [contentView isFlipped]);
 
   [swiftView setFrame:NSMakeRect(left, cocoaY, w, h)];
   [contentView addSubview:swiftView];

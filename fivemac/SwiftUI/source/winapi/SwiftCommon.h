@@ -6,5 +6,5 @@
 
 // Forward declarations of common helper functions
 void SwiftMsgAlert(NSString *title, NSString *msg);
-void setupSwiftView(NSView *swiftView, NSWindow *window, CGFloat x, CGFloat y,
+void setupSwiftView(NSView *swiftView, id parent, CGFloat x, CGFloat y,
                     CGFloat w, CGFloat h);

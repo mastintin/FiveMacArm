@@ -16,6 +16,7 @@ CLASS TPrinter
  
    METHOD New( nTop, nLeft, nWidth, nHeight, cDocument ,lAutopage )
    METHOD Run() INLINE PrnJobRun( ::hJob )
+   METHOD EndToPDF( cPath )
    
    METHOD GetCurrentJob() INLINE ::hJob := PrnJobCurrent()
    METHOD CreatePrnInfo() INLINE PrnInfoCreate( ::hJob )
@@ -30,6 +31,9 @@ CLASS TPrinter
    
    METHOD Say( nRow, nCol, cText, nClrText, nClrBack, cFontName, nFontSize ) 
    METHOD SayAttr( nRow, nCol, cText, cFontName, cFontsize, nWidth, nHeight, nClrText, nClrBk, nPad )
+   METHOD SayText( nTop, nLeft, cText, nWidth, nHeight, nFontSize )
+   METHOD SayImage( nRow, nCol, cFile, nWidth, nHeight )
+   METHOD Line( nTop, nLeft, nBottom, nRight )
    METHOD AutoPage() INLINE PrnInfoAutoPage( ::hPrnInfo )   
    
    METHOD SetPaperName( cName ) INLINE PrnSetPaperName( ::hPrnInfo , cName )
@@ -62,7 +66,7 @@ CLASS TPrinter
    METHOD GetHeightPos( nHeightPos ) INLINE ( ( nHeightPos - (  ::GetaSizePrintable()[ 2 ] * ( ::nPages - 1 )  )  ) * ::nRowsPerPage ) / ::GetaSizePrintable()[ 2 ]
 
 
- ENDCLASS
+ENDCLASS
 
 //----------------------------------------------------------------------------//
 
@@ -83,7 +87,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cDocument, lAutopage ) CLASS TPrinter
    ::SetPaperName( "A4" )
 
    if lAutoPage
-      ::AutoPage( .T. )
+   ::AutoPage( .T. )
    endif
 
    ::cDocument = cDocument
@@ -99,21 +103,58 @@ METHOD Say( nRow, nCol, cText, nClrText, nClrBack, cFontName, nFontSize ) CLASS 
    @ ::RowPos( nRow ), nCol SAY oSay PROMPT cText OF Self
 
    if nClrText != nil .and. nClrBack != nil
-      oSay:SetColor( nClrText, nClrBack )
+   oSay:SetColor( nClrText, nClrBack )
    endif
 
    if cFontName != nil .and. nFontSize != nil
-      oSay:SetFont( cFontName, nFontSize )
+   oSay:SetFont( cFontName, nFontSize )
    endif
 
 return nil 
 
 //---------------------------------------------------------------------------//
 
- METHOD SayAttr( nRow, nCol, cText, cFontName, cFontsize, nWidth, nHeight, nClrText, nClrBk, nPad ) CLASS TPrinter
+METHOD SayAttr( nRow, nCol, cText, cFontName, cFontsize, nWidth, nHeight, nClrText, nClrBk, nPad ) CLASS TPrinter
 
-    PrnSay( nRow, nCol, nWidth, nHeight, ::hWnd, cText, cFontName, cFontsize, nClrText, nClrBk, nPad )
+   PrnSay( nRow, nCol, nWidth, nHeight, ::hWnd, cText, cFontName, cFontsize, nClrText, nClrBk, nPad )
 
+   return nil
+
+   return nil
+
+   //---------------------------------------------------------------------------//
+
+return nil
+
+//---------------------------------------------------------------------------//
+
+METHOD SayText( nTop, nLeft, cText, nWidth, nHeight, nFontSize ) CLASS TPrinter
+   local oSay
+
+   DEFAULT nWidth := 200, nHeight := 20
+
+   @ nTop, nLeft SAY oSay PROMPT cText OF Self SIZE nWidth, nHeight
+
+   if nFontSize != nil
+   oSay:SetFont( "Helvetica", nFontSize )
+   endif
+
+return nil
+
+//---------------------------------------------------------------------------//
+
+METHOD SayImage( nRow, nCol, cFile, nWidth, nHeight ) CLASS TPrinter
+   local oImg
+
+   DEFAULT nWidth := 100, nHeight := 100
+
+   @ nRow, nCol IMAGE oImg FILENAME cFile OF Self SIZE nWidth, nHeight
+
+return nil
+
+//---------------------------------------------------------------------------//
+
+METHOD Line( nTop, nLeft, nBottom, nRight ) CLASS TPrinter
 return nil
 
 //---------------------------------------------------------------------------//
@@ -124,10 +165,18 @@ METHOD GetPrintableWidth() CLASS TPrinter
    local nWidth := PrnInfoPageWidth( ::hPrnInfo )
 
    if nWidth > aSize[ 1 ]
-      nWidth := aSize[ 1 ]
+   nWidth := aSize[ 1 ]
    endif
     
 Return nWidth
+
+//---------------------------------------------------------------------------//
+
+METHOD EndToPDF( cPath ) CLASS TPrinter
+   
+   PRNJOBRUNPDF( ::hJob, cPath )
+   
+return nil
 
 //---------------------------------------------------------------------------//
 
@@ -137,7 +186,7 @@ METHOD GetPrintableHeight() CLASS TPrinter
    local nHeight := PrnInfoPageHeight( ::hPrnInfo )
 
    if nHeight > aSize[2]
-      nHeight := aSize[2]
+   nHeight := aSize[2]
    endif
     
 return nHeight
@@ -146,12 +195,12 @@ return nHeight
 
 METHOD SetPagOrientation( nOrientation ) CLASS TPrinter
 
-    PrnInfoPagSetOrientation( ::hPrnInfo, nOrientation )
-    if nOrientation == 0
-       ::nRowsPerPage := 40
-    elseif nOrientation == 1
-       ::nRowsPerPage := 20
-    endif
+   PrnInfoPagSetOrientation( ::hPrnInfo, nOrientation )
+   if nOrientation == 0
+   ::nRowsPerPage := 40
+   elseif nOrientation == 1
+   ::nRowsPerPage := 20
+   endif
 
 return nil
 

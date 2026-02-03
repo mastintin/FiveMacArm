@@ -59,8 +59,8 @@ void CocoaInit(void);
   originalWindow = window;
 }
 
-- (BOOL)allowsVibrancy {
-  return bVibrancy;
+- (void)cancelOperation:(id)sender {
+  // Swallow Escape key to prevent automatic window close
 }
 
 - (BOOL)windowShouldClose:(NSNotification *)notification // VALID clause !
@@ -451,6 +451,9 @@ void CocoaInit(void);
 @implementation FiveMacPanel
 - (BOOL)canBecomeKeyWindow {
   return YES;
+}
+- (void)cancelOperation:(id)sender {
+  // Swallow Escape to prevent automatic closure
 }
 @end
 
