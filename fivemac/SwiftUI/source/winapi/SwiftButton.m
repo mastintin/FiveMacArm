@@ -6,7 +6,7 @@ HB_FUNC(SWIFTBTNCREATE) {
   CGFloat nWidth = (CGFloat)hb_parnd(3);
   CGFloat nHeight = (CGFloat)hb_parnd(4);
   NSString *cPrompt = hb_NSSTRING_par(5);
-  NSWindow *window = (NSWindow *)hb_parnl(6);
+  id parent = (id)hb_parnl(6);
   NSInteger nIndex =
       (NSInteger)hb_parni(7); // Receive the Index in aSwiftButtons
 
@@ -54,15 +54,8 @@ HB_FUNC(SWIFTBTNCREATE) {
     [invocation getReturnValue:&btnView];
 
     if (btnView) {
-      // setupSwiftView(btnView, window, nTop, nLeft, nWidth, nHeight);
-      [btnView setFrame:NSMakeRect(nLeft, nTop, nWidth, nHeight)];
-
-      id parent = (id)hb_parnl(6);
-      if ([parent isKindOfClass:[NSWindow class]]) {
-        [[(NSWindow *)parent contentView] addSubview:btnView];
-      } else if ([parent isKindOfClass:[NSView class]]) {
-        [(NSView *)parent addSubview:btnView];
-      }
+      NSLog(@"DEBUG: SWIFTBTNCREATE success for index: %ld", (long)nIndex);
+      setupSwiftView(btnView, parent, nTop, nLeft, nWidth, nHeight);
       hb_retnll((HB_LONGLONG)btnView);
     }
   }
@@ -143,8 +136,7 @@ HB_FUNC(SWIFTBTNSETRADIUS) {
       [invocation setSelector:selector];
       [invocation setTarget:swiftClass];
 
-      NSNumber *numRad = [NSNumber numberWithDouble:nRadius];
-      [invocation setArgument:&numRad atIndex:2];
+      [invocation setArgument:&nRadius atIndex:2];
       [invocation setArgument:&nIndex atIndex:3];
 
       [invocation invoke];
@@ -168,8 +160,7 @@ HB_FUNC(SWIFTBTNSETPADDING) {
       [invocation setSelector:selector];
       [invocation setTarget:swiftClass];
 
-      NSNumber *numPad = [NSNumber numberWithDouble:nPadding];
-      [invocation setArgument:&numPad atIndex:2];
+      [invocation setArgument:&nPadding atIndex:2];
       [invocation setArgument:&nIndex atIndex:3];
 
       [invocation invoke];
@@ -185,6 +176,7 @@ HB_FUNC(SWIFTBTNSETGLASS) {
   Class swiftClass = NSClassFromString(className);
 
   if (swiftClass) {
+    NSLog(@"DEBUG: SWIFTBTNSETGLASS: %d for index: %ld", isGlass, (long)nIndex);
     SEL selector = NSSelectorFromString(@"setButtonGlass:index:");
     if ([swiftClass respondsToSelector:selector]) {
       NSMethodSignature *signature =
@@ -194,8 +186,11 @@ HB_FUNC(SWIFTBTNSETGLASS) {
       [invocation setSelector:selector];
       [invocation setTarget:swiftClass];
 
+      [invocation setArgument:&isGlass atIndex:2];
       [invocation setArgument:&nIndex atIndex:3];
       [invocation invoke];
+    } else {
+      NSLog(@"DEBUG: SWIFTBTNSETGLASS: Selector NOT found!");
     }
   }
 }

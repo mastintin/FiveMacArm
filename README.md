@@ -81,6 +81,10 @@ RETURN NIL
 - **Webview Improvements**: Fixed ATS issues for loading external websites.
 - **Fivedit IDE**: Now capable of self-hosting! built-in compiling and linking of native apps, generating fully bundled `.app` structures with correct dependencies and Frameworks.
 - **TWBrowse Improvements**: Fixed `TBrwColumn` and implemented `SetHeader` method for dynamic column header updates.
+- **NiceGUI Enhancements**: 
+  - New Harbour-style attributes for all controls: `BOLD`, `SIZE`, `COLOR`, `BGCOLOR`.
+  - Advanced layout control for `HSTACK`, `VSTACK`, and `GRID` using `GAP`, `ALIGN`, and `JUSTIFY` clauses.
+  - Seamless integration with Tailwind CSS and Quasar Framework.
 
 ## 🖥️ IDE: Fivedit
 

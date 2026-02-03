@@ -24,6 +24,7 @@ CLASS TNicePage
   METHOD Activate()
   METHOD HandleEvent( cBody, cName )
   METHOD GetHtml()
+  METHOD SaveToPDF( cFile ) INLINE ::oWeb:SaveToPDF( cFile )
 
 ENDCLASS
 
@@ -161,7 +162,7 @@ METHOD GetHtml() CLASS TNicePage
             %DRAWER%
             <q-page-container>
               <q-page class="q-pa-md">
-                <div class="q-gutter-md w-full">
+                <div class="q-gutter-md">
                   %CONTROLS%
                 </div>
               </q-page>
@@ -172,7 +173,7 @@ METHOD GetHtml() CLASS TNicePage
     
         <script src="vue.global.prod.js"></script>
         <script src="quasar.umd.prod.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.1/dist/echarts.min.js"></script>
+        <script src="echarts.min.js"></script>
     
         <script>
           const { createApp, ref, onMounted } = Vue
@@ -284,10 +285,17 @@ CLASS TNiceControl
   DATA cClass   INIT ""
   DATA cStyle   INIT ""
   DATA cJs      INIT ""
+  DATA lBold    INIT .F.
+  DATA cColor   INIT ""
+  DATA cBgColor INIT ""
+  DATA cSize    INIT ""
    
-  METHOD New( oParent, cClass, cStyle, cJs )
+  METHOD New( oParent, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor )
   METHOD GetPage()
   METHOD GetHtml() VIRTUAL
+  METHOD GetFullClass()
+  METHOD SetStyleAttr( lBold, cSize, cColor, cBgColor )
+  METHOD SetStyle( cStyle )
   METHOD GetModelName()
   METHOD GetModelValue()
   METHOD GetAuxName()
@@ -295,12 +303,14 @@ CLASS TNiceControl
   METHOD Set( uVal )
   METHOD SetClass( cClass ) INLINE ::cClass := cClass
   METHOD SetStyle( cStyle ) INLINE ::cStyle := cStyle
+  
+  METHOD Self() INLINE Self
+
 ENDCLASS
 
-METHOD New( oParent, cClass, cStyle, cJs ) CLASS TNiceControl
+METHOD New( oParent, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor ) CLASS TNiceControl
   local oPage
   ::oParent := oParent
-   
   if ::oParent == nil
   MsgStop( "Control has no parent! " + ::ClassName() )
   return nil
@@ -320,12 +330,48 @@ METHOD New( oParent, cClass, cStyle, cJs ) CLASS TNiceControl
   // Register in Page Flat List
   oPage:Register( Self )
   
-  ::cClass := cClass
+  ::cClass := If( cClass != nil, cClass, "" )
+  ::cStyle := If( cStyle != nil, cStyle, "" )
+  ::cJs    := If( cJs != nil, cJs, "" )
+  ::lBold    := If( lBold != nil, lBold, .F. )
+  ::cSize    := If( cSize != nil, cSize, "" )
+  ::cColor   := If( cColor != nil, cColor, "" )
+  ::cBgColor := If( cBgColor != nil, cBgColor, "" )
+return Self
+
+METHOD GetFullClass() CLASS TNiceControl
+  local cFull := ::cClass
+  if ::lBold
+  cFull += " font-bold"
+  endif
+  if !Empty( ::cSize )
+  cFull += " text-" + ::cSize
+  endif
+  if !Empty( ::cColor )
+  if " " $ ::cColor // If it's a full Tailwind string like "text-green-900 bg-red-100"
+  cFull += " " + ::cColor
+  else
+  cFull += " text-" + ::cColor
+  endif
+  endif
+  if !Empty( ::cBgColor )
+  if " " $ ::cBgColor
+  cFull += " " + ::cBgColor
+  else
+  cFull += " bg-" + ::cBgColor
+  endif
+  endif
+return AllTrim( cFull )
+
+METHOD SetStyleAttr( lBold, cSize, cColor, cBgColor ) CLASS TNiceControl
+  if lBold != nil ; ::lBold := lBold ; endif
+  if cSize != nil ; ::cSize := cSize ; endif
+  if cColor != nil ; ::cColor := cColor ; endif
+  if cBgColor != nil ; ::cBgColor := cBgColor ; endif
+return Self
+
+METHOD SetStyle( cStyle ) CLASS TNiceControl
   ::cStyle := cStyle
-  ::cJs    := cJs
-  DEFAULT ::cClass := ""
-  DEFAULT ::cStyle := ""
-  DEFAULT ::cJs    := ""
 return Self
 
 METHOD GetPage() CLASS TNiceControl

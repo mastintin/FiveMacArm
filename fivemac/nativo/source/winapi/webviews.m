@@ -199,11 +199,35 @@ HB_FUNC(WEBSCRIPCALLMETHODARG) {
   [Wview evaluateJavaScript:js completionHandler:nil];
 }
 
-// startSpeaking/stopSpeaking are not direct methods of WKWebView.
-// They were likely part of legacy WebHelpers or NSSpeechSynthesizer bound to
-// selection. Removing or leaving empty for now to avoid crashes.
 HB_FUNC(WEBVIEWSTARTSPEAKING) {
   // Not supported directly in WKWebView
+}
+
+HB_FUNC(WEBVIEWSAVETOPDF) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  NSString *path = hb_NSSTRING_par(2);
+
+  if (@available(macOS 11.0, *)) {
+    WKPDFConfiguration *config = [[WKPDFConfiguration alloc] init];
+
+    [Wview createPDFWithConfiguration:config
+                    completionHandler:^(NSData *_Nullable pdfData,
+                                        NSError *_Nullable error) {
+                      if (error) {
+                        NSLog(@"WebView PDF Error: %@", error);
+                      } else {
+                        if ([pdfData writeToURL:[NSURL fileURLWithPath:path]
+                                     atomically:YES]) {
+                          NSLog(@"WebView PDF Saved to: %@", path);
+                        } else {
+                          NSLog(@"WebView PDF Write Error");
+                        }
+                      }
+                    }];
+  } else {
+    NSLog(@"WebView PDF requires macOS 11.0+");
+  }
 }
 
 HB_FUNC(WEBVIEWSTOPSPEAKING) {

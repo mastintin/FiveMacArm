@@ -264,3 +264,20 @@ HB_FUNC(PRNINFOIMAGEABLEBOUNDS) {
   hb_storvnll((HB_LONGLONG)boundRect.size.width, -1, 1);
   hb_storvnll((HB_LONGLONG)boundRect.size.height, -1, 2);
 }
+
+HB_FUNC(PRNJOBRUNPDF) {
+  NSPrintOperation *printjob = (NSPrintOperation *)hb_parnll(1);
+  NSString *cPath = hb_NSSTRING_par(2);
+
+  NSPrintInfo *printInfo = [printjob printInfo];
+  NSMutableDictionary *printInfoDict = [printInfo dictionary];
+
+  [printjob setShowsPrintPanel:NO];
+  [printjob setShowsProgressPanel:NO];
+
+  [printInfoDict setObject:NSPrintSaveJob forKey:NSPrintJobDisposition];
+  [printInfoDict setObject:[NSURL fileURLWithPath:cPath]
+                    forKey:NSPrintJobSavingURL];
+
+  [printjob runOperation];
+}

@@ -8,35 +8,37 @@ CLASS TSegment FROM TControl
    DATa   aSegments
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bAction, aSegments, aImages,;
-               nStyle, nTracking ,nAutoResize )
+      nStyle, nTracking ,nAutoResize )
 
    METHOD Redefine( nId, oWnd, bAction )
 
    METHOD SetCount( nSegments ) INLINE SegmentSetCount( ::hWnd, nSegments )
 
    METHOD SetLabel( nSegments, cLabel ) INLINE ;
-          SegmentSetLabel( ::hWnd, nSegments - 1, cLabel )
+      SegmentSetLabel( ::hWnd, nSegments - 1, cLabel )
 
    METHOD SelectedItem() INLINE  SEGMENTSELECT(::Hwnd)+1
+   
+   METHOD _SelectedItem( nIndex ) INLINE SEGMENTSETSELECT( ::hWnd, nIndex - 1 )
 
    METHOD Click() INLINE Eval( ::bAction, ::SelectedItem() )
 
    METHOD SetStyle( nStyle ) INLINE SegmentSetStyle( ::hWnd, nStyle )
    
    METHOD SetEnabled( lEnabled, nSegment ) INLINE ;
-          SegmentSetEnabled( ::hWnd, lEnabled, nSegment - 1 )
+      SegmentSetEnabled( ::hWnd, lEnabled, nSegment - 1 )
    
    METHOD SetImg( cFileImg, nSegment ) INLINE If( ValType( cFileImg ) == "N",;
-          ( SegmentSetNSImage( ::hWnd, cFileImg, nSegment - 1 ),;
-            SegmentSetImageScaling( ::hWnd, nSegment - 1 ) ),;
-          If( File( cFileImg ),;
-          ( SegmentSetImage( ::hWnd, cFileImg, nSegment - 1 ),;
-            SegmentSetImageScaling( ::hWnd, nSegment - 1 ) ), ) )
+         ( SegmentSetNSImage( ::hWnd, cFileImg, nSegment - 1 ),;
+         SegmentSetImageScaling( ::hWnd, nSegment - 1 ) ),;
+         If( File( cFileImg ),;
+         ( SegmentSetImage( ::hWnd, cFileImg, nSegment - 1 ),;
+      SegmentSetImageScaling( ::hWnd, nSegment - 1 ) ), ) )
 
    METHOD SetTracking(nTrack) INLINE SegmentSetTrack(::hWnd,nTrack)
 
    METHOD SetMenu( oMenu, nSegment ) INLINE ;
-          SegmentSetMenu( ::hWnd, oMenu:hMenu, nSegment - 1 )
+      SegmentSetMenu( ::hWnd, oMenu:hMenu, nSegment - 1 )
    
    METHOD SetItemWidth( nWidth ) INLINE SegmentSetWidth( ::hWnd, nWidth , nSegment-1 )
    
@@ -47,7 +49,7 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd,bAction , aSegments, aImages,;
-            nStyle, nTracking  , nAutoResize ) CLASS TSegment
+      nStyle, nTracking  , nAutoResize ) CLASS TSegment
 
    DEFAULT nWidth := 90, nHeight := 30, oWnd := GetWndDefault()
    DEFAULT aSegments:= {}
@@ -59,17 +61,17 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd,bAction , aSegments, aImages,;
    ::aSegments = aSegments
 
    if Len( ::aSegments ) > 0
-      ::SetCount( Len( ::aSegments ) )
-      AEval( ::aSegments , { | obj, ele | ::SetLabel( ele, ::aSegments[ ele ] ) } )
-      if Len( aImages ) > 0
-         AEval( aImages, { | cImg, ele | ::SetImg( cImg, ele ) } )
-      endif
+   ::SetCount( Len( ::aSegments ) )
+   AEval( ::aSegments , { | obj, ele | ::SetLabel( ele, ::aSegments[ ele ] ) } )
+   if Len( aImages ) > 0
+   AEval( aImages, { | cImg, ele | ::SetImg( cImg, ele ) } )
+   endif
    endif
 
    ::SetStyle( nStyle )
 
    if ! Empty( nTracking )
-      ::SetTracking( nTracking )
+   ::SetTracking( nTracking )
    endif
 
    ::nAutoResize = nAutoResize
@@ -102,11 +104,11 @@ METHOD Initiate() CLASS TSegment
    local hWnd := SegmentResCreate( ::oWnd:hWnd, ::nId )
 
    if hWnd != 0
-      ::hWnd = hWnd
+   ::hWnd = hWnd
    else
-      MsgAlert( "Non defined ID " + ;
-                AllTrim( Str( ::nId ) ) + ;
-                " in resource " + ::oWnd:cNibName )
+   MsgAlert( "Non defined ID " + ;
+      AllTrim( Str( ::nId ) ) + ;
+      " in resource " + ::oWnd:cNibName )
    endif
 
 return nil

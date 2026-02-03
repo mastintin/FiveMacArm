@@ -32,16 +32,23 @@
 
 #xcommand DEFINE NICE CARD [ <oCard> ] ;
     [ RADIUS <nRadius> ] ;
-    [ BORDER COLOR <cColor> ] ;
+    [ BORDER COLOR <cBorCol> ] ;
     [ BORDER WIDTH <nWidth> ] ;
     [ SIDE <cSide> ] ;
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
     [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ GAP <cGap> ] ;
+    [ ALIGN <cAlign> ] ;
+    [ JUSTIFY <cJustify> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oCard> := ] TNiceCard():New( <oParent>, [<cClass>], [<cStyle>] ) ;;
+    [ <oCard> := ] TNiceCard():New( <oParent>, [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cGap>], [<cAlign>], [<cJustify>], [<cBgColor>] ) ;;
     [ <oCard>:SetRadius( <nRadius> ) ] ;;
-    [ <oCard>:SetBorderColor( <cColor> ) ] ;;
+    [ <oCard>:SetBorderColor( <cBorCol> ) ] ;;
     [ <oCard>:SetBorderWidth( <nWidth> ) ] ;;
     [ <oCard>:SetBorderSide( <cSide> ) ]
 
@@ -72,8 +79,15 @@
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
     [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ GAP <cGap> ] ;
+    [ ALIGN <cAlign> ] ;
+    [ JUSTIFY <cJustify> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oStack> := ] TNiceHStack():New( <oParent>, [<cClass>], [<cStyle>] )
+    [ <oStack> := ] TNiceHStack():New( <oParent>, [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cGap>], [<cAlign>], [<cJustify>], [<cBgColor>] )
 
 #xcommand END NICE HSTACK =>
 
@@ -81,8 +95,15 @@
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
     [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ GAP <cGap> ] ;
+    [ ALIGN <cAlign> ] ;
+    [ JUSTIFY <cJustify> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oStack> := ] TNiceVStack():New( <oParent>, [<cClass>], [<cStyle>] )
+    [ <oStack> := ] TNiceVStack():New( <oParent>, [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cGap>], [<cAlign>], [<cJustify>], [<cBgColor>] )
 
 #xcommand END NICE VSTACK =>
 
@@ -91,8 +112,15 @@
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
     [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ GAP <cGap> ] ;
+    [ ALIGN <cAlign> ] ;
+    [ JUSTIFY <cJustify> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oGrid> := ] TNiceGrid():New( <oParent>, [<nCols>], [<cClass>], [<cStyle>] )
+    [ <oGrid> := ] TNiceGrid():New( <oParent>, [<nCols>], [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cGap>], [<cAlign>], [<cJustify>], [<cBgColor>] )
 
 #xcommand END NICE GRID =>
 
@@ -115,16 +143,24 @@
     [ ICON <cIcon> ] ;
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oBtn> := ] TNiceButton():New( <oParent>, <cPrompt>, [<{uAction}>], [<cIcon>], [<cClass>], [<cStyle>], [<cJs>] )
+    [ <oBtn> := ] TNiceButton():New( <oParent>, <cPrompt>, [<{uAction}>], [<cIcon>], [<cClass>], [<cStyle>], [<cJs>], [<.lBold.>], [<cSize>], [<cColor>], [<cBgColor>] )
 
 #xcommand NICE GET [ <oInput> ] PROMPT <cLabel> ;
     [ VALUE <cValue> ] ;
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
     [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oInput> := ] TNiceInput():New( <oParent>, <cLabel>, [<cValue>], [<cClass>], [<cStyle>] )
+    [ <oInput> := ] TNiceInput():New( <oParent>, <cLabel>, [<cValue>], [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cBgColor>] )
 
 #xcommand DEFINE NICE DIALOG <oDlg> OF <oPage> ;
     => ;
@@ -151,8 +187,12 @@
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
     [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oSay> := ] TNiceLabel():New( <oParent>, <cText>, [<cClass>], [<cStyle>] )
+    [ <oSay> := ] TNiceLabel():New( <oParent>, <cText>, [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cBgColor>] )
 
 #xcommand NICE ICON [ <oIco> ] NAME <cName> ;
     [ SIZE <cSize> ] ;
@@ -160,8 +200,12 @@
     [ CLASS <cClass> ] ;
     [ STYLE <cStyle> ] ;
     [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZEATTR <cSizeAttr> ] ;
+    [ COLORATTR <cColorAttr> ] ;
+    [ BGCOLOR <cBgColor> ] ;
     => ;
-    [ <oIco> := ] TNiceIcon():New( <oParent>, <cName>, [<cSize>], [<cColor>], [<cClass>], [<cStyle>] )
+    [ <oIco> := ] TNiceIcon():New( <oParent>, <cName>, [<cSize>], [<cColor>], [<cClass>], [<cStyle>], [<.lBold.>], [<cSizeAttr>], [<cColorAttr>], [<cBgColor>] )
 
 #xcommand NICE DROPDOWN [ <oSelect> ] ;
     PROMPT <cLabel> ;
@@ -221,8 +265,34 @@
     => ;
     [ <oProg> := ] TNiceProgress():New( <oParent>, , <nValue>, <cColor>, <nSize>, [<cClass>], [<cStyle>] )
 
+#xcommand DEFINE NICE CHART [ <oChart> ] ;
+    [ WIDTH <nWidth> ] ;
+    [ HEIGHT <nHeight> ] ;
+    [ CLASS <cClass> ] ;
+    [ STYLE <cStyle> ] ;
+    [ OF <oParent> ] ;
+    => ;
+    [ <oChart> := ] TNiceChart():New( <oParent>, , [<nWidth>], [<nHeight>], [<cClass>], [<cStyle>] )
+
+#xcommand NICE CHART <oChart> SET TITLE <cTitle> ;
+    => ;
+    <oChart>:SetTitle( <cTitle> )
+
+#xcommand NICE CHART <oChart> SET XAXIS DATA <aData> ;
+    => ;
+    <oChart>:SetXAxis( <aData> )
+
+#xcommand NICE CHART <oChart> ADD SERIES DATA <aData> ;
+    [ TYPE <cType> ] ;
+    [ <lSmooth: SMOOTH> ] ;
+    [ <lArea: AREA> ] ;
+    => ;
+    <oChart>:AddSeries( <aData>, [<cType>], [<.lSmooth.>], [<.lArea.>] )
+
+#xcommand END NICE CHART =>
+
 #xcommand NICE CHART [ <oChart> ] ;
-    [ OPTIONS <cOptions> ] ;
+    OPTIONS <cOptions> ;
     [ WIDTH <nWidth> ] ;
     [ HEIGHT <nHeight> ] ;
     [ CLASS <cClass> ] ;

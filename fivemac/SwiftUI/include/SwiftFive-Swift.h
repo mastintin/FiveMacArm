@@ -317,6 +317,15 @@ SWIFT_CLASS_NAMED("SwiftButtonLoader")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_CLASS_NAMED("SwiftChartLoader")
+@interface SwiftChartLoader : NSObject
++ (NSView * _Nonnull)makeChart:(NSString * _Nonnull)id data:(NSString * _Nonnull)data type:(NSString * _Nonnull)type index:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
++ (void)setData:(NSString * _Nonnull)data id:(NSString * _Nonnull)id;
++ (void)setType:(NSString * _Nonnull)type id:(NSString * _Nonnull)id;
++ (void)makeSnapshot:(NSString * _Nonnull)id path:(NSString * _Nonnull)path;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
 SWIFT_CLASS_NAMED("SwiftGridLoader")
 @interface SwiftGridLoader : NSObject
 + (NSView * _Nonnull)makeGridWithIndex:(NSInteger)index columnsJson:(NSString * _Nonnull)columnsJson callback:(void (^ _Nonnull)(NSInteger))callback actionCallback:(void (^ _Nonnull)(NSString * _Nonnull))actionCallback SWIFT_WARN_UNUSED_RESULT;
@@ -361,6 +370,12 @@ SWIFT_CLASS("_TtC9SwiftFive11SwiftLoader")
 + (NSView * _Nonnull)makeView SWIFT_WARN_UNUSED_RESULT;
 + (NSView * _Nonnull)makeViewWithCallback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
 + (void)updateLabel:(NSString * _Nonnull)text;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+SWIFT_CLASS_NAMED("SwiftPDF") SWIFT_AVAILABILITY(macos,introduced=10.15)
+@interface SwiftPDF : NSObject
++ (void)saveView:(NSInteger)id to:(NSString * _Nonnull)path;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 

@@ -8,8 +8,13 @@
 
 CLASS TNiceContainer FROM TNiceControl
     DATA aControls INIT {}
+    DATA cGap      INIT "md"
+    DATA cAlign    INIT ""
+    DATA cJustify  INIT ""
+    
     METHOD Add( oControl )
     METHOD GetHtmlChildren()
+    METHOD GetFullClass()
 ENDCLASS
 
 METHOD Add( oControl ) CLASS TNiceContainer
@@ -24,21 +29,39 @@ METHOD GetHtmlChildren() CLASS TNiceContainer
     next
 return cHtml
 
+METHOD GetFullClass() CLASS TNiceContainer
+    local cFull := ::Super:GetFullClass()
+    local cGutter := if( ::ClassName() == "TNICEVSTACK", "q-gutter-y-", "q-gutter-x-" )
+    
+    if !Empty( ::cGap )
+    cFull += " " + cGutter + ::cGap
+    endif
+    if !Empty( ::cAlign )
+    cFull += " items-" + ::cAlign
+    endif
+    if !Empty( ::cJustify )
+    cFull += " justify-" + ::cJustify
+    endif
+return AllTrim( cFull )
+
 //----------------------------------------------------------------------------//
 // Nice HStack
 //----------------------------------------------------------------------------//
 
 CLASS TNiceHStack FROM TNiceContainer
-    METHOD New( oParent, cClass, cStyle )
+    METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, cClass, cStyle ) CLASS TNiceHStack
-    ::Super:New( oParent, cClass, cStyle )
+METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceHStack
+    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
+    ::cGap     := If( cGap != nil, cGap, "md" )
+    ::cAlign   := If( cAlign != nil, cAlign, "" )
+    ::cJustify := If( cJustify != nil, cJustify, "" )
 return Self
 
 METHOD GetHtml() CLASS TNiceHStack
-    local cHtml := '<div class="row q-gutter-md ' + ::cClass + '" '
+    local cHtml := '<div class="row ' + ::GetFullClass() + '" '
     if !Empty( ::cStyle )
     cHtml += 'style="' + ::cStyle + '" '
     endif
@@ -52,17 +75,19 @@ return cHtml
 //----------------------------------------------------------------------------//
 
 CLASS TNiceVStack FROM TNiceContainer
-    METHOD New( oParent, cClass, cStyle )
+    METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, cClass, cStyle ) CLASS TNiceVStack
-    ::Super:New( oParent, cClass, cStyle )
+METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceVStack
+    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
+    ::cGap     := If( cGap != nil, cGap, "md" )
+    ::cAlign   := If( cAlign != nil, cAlign, "" )
+    ::cJustify := If( cJustify != nil, cJustify, "" )
 return Self
 
 METHOD GetHtml() CLASS TNiceVStack
-    local cHtml := ""
-    cHtml := '<div class="column q-gutter-md ' + ::cClass + '" '
+    local cHtml := '<div class="column ' + ::GetFullClass() + '" '
     if !Empty( ::cStyle )
     cHtml += 'style="' + ::cStyle + '" '
     endif
@@ -81,20 +106,23 @@ CLASS TNiceCard FROM TNiceContainer
     DATA nBorderWidth  INIT 0
     DATA cBorderSide   INIT "all"  // "all", "left", "right", "top", "bottom"
     
-    METHOD New( oParent, cClass, cStyle )
+    METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
     METHOD GetHtml()
-    METHOD SetRadius( nRadius )    INLINE ::nRadius := nRadius
+    METHOD SetRadius( nRadius )    INLINE if( nRadius != nil, ::nRadius := nRadius, )
     METHOD SetBorderColor( cCol )  INLINE ::cBorderColor := cCol
-    METHOD SetBorderWidth( nWidth ) INLINE ::nBorderWidth := nWidth
+    METHOD SetBorderWidth( nWidth ) INLINE if( nWidth != nil, ::nBorderWidth := nWidth, )
     METHOD SetBorderSide( cSide )  INLINE ::cBorderSide := if( cSide != nil, Lower( cSide ), "all" )
 ENDCLASS
 
-METHOD New( oParent, cClass, cStyle ) CLASS TNiceCard
-    ::Super:New( oParent, cClass, cStyle )
+METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceCard
+    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
+    ::cGap     := If( cGap != nil, cGap, "" )
+    ::cAlign   := If( cAlign != nil, cAlign, "" )
+    ::cJustify := If( cJustify != nil, cJustify, "" )
 return Self
 
 METHOD GetHtml() CLASS TNiceCard
-    local cHtml := '<q-card class="' + ::cClass + '" '
+    local cHtml := '<q-card class="' + ::GetFullClass() + '" '
     local cStyle := ::cStyle
     local cBorder := ""
     
@@ -214,18 +242,20 @@ return cHtml
 
 CLASS TNiceGrid FROM TNiceContainer
     DATA nCols
-    METHOD New( oParent, nCols, cClass, cStyle )
+    METHOD New( oParent, nCols, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, nCols, cClass, cStyle ) CLASS TNiceGrid
-    ::Super:New( oParent, cClass, cStyle )
-    ::nCols := nCols
-    DEFAULT ::nCols := 3
+METHOD New( oParent, nCols, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceGrid
+    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
+    ::nCols := If( nCols != nil, nCols, 3 )
+    ::cGap  := If( cGap != nil, cGap, "md" )
+    ::cAlign := If( cAlign != nil, cAlign, "" )
+    ::cJustify := If( cJustify != nil, cJustify, "" )
 return Self
 
 METHOD GetHtml() CLASS TNiceGrid
-    local cHtml := '<div class="row q-col-gutter-md ' + ::cClass + '" '
+    local cHtml := '<div class="row ' + ::GetFullClass() + '" '
     if !Empty( ::cStyle )
     cHtml += 'style="' + ::cStyle + '" '
     endif
@@ -233,6 +263,7 @@ METHOD GetHtml() CLASS TNiceGrid
     cHtml += ::GetHtmlChildren()
     cHtml += '</div>'
 return cHtml
+
 
 //----------------------------------------------------------------------------//
 // Nice Tabs

@@ -102,6 +102,14 @@
     => ;
     [ <oGrid> := ] TSwiftGrid():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <aColumns>, <oWnd>, <nAutoResize> )
 
+#xcommand @ <nRow>, <nCol> SWIFTCHART [ <oChart> ] ;
+    [ DATA <hData> ] ;
+    [ TYPE <cType> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    => ;
+    [ <oChart> := ] TSwiftChart():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <hData>, <cType> )
+
 
 //----------------------------------------------------------------------------//
 
