@@ -335,3 +335,29 @@
 
 #xcommand NICE STEPPER <oStepper> NEXT     => <oStepper>:Next()
 #xcommand NICE STEPPER <oStepper> PREVIOUS => <oStepper>:Previous()
+
+//----------------------------------------------------------------------------//
+// Nice Printer Commands
+//----------------------------------------------------------------------------//
+
+#xcommand DEFINE NICE PRINTER [ <oPrn> ] ;
+    [ FORMAT <cFormat> ] ;
+    [ <lLandscape: LANDSCAPE> ] ;
+    [ OF <oParent> ] ;
+    => ;
+    [ <oPrn> := ] TNicePrinter():New( <oParent>, [<cFormat>], [<.lLandscape.>] )
+
+#xcommand NICE PRINT PAGE [ <oPage> ] OF <oPrn> ;
+    => ;
+    [ <oPage> := ] TNicePrintPage():New( <oPrn> )
+
+#xcommand END NICE PRINT PAGE =>
+#xcommand END NICE PRINTER =>
+
+#xcommand NICE PRINT BUTTON [ <oBtn> ] ;
+    [ PROMPT <cLabel> ] ;
+    [ CLASS <cClass> ] ;
+    [ STYLE <cStyle> ] ;
+    [ OF <oParent> ] ;
+    => ;
+    [ <oBtn> := ] TNicePrintButton():New( <oParent>, [<cLabel>], [<cClass>], [<cStyle>] )

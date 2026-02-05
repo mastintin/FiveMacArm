@@ -6,3 +6,5 @@
 #include "NiceControls.prg"
 #include "NiceTable.prg"
 #include "NiceDialog.prg"
+#include "NicePrinter.prg"
+#include "NiceChart.prg"

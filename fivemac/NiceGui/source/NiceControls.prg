@@ -38,7 +38,9 @@ METHOD GetHtml() CLASS TNiceButton
     cHtml += 'icon="' + ::cIcon + '" '
     endif
     
-    cHtml += '@click="handleClick(' + "'" + ::cId + "', '" + ::cJs + "')" + '" '
+    // Escape single quotes in JS code to avoid breaking the attribute
+    // We replace ' with \' so the JS string remains valid
+    cHtml += '@click="handleClick(' + "'" + ::cId + "', '" + StrTran( ::cJs, "'", "\'" ) + "')" + '" '
     cHtml += '></q-btn>'
 return cHtml
 
@@ -579,3 +581,55 @@ METHOD GetModelValue() CLASS TNiceSlider
 return AllTrim( Str( ::nValue ) )
 
 // TNiceChart moved to NiceChart.prg
+
+//----------------------------------------------------------------------------//
+// Nice IFrame
+//----------------------------------------------------------------------------//
+
+CLASS TNiceIFrame FROM TNiceControl
+    DATA cSrc
+    DATA cHtmlContent
+    DATA cWidth
+    DATA cHeight
+   
+    METHOD New( oParent, cSrc, cHtmlContent, cWidth, cHeight, cClass, cStyle )
+    METHOD GetHtml()
+ENDCLASS
+
+METHOD New( oParent, cSrc, cHtmlContent, cWidth, cHeight, cClass, cStyle ) CLASS TNiceIFrame
+    ::Super:New( oParent, cClass, cStyle )
+    ::cSrc         := cSrc
+    ::cHtmlContent := cHtmlContent
+    ::cWidth       := If( cWidth != nil, cWidth, "100%" )
+    ::cHeight      := If( cHeight != nil, cHeight, "500px" )
+return Self
+
+METHOD GetHtml() CLASS TNiceIFrame
+    local cHtml := '<iframe id="' + ::cId + '" '
+    local cFullStyle := ""
+    local cFullClass := ::GetFullClass()
+    local cDoc
+    
+    if !Empty( cFullClass )
+    cHtml += 'class="' + cFullClass + '" '
+    endif
+    
+    if !Empty( ::cHtmlContent )
+    // Basic escaping for srcdoc
+    cDoc := StrTran( ::cHtmlContent, "'", "&#39;" )
+    cDoc := StrTran( cDoc, '"', "&quot;" )
+    cHtml += "srcdoc='" + cDoc + "' "
+    elseif !Empty( ::cSrc )
+    cHtml += 'src="' + ::cSrc + '" '
+    endif
+    
+    // Combine width/height into style
+    cFullStyle += "width: " + ::cWidth + "; height: " + ::cHeight + "; border: none;"
+    
+    if !Empty( ::cStyle )
+    cFullStyle += " " + ::cStyle
+    endif
+    
+    cHtml += 'style="' + cFullStyle + '" '
+    cHtml += '></iframe>'
+return cHtml
