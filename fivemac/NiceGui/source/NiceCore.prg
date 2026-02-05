@@ -74,6 +74,13 @@ METHOD HandleEvent( cBody, cName ) CLASS TNicePage
   local aTokens, cId, oCtrl
    
   if cName == "fivemac"
+  if cBody == "sys:print"
+  // MsgInfo("Print requested! Saving to report.pdf")
+  ::oWeb:SaveToPDF( hb_DirBase() + "report.pdf" )
+  MsgInfo("Saved to " + hb_DirBase() + "report.pdf")
+  return nil
+  endif
+
   aTokens := hb_ATokens( cBody, ":" )
   if Len( aTokens ) >= 1
   cId := aTokens[ 1 ]
@@ -198,6 +205,31 @@ METHOD GetHtml() CLASS TNicePage
                 if (state[id]) state[id].value++;
               };
 
+              window.enablePrintMode = () => {
+                 document.documentElement.classList.add('printing-mode'); 
+                 document.body.classList.add('printing-mode'); 
+              };
+
+              window.nicePrint = () => {
+                 const h = document.documentElement;
+                 const b = document.body;
+                 h.classList.add('printing-mode'); 
+                 b.classList.add('printing-mode'); 
+                 
+                 setTimeout(() => {
+                    try { 
+                       window.webkit.messageHandlers.fivemac.postMessage('sys:print');
+                    } catch(e) { 
+                       alert('Bridge Error: ' + e);
+                    }
+                    // Cleanup
+                    setTimeout(() => { 
+                       h.classList.remove('printing-mode'); 
+                       b.classList.remove('printing-mode'); 
+                    }, 2000);
+                 }, 500);
+              };
+
               window.stepPrev = (id) => {
                 if (state[id] && state[id].value > 1) state[id].value--;
               };
@@ -312,7 +344,7 @@ METHOD New( oParent, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor ) CLASS
   local oPage
   ::oParent := oParent
   if ::oParent == nil
-  MsgStop( "Control has no parent! " + ::ClassName() )
+  MsgStop( "Control has no parent! " + ::ClassName() + " Parent: " + ValType( oParent ) )
   return nil
   endif
 
@@ -376,7 +408,7 @@ return Self
 
 METHOD GetPage() CLASS TNiceControl
   local oObj := ::oParent
-  while oObj != nil .and. oObj:ClassName() != "TNICEPAGE"
+  while oObj != nil .and. ! ( Upper( oObj:ClassName() ) $ "TNICEPAGE,TNICEPRINTER" )
   if __ObjHasMsg( oObj, "OPARENT" )
   oObj := oObj:oParent
   else

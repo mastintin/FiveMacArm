@@ -1,0 +1,133 @@
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+        <link href="quasar.prod.css" rel="stylesheet" type="text/css">
+        <link href="material-icons.css" rel="stylesheet" type="text/css">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          body { font-family: 'Roboto', sans-serif; }
+          .q-page { background: transparent !important; }
+        </style>
+      </head>
+      <body>
+        <div id="q-app">
+          <q-layout view="hHh Lpr lFf">
+            <q-header elevated class="bg-grey-3 text-black" ><q-toolbar><q-btn color="primary" style="margin-right: 5px;" label="<<" @click="handleClick('ctrl_2', 'document.getElementById(\'myframe\').contentWindow.niceScrollPage(\'first\')')" ></q-btn> <q-btn color="primary" style="margin-right: 5px;" label="<" @click="handleClick('ctrl_3', 'document.getElementById(\'myframe\').contentWindow.niceScrollPage(\'-1\')')" ></q-btn> <q-btn color="primary" style="margin-right: 5px;" label=">" @click="handleClick('ctrl_4', 'document.getElementById(\'myframe\').contentWindow.niceScrollPage(\'1\')')" ></q-btn> <q-btn color="primary" style="margin-right: 20px;" label=">>" @click="handleClick('ctrl_5', 'document.getElementById(\'myframe\').contentWindow.niceScrollPage(\'last\')')" ></q-btn> <q-btn color="primary" style="margin-right: 5px;" label="Print" icon="print" @click="handleClick('ctrl_6', 'document.getElementById(\'myframe\').contentWindow.print()')" ></q-btn> </q-toolbar></q-header>
+            
+            <q-page-container>
+              <q-page class="q-pa-md">
+                <div class="q-gutter-md">
+                  <iframe id="myframe" class="absolute-full" srcdoc='<!DOCTYPE html><html><head><script>window.niceScrollPage = function(payload) {  var pages = document.querySelectorAll(&quot;.nice-page&quot;);  if (typeof window.curPage === &quot;undefined&quot;) window.curPage = 0;  if (payload === &quot;first&quot;) { window.curPage = 0; }  else if (payload === &quot;last&quot;) { window.curPage = pages.length - 1; }  else { window.curPage += parseInt(payload); }  if (window.curPage < 0) window.curPage = 0;  if (window.curPage >= pages.length) window.curPage = pages.length - 1;  pages[window.curPage].scrollIntoView({ behavior: &quot;smooth&quot; });};</script></head><body><style>@media screen {  body { background: #e0e0e0; }  .nice-document { display: flex; flex-direction: column; align-items: center; padding: 20px;  }  .nice-page {    width: 210mm;    min-height: 297mm;    margin-bottom: 20px;    background: white;    box-shadow: 0 4px 10px rgba(0,0,0,0.2);    padding: 20px;    box-sizing: border-box;  }}@media print {  @page { size: 210mm 297mm; margin: 0; }  body { background: white; margin: 0; width: 100%; height: auto; }  .nice-document { display: block !important; float: none !important; position: static !important; overflow: visible !important; width: 100%; height: auto; padding: 0; }  .nice-page {    width: 210mm;    min-height: 290mm !important;    margin: 0;    box-shadow: none;    padding: 20px;    display: block !important;    position: relative !important;    box-sizing: border-box !important;    page-break-after: always !important;  }  .nice-page:last-child { page-break-after: auto !important; }  .nice-page + .nice-page { margin-top: 0 !important; }  .no-print, .q-btn, .q-drawer, .q-header, .q-footer { display: none !important; }  .q-page-container { padding: 0 !important; }}html.printing-mode, body.printing-mode {  background: white !important; margin: 0 !important; padding: 0 !important;  width: 210mm !important; height: auto !important; overflow: visible !important;}body.printing-mode #q-app { display: none !important; }body.printing-mode .nice-document { display: block !important; float: none !important; position: static !important; overflow: visible !important; height: auto !important; }body.printing-mode .nice-page {  width: 210mm !important;  min-height: 297mm !important;  margin: 0 !important;  padding: 20px !important;  display: block !important;  position: relative !important;  box-sizing: border-box !important;  break-after: page !important;  page-break-after: always !important;}body.printing-mode .nice-page + .nice-page { page-break-before: always !important; margin-top: 0 !important; }body.printing-mode .no-print { display: none !important; visibility: hidden !important; }body.printing-mode .q-btn { display: none !important; }</style><div class=&quot;nice-document&quot;><div class=&quot;nice-page&quot;><div class=&quot;text-h3&quot; style=&quot;font-weight: bold; margin-bottom: 20px;&quot; >INFORME NATIVO (PAGE 1)</div> <div class=&quot;text-body1&quot; >Este contenido está dentro de un IFRAME.</div> </div> <div class=&quot;nice-page&quot;><div class=&quot;text-h3&quot; style=&quot;font-weight: bold; margin-bottom: 20px;&quot; >INFORME NATIVO (PAGE 2)</div> <div class=&quot;text-body1&quot; >Segunda página de prueba.</div> </div> </div></body></html>' style="width: 100%; height: 100%; border: none; border: none; top: 0;" ></iframe>
+
+                </div>
+              </q-page>
+            </q-page-container>
+            
+          </q-layout>
+        </div>
+    
+        <script src="vue.global.prod.js"></script>
+        <script src="quasar.umd.prod.js"></script>
+        <script src="echarts.min.js"></script>
+    
+        <script>
+          const { createApp, ref, onMounted } = Vue
+          const { useQuasar } = Quasar
+          
+          window.charts = {};
+
+          const app = createApp({
+            setup () {
+              const state = {
+                drawerOpen: ref(true),
+                
+              }
+              
+              window.appState = state;
+
+              window.toggleDrawer = () => { 
+                state.drawerOpen.value = !state.drawerOpen.value; 
+              };
+              
+              window.stepNext = (id) => {
+                if (state[id]) state[id].value++;
+              };
+
+              window.enablePrintMode = () => {
+                 document.documentElement.classList.add('printing-mode'); 
+                 document.body.classList.add('printing-mode'); 
+              };
+
+              window.nicePrint = () => {
+                 const h = document.documentElement;
+                 const b = document.body;
+                 h.classList.add('printing-mode'); 
+                 b.classList.add('printing-mode'); 
+                 
+                 setTimeout(() => {
+                    try { 
+                       window.webkit.messageHandlers.fivemac.postMessage('sys:print');
+                    } catch(e) { 
+                       alert('Bridge Error: ' + e);
+                    }
+                    // Cleanup
+                    setTimeout(() => { 
+                       h.classList.remove('printing-mode'); 
+                       b.classList.remove('printing-mode'); 
+                    }, 2000);
+                 }, 500);
+              };
+
+              window.stepPrev = (id) => {
+                if (state[id] && state[id].value > 1) state[id].value--;
+              };
+              
+              window.updateModel = ( id, val ) => {
+                 if ( state[id] ) state[id].value = val;
+              }
+              
+              window.updateModelFromString = ( str ) => {
+                  let parts = str.split(':');
+                  if (parts.length >= 2) {
+                      let id = parts[0];
+                      let val = parts.slice(1).join(':'); 
+                      if (val === "true") val = true;
+                      else if (val === "false") val = false;
+                      else if (!isNaN(val)) val = parseFloat(val);
+                      
+                      if ( state[id] ) state[id].value = val;
+                  }
+              }
+
+              return {
+                ...state,
+                sendEvent( id, event ) {
+                  // alert('Event: ' + id + ' -> ' + event);
+                  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.fivemac) {
+                     window.webkit.messageHandlers.fivemac.postMessage( id + ':' + event );
+                  }
+                },
+                handleClick( id, js ) {
+                  if ( js ) {
+                     // Evaluate JS code string if it looks like a function call
+                     try { eval(js); } catch(e) { console.error(e); }
+                  }
+                  this.sendEvent( id, 'click' );
+                },
+                updateVal( id, val ) {
+                  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.fivemac) {
+                     window.webkit.messageHandlers.fivemac.postMessage( id + ':change:' + val );
+                  }
+                }
+              }
+            }
+          })
+    
+          app.use(Quasar)
+          app.mount('#q-app')
+        </script>
+      </body>
+    </html>
+

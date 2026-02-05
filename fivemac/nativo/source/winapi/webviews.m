@@ -3,12 +3,25 @@
 #include <hbapi.h>
 #include <hbapiitm.h>
 #include <hbvm.h>
+#import <objc/runtime.h>
 
 @interface FMVScriptHandler : NSObject <WKScriptMessageHandler>
 @property(nonatomic, assign) PHB_ITEM phbWebview;
 @end
 
+@interface FMVNavigationHandler : NSObject <WKNavigationDelegate>
+@end
+
 extern PHB_ITEM hb_itemNew(PHB_ITEM pNull);
+
+@implementation FMVNavigationHandler
+- (void)webView:(WKWebView *)webView
+    decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
+                    decisionHandler:
+                        (void (^)(WKNavigationActionPolicy))decisionHandler {
+  decisionHandler(WKNavigationActionPolicyAllow);
+}
+@end
 
 @implementation FMVScriptHandler
 - (void)userContentController:(WKUserContentController *)userContentController
@@ -85,8 +98,14 @@ HB_FUNC(WEBVIEWCREATE) {
                              configuration:config];
   [Wview setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
+  // Create and set Navigation Delegate to allow all requests
+  FMVNavigationHandler *navHandler = [[FMVNavigationHandler alloc] init];
+  [Wview setNavigationDelegate:navHandler];
+  objc_setAssociatedObject(Wview, "navHandler", navHandler,
+                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
   [sv setDocumentView:Wview];
-  [GetView(window) addSubview:sv];
+  [[window contentView] addSubview:sv]; // Keep fix
 
   hb_retnll((HB_LONGLONG)sv);
 }
@@ -109,8 +128,13 @@ HB_FUNC(WEBVIEWLOADHTML) {
   NSString *base = hb_NSSTRING_par(3);
   NSURL *baseUrl = nil;
 
-  if (base)
-    baseUrl = [NSURL URLWithString:base];
+  if (base) {
+    if ([base hasPrefix:@"http"] || [base hasPrefix:@"file://"]) {
+      baseUrl = [NSURL URLWithString:base];
+    } else {
+      baseUrl = [NSURL fileURLWithPath:base];
+    }
+  }
 
   [Wview loadHTMLString:string baseURL:baseUrl];
 }
@@ -209,23 +233,48 @@ HB_FUNC(WEBVIEWSAVETOPDF) {
   NSString *path = hb_NSSTRING_par(2);
 
   if (@available(macOS 11.0, *)) {
-    WKPDFConfiguration *config = [[WKPDFConfiguration alloc] init];
+    // Use NSPrintOperation to respect CSS Pagination
+    NSPrintInfo *printInfo = [NSPrintInfo sharedPrintInfo];
 
-    [Wview createPDFWithConfiguration:config
-                    completionHandler:^(NSData *_Nullable pdfData,
-                                        NSError *_Nullable error) {
-                      if (error) {
-                        NSLog(@"WebView PDF Error: %@", error);
-                      } else {
-                        if ([pdfData writeToURL:[NSURL fileURLWithPath:path]
-                                     atomically:YES]) {
-                          NSLog(@"WebView PDF Saved to: %@", path);
-                        } else {
-                          NSLog(@"WebView PDF Write Error");
-                        }
-                      }
-                    }];
+    // Configure for PDF Output
+    [printInfo setJobDisposition:NSPrintSaveJob];
+    [printInfo.dictionary setObject:[NSURL fileURLWithPath:path]
+                             forKey:NSPrintJobSavingURL];
+
+    // Explicitly set A4 Paper (595x842 pts) and Zero Margins
+    [printInfo setPaperSize:NSMakeSize(595, 842)];
+    [printInfo setTopMargin:0.0];
+    [printInfo setBottomMargin:0.0];
+    [printInfo setLeftMargin:0.0];
+    [printInfo setRightMargin:0.0];
+    [printInfo setHorizontallyCentered:NO];
+    [printInfo setVerticallyCentered:NO];
+    [printInfo setScalingFactor:1.0];
+
+    // Retrieve Print Operation from WKWebView
+    NSPrintOperation *printOp = [Wview printOperationWithPrintInfo:printInfo];
+
+    [printOp setShowsPrintPanel:NO];
+    [printOp setShowsProgressPanel:NO];
+
+    // Run Modally for Window (Async/Sheet) to avoid blocking main thread
+    // completely We use the window of the webview
+    NSWindow *win = [Wview window];
+    if (win) {
+      [printOp runOperationModalForWindow:win
+                                 delegate:nil
+                           didRunSelector:nil
+                              contextInfo:nil];
+      NSLog(@"WebView PDF: Print Operation started (Sheet)");
+    } else {
+      // Fallback if no window (headless logic might fail here if not attached?)
+      if ([printOp runOperation]) {
+        NSLog(@"WebView PDF: Saved (Blocking) to: %@", path);
+      }
+    }
+
   } else {
+    // Fallback? Or just log.
     NSLog(@"WebView PDF requires macOS 11.0+");
   }
 }

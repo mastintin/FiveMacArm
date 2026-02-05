@@ -15,6 +15,7 @@ CLASS TNiceContainer FROM TNiceControl
     METHOD Add( oControl )
     METHOD GetHtmlChildren()
     METHOD GetFullClass()
+    METHOD GetHtml()
 ENDCLASS
 
 METHOD Add( oControl ) CLASS TNiceContainer
@@ -44,17 +45,27 @@ METHOD GetFullClass() CLASS TNiceContainer
     endif
 return AllTrim( cFull )
 
+METHOD GetHtml() CLASS TNiceContainer
+    local cHtml := '<div class="' + ::GetFullClass() + '" '
+    if !Empty( ::cStyle )
+    cHtml += 'style="' + ::cStyle + '" '
+    endif
+    cHtml += '>'
+    cHtml += ::GetHtmlChildren()
+    cHtml += '</div>'
+return cHtml
+
 //----------------------------------------------------------------------------//
 // Nice HStack
 //----------------------------------------------------------------------------//
 
 CLASS TNiceHStack FROM TNiceContainer
-    METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
+    METHOD New( oWndParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceHStack
-    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
+METHOD New( oWndParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceHStack
+    ::Super:New( oWndParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
     ::cGap     := If( cGap != nil, cGap, "md" )
     ::cAlign   := If( cAlign != nil, cAlign, "" )
     ::cJustify := If( cJustify != nil, cJustify, "" )
@@ -75,12 +86,12 @@ return cHtml
 //----------------------------------------------------------------------------//
 
 CLASS TNiceVStack FROM TNiceContainer
-    METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
+    METHOD New( oWndParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor )
     METHOD GetHtml()
 ENDCLASS
 
-METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceVStack
-    ::Super:New( oParent, cClass, cStyle, , lBold, cSize, cColor, cBgColor )
+METHOD New( oWndParent, cClass, cStyle, lBold, cSize, cColor, cGap, cAlign, cJustify, cBgColor ) CLASS TNiceVStack
+    ::Super:New( oWndParent, cClass, cStyle, nil, lBold, cSize, cColor, cBgColor )
     ::cGap     := If( cGap != nil, cGap, "md" )
     ::cAlign   := If( cAlign != nil, cAlign, "" )
     ::cJustify := If( cJustify != nil, cJustify, "" )

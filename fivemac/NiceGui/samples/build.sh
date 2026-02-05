@@ -30,6 +30,9 @@ clang -c obj/NiceControls_mod.c -o obj/NiceControls_mod.o -I../include -I../../n
 # 6. NiceLayout Class
 ../../../harbour/bin/harbour ../source/NiceLayout.prg -n -oobj/NiceLayout_mod.c -I../include -I../../nativo/include -I../../../harbour/include
 clang -c obj/NiceLayout_mod.c -o obj/NiceLayout_mod.o -I../include -I../../nativo/include -I../../../harbour/include
+# 7. NicePrinter Class
+../../../harbour/bin/harbour ../source/NicePrinter.prg -n -oobj/NicePrinter_mod.c -I../include -I../../nativo/include -I../../../harbour/include
+clang -c obj/NicePrinter_mod.c -o obj/NicePrinter_mod.o -I../include -I../../nativo/include -I../../../harbour/include
 
 echo "compiling $1..."
 ../../../harbour/bin/harbour $1 -n -oobj/$NAME.c -I../include -I../../nativo/include -I../../../harbour/include
@@ -42,7 +45,7 @@ HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrd
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
 CRTLIB=$(xcrun --show-sdk-path)/usr/lib
 # Add rpath so it finds Scintilla in ../Resources/frameworks
-clang obj/$NAME.o obj/NiceCore_mod.o obj/NiceChart_mod.o obj/NiceControls_mod.o obj/NiceLayout_mod.o obj/webview_mod.o obj/webviews_mod.o -o $NAME -L../../nativo/lib -lfive -lfivec -L../../../harbour/lib $HRBLIBS $FRAMEWORKS -F../../Resources/frameworks -framework Scintilla -lsqlite3 $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd -rpath @executable_path/../../Resources/frameworks
+clang obj/$NAME.o obj/NiceCore_mod.o obj/NiceChart_mod.o obj/NiceControls_mod.o obj/NiceLayout_mod.o obj/NicePrinter_mod.o obj/webview_mod.o obj/webviews_mod.o -o $NAME -L../../nativo/lib -lfive -lfivec -L../../../harbour/lib $HRBLIBS $FRAMEWORKS -F../../Resources/frameworks -framework Scintilla -lsqlite3 $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd -rpath @executable_path/../../Resources/frameworks
 
 
 echo "done!"

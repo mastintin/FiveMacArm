@@ -1,18 +1,28 @@
 #include "FiveMac.ch"
 #include "Nice.ch"
 
+// Standardized Report Entry Point
 function Main()
+    local oPrinter
+    
+    // 1. Create the Printer Document
+    oPrinter := TNicePrinter():New( nil, "A4" )
+    
+    // 2. Build the Content
+    BuildReport( oPrinter )
+    
+    // 3. Launch Preview (Choose your flavor: Preview() for NiceGUI, NativoPreview() for Native)
+    oPrinter:NativoPreview()
 
-    local oWnd, oPage, oGrid, oCard, oChart
-    local cPdf := path() + "/harbour_native_report.pdf"
-   
-    // 1. Create a Standard FiveMac Window
-    DEFINE WINDOW oWnd TITLE "Harbour Serverless Report Demo" SIZE 900, 700 FLIPPED
-   
-    // 2. Wrap it with a NicePage (Serverless - using local assets)
-    DEFINE NICE PAGE oPage OF oWnd
-   
-    // 3. Build the Report Content using Commands
+return nil
+
+// Decoupled Content Builder
+function BuildReport( oPrinter )
+    local oPage, oMain, oHdr, oGrid, oCardA, oCardB, oCardC, oCardPlot, oChart
+    
+    // Create a Page within the Printer
+    oPage := TNicePrintPage():New( oPrinter )
+    
     // Wrap everything in a VSTACK to ensure vertical separation
     DEFINE NICE VSTACK oMain GAP "lg" CLASS "full-width" OF oPage
 
@@ -46,7 +56,7 @@ function Main()
     DEFINE NICE CARD oCardPlot OF oMain
     NICE SAY PROMPT "Proyección Comparativa de Pensiones" SIZE "lg" BOLD CLASS "mb-4" OF oCardPlot
          
-    DEFINE NICE CHART oChart WIDTH 800 HEIGHT 300 OF oCardPlot
+    DEFINE NICE CHART oChart WIDTH 700 HEIGHT 300 OF oCardPlot
     NICE CHART oChart SET TITLE "Pensión Mensual Proyectada"
     NICE CHART oChart SET XAXIS DATA {"Actual", "A 24m", "A 48m"}
     NICE CHART oChart ADD SERIES DATA {2100, 2415, 2600} TYPE "line" SMOOTH AREA
@@ -54,15 +64,5 @@ function Main()
     END NICE CARD
 
     END NICE VSTACK
-
-    // 4. Add action buttons to the window (not part of the report HTML)
-    @ 640, 20 BUTTON "Generar PDF" ;
-        ACTION ( oPage:SaveToPDF( cPdf ), MsgInfo( "PDF Generado en: " + cPdf ) ) ;
-        SIZE 150, 30 OF oWnd
-
-    // 5. Initialize the Page (Generates HTML and loads it into WebView)
-    oPage:Activate()
-
-    ACTIVATE WINDOW oWnd
 
 return nil

@@ -85,6 +85,12 @@ RETURN NIL
   - New Harbour-style attributes for all controls: `BOLD`, `SIZE`, `COLOR`, `BGCOLOR`.
   - Advanced layout control for `HSTACK`, `VSTACK`, and `GRID` using `GAP`, `ALIGN`, and `JUSTIFY` clauses.
   - Seamless integration with Tailwind CSS and Quasar Framework.
+- **Advanced Reporting (TNicePrinter)**:
+  - High-fidelity HTML reporting engine with A4/Landscape support.
+  - **Native Preview**: Dedicated preview window with zoom, navigation, and PDF export.
+  - **Headless PDF Generation**: Generate professional PDFs (`TWebview:SaveToPDF`) without user interaction.
+  - Automatic resource detection for standalone and bundled (`.app`) execution.
+  - Seamless integration of Material Icons, Tailwind, and Quasar in printed documents.
 
 ## 🖥️ IDE: Fivedit
 
