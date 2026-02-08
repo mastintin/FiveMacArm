@@ -92,7 +92,7 @@ METHOD NativoPreview( cFile ) CLASS TNicePrinter
     local oSelf := Self
     
     if cFile == nil
-        cFile := path() + "/invoice.pdf"
+    cFile := path() + "/invoice.pdf"
     endif
 
     DEFINE WINDOW oWnd TITLE "Vista Previa del Informe (Nativo)" SIZE 1000, 800 Flipped
@@ -131,7 +131,7 @@ METHOD SaveToPDF( cFile ) CLASS TNicePrinter
     local oWndHidden, oWeb, oTimer
      
     if cFile == nil
-        cFile := path() + "/invoice.pdf"
+    cFile := path() + "/invoice.pdf"
     endif
     
     // 2. Create Window OFF-SCREEN
@@ -148,14 +148,15 @@ METHOD SaveToPDF( cFile ) CLASS TNicePrinter
     DEFINE TIMER oTimer INTERVAL 2 OF oWndHidden ;
         ACTION ( oWeb:SaveToPDF( cFile ), ;
         oTimer:DeActivate(), ;
-        oWndHidden:End(), ;
-        MsgInfo( "PDF Generado correctamente en:" + CRLF + cFile ) )
+        oWndHidden:End() )
     
     oTimer:Activate()
       
     // 6. Activate the window (Off-screen) to start the Cocoa loop
     ACTIVATE WINDOW oWndHidden
-RETURN nil
+    
+    // MsgInfo( "SaveToPDF Completed -> Returning .T." )
+RETURN .T.
 
 
 
@@ -163,9 +164,9 @@ RETURN nil
 
 METHOD New( oParent, cFormat, lLandscape ) CLASS TNicePrinter
     if oParent != nil
-        ::Super:New( oParent )
+    ::Super:New( oParent )
     else
-        ::oParent := nil
+    ::oParent := nil
     endif
     
     ::cFormat    := If( cFormat != nil, cFormat, "A4" )
@@ -178,13 +179,13 @@ METHOD GetResPath() CLASS TNicePrinter
     local cResPath := path() + "/libs/"
  
     if hb_DirExists( path() + "/nicegui_dist" )
-        cResPath := path() + "/nicegui_dist/"
+    cResPath := path() + "/nicegui_dist/"
     endif
 
     // If we are in a Mac App Bundle: Contents/MacOS/...
     // Resources are at Contents/Resources/nicegui
     if hb_DirExists( respath() + "/nicegui" )
-        cResPath := respath() + "/nicegui/"
+    cResPath := respath() + "/nicegui/"
     endif
 return "file://" + cResPath
 
@@ -244,14 +245,14 @@ METHOD GetCss() CLASS TNicePrinter
     local cTemp
 
     if ::cFormat == "Letter"
-        cWidth := "8.5in"
-        cHeight := "11in"
+    cWidth := "8.5in"
+    cHeight := "11in"
     endif
     
     if ::lLandscape
-        cTemp := cWidth
-        cWidth := cHeight
-        cHeight := cTemp
+    cTemp := cWidth
+    cWidth := cHeight
+    cHeight := cTemp
     endif
 
     // Screen Styles (Paper Look)
@@ -259,7 +260,7 @@ METHOD GetCss() CLASS TNicePrinter
     cCss += "  body { background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }"
     cCss += "  .nice-document { display: flex; flex-direction: column; align-items: center; padding: 20px; "
     if ::nZoom != 1.0
-        cCss += "zoom: " + AllTrim(Str(::nZoom)) + ";"
+    cCss += "zoom: " + AllTrim(Str(::nZoom)) + ";"
     endif
     cCss += " }"
     cCss += "  .nice-page {"
@@ -328,7 +329,12 @@ return cCss
 //----------------------------------------------------------------------------//
 
 CLASS TNicePrintPage FROM TNiceContainer
+    DATA oHeader
+    DATA oFooter
+   
     METHOD New( oParent )
+    METHOD SetHeader( oHeader ) INLINE ::oHeader := oHeader
+    METHOD SetFooter( oFooter ) INLINE ::oFooter := oFooter
     METHOD GetHtml()
 ENDCLASS
 
@@ -339,7 +345,17 @@ return Self
 METHOD GetHtml() CLASS TNicePrintPage
     // Remove 'column' class to avoid Flexbox interference with page breaks
     local cHtml := '<div class="nice-page">' 
+    
+    if ::oHeader != nil
+    cHtml += ::oHeader:GetHtml()
+    endif
+
     cHtml += ::GetHtmlChildren()
+    
+    if ::oFooter != nil
+    cHtml += ::oFooter:GetHtml()
+    endif
+
     cHtml += '</div>'
 return cHtml
 

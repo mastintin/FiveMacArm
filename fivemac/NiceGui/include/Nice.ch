@@ -107,6 +107,19 @@
 
 #xcommand END NICE VSTACK =>
 
+#xcommand DEFINE NICE DIV [ <oDiv> ] ;
+    [ CLASS <cClass> ] ;
+    [ STYLE <cStyle> ] ;
+    [ OF <oParent> ] ;
+    [ <lBold: BOLD> ] ;
+    [ SIZE <cSize> ] ;
+    [ COLOR <cColor> ] ;
+    [ BGCOLOR <cBgColor> ] ;
+    => ;
+    [ <oDiv> := ] TNiceDiv():New( <oParent>, [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cBgColor>] )
+
+#xcommand END NICE DIV =>
+
 #xcommand DEFINE NICE GRID [ <oGrid> ] ;
     [ COLS <nCols> ] ;
     [ CLASS <cClass> ] ;
@@ -123,6 +136,17 @@
     [ <oGrid> := ] TNiceGrid():New( <oParent>, [<nCols>], [<cClass>], [<cStyle>], [<.lBold.>], [<cSize>], [<cColor>], [<cGap>], [<cAlign>], [<cJustify>], [<cBgColor>] )
 
 #xcommand END NICE GRID =>
+
+#xcommand DEFINE NICE IMAGE [ <oImage> ] ;
+    FILE <cFile> ;
+    [ WIDTH <nWidth> ] ;
+    [ HEIGHT <nHeight> ] ;
+    [ SIZE <cSize> ] ;
+    [ CLASS <cClass> ] ;
+    [ STYLE <cStyle> ] ;
+    [ OF <oParent> ] ;
+    => ;
+    [ <oImage> := ] TNiceImage():New( <oParent>, <cFile>, [<nWidth>], [<nHeight>], [<cSize>], [<cClass>], [<cStyle>] )
 
 #xcommand DEFINE NICE TABS <oTabs> [ <lVertical: VERTICAL> ] [ OF <oParent> ] ;
     => ;
@@ -169,9 +193,14 @@
 #xcommand NICE SHOW DIALOG <oDlg> => <oDlg>:Show()
 #xcommand NICE HIDE DIALOG <oDlg> => <oDlg>:Hide()
 
-#xcommand DEFINE NICE TABLE <oTbl> TITLE <cTitle> OF <oParent> ;
+#xcommand DEFINE NICE TABLE <oTbl> TITLE <cTitle> ;
+    [ CLASS <cClass> ] ;
+    [ STYLE <cStyle> ] ;
+    OF <oParent> ;
     => ;
-    <oTbl> := TNiceTable():New( <oParent>, <cTitle> )
+    <oTbl> := TNiceTable():New( <oParent>, <cTitle>, [<cClass>], [<cStyle>] )
+
+#xcommand END NICE TABLE =>
 
 #xcommand NICE ADD COL TO <oTbl> NAME <cName> LABEL <cLabel> FIELD <cField> ;
     [ WIDTH <cWidth> ] ;
@@ -182,6 +211,14 @@
 #xcommand NICE SET DATA OF <oTbl> TO <aData> ;
     => ;
     <oTbl>:SetData( <aData> )
+
+#xcommand NICE ADD ROW <aRow> [ CLASS <cClass> ] TO <oTbl> ;
+    => ;
+    <oTbl>:AddRow( <aRow> )
+
+#xcommand NICE ADD ROW <aRow> [ CLASS <cClass> ] ;
+    => ;
+    nice_AddRow( <aRow> )
 
 #xcommand NICE SAY [ <oSay> ] PROMPT <cText> ;
     [ CLASS <cClass> ] ;
