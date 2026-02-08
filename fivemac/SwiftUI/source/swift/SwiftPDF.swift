@@ -17,8 +17,8 @@ public class SwiftPDF: NSObject {
             let swiftUIView = ViewRegistry.getView(for: id)
             
             if #available(macOS 13.0, *), let renderView = swiftUIView {
-                // Important: ImageRenderer needs a scale/size.
-                var viewToRender: AnyView = renderView
+                let renderer: ImageRenderer<AnyView>
+                var viewToRender: AnyView = AnyView(renderView)
                 
                 if let boundsView = nsObject {
                      let size = boundsView.bounds.size
@@ -29,10 +29,8 @@ public class SwiftPDF: NSObject {
                      renderer = ImageRenderer(content: viewToRender)
                      renderer.proposedSize = ProposedViewSize(size)
                 } else {
-                     renderer = ImageRenderer(content: renderView)
+                     renderer = ImageRenderer(content: viewToRender)
                 }
-                
-                // renderer.scale = 1.0 // Default is usually fine, but consistent 1.0 is safer for PDF 72dpi logic
                 
                 renderer.render { size, context in
                     print("SwiftPDF Debug: ImageRenderer rendering with size: \(size)")
