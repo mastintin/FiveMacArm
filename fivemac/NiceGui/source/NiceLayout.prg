@@ -16,6 +16,7 @@ CLASS TNiceContainer FROM TNiceControl
     METHOD GetHtmlChildren()
     METHOD GetFullClass()
     METHOD GetHtml()
+   
 ENDCLASS
 
 METHOD Add( oControl ) CLASS TNiceContainer
@@ -26,7 +27,11 @@ METHOD GetHtmlChildren() CLASS TNiceContainer
     local cHtml := ""
     local oCtrl
     for each oCtrl in ::aControls
+    if ValType( oCtrl ) == "O"
     cHtml += oCtrl:GetHtml() + " "
+    elseif ValType( oCtrl ) == "C"
+    cHtml += oCtrl + " "
+    endif
     next
 return cHtml
 
@@ -571,4 +576,79 @@ METHOD GetHtml() CLASS TNiceStep
     cHtml += '>'
     cHtml += ::GetHtmlChildren()
     cHtml += '</q-step>'
+return cHtml
+
+//----------------------------------------------------------------------------//
+// Nice Div
+//----------------------------------------------------------------------------//
+
+CLASS TNiceDiv FROM TNiceContainer 
+
+    METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cBgColor )
+    METHOD GetHtml()
+    METHOD GetFullClass()    
+ENDCLASS
+
+METHOD New( oParent, cClass, cStyle, lBold, cSize, cColor, cBgColor ) CLASS TNiceDiv
+    ::Super:New( oParent, cClass, cStyle, nil, lBold, cSize, cColor, cBgColor )
+    ::cGap := ""
+return Self
+
+METHOD GetHtml() CLASS TNiceDiv
+return ::Super:GetHtml()
+
+METHOD GetFullClass() CLASS TNiceDiv
+    local cFull := ::Super:GetFullClass()
+    local cGutter := ""
+    
+    if !Empty( ::cGap )
+    cFull += " " + cGutter + ::cGap
+    endif
+
+    if !Empty( ::cAlign )
+    cFull += " items-" + ::cAlign
+    endif
+    if !Empty( ::cJustify )
+    cFull += " justify-" + ::cJustify
+    endif
+return AllTrim( cFull )
+
+//----------------------------------------------------------------------------//
+// Nice Image
+//----------------------------------------------------------------------------//
+
+CLASS TNiceImage FROM TNiceControl
+    DATA cFile
+    DATA cWidth
+    DATA cHeight
+    DATA cSize 
+
+    METHOD New( oParent, cFile, cWidth, cHeight, cSize, cClass, cStyle )
+    METHOD GetHtml()
+ENDCLASS
+
+METHOD New( oParent, cFile, cWidth, cHeight, cSize, cClass, cStyle ) CLASS TNiceImage
+    ::Super:New( oParent, cClass, cStyle )
+    ::cFile   := cFile
+    ::cWidth  := cWidth
+    ::cHeight := cHeight
+    ::cSize   := cSize
+return Self
+
+METHOD GetHtml() CLASS TNiceImage
+    local cHtml := '<q-img src="' + ::cFile + '" '
+    
+    if !Empty( ::cClass )
+    cHtml += 'class="' + ::cClass + '" '
+    endif
+    
+    if !Empty( ::cStyle ) .or. !Empty( ::cWidth ) .or. !Empty( ::cHeight )
+    cHtml += 'style="'
+    if !Empty( ::cStyle ) ; cHtml += ::cStyle + ";" ; endif
+    if !Empty( ::cWidth ) ; cHtml += "width: " + ::cWidth + ";" ; endif
+    if !Empty( ::cHeight ) ; cHtml += "height: " + ::cHeight + ";" ; endif
+    cHtml += '" '
+    endif
+    
+    cHtml += '></q-img>'
 return cHtml
