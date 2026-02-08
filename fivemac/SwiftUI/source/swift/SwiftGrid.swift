@@ -53,6 +53,9 @@ public class SwiftGridLoader: NSObject {
              
              SwiftVStackLoader.lastCreatedState = state 
              
+             // Register state for addItem/addBatch lookups
+             SwiftVStackLoader.states[String(index)] = state
+             
              let view = SwiftGridView(state: state)
              
              ViewRegistry.register(view, for: index)

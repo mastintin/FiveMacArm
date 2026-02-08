@@ -19,6 +19,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd, nAutoResize ) CLASS TSw
     ::oWnd = oWnd
     
     ::nId = Len( aGrids ) + 1
+    ::nIndex = ::nId
     AAdd( aGrids, Self )
     
     ::cId = "" 
@@ -44,7 +45,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd, nAutoResize ) CLASS TSw
     next
     cJson += "]"
 
-    ::hWnd = SWIFTGRIDCREATE( oWnd:hWnd, ::nId, nRow, nCol, nWidth, nHeight, cJson )
+    ::hWnd = SWIFTGRIDCREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight, cJson )
 
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
