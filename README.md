@@ -91,6 +91,10 @@ RETURN NIL
   - **Headless PDF Generation**: Generate professional PDFs (`TWebview:SaveToPDF`) without user interaction.
   - Automatic resource detection for standalone and bundled (`.app`) execution.
   - Seamless integration of Material Icons, Tailwind, and Quasar in printed documents.
+  - **Image Embedding**: `TNiceImage` support for including local path or Base64 images directly in reports (`DEFINE NICE IMAGE`).
+- **SwiftUI Enhancements**:
+  - **SwiftGrid**: Improved internal state management, row indexing, and correct handling of multiple grid instances.
+  - **Zebra Striping**: Native support for alternating row colors for better readability.
 
 ## 🖥️ IDE: Fivedit
 
