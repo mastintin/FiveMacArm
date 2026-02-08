@@ -141,6 +141,14 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **64-bit Core**: Finalized pointer size migration for button and picklist handles to ensure absolute stability on modern macOS.
 - **WebView Bridge**: Specialized JavaScript-to-Harbour communication bridge for bidirectional events and reactive state updates.
 
+### Reporting & Swift Enhancements (February 2026)
+- **Advanced Reporting (NiceGui)**:
+    - **Image Embedding**: New `TNiceImage` class supporting both local paths and Base64-encoded images (`DEFINE NICE IMAGE`).
+    - **PDF Generation**: Improved rendering engine (`TNicePrinter`) with support for high-fidelity HTML-to-PDF conversion including embedded charts and images.
+- **SwiftUI Integration**:
+    - **SwiftGrid**: Fixed row indexing and state management for reliable data display. Added native "Zebra Striping" for better readability.
+    - **SwiftPDF**: Enhanced `ImageRenderer` logic for pixel-perfect PDF output from SwiftUI views.
+
 ## Building
 
 To build the library and samples:
