@@ -279,12 +279,14 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ PICTURE <cPicture> ] ;
    [ <lUtf: UTF > ] ;
    [ <liquid: LIQUID GLASS> ] ;
+   [ WHEN <uWhen> ] ;     
    [ PIXEL ] ;
    => ;
    [ <oGet> := ] TGet():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    <oWnd>, bSETGET(<uVar>), [\{||(<uValid>)\}],;
    <.update.>, <.password.> ,<.lsearch.>, [{|Self|<uChange>}],;
-   <.lrounded.>, [<cToolTip>], [<nAutoResize>], [<(oGet)>], [<cPicture>],,<.lUtf.> ) ;
+   <.lrounded.>, [<cToolTip>], [<nAutoResize>], [<(oGet)>], [<cPicture>],,<.lUtf.>,;
+   [\{||(<uWhen>)\}] ) ;
    ; [ If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
 
 #xcommand @ <nRow>, <nCol> FMGET [ <oGet> VAR ] <uVar> ;
@@ -529,8 +531,10 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ OF <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ URL <cUrl> ] ;
+   [ AUTORESIZE <nAutoResize> ] ;
    => ;
-   <oWeb> := TWebView():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cUrl> )      					
+   [ <oWeb> := ] TWebView():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cUrl> ) ;
+   [; <oWeb>:_nAutoResize( <nAutoResize> ) ]
 
              
 #xcommand REDEFINE WEBVIEW <oWeb> ;
