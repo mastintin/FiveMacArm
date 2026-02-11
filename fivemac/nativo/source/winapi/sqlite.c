@@ -8,8 +8,9 @@
 HB_FUNC(SQLITE_OPEN) {
   sqlite3 *db;
   const char *cFilename = hb_parc(1);
+  int nFlags = HB_ISNUM(2) ? hb_parni(2) : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
 
-  if (sqlite3_open(cFilename, &db) == SQLITE_OK)
+  if (sqlite3_open_v2(cFilename, &db, nFlags, NULL) == SQLITE_OK)
     hb_retptr(db);
   else {
     sqlite3_close(db);

@@ -148,6 +148,18 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **SwiftUI Integration**:
     - **SwiftGrid**: Fixed row indexing and state management for reliable data display. Added native "Zebra Striping" for better readability.
     - **SwiftPDF**: Enhanced `ImageRenderer` logic for pixel-perfect PDF output from SwiftUI views.
+- **TSQLite xBase Enhancements**:
+    - **xBase Navigation**: New methods `GoTop()`, `GoBottom()`, `Skip()`, `EOF()`, `RecCount()`, and `RecNo()` for table-based navigation.
+    - **Data Mutation**: Implemented `DbAppend()`, `DelRecord()`, and `FieldPut()` for DBF-like record management.
+    - **Smart Field Mapping**: `FieldPutName( cName, uVal )` and `FieldGetName( cName )` for case-insensitive column access by name.
+    - **Hash-based Insert**: `Insert( cTable, hData )` for efficient record insertion using Harbour Hashes.
+    - **Natural Language Commands**: New `sqlite.ch` header defining intuitive xBase-style commands:
+        - `SQLITE CONNECT ... CREATE INTO ...`
+        - `SQLITE USE ... ORDER ...`
+        - `SQLITE APPEND`
+        - `SQLITE REPLACE ... WITH ...`
+        - `SQLITE DELETE`
+        - `SQLITE INSERT INTO ... HASH ...`
 
 ## Building
 

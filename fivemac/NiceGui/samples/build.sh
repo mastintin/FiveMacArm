@@ -33,6 +33,10 @@ clang -c obj/NiceLayout_mod.c -o obj/NiceLayout_mod.o -I../include -I../../nativ
 # 7. NicePrinter Class
 ../../../harbour/bin/harbour ../source/NicePrinter.prg -n -oobj/NicePrinter_mod.c -I../include -I../../nativo/include -I../../../harbour/include
 clang -c obj/NicePrinter_mod.c -o obj/NicePrinter_mod.o -I../include -I../../nativo/include -I../../../harbour/include
+clang -c obj/NicePrinter_mod.c -o obj/NicePrinter_mod.o -I../include -I../../nativo/include -I../../../harbour/include
+# 8. NiceTable Class
+../../../harbour/bin/harbour ../source/NiceTable.prg -n -oobj/NiceTable_mod.c -I../include -I../../nativo/include -I../../../harbour/include
+clang -c obj/NiceTable_mod.c -o obj/NiceTable_mod.o -I../include -I../../nativo/include -I../../../harbour/include
 
 echo "compiling $1..."
 ../../../harbour/bin/harbour $1 -n -oobj/$NAME.c -I../include -I../../nativo/include -I../../../harbour/include
@@ -45,7 +49,7 @@ HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrd
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
 CRTLIB=$(xcrun --show-sdk-path)/usr/lib
 # Add rpath so it finds Scintilla in ../Resources/frameworks
-clang obj/$NAME.o obj/NiceCore_mod.o obj/NiceChart_mod.o obj/NiceControls_mod.o obj/NiceLayout_mod.o obj/NicePrinter_mod.o obj/webview_mod.o obj/webviews_mod.o -o $NAME -L../../nativo/lib -lfive -lfivec -L../../../harbour/lib $HRBLIBS $FRAMEWORKS -F../../Resources/frameworks -framework Scintilla -lsqlite3 $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd -rpath @executable_path/../../Resources/frameworks
+clang obj/$NAME.o obj/NiceCore_mod.o obj/NiceChart_mod.o obj/NiceControls_mod.o obj/NiceLayout_mod.o obj/NicePrinter_mod.o obj/NiceTable_mod.o obj/webview_mod.o obj/webviews_mod.o -o $NAME -L../../nativo/lib -lfive -lfivec -L../../../harbour/lib $HRBLIBS $FRAMEWORKS -F../../Resources/frameworks -framework Scintilla -lsqlite3 $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd -rpath @executable_path/../../Resources/frameworks
 
 
 echo "done!"
