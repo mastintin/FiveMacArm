@@ -20,6 +20,11 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 
 ### Database Support
 - **SQLite**: Added `TSQLite` class wrapping the native macOS `libsqlite3`. Supports `Execute`, `Query`, and row management methods, enabling lightweight, serverless database integration directly within FiveMac apps.
+- **MySQL**: Enhanced `TMySQL` class with standard Harbour `hbmysql` library support.
+    - **Standardized API**: Improved `Query()` to correctly handle metadata (record and field counts) using official `LastRec()` and `FCount()` methods.
+    - **Command Execution**: Introduced `Execute( cSql )` for direct SQL command execution without result sets.
+    - **CRUD Sample**: New comprehensive sample `testmysql_browse.prg` demonstrating a modern Browse-based CRUD interface with MySQL.
+    - **xBase Navigation**: Full support for `GoTop()`, `GoBottom()`, `Skip()`, `RecNo()`, and `RecCount()` on MySQL result sets.
 
 ### Graphics & User Interface
 - **TBrush Engine**: Rewritten `TBrush` class with support for numeric colors, pattern images, and gradients.
