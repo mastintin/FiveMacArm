@@ -95,7 +95,12 @@ RETURN NIL
 - **SwiftUI Enhancements**:
   - **SwiftGrid**: Improved internal state management, row indexing, and correct handling of multiple grid instances.
   - **Zebra Striping**: Native support for alternating row colors for better readability.
-
+- **Database Synchronization Suite**:
+  - Full bi-directional data flow between **DBF ↔ SQLite ↔ MySQL**.
+  - **High-Precision Numeric Support**: Enhanced `CreateTable` and `DbStruct` (SQLite/MySQL) to preserve decimal precision using `NUMERIC(L,D)` and `DOUBLE(L,D)`.
+  - **Automatic Type Conversion**: Robust handling of ISO dates, logicals, and numeric types during cross-database migrations.
+  - **Identifier Quoting**: Full support for backticks (MySQL) and double quotes (SQLite), preventing conflicts with reserved SQL keywords.
+  - **Migration Progress**: Native support for progress callbacks during large data imports/exports.
 ## 🖥️ IDE: Fivedit
 
 FiveMac includes `fivedit`, a fully functional IDE written in FiveMac itself (`fivemac/nativo/Fivedit`).
