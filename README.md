@@ -101,6 +101,10 @@ RETURN NIL
   - **Automatic Type Conversion**: Robust handling of ISO dates, logicals, and numeric types during cross-database migrations.
   - **Identifier Quoting**: Full support for backticks (MySQL) and double quotes (SQLite), preventing conflicts with reserved SQL keywords.
   - **Migration Progress**: Native support for progress callbacks during large data imports/exports.
+- **Music Control Improvements**:
+  - **Native AppleScript Integration**: Direct control of macOS Music app without deprecated ScriptingBridge.
+  - **Artwork Support**: `GetTrackArtwork()` now retrieves high-resolution album art from the current track.
+  - **Metadata**: Reliable retrieval of song title, artist, duration, and player state.
 ## 🖥️ IDE: Fivedit
 
 FiveMac includes `fivedit`, a fully functional IDE written in FiveMac itself (`fivemac/nativo/Fivedit`).
