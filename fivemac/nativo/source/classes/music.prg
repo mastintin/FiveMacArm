@@ -1,0 +1,62 @@
+#include "FiveMac.ch"
+
+//----------------------------------------------------------------------------//
+
+CLASS TMusic 
+    DATA hWnd
+
+    METHOD New(nVolume)
+    METHOD SetVol(nVol) INLINE MusicSetVol(::hWnd,nVol)
+    METHOD GetVol() INLINE MusicGetVol(::hWnd)
+    METHOD isRun() INLINE MusicIsRun(::hWnd)
+    METHOD Run()   INLINE MusicRun(::hWnd)
+    METHOD Quit()  INLINE MusicQuit(::hWnd)
+    METHOD Stop()  INLINE MusicStop(::hWnd)
+    METHOD Play()  INLINE MusicPlay(::hWnd) 
+    METHOD SongName()  INLINE MusicSongName(::hWnd)
+    METHOD PlayPause() INLINE MusicPlayPause(::hWnd)
+    METHOD NextTrack() INLINE MusicNextTrack(::hWnd)
+    METHOD PreviousTrack() INLINE MusicPreviousTrack(::hWnd)
+    METHOD backTrack() INLINE MusicbackTrack(::hWnd)
+    METHOD GetTracks(cLibrary) 
+    METHOD GetState() INLINE MusicGetState(::hWnd)
+    METHOD Debug()    INLINE MusicDebug(::hWnd)
+    METHOD GetArtWork() INLINE MusicGetArtWork()    
+    METHOD GetTrackArtwork() INLINE MusicGetTrackArtwork()  
+    METHOD GetSonProGress() INLINE  MUSICGETSONGPROGRESS()
+    METHOD GetSonDuration() INLINE  MUSICGETSONGDURATION()
+    METHOD GetSonLyrics() INLINE  MUSICGETSONGLYRICS()
+    METHOD SeekToSecond( nSecond ) INLINE MUSICSEEKTOSECOND( nSecond )    
+ENDCLASS   
+
+//----------------------------------------------------------------------------//
+
+METHOD New(nVolume) CLASS TMusic
+   
+    ::hWnd = MusicCreate()
+    if !Empty(nVolume)
+        ::setVol(nVolume)
+    endif
+      
+return Self
+
+//----------------------------------------------------------------------------//
+
+METHOD GetTracks(cLibrary) CLASS TMusic
+    local hNSArray
+    local nLen, i 
+    local aTracks:= {}
+  
+    if UPPER (cLibrary) == "MOVIES"
+        cLibrary :=  "Movies"
+    endif
+   
+    hNSArray:= MusicGetTracks(::hWnd, cLibrary)
+    nLen:= ArrayLen( hNSArray  )  
+      
+    for i=1 to nLen
+        aadd(aTracks, arrayGetStringIndex( hNSArray,i-1 ) )  
+    Next 
+   
+
+Return aTracks 

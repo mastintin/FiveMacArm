@@ -42,12 +42,39 @@ echo "Compiling modified WebView components (classes and winapi)..."
 
 # Compile webview.prg
 $HB_DIR/bin/harbour "../source/classes/webview.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
-clang -ObjC "obj/webview.c" -c -target arm64-apple-macosx11.0 -I./../include -I$HB_DIR/include -o "obj/webview_mod.o"
+clang -ObjC "obj/webview.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/webview_mod.o"
 OBJS="$OBJS obj/webview_mod.o"
 
 # Compile webviews.m
-clang -ObjC "../source/winapi/webviews.m" -c -target arm64-apple-macosx11.0 -I./../include -I$HB_DIR/include -o "obj/webviews_mod.o"
+clang -ObjC "../source/winapi/webviews.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/webviews_mod.o"
 OBJS="$OBJS obj/webviews_mod.o"
+
+# Compile get.prg (TGet with WHEN clause)
+echo "Compiling modified TGet..."
+$HB_DIR/bin/harbour "../source/classes/get.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+clang -ObjC "obj/get.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/get_mod.o"
+OBJS="$OBJS obj/get_mod.o"
+
+# Compile sqlite.prg (enhanced TSQLite)
+echo "Compiling modified TSQLite..."
+$HB_DIR/bin/harbour "../source/classes/sqlite.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+clang -c "obj/sqlite.c" -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/sqlite_mod.o"
+OBJS="$OBJS obj/sqlite_mod.o"
+
+# Compile sqlite.c (native part)
+clang -c "../source/winapi/sqlite.c" -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/sqlite_c_mod.o"
+OBJS="$OBJS obj/sqlite_c_mod.o"
+
+# Compile mysql.prg (enhanced TMySQL)
+echo "Compiling modified TMySQL..."
+$HB_DIR/bin/harbour "../source/classes/mysql.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+clang -c "obj/mysql.c" -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/mysql_mod.o"
+OBJS="$OBJS obj/mysql_mod.o"
+
+# Compile musics.m (enhanced Music control)
+echo "Compiling modified musics.m..."
+clang -ObjC "../source/winapi/musics.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/musics_mod.o"
+OBJS="$OBJS obj/musics_mod.o"
 
 if [ ! -d $APPName.app ]; then
    mkdir $APPName.app
@@ -79,16 +106,15 @@ if [ ! -f $APPName.app/Contents/Info.plist ]; then
    echo '   <string>fivetech.icns</string>' >> $APPName.app/Contents/Info.plist
    echo '   <key>NSHighResolutionCapable</key>' >> $APPName.app/Contents/Info.plist
    echo '<true/>' >> $APPName.app/Contents/Info.plist
-   echo '	<key>NSPrincipalClass</key>' >> $APPName.app/Contents/Info.plist
-   echo '	<string>NSApplication</string>' >> $APPName.app/Contents/Info.plist
-   echo '	<key>NSAppTransportSecurity</key>' >> $APPName.app/Contents/Info.plist
-   echo '	<dict>' >> $APPName.app/Contents/Info.plist
-   echo '		<key>NSAllowsArbitraryLoads</key>' >> $APPName.app/Contents/Info.plist
-   echo '		<true/>' >> $APPName.app/Contents/Info.plist
-   echo '	</dict>' >> $APPName.app/Contents/Info.plist
-   # para poder enviar mail
-   # echo '   <key>NSAppleEventsUsageDescription</key>' >> $APPName.app/Contents/Info.plist
-   # echo '   <string>FiveMac needs to control Mail to send emails.</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>NSPrincipalClass</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>NSApplication</string>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>NSAppTransportSecurity</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <dict>' >> $APPName.app/Contents/Info.plist
+   echo '      <key>NSAllowsArbitraryLoads</key>' >> $APPName.app/Contents/Info.plist
+   echo '      <true/>' >> $APPName.app/Contents/Info.plist
+   echo '   </dict>' >> $APPName.app/Contents/Info.plist
+   echo '   <key>NSAppleEventsUsageDescription</key>' >> $APPName.app/Contents/Info.plist
+   echo '   <string>This app needs to control the Music app to play songs.</string>' >> $APPName.app/Contents/Info.plist
    echo '</dict>' >> $APPName.app/Contents/Info.plist
    echo '</plist>' >> $APPName.app/Contents/Info.plist
 
@@ -161,7 +187,7 @@ fi
 
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
-HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx'
+HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lhbmysql'
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
@@ -174,7 +200,7 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 
 # Link ALL OBJS
 # Add target and min-version to link step too
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -target arm64-apple-macosx26.0 -L$CRTLIB -L./../lib -lfive -lfivec -L$HB_DIR/lib $HRBLIBS $FRAMEWORKS  -F./../../Resources/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -target arm64-apple-macosx26.0 -L$CRTLIB -L./../lib -lfive -lfivec -L$HB_DIR/lib $HRBLIBS $FRAMEWORKS  -F./../../Resources/frameworks -framework Scintilla -lsqlite3 -lmariadb -lssl -lcrypto $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c

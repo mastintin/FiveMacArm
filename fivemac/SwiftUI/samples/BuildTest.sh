@@ -62,7 +62,7 @@ FRAMEWORKS="-framework Cocoa -framework SwiftUI -framework WebKit -framework AVF
 HARBOUR_LIBS="-L$HARBOUR_PATH/lib -lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx"
 FIVEMAC_LIBS="-L$FIVEMAC_PATH/nativo/lib -lfive -lfivec"
 
-swiftc -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
+swiftc -target arm64-apple-macosx15.0 -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
     "obj/$APP_NAME.o" \
     -L"../lib" -Xlinker -force_load -Xlinker ../lib/libSwiftFive.a \
     -L"$SDK_PATH/usr/lib" \
@@ -107,6 +107,10 @@ echo '   <dict>' >> "$PLIST"
 echo '      <key>NSAllowsArbitraryLoads</key>' >> "$PLIST"
 echo '      <true/>' >> "$PLIST"
 echo '   </dict>' >> "$PLIST"
+echo '   <key>NSAppleMusicUsageDescription</key>' >> "$PLIST"
+echo '   <string>This app needs access to your music library to play songs.</string>' >> "$PLIST"
+echo '   <key>NSAppleEventsUsageDescription</key>' >> "$PLIST"
+echo '   <string>This app needs to control the Music app to play songs.</string>' >> "$PLIST"
 echo '</dict>' >> "$PLIST"
 echo '</plist>' >> "$PLIST"
 

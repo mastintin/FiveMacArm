@@ -9,10 +9,11 @@ function Main()
    local cText := "Hello world"
    local dTest := Date()
    local cPhone := "1234567890"
+   local lWhen := .F.
    
    SET DATE FRENCH
    
-   DEFINE DIALOG oDlg TITLE "TestGet" SIZE 400, 200 
+   DEFINE DIALOG oDlg TITLE "TestGet" SIZE 400, 300 FLIPPED
 
    @ 15, 30 SAY "Number:" OF oDlg
    
@@ -29,10 +30,12 @@ function Main()
 
    @ 75, 90 GET oget1 VAR dTest PICTURE "@D" OF oDlg TOOLTIP "a date"
    
-   @ 105, 30 SAY "Phone:" OF oDlg
-   @ 105, 90 GET oGet3 VAR cPhone PICTURE "@R (999) 999-9999" OF oDlg SIZE 150, 25 TOOLTIP "Phone number"
+   @ 125, 30 SAY "Phone:" OF oDlg
+   @ 125, 90 GET oGet3 VAR cPhone PICTURE "@R (999) 999-9999" OF oDlg SIZE 150, 25 TOOLTIP "Phone number" WHEN lWhen
+
+   @ 105, 30 CHECKBOX lWhen PROMPT "Enable Phone" OF oDlg SIZE 150, 20 ON CHANGE ( oget3:Refresh(), oDlg:Refresh() )
    
-   @ 140, 150 BUTTON oBtnOk PROMPT "Ok" OF oDlg ACTION msginfo( valtype( nTest ) + CRLF + Str( nTest ) + CRLF + cText + CRLF + Dtoc( dTest ) ), oBtnOk:SetFocus()
+   @ 240, 150 BUTTON oBtnOk PROMPT "Ok" OF oDlg ACTION msginfo( valtype( nTest ) + CRLF + Str( nTest ) + CRLF + cText + CRLF + Dtoc( dTest ) ), oBtnOk:SetFocus()
 
    oget2:setfocus()
 

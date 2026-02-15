@@ -11,7 +11,7 @@ CLASS TSlider FROM TControl
    DATA   aEvents INIT { { { "OnClick", "nValue", "Self" }, nil } } 
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, Bchange, nValue,;
-               nAutoResize, cVarName, cOnclick )
+      nAutoResize, cVarName, cOnclick )
    
    METHOD SetCircular() INLINE CircularSlider( ::hWnd )   
    
@@ -24,7 +24,7 @@ CLASS TSlider FROM TControl
    METHOD GetValue() INLINE ::nValue := GetSliderValue( ::hWnd ), ::nValue
    
    METHOD SetValue( nValue ) INLINE ::nValue := nValue,;
-                                    SliderSetValue( ::hWnd, ::nValue )
+      SliderSetValue( ::hWnd, ::nValue )
   
    METHOD Redefine( nId, oWnd, bChange ,nValue ) 
 
@@ -37,7 +37,7 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange, nValue, nAutoResize,;
-            cVarName , cOnclick ) CLASS TSlider 
+      cVarName , cOnclick ) CLASS TSlider 
 
    DEFAULT nWidth := 100, nHeight := 100, nValue := 0
      
@@ -48,8 +48,8 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange, nValue, nAutoResize,;
    
    ::nAutoResize = nAutoResize
    
-    if !Empty(cOnClick)
-       ::aEvents[1 ][ 2] :=  cOnclick
+   if !Empty(cOnClick)
+   ::aEvents[1 ][ 2] :=  cOnclick
    endif
      
    oWnd:AddControl( Self )
@@ -82,10 +82,10 @@ METHOD Initiate() CLASS  TSlider
    local hWnd := SliderResCreate( ::oWnd:hWnd, ::nId )   
 
    if hWnd != 0
-	    ::hWnd = hWnd
+   ::hWnd = hWnd
    else
-	    MsgAlert( "Non defined SLIDER ID " + AllTrim( Str( ::nId ) ) + ;
-			    			" in resource " + ::oWnd:cNibName )
+   MsgAlert( "Non defined SLIDER ID " + AllTrim( Str( ::nId ) ) + ;
+      " in resource " + ::oWnd:cNibName )
    endif
 
    ::SetValue( ::nValue )
@@ -116,13 +116,14 @@ return nil
 
 METHOD Change() CLASS TSlider
 
- //  if ! Empty( ::GetEventCode( "OnClick" ) )
- //     Eval( ::GetEventBlock( "OnClick" ), ::nValue, Self )
- //  else
-      if ! Empty( ::bChange )
-         Eval( ::bChange, ::nValue, Self )
-      endif      
- //  endif   
+   //  if ! Empty( ::GetEventCode( "OnClick" ) )
+   //     Eval( ::GetEventBlock( "OnClick" ), ::nValue, Self )
+   //  else
+   ::nValue = ::GetValue() 
+   if ! Empty( ::bChange )
+   Eval( ::bChange, ::nValue, Self )
+   endif      
+   //  endif   
    
 return nil  
 
@@ -131,21 +132,21 @@ return nil
 METHOD cGenPrg() CLASS TSlider
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " SLIDER " + ::cVarName + ;
-                  ' VALUE ' + alltrim(str(::GetValue())) + ' OF ' + ::oWnd:cVarName + ;
-                  " ;" + CRLF + "      SIZE " + ;
-                  AllTrim( Str( ::nWidth ) ) + ", " + ;
-                  AllTrim( Str( ::nHeight ) ) 
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " SLIDER " + ::cVarName + ;
+      ' VALUE ' + alltrim(str(::GetValue())) + ' OF ' + ::oWnd:cVarName + ;
+      " ;" + CRLF + "      SIZE " + ;
+      AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) ) 
                      
    local cEventCode := ::GetEventCode( "OnClick" )    
        
    if ! Empty( cEventCode )
-      cCode += " ON CLICK " + cEventCode
+   cCode += " ON CLICK " + cEventCode
    endif   
                      
    if ::nAutoResize != 0                  
-      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
+   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
    endif            
                               
 return cCode  

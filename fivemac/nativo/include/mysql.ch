@@ -22,5 +22,8 @@
 #xcommand MYSQL DELETE [ IN <oDb> ] => ;
     <oDb>:DelRecord()
 
+#xcommand MYSQL CREATE TABLE <cTable> FROM <aStruct> [ IN <oDb> ] => ;
+    <oDb>:CreateTable( <(cTable)>, <aStruct> )
+
 #xcommand MYSQL CLOSE [ <oDb> ] => ;
     <oDb>:End(); <oDb>:= nil

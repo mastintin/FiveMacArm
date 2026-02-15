@@ -71,7 +71,7 @@ METHOD Activate() CLASS TNicePage
 return nil
 
 METHOD HandleEvent( cBody, cName ) CLASS TNicePage
-  local aTokens, cId, oCtrl
+  local aTokens, cId, oCtrl, cToken
    
   if cName == "fivemac"
   if cBody == "sys:print"
@@ -134,7 +134,11 @@ METHOD GetHtml() CLASS TNicePage
    
   // Generate Controls HTML (Recursive)
   for each oCtrl in ::aControls
+  if ValType( oCtrl ) == "O"
   cControls += oCtrl:GetHtml() + hb_eol()
+  elseif ValType( oCtrl ) == "C"
+  cControls += oCtrl + hb_eol()
+  endif
   next
 
   // Generate Vue Reactive Variables

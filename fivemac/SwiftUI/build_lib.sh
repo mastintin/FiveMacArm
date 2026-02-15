@@ -17,7 +17,7 @@ echo "Building Library $LIB_NAME..."
 # Detect Architecture
 ARCH=$(uname -m)
 if [ "$ARCH" == "arm64" ]; then
-    TARGET_FLAG="-target arm64-apple-macosx11.0"
+    TARGET_FLAG="-target arm64-apple-macosx15.0"
 else
     TARGET_FLAG="-target x86_64-apple-macosx10.15"
 fi

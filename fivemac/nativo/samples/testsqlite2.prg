@@ -10,7 +10,7 @@ function Main()
     SQLITE CONNECT Path() + "/test.db" CREATE INTO oDb
     
     if Empty( oDb:hDB )
-    return nil
+        return nil
     endif
 
     // Use the new CreateTable command
@@ -80,8 +80,8 @@ function Main()
     aData := oDb:Query( "SELECT * FROM test WHERE age > 20" )
    
     if aData == nil
-    MsgAlert( "Query failed" )
-    return nil
+        MsgAlert( "Query failed" )
+        return nil
     endif
 
     MsgInfo( "RecCount: " + Str( oDb:RecCount() ) )
@@ -98,13 +98,13 @@ function Main()
 
     oDb:Skip()
     if oDb:EOF()
-    MsgInfo( "Reached EOF" )
+        MsgInfo( "Reached EOF" )
     endif
 
     oDb:GoTop()
     while ! oDb:EOF()
-    MsgInfo( "Loop -> RecNo: " + Str( oDb:RecNo() ) + ": " + cValToChar( oDb:FieldGet( 2 ) ) )
-    oDb:Skip()
+        MsgInfo( "Loop -> RecNo: " + Str( oDb:RecNo() ) + ": " + cValToChar( oDb:FieldGet( 2 ) ) )
+        oDb:Skip()
     enddo
 
     SQLITE CLOSE oDb

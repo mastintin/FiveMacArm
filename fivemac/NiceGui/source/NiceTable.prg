@@ -13,9 +13,10 @@ CLASS TNiceTable FROM TNiceControl
     DATA cValue // Stores "row:ID:col:FIELD:val:VALUE"
     DATA bOnSave // Callback: {|oTbl, nRow, cField, uVal| ... }
     
-    METHOD New( oParent, cTitle )
+    METHOD New( oParent, cTitle, cClass, cStyle )
     METHOD AddCol( cName, cLabel, cField, cWidth, lEditable )
     METHOD SetData( aRows )
+    METHOD AddRow( aRow )
     METHOD GetHtml()
     METHOD GetModelName()
     METHOD GetModelValue()
@@ -27,13 +28,14 @@ CLASS TNiceTable FROM TNiceControl
     METHOD _RowsToJson()
 ENDCLASS
 
-METHOD New( oParent, cTitle ) CLASS TNiceTable
-    ::Super:New( oParent )
+METHOD New( oParent, cTitle, cClass, cStyle ) CLASS TNiceTable
+    ::Super:New( oParent, cClass, cStyle )
     ::cTitle := cTitle
     DEFAULT ::cTitle := "Table"
 return Self
 
 METHOD AddCol( cName, cLabel, cField, cWidth, lEditable ) CLASS TNiceTable
+    DEFAULT cLabel := cName
     DEFAULT cField := cName
     DEFAULT cWidth := ""
     DEFAULT lEditable := .F.
@@ -44,8 +46,19 @@ METHOD SetData( aRows ) CLASS TNiceTable
     ::aRows := aRows
 return nil
 
+METHOD AddRow( aRow ) CLASS TNiceTable
+    AAdd( ::aRows, aRow )
+return nil
+
 METHOD GetHtml() CLASS TNiceTable
     local cHtml := '<q-table title="' + ::cTitle + '" '
+    
+    if !Empty( ::cClass )
+    cHtml += 'class="' + ::cClass + '" '
+    endif
+    if !Empty( ::cStyle )
+    cHtml += 'style="' + ::cStyle + '" '
+    endif
     
     // Columns (Static for now)
     cHtml += ':columns="' + ::_ColsToJson() + '" '
@@ -157,9 +170,9 @@ METHOD _ColsToJson() CLASS TNiceTable
     cStyle := "width: " + ::aCols[n][4] + ";"
     endif
        
-    cJson += "{ name: '" + ::aCols[n][1] + "', " + ;
-        "label: '" + ::aCols[n][2] + "', " + ;
-        "field: '" + ::aCols[n][3] + "', " + ;
+    cJson += "{ name: '" + cValToChar( ::aCols[n][1] ) + "', " + ;
+        "label: '" + cValToChar( ::aCols[n][2] ) + "', " + ;
+        "field: '" + cValToChar( ::aCols[n][3] ) + "', " + ;
         "align: 'left', sortable: true"
        
     if !Empty( cStyle )
