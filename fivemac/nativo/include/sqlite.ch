@@ -18,9 +18,9 @@
 
 #xcommand SQLITE INSERT INTO <cTable> HASH <hData> [ IN <oDb> ] => <oDb>:Insert( <cTable>, <hData> )
 
-#xcommand SQLITE CREATE TABLE <cTable> FIELDS <aFields> [ IN <oDb> ] => <oDb>:CreateTable( <cTable>, <aFields> )
+#xcommand SQLITE CREATE TABLE <cTable> FROM <aStruct> [ IN <oDb> ] => <oDb>:CreateTable( <(cTable)>, <aStruct> )
 
-#xcommand SQLITE DROP TABLE <cTable> [ IN <oDb> ] => <oDb>:DelTable( <cTable> )
+#xcommand SQLITE DROP TABLE <cTable> [ IN <oDb> ] => <oDb>:DelTable( <(cTable)> )
 
 #xcommand SQLITE CLOSE [ <oDb> ] => <oDb>:End()
 

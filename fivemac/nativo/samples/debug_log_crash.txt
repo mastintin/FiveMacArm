@@ -1,0 +1,6 @@
+2026-02-15 20:34:41.144 testmusic[58765:386268] [FiveMac Music] Executing: tell application "Music" to get sound volume
+2026-02-15 20:34:41.252 testmusic[58765:386268] [FiveMac Music] Result: <NSAppleEventDescriptor: 36>
+2026-02-15 20:34:41.253 testmusic[58765:386268] [FiveMac Music] Executing: tell application "Music" to get sound volume
+2026-02-15 20:34:41.260 testmusic[58765:386268] [FiveMac Music] Result: <NSAppleEventDescriptor: 36>
+2026-02-15 20:34:41.260 testmusic[58765:386268] [FiveMac Music] Executing: tell application "Music" to get player state as string
+2026-02-15 20:34:41.277 testmusic[58765:386268] [FiveMac Music] Result: <NSAppleEventDescriptor: 'utxt'("stopped")>

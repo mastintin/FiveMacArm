@@ -4,11 +4,9 @@
 <dict>
 	<key>files</key>
 	<array>
-		<string>/Users/manuel/Fivemac/fivemac/samples/dbf/test.dbf</string>
-		<string>/Users/manuel/Fivemac/fivemac/samples/DIALOGOS.DBF</string>
-		<string>/Users/manuel/Fivemac/fivemac/samples/CONTROLES.DBF</string>
-		<string>/Users/manuel/Fivemac/fivemac/samples/CONTROLES.DBF</string>
-		<string>/Users/manuel/Fivemac/fivemac/samples/CONTROLES.DBF</string>
+		<string>/Users/manuel/Fivemac/fivemac/nativo/samples/CONTROLES.DBF</string>
+		<string>/Users/manuel/Fivemac/fivemac/nativo/samples/CONTROLES.DBF</string>
+		<string>/Users/manuel/Fivemac/fivemac/nativo/samples/IPC_MYSQL_EXPORT.DBF</string>
 	</array>
 	<key>language</key>
 	<string>1</string>

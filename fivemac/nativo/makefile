@@ -9,7 +9,7 @@ FRAMEPATH=$(SDKPATH)/System/Library/Frameworks
 # Flags
 # Using 10.13 as a reasonable minimum for modern builds, or stick to what works for the user. 
 # The previous valid one was 10.15.
-MIN_VER=-mmacosx-version-min=10.15
+MIN_VER=-mmacosx-version-min=26.0
 CFLAGS=$(MIN_VER)
 CVFLAGS=$(MIN_VER)
 CC=clang
@@ -58,7 +58,7 @@ PRG_OBJS = \
     ./obj/hbdocs.o \
 	./obj/image.o \
 	./obj/inspect.o \
-  	./obj/itunes.o \
+  	./obj/music.o \
    	./obj/locale.o \
   	./obj/mail.o \
   	./obj/memoedit.o \
@@ -88,6 +88,7 @@ PRG_OBJS = \
 	./obj/settings.o \
 	./obj/slider.o \
 	./obj/sqlite.o \
+	./obj/mysql.o \
 	./obj/splash.o \
 	./obj/split.o \
 	./obj/splitItem.o \
@@ -136,7 +137,7 @@ C_OBJS = ./objc/browses.o	\
     ./objc/cvbrowser.o \
 	./objc/images.o	\
 	./objc/ImageAndTextCell.o	\
-  	./objc/ituness.o	\
+  	./objc/musics.o	\
     ./objc/mailer.o \
 	./objc/menus.o	\
 	./objc/mgets.o	\

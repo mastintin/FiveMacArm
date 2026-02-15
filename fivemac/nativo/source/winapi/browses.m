@@ -700,6 +700,17 @@ HB_FUNC(BRWSETROWPOS) {
   [browse scrollRowToVisible:iRows + 1];
 }
 
+HB_FUNC(BRWSETSELECT) {
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
+  int iRows;
+
+  [browse selectRowIndexes:[[NSIndexSet alloc] initWithIndex:hb_parnl(2) - 1]
+      byExtendingSelection:FALSE];
+  iRows = [browse selectedRow];
+
+  [browse scrollRowToVisible:iRows + 1];
+}
+
 HB_FUNC(BRWCOLPOS) {
   Wbrowse *browse = (Wbrowse *)hb_parnll(1);
 

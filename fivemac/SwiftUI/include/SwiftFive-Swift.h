@@ -373,6 +373,19 @@ SWIFT_CLASS("_TtC9SwiftFive11SwiftLoader")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_CLASS_NAMED("SwiftMusicLoader")
+@interface SwiftMusicLoader : NSObject
++ (void)play;
++ (void)pause;
++ (void)next;
++ (void)previous;
++ (void)stop;
++ (NSInteger)getPlayerState SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)getCurrentTrack SWIFT_WARN_UNUSED_RESULT;
++ (void)requestAuth;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
 SWIFT_CLASS_NAMED("SwiftPDF") SWIFT_AVAILABILITY(macos,introduced=10.15)
 @interface SwiftPDF : NSObject
 + (void)saveView:(NSInteger)id to:(NSString * _Nonnull)path;
