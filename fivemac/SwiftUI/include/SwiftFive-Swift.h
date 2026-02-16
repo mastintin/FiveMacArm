@@ -373,16 +373,22 @@ SWIFT_CLASS("_TtC9SwiftFive11SwiftLoader")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-SWIFT_CLASS_NAMED("SwiftMusicLoader")
+SWIFT_CLASS_NAMED("SwiftMusicLoader") SWIFT_AVAILABILITY(macos,introduced=12.0)
 @interface SwiftMusicLoader : NSObject
++ (void)requestAuth;
 + (void)play;
 + (void)pause;
 + (void)next;
 + (void)previous;
 + (void)stop;
-+ (NSInteger)getPlayerState SWIFT_WARN_UNUSED_RESULT;
++ (NSInteger)getState SWIFT_WARN_UNUSED_RESULT;
 + (NSString * _Nonnull)getCurrentTrack SWIFT_WARN_UNUSED_RESULT;
-+ (void)requestAuth;
++ (NSString * _Nonnull)getArtworkPath SWIFT_WARN_UNUSED_RESULT;
++ (double)getDuration SWIFT_WARN_UNUSED_RESULT;
++ (double)getPosition SWIFT_WARN_UNUSED_RESULT;
++ (void)setPositionWithSeconds:(double)seconds;
++ (NSInteger)getVolume SWIFT_WARN_UNUSED_RESULT;
++ (void)setVolumeWithVol:(NSInteger)vol;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 

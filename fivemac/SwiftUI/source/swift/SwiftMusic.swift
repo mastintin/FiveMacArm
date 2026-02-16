@@ -1,142 +1,152 @@
 import Foundation
+import Combine
 
+@available(macOS 12.0, *)
 @objc(SwiftMusicLoader)
 public class SwiftMusicLoader: NSObject {
     
-    // MARK: - Helper
+    // MARK: - Helpers
     
-    private static func runAppleScript(_ cmd: String) -> NSAppleEventDescriptor? {
-        let source = "tell application \"Music\" to \(cmd)"
+    private static func runScript(_ source: String) -> String {
         var error: NSDictionary?
-        let script = NSAppleScript(source: source)
-        let result = script?.executeAndReturnError(&error)
+        let script = NSAppleScript(source: "tell application \"Music\" to " + source)
+        let output = script?.executeAndReturnError(&error)
         
         if let err = error {
-            print("[SwiftMusic] AppleScript Error: \(err)")
-            return nil
+            print("[SwiftMusic] Error: \(err)")
+            return ""
         }
-        return result
+        
+        return output?.stringValue ?? ""
     }
     
-    // MARK: - Playback Control
+    // MARK: - Auth
+    
+    @objc
+    public static func requestAuth() {
+        print("[SwiftMusic] Requesting TCC via AppleScript...")
+        // Simple command to trigger "FiveMac wants to control Music" prompt
+        _ = runScript("get player state")
+    }
+    
+    // MARK: - Playback
     
     @objc
     public static func play() {
-        _ = runAppleScript("play")
+        print("[SwiftMusic] Play")
+        // Try to play; if empty, it might do nothing, but usually Music plays *something*
+        _ = runScript("play")
     }
     
     @objc
     public static func pause() {
-        _ = runAppleScript("pause")
+        print("[SwiftMusic] Pause")
+        _ = runScript("pause")
     }
     
     @objc
     public static func next() {
-        _ = runAppleScript("next track")
+        print("[SwiftMusic] Next")
+        _ = runScript("next track")
     }
     
     @objc
     public static func previous() {
-        _ = runAppleScript("previous track")
+        print("[SwiftMusic] Previous")
+        _ = runScript("previous track")
     }
     
     @objc
     public static func stop() {
-        _ = runAppleScript("stop")
+        _ = runScript("stop")
     }
     
-    // MARK: - State & Metadata
+    // MARK: - State/Metadata
     
     @objc
-    public static func getPlayerState() -> Int {
-        // Returns enum: stopped/playing/paused
-        guard let result = runAppleScript("get player state") else { return 0 }
-        
-        // Convert 4-byte code or string to int
-        // kPSP = playing, kPSp = paused, kPSS = stopped (often requires coercion to string to be safe)
-        
-        // Easier: coerce to string in AS
-        let source = "tell application \"Music\" to get player state as string"
-        var error: NSDictionary?
-        let script = NSAppleScript(source: source)
-        if let result = script?.executeAndReturnError(&error), let str = result.stringValue {
-            // Check substrings because localization might affect it? NO, enumerations usually coerce to English fixed names or use raw codes.
-            // But 'as string' usually gives localized strings or standard names.
-            // Let's rely on standard enum constants if we can, but simpler to check standard strings "playing", "paused", "stopped"
-            
-            let lower = str.lowercased()
-            if lower.contains("play") { return 1 }
-            if lower.contains("paus") { return 2 }
-            if lower.contains("stop") { return 0 }
-        }
-        
-        return 0
+    public static func getState() -> Int {
+        let state = runScript("get player state").lowercased()
+        if state == "playing" { return 1 }
+        if state == "paused" { return 2 }
+        return 0 // stopped
     }
     
     @objc
     public static func getCurrentTrack() -> String {
-        // Get properties individually to avoid quoting hell
+        // Safe JSON construction via multiple calls to avoid string escaping hell in AS
+        // Or specific AS to build JSON
         let script = """
-        tell application "Music"
-            if player state is stopped then return "{}"
-            try
-                set t to current track
-                set tName to name of t
-                set tArtist to artist of t
-                set tAlbum to album of t
-                return "{\"title\": \"" & tName & "\", \"artist\": \"" & tArtist & "\", \"album\": \"" & tAlbum & "\"}"
-            on error
-                return "{}"
-            end try
-        end tell
+        try
+            set t to current track
+            set tName to name of t
+            set tArtist to artist of t
+            set tAlbum to album of t
+            return "{\\"title\\": \\"" & tName & "\\", \\"artist\\": \\"" & tArtist & "\\", \\"album\\": \\"" & tAlbum & "\\"}"
+        on error
+            return "{}"
+        end try
         """
-        
-        var error: NSDictionary?
-        let nsScript = NSAppleScript(source: script)
-        if let result = nsScript?.executeAndReturnError(&error) {
-            if let json = result.stringValue {
-                // Verify it's valid JSON-ish or just return it
-                // We need to escape quotes in the AppleScript variable concatenation manually if valid JSON is strictly required, 
-                // but for this simple bridging, usually `returned string` is okay.
-                // However, if the song title has a quote, it breaks the JSON structure constructed in simple string.
-                // A better approach is to return list and build JSON in Swift.
-                return json
-            }
-        }
-        
-        // Retry with safer approach: Getting values separately
-        return getCurrentTrackSafe()
+        return runScript(script)
     }
     
-    private static func getCurrentTrackSafe() -> String {
-       let script = """
+    // MARK: - Advanced Features
+    
+    @objc
+    public static func getArtworkPath() -> String {
+        let path = "/tmp/fivemac_cover.jpg"
+        // Based on native implementation which uses 'raw data'
+        let script = """
         tell application "Music"
             try
-                if player state is stopped then return {}
-                set t to current track
-                return {name of t, artist of t, album of t}
-            on error
-                return {}
+                if exists (artwork 1 of current track) then
+                    set d to raw data of artwork 1 of current track
+                    set f to open for access (POSIX file "\(path)") with write permission
+                    set eof f to 0
+                    write d to f
+                    close access f
+                    return "\(path)"
+                else
+                    return ""
+                end if
+            on error err
+                try
+                    close access (POSIX file "\(path)")
+                end try
+                return "ERROR: " & err
             end try
         end tell
         """
-        var error: NSDictionary?
-        let nsScript = NSAppleScript(source: script)
-        if let result = nsScript?.executeAndReturnError(&error) {
-            if result.numberOfItems >= 3 {
-                let title = result.atIndex(1)?.stringValue?.replacingOccurrences(of: "\"", with: "\\\"") ?? ""
-                let artist = result.atIndex(2)?.stringValue?.replacingOccurrences(of: "\"", with: "\\\"") ?? ""
-                let album = result.atIndex(3)?.stringValue?.replacingOccurrences(of: "\"", with: "\\\"") ?? ""
-                
-                return "{\"title\": \"\(title)\", \"artist\": \"\(artist)\", \"album\": \"\(album)\"}"
-            }
-        }
-        return "{}"
+        let res = runScript(script)
+        // print("[SwiftMusic] getArtworkPath result: \(res)")
+        if res.starts(with: "ERROR") { return "" }
+        return res
     }
     
     @objc
-    public static func requestAuth() {
-        // Trigger a simple AppleScript to force TCC prompt
-        _ = runAppleScript("get name")
+    public static func getDuration() -> Double {
+        let res = runScript("get duration of current track") // Returns seconds (real)
+        return Double(res) ?? 0.0
+    }
+    
+    @objc
+    public static func getPosition() -> Double {
+        let res = runScript("get player position") // Returns seconds (real)
+        return Double(res) ?? 0.0
+    }
+    
+    @objc
+    public static func setPosition(seconds: Double) {
+        _ = runScript("set player position to \(seconds)")
+    }
+    
+    @objc
+    public static func getVolume() -> Int {
+        let res = runScript("get sound volume") // 0-100
+        return Int(res) ?? 50
+    }
+    
+    @objc
+    public static func setVolume(vol: Int) {
+        _ = runScript("set sound volume to \(vol)")
     }
 }
