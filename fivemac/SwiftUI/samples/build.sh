@@ -51,7 +51,7 @@ mkdir -p "$APP_NAME.app/Contents/Frameworks"
 
 echo "Linking..."
 # Setup Frameworks for Linking
-FRAMEWORKS="-framework Cocoa -framework SwiftUI -framework WebKit -framework AVFoundation -framework AVKit -framework CoreMedia -framework ScreenCaptureKit -framework UserNotifications -framework UniformTypeIdentifiers -framework ScriptingBridge"
+FRAMEWORKS="-framework Cocoa -framework SwiftUI -framework WebKit -framework AVFoundation -framework AVKit -framework CoreMedia -framework ScreenCaptureKit -framework UserNotifications -framework UniformTypeIdentifiers -framework ScriptingBridge -framework MusicKit"
 HARBOUR_LIBS="-L$HARBOUR_PATH/lib -lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx"
 FIVEMAC_LIBS="-L$FIVEMAC_PATH/nativo/lib -lfive -lfivec"
 
@@ -96,6 +96,8 @@ echo '   <key>NSHighResolutionCapable</key>' >> "$PLIST"
 echo '   <true/>' >> "$PLIST"
 echo '   <key>NSPrincipalClass</key>' >> "$PLIST"
 echo '   <string>NSApplication</string>' >> "$PLIST"
+echo '   <key>NSAppleMusicUsageDescription</key>' >> "$PLIST"
+echo '   <string>This app needs access to your music library to play songs.</string>' >> "$PLIST"
 echo '   <key>NSAppTransportSecurity</key>' >> "$PLIST"
 echo '   <dict>' >> "$PLIST"
 echo '      <key>NSAllowsArbitraryLoads</key>' >> "$PLIST"

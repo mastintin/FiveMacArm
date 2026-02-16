@@ -98,6 +98,21 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 ### ViewStack & Modern Browsing (January 2026 - Part 10)
 - **TViewStack**: New native control for building modern, multi-view interfaces (like segmented views or tab replacements).
     - **ViewStackBar**: A stylish, floating "capsule" navigation bar using `NSVisualEffectView` with rounded corners (16px) and vibrancy support. Supports customization via `SetColor()`.
+
+### MusicKit & Modern UI (February 2026 - Part 11)
+- **MusicKit Integration**: Full integration with Apple's `MusicKit` framework via a hybrid Swift/Objective-C/Harbour bridge.
+    - **Playback Control**: Native control over the Music app (Play, Pause, Next, Previous, Stop) with real-time state synchronization.
+    - **Metadata & Artwork**: seamless retrieval of Song Title, Artist, Duration, Position, and Album Artwork.
+    - **Hybrid Architecture**: Uses a robust mix of Swift (for modern APIs) and optimized AppleScript (for legacy control) to bypass signing restrictions in ad-hoc builds.
+- **Polished UI Components**:
+    - **TSwiftButton**: Enhanced with **SF Symbols** support (`SetImage`), circular shapes (`SetRadius`), and custom background/foreground colors.
+    - **TSwiftImage**: Improved image handling with `SetFile` to bypass caching and support dynamic artwork updates.
+    - **TSwiftLabel**: Modern label control with support for large fonts and custom styling.
+- **TestMusicKit Sample**: A new flagship sample application (`SwiftUI/samples/TestMusicKit.prg`) demonstrating a modern, vertical music player interface with:
+    - Large 300x300 artwork display.
+    - Real-time progress slider and timer-based updates.
+    - Smart Play/Pause toggle button with state-aware icon switching.
+- **Build System**: Updated `build_lib.sh` and `build.sh` to correctly link `MusicKit`, `SwiftUI`, and `Combine` frameworks, ensuring smooth compilation on macOS 14+.
     - **Layout**: Flexible architecture allowing views to be added dynamically.
 - **TCVBrowse**: A completely rewritten Image Browser component.
     - **Modern Backend**: Replaces the legacy `IKImageBrowserView` with `NSCollectionView` and Diffable Data Sources for stability and performance.

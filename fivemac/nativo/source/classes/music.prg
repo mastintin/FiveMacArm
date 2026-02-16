@@ -19,14 +19,19 @@ CLASS TMusic
     METHOD PreviousTrack() INLINE MusicPreviousTrack(::hWnd)
     METHOD backTrack() INLINE MusicbackTrack(::hWnd)
     METHOD GetTracks(cLibrary) 
-    METHOD GetState() INLINE MusicGetState(::hWnd)
-    METHOD Debug()    INLINE MusicDebug(::hWnd)
-    METHOD GetArtWork() INLINE MusicGetArtWork()    
+    METHOD GetArtist()   INLINE MusicGetArtist(::hWnd)
+    METHOD GetAlbum()    INLINE MusicGetAlbum(::hWnd)
+    METHOD GetState()    INLINE MusicGetState(::hWnd)
+    METHOD Debug()       INLINE MusicDebug(::hWnd)
+    METHOD GetArtWork()  INLINE MusicGetArtWork()    
     METHOD GetTrackArtwork() INLINE MusicGetTrackArtwork()  
-    METHOD GetSonProGress() INLINE  MUSICGETSONGPROGRESS()
-    METHOD GetSonDuration() INLINE  MUSICGETSONGDURATION()
+    METHOD GetSonProGress()
+    METHOD GetSonDuration()
     METHOD GetSonLyrics() INLINE  MUSICGETSONGLYRICS()
     METHOD SeekToSecond( nSecond ) INLINE MUSICSEEKTOSECOND( nSecond )    
+    METHOD GetCurrentTrackNumber() INLINE MUSICGETCURRENTTRACKNUMBER()
+    METHOD GetCurrentTrackIndex() INLINE MUSICGETCURRENTTRACKINDEX()  
+    METHOD PlaybyIndex(nIndex ) INLINE   MUSICPLAYBYINDEX( nIndex )  
 ENDCLASS   
 
 //----------------------------------------------------------------------------//
@@ -43,20 +48,28 @@ return Self
 //----------------------------------------------------------------------------//
 
 METHOD GetTracks(cLibrary) CLASS TMusic
-    local hNSArray
+    
     local nLen, i 
-    local aTracks:= {}
+    local aTracks
   
-    if UPPER (cLibrary) == "MOVIES"
-        cLibrary :=  "Movies"
+    if UPPER (cLibrary) == "LIBRARY"
+        cLibrary :=  "Library"
     endif
+    
+    aTracks := MusicGetTracks(::hWnd, cLibrary)
    
-    hNSArray:= MusicGetTracks(::hWnd, cLibrary)
-    nLen:= ArrayLen( hNSArray  )  
-      
-    for i=1 to nLen
-        aadd(aTracks, arrayGetStringIndex( hNSArray,i-1 ) )  
-    Next 
-   
-
 Return aTracks 
+//----------------------------------------------------------------------------//
+METHOD GetSonDuration() CLASS TMusic
+    local nSeconds:=  MUSICGETSONGDURATION()
+    if nSeconds == nil
+        nSeconds := 0 
+    endif  
+return nSeconds
+//----------------------------------------------------------------------------//
+METHOD GetSonProGress() CLASS TMusic
+    local nSeconds:=  MUSICGETSONGPROGRESS()
+    if nSeconds == nil
+        nSeconds := 0 
+    endif  
+return nSeconds

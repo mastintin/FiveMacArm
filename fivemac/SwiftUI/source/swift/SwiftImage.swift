@@ -134,10 +134,19 @@ public class SwiftImageLoader: NSObject {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
                 if let state = states[index] {
-                    state.filePath = path
-                    state.systemName = ""
-                    state.name = ""
-                    state.image = nil
+                    // Try to load immediately to avoid caching of same-path files
+                    if let img = NSImage(contentsOfFile: path) {
+                        state.image = img
+                        state.filePath = ""
+                        state.systemName = ""
+                        state.name = ""
+                    } else {
+                        // Fallback
+                        state.filePath = path
+                        state.systemName = ""
+                        state.name = ""
+                        state.image = nil
+                    }
                 }
             }
         }

@@ -2,27 +2,10 @@
 #import <Cocoa/Cocoa.h>
 #import <fivemac.h>
 
+#include "hbapi.h"
+#include "hbapiitm.h"
+
 #import <Foundation/Foundation.h>
-
-@interface MusicController : NSObject
-+ (NSString *)executeAppleScript:(NSString *)source;
-@end
-
-@implementation MusicController
-
-+ (NSString *)executeAppleScript:(NSString *)source {
-  NSAppleScript *script = [[NSAppleScript alloc] initWithSource:source];
-  NSDictionary *errorInfo = nil;
-  NSAppleEventDescriptor *result = [script executeAndReturnError:&errorInfo];
-
-  if (errorInfo) {
-    NSLog(@"Error en AppleScript: %@", errorInfo[NSAppleScriptErrorMessage]);
-    return nil;
-  }
-  return [result stringValue];
-}
-
-@end
 
 //----------------------------------------
 
@@ -89,11 +72,30 @@ HB_FUNC(MUSICPLAYPAUSE) {
 HB_FUNC(MUSICSTOP) { RunAppleScript(@"tell application \"Music\" to stop"); }
 
 HB_FUNC(MUSICNEXTTRACK) {
-  RunAppleScript(@"tell application \"Music\" to next track");
+  NSString *script = @"tell application \"Music\"\n"
+                     @"   try\n"
+                     @"       set idx to index of current track\n"
+                     @"       play track (idx + 1) of library playlist 1\n"
+                     @"   on error\n"
+                     @"       play track 1 of library playlist 1\n"
+                     @"   end try\n"
+                     @"end tell";
+  RunAppleScript(script);
+  NSLog(@"[FiveMac Music] Manual NextTrack executed");
 }
 
 HB_FUNC(MUSICPREVIOUSTRACK) {
-  RunAppleScript(@"tell application \"Music\" to previous track");
+  NSString *script = @"tell application \"Music\"\n"
+                     @"   try\n"
+                     @"       set idx to index of current track\n"
+                     @"       if idx > 1 then\n"
+                     @"           play track (idx - 1) of library playlist 1\n"
+                     @"       end if\n"
+                     @"   on error\n"
+                     @"   end try\n"
+                     @"end tell";
+  RunAppleScript(script);
+  NSLog(@"[FiveMac Music] Manual PreviousTrack executed");
 }
 
 HB_FUNC(MUSICBACKTRACK) {
@@ -138,7 +140,7 @@ HB_FUNC(MUSICSONGNAME) {
   }
 }
 
-HB_FUNC(MUSICGETSONGARTIST) {
+HB_FUNC(MUSICGETARTIST) {
   NSAppleEventDescriptor *stateDesc = RunAppleScript(
       @"tell application \"Music\" to get player state as string");
   if (stateDesc && [[stateDesc stringValue] isEqualToString:@"stopped"]) {
@@ -148,6 +150,22 @@ HB_FUNC(MUSICGETSONGARTIST) {
 
   NSAppleEventDescriptor *desc = RunAppleScript(
       @"tell application \"Music\" to get artist of current track");
+  if (desc && [desc stringValue])
+    hb_retc([[desc stringValue] UTF8String]);
+  else
+    hb_retc("");
+}
+
+HB_FUNC(MUSICGETALBUM) {
+  NSAppleEventDescriptor *stateDesc = RunAppleScript(
+      @"tell application \"Music\" to get player state as string");
+  if (stateDesc && [[stateDesc stringValue] isEqualToString:@"stopped"]) {
+    hb_retc("");
+    return;
+  }
+
+  NSAppleEventDescriptor *desc = RunAppleScript(
+      @"tell application \"Music\" to get album of current track");
   if (desc && [desc stringValue])
     hb_retc([[desc stringValue] UTF8String]);
   else
@@ -358,17 +376,146 @@ HB_FUNC(MUSICGETTRACKARTWORK) {
 }
 
 HB_FUNC(MUSICGETTRACKS) {
-  // Stub for now, as fetching lists via AS and converting to Array is heavy
-  // Original returned NSArray of strings (names).
+  NSString *libraryName = hb_NSSTRING_par(2);
+  if (!libraryName || [libraryName length] == 0) {
+    libraryName = @"Library";
+  }
 
-  // NSString *libraryName = hb_NSSTRING_par(2);
-  // Construct script to get list of names
-  // tell app "Music" to get name of every track of playlist "Library" ...
-  // This could return a huge list.
+  PHB_ITEM pArray = hb_itemArrayNew(0);
 
-  // For safety/speed in this verification step, return empty array
-  NSMutableArray *theSongs = [NSMutableArray array];
-  hb_retnll((HB_LONGLONG)theSongs);
+  // tell application "Music" to get name of every track of library playlist 1
+  NSString *scriptSource;
+  if ([libraryName isEqualToString:@"Library"] ||
+      [libraryName isEqualToString:@"Biblioteca"]) {
+    scriptSource = @"tell application \"Music\" to get name of every track of "
+                   @"library playlist 1";
+  } else {
+    scriptSource =
+        [NSString stringWithFormat:@"tell application \"Music\" to get name of "
+                                   @"every track of playlist \"%@\"",
+                                   libraryName];
+  }
+
+  NSAppleScript *appleScript =
+      [[NSAppleScript alloc] initWithSource:scriptSource];
+  NSDictionary *errorInfo = nil;
+  NSAppleEventDescriptor *result =
+      [appleScript executeAndReturnError:&errorInfo];
+
+  if (result) {
+    // Result should be a list descriptor
+    NSInteger count = [result numberOfItems];
+    for (NSInteger i = 1; i <= count; i++) {
+      NSAppleEventDescriptor *item = [result descriptorAtIndex:i];
+      NSString *trackName = [item stringValue];
+      if (trackName) {
+        PHB_ITEM pItem = hb_itemPutC(NULL, [trackName UTF8String]);
+        hb_arrayAdd(pArray, pItem);
+        hb_itemRelease(pItem);
+      }
+    }
+  } else {
+    NSLog(@"[FiveMac Music] Error getting tracks: %@", errorInfo);
+  }
+
+  hb_itemReturnRelease(pArray);
+}
+
+HB_FUNC(MUSICGETCURRENTTRACKNUMBER) {
+  @autoreleasepool {
+    // Script para obtener el número de pista de la canción que suena
+    NSString *scriptSource =
+        @"tell application \"Music\" to get track number of current track";
+    NSAppleScript *appleScript =
+        [[NSAppleScript alloc] initWithSource:scriptSource];
+
+    NSDictionary *errorInfo = nil;
+    NSAppleEventDescriptor *descriptor =
+        [appleScript executeAndReturnError:&errorInfo];
+
+    if (descriptor != nil) {
+      // El resultado de 'track number' es un entero
+      int iTrackNum = (int)[descriptor int32Value];
+      hb_retni(iTrackNum); // Devuelve el entero directamente a Harbour
+    } else {
+      // Si no hay nada sonando o hay error, devolvemos 0
+      hb_retni(0);
+    }
+  }
+}
+
+HB_FUNC(MUSICGETCURRENTTRACKINDEX) {
+  @autoreleasepool {
+    // Script para obtener el número de pista de la canción que suena
+    NSString *scriptSource =
+        @"tell application \"Music\" to get index of current track";
+    NSAppleScript *appleScript =
+        [[NSAppleScript alloc] initWithSource:scriptSource];
+
+    NSDictionary *errorInfo = nil;
+    NSAppleEventDescriptor *descriptor =
+        [appleScript executeAndReturnError:&errorInfo];
+
+    if (descriptor != nil) {
+      // El resultado de 'track number' es un entero
+      int iTrackNum = (int)[descriptor int32Value];
+      hb_retni(iTrackNum); // Devuelve el entero directamente a Harbour
+    } else {
+      // Si no hay nada sonando o hay error, devolvemos 0
+      hb_retni(0);
+    }
+  }
+}
+
+HB_FUNC(MUSICPLAYBYINDEX) {
+  @autoreleasepool {
+    // Obtenemos el índice pasado desde Harbour: MusicPlayByIndex( 50 )
+    long nIndex = hb_parnl(1);
+
+    if (nIndex > 0) {
+      // Script para reproducir la pista por su número de índice
+      NSLog(@"[FiveMac Music] PlayByIndex called with index: %ld", nIndex);
+      NSString *scriptSource =
+          [NSString stringWithFormat:@"tell application \"Music\" to play "
+                                     @"track %ld of library playlist 1",
+                                     nIndex];
+
+      NSAppleScript *appleScript =
+          [[NSAppleScript alloc] initWithSource:scriptSource];
+
+      NSDictionary *errorInfo = nil;
+      [appleScript executeAndReturnError:&errorInfo];
+
+      if (errorInfo) {
+        NSLog(@"Error: %@", errorInfo);
+        hb_retl(NO); // Devolvemos .F. si falló
+      } else {
+        hb_retl(YES); // Devolvemos .T. si tuvo éxito
+      }
+    } else {
+      hb_retl(NO);
+    }
+  }
+}
+
+HB_FUNC(MUSICGETCURRENTDATABASEID) {
+  @autoreleasepool {
+    // Pedimos el database ID, que es único para cada pista en la biblioteca
+    NSString *scriptSource =
+        @"tell application \"Music\" to get database ID of current track";
+    NSAppleScript *appleScript =
+        [[NSAppleScript alloc] initWithSource:scriptSource];
+
+    NSAppleEventDescriptor *descriptor =
+        [appleScript executeAndReturnError:nil];
+
+    if (descriptor) {
+      // Los IDs de base de datos pueden ser números muy grandes
+      hb_retnl((long)[descriptor int32Value]);
+    } else {
+      hb_retni(0);
+    }
+  }
 }
 
 HB_FUNC(MUSICDEBUG) {

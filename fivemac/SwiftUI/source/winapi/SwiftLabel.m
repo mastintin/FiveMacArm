@@ -5,8 +5,8 @@ HB_FUNC(SWIFTUPDATELABEL) {
   NSString *text = hb_NSSTRING_par(2);
   NSInteger nIndex = (NSInteger)hb_parni(3);
 
-  NSLog(@"SWIFTUPDATELABEL: Class=%@ Text=%@ Index=%ld", className, text,
-        (long)nIndex);
+  // NSLog(@"SWIFTUPDATELABEL: Class=%@ Text=%@ Index=%ld", className, text,
+  // (long)nIndex);
 
   Class swiftClass = NSClassFromString(className);
 
@@ -25,12 +25,11 @@ HB_FUNC(SWIFTUPDATELABEL) {
 
       [invocation invoke];
     } else {
-      NSLog(
-          @"SWIFTUPDATELABEL: Class %@ does NOT respond to updateLabel:index:",
-          className);
+      // NSLog(@"SWIFTUPDATELABEL: Class %@ does NOT respond to
+      // updateLabel:index:", className);
     }
   } else {
-    NSLog(@"SWIFTUPDATELABEL: Class %@ NOT found", className);
+    // NSLog(@"SWIFTUPDATELABEL: Class %@ NOT found", className);
   }
 }
 
@@ -46,16 +45,17 @@ HB_FUNC(SWIFTLABELCREATE) {
   Class swiftClass = NSClassFromString(className);
 
   if (!swiftClass) {
-    NSLog(@"Error: Could not find class %@", className);
+    // NSLog(@"Error: Could not find class %@", className);
     return;
   }
 
-  NSLog(@"Debug: Found class %@. Checking for makeLabelWithText:", className);
+  // NSLog(@"Debug: Found class %@. Checking for makeLabelWithText:",
+  // className);
 
   SEL selector = NSSelectorFromString(@"makeLabelWithText:index:");
 
   if ([swiftClass respondsToSelector:selector]) { // Check specific selector
-    NSLog(@"Debug: Class responds to selector. Calling it...");
+    // NSLog(@"Debug: Class responds to selector. Calling it...");
 
     // NSInvocation needed for int arg
     NSMethodSignature *signature =
@@ -68,8 +68,8 @@ HB_FUNC(SWIFTLABELCREATE) {
     NSInteger nIndex =
         (NSInteger)hb_parni(7); // Get index for Label (Added in PRG)
 
-    NSLog(@"SWIFTLABELCREATE: Calling makeLabelWithText: Text=%@ Index=%ld",
-          cText, (long)nIndex);
+    // NSLog(@"SWIFTLABELCREATE: Calling makeLabelWithText: Text=%@ Index=%ld",
+    // cText, (long)nIndex);
 
     [invocation setArgument:&cText atIndex:2];
     [invocation setArgument:&nIndex atIndex:3];
@@ -80,8 +80,9 @@ HB_FUNC(SWIFTLABELCREATE) {
     [invocation getReturnValue:&labelView];
 
     if (labelView) {
-      NSLog(@"Debug: makeLabelWithText returned a valid view: %@", labelView);
-      // setupSwiftView(labelView, window, nTop, nLeft, nWidth, nHeight);
+      // NSLog(@"Debug: makeLabelWithText returned a valid view: %@",
+      // labelView); setupSwiftView(labelView, window, nTop, nLeft, nWidth,
+      // nHeight);
       [labelView setFrame:NSMakeRect(nLeft, nTop, nWidth, nHeight)];
 
       id parent = (id)hb_parnl(6);

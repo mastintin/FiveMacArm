@@ -1,7 +1,7 @@
 #include "FiveMac.ch"
 
 CLASS TSwiftMusic
-
+   
     METHOD New()
     METHOD Play()       INLINE SwiftMusicPlay()
     METHOD Pause()      INLINE SwiftMusicPause()
@@ -12,6 +12,13 @@ CLASS TSwiftMusic
     METHOD GetState()   INLINE SwiftMusicState()
     METHOD GetMetadata() 
     
+    METHOD GetArtworkPath() INLINE SwiftMusicGetArtwork()
+    METHOD GetDuration()    INLINE SwiftMusicGetDuration()
+    METHOD GetPosition()    INLINE SwiftMusicGetPosition()
+    METHOD SetPosition(nSec) INLINE SwiftMusicSetPosition(nSec)
+    METHOD GetVolume()      INLINE SwiftMusicGetVolume()
+    METHOD SetVolume(nVol)  INLINE SwiftMusicSetVolume(nVol)
+
 ENDCLASS
 
 METHOD New() CLASS TSwiftMusic
