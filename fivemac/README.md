@@ -133,13 +133,12 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 
 ### SwiftUI & Focus Reliability (January 2026 - Part 12)
 - **SwiftPicker**: New native picklist component with integrated search, scrollable popover, and dynamic label support (`SWIFTPICKER` command).
-- **Focus Reliability**:
     - **Delayed Editor Focus**: Enhanced `TWBrowse:Edit()` logic to ensure the inline text editor receives focus correctly, bypassing OS event race conditions.
     - **Global Activation**: Modified `CocoaInit` to explicitly activate the application (`activateIgnoringOtherApps:YES`), ensuring keyboard focus on launch and when switching windows.
 - **Browse Safety**: Changed default column behavior to non-editable. Editing now requires explicit `SetColEditable()` per column, preventing unintended data entry during standard navigation.
 - **Popover UX**: Adjusted popover presentation to appear below controls (`NSMaxYEdge`) for better visibility in complex layouts.
 
-### NiceGUI Wrapper (January 2026 - Part 14)
+### NiceGUI Wrapper (January 2026 - Part 13)
 - **Hybrid Framework**: Introduced a NiceGUI-inspired wrapper for building modern, reactive UIs using Vue.js and Quasar components within native FiveMac windows.
 - **Modular Architecture**: Ported to a clean multi-file structure: `NiceCore`, `NiceLayout`, `NiceControls`, `NiceTable`, and `NiceDialog`.
 - **xBase Syntax**: New intuitive preprocessor commands in `Nice.ch` (`NICE GET`, `NICE SAY`, `NICE BUTTON`, `DEFINE NICE TABLE`, etc.).
@@ -148,7 +147,7 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Build System**: New `build_app.sh` script for packaging hybrid apps and `makelib.sh` for generating the static library `libnice.a`.
 - **Hybrid Dashboard**: High-level commands for building navigation-driven apps with multiple cards, KPIs and responsive sidebars.
 
-### NiceGUI Sidebar & Advanced Borders (January 2026 - Part 15)
+### NiceGUI Sidebar & Advanced Borders (January 2026 - Part 14)
 - **Navigation Sidebars**: New `NICE DRAWER` and `NICE DRAWER ITEM` commands for building modern, desktop-style dashboards. Supports "Push" layout mode to prevent content overlapping.
 - **Advanced Card Styling**: Enhanced `DEFINE NICE CARD` with granular border control:
     - **Single-Side Borders**: Specify `SIDE "left"`, `SIDE "top"`, etc., for decorative colored frills.
@@ -157,11 +156,13 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Offline Reliability**: Automated fallback to local `nicegui_dist` assets for icons and framework dependencies.
 - **Layout Precision**: Fine-tuned WebView height calculation to ensure pixel-perfect Footer alignment in `FLIPPED` window modes.
 
-### Architecture
+### Architecture (January 2026)
 - **64-bit Core**: Finalized pointer size migration for button and picklist handles to ensure absolute stability on modern macOS.
 - **WebView Bridge**: Specialized JavaScript-to-Harbour communication bridge for bidirectional events and reactive state updates.
 
-### Reporting & Swift Enhancements (February 2026)
+## Recent Updates (February 2026)
+
+### Reporting & Swift Enhancements (Part 15)
 - **Advanced Reporting (NiceGui)**:
     - **Image Embedding**: New `TNiceImage` class supporting both local paths and Base64-encoded images (`DEFINE NICE IMAGE`).
     - **PDF Generation**: Improved rendering engine (`TNicePrinter`) with support for high-fidelity HTML-to-PDF conversion including embedded charts and images.
@@ -181,6 +182,27 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
         - `SQLITE DELETE`
         - `SQLITE INSERT INTO ... HASH ...`
 
+### MusicKit & Modern UI (Part 16)
+- **MusicKit Integration**: Full integration with Apple's `MusicKit` framework via a hybrid Swift/Objective-C/Harbour bridge.
+    - **Playback Control**: Native control over the Music app (Play, Pause, Next, Previous, Stop) with real-time state synchronization.
+    - **Metadata & Artwork**: seamless retrieval of Song Title, Artist, Duration, Position, and Album Artwork.
+    - **Hybrid Architecture**: Uses a robust mix of Swift (for modern APIs) and optimized AppleScript (for legacy control) to bypass signing restrictions in ad-hoc builds.
+- **Polished UI Components**:
+    - **TSwiftButton**: Enhanced with **SF Symbols** support (`SetImage`), circular shapes (`SetRadius`), and custom background/foreground colors.
+    - **TSwiftImage**: Improved image handling with `SetFile` to bypass caching and support dynamic artwork updates.
+    - **TSwiftLabel**: Modern label control with support for large fonts and custom styling.
+- **TestMusicKit Sample**: A new flagship sample application (`SwiftUI/samples/TestMusicKit.prg`) demonstrating a modern, vertical music player interface with:
+    - Large 300x300 artwork display.
+    - Real-time progress slider and timer-based updates.
+    - Smart Play/Pause toggle button with state-aware icon switching.
+- **Build System**: Updated `build_lib.sh` and `build.sh` to correctly link `MusicKit`, `SwiftUI`, and `Combine` frameworks, ensuring smooth compilation on macOS 14+.
+    - **Layout**: Flexible architecture allowing views to be added dynamically.
+- **TCVBrowse**: A completely rewritten Image Browser component.
+    - **Modern Backend**: Replaces the legacy `IKImageBrowserView` with `NSCollectionView` and Diffable Data Sources for stability and performance.
+    - **Features**: Supports selection callbacks (`bChange`), double-click actions (`bLDblClick`), and Core Animation effects ("Pulse" on selection).
+    - **Visuals**: Clean grid layout with customizable item sizing.
+- **Cleanup**: Extensive removal of debug logs (`NSLog`, `MsgInfo`) across the library ensuring a production-ready build.
+
 ## Building
 
 To build the library and samples:
@@ -192,4 +214,3 @@ To build the library and samples:
 ## Documentation
 
 See `whatsnew.txt` for a detailed history of changes and new features.
-
