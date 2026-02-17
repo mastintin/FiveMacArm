@@ -12,6 +12,9 @@ CLASS TNiceButton FROM TNiceControl
    
     METHOD New( oParent, cLabel, bAction, cIcon, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor )
     METHOD GetHtml()
+    METHOD GetModelName()
+    METHOD GetModelValue() 
+    METHOD Set( cVal, cAttr )
 ENDCLASS
 
 METHOD New( oParent, cLabel, bAction, cIcon, cClass, cStyle, cJs, lBold, cSize, cColor, cBgColor ) CLASS TNiceButton
@@ -34,15 +37,37 @@ METHOD GetHtml() CLASS TNiceButton
     endif
 
     cHtml += 'label="' + ::cLabel + '" '
-    if !Empty( ::cIcon )
-    cHtml += 'icon="' + ::cIcon + '" '
-    endif
+    
+    // Reactive icon binding
+    cHtml += ':icon="' + ::GetModelName() + '" '
     
     // Escape single quotes in JS code to avoid breaking the attribute
     // We replace ' with \' so the JS string remains valid
     cHtml += '@click="handleClick(' + "'" + ::cId + "', '" + StrTran( ::cJs, "'", "\'" ) + "')" + '" '
     cHtml += '></q-btn>'
 return cHtml
+
+METHOD GetModelName() CLASS TNiceButton
+return ::cId + "_icon"
+
+METHOD GetModelValue() CLASS TNiceButton
+return '"' + ::cIcon + '"'
+
+METHOD Set( uVal, uAttr ) CLASS TNiceButton
+   
+    // Handle Set("icon", "pause") syntax
+    if ValType( uVal ) == "C" .and. uVal == "icon" .and. uAttr != nil
+    ::cIcon := uAttr
+    ::Super:Set( uAttr ) // Updates the model defined in GetModelName (_icon)
+    return nil
+    endif
+
+    if uAttr == "icon"
+    ::cIcon := uVal
+    endif
+   
+    ::Super:Set( uVal )
+return nil
 
 //----------------------------------------------------------------------------//
 // Nice Input
@@ -131,6 +156,9 @@ CLASS TNiceLabel FROM TNiceControl
     
     METHOD New( oParent, cText, cClass, cStyle, lBold, cSize, cColor, cBgColor )
     METHOD GetHtml()
+    METHOD Set( cText )
+    METHOD GetModelName()
+    METHOD GetModelValue()
 ENDCLASS
 
 METHOD New( oParent, cText, cClass, cStyle, lBold, cSize, cColor, cBgColor ) CLASS TNiceLabel
@@ -147,8 +175,21 @@ METHOD GetHtml() CLASS TNiceLabel
     if !Empty( ::cStyle )
     cHtml += 'style="' + ::cStyle + '" '
     endif
-    cHtml += '>' + ::cText + '</div>'
+    
+    // Interpolation is safer than v-text for initial hydration
+    cHtml += '>{{ ' + ::GetModelName() + ' }}</div>'
 return cHtml
+
+METHOD Set( cText ) CLASS TNiceLabel
+    ::cText := cText
+    ::Super:Set( cText )
+return nil
+
+METHOD GetModelName() CLASS TNiceLabel
+return ::cId + "_text"
+
+METHOD GetModelValue() CLASS TNiceLabel
+return '"' + StrTran( ::cText, '"', '\"' ) + '"'
 
 //----------------------------------------------------------------------------//
 // Nice Select (Combobox)

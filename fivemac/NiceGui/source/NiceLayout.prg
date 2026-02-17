@@ -625,6 +625,9 @@ CLASS TNiceImage FROM TNiceControl
 
     METHOD New( oParent, cFile, cWidth, cHeight, cSize, cClass, cStyle )
     METHOD GetHtml()
+    METHOD GetModelName()
+    METHOD GetModelValue()
+    METHOD Set( cFile )
 ENDCLASS
 
 METHOD New( oParent, cFile, cWidth, cHeight, cSize, cClass, cStyle ) CLASS TNiceImage
@@ -636,7 +639,7 @@ METHOD New( oParent, cFile, cWidth, cHeight, cSize, cClass, cStyle ) CLASS TNice
 return Self
 
 METHOD GetHtml() CLASS TNiceImage
-    local cHtml := '<q-img src="' + ::cFile + '" '
+    local cHtml := '<q-img :src="' + ::GetModelName() + '" '
     
     if !Empty( ::cClass )
     cHtml += 'class="' + ::cClass + '" '
@@ -652,3 +655,26 @@ METHOD GetHtml() CLASS TNiceImage
     
     cHtml += '></q-img>'
 return cHtml
+
+METHOD GetModelName() CLASS TNiceImage
+return ::cId + "_src"
+
+METHOD GetModelValue() CLASS TNiceImage
+return '"' + ::cFile + '"'
+
+METHOD Set( cFile ) CLASS TNiceImage
+    local cPath := cFile
+
+    if Left( cPath, 7 ) == "file://"
+    cPath := SubStr( cPath, 8 )
+    endif
+   
+    if File( cPath )
+    // Convert to Base64 to avoid WebView sandbox issues
+    ::cFile := "data:image/jpg;base64," + HB_Base64Encode( MemoRead( cPath ) )
+    else
+    ::cFile := cFile
+    endif
+
+    ::Super:Set( ::cFile )
+return nil

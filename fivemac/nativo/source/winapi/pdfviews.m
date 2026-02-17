@@ -1,4 +1,4 @@
-#import "Quartz/Quartz.h"
+#import <PDFKit/PDFKit.h>
 #include <fivemac.h>
 
 HB_FUNC(PDFVIEWCREATE) {

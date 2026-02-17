@@ -614,18 +614,6 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 
 //----------------------------------------------------------------------------//
 
-#xcommand @ <nRow>, <nCol> COVERFLOW [ <oCoverFlow> ] ;
-   [ OF <oWnd> ] ;
-   [ SIZE <nWidth>, <nHeight> ] ;
-   => ;
-   [ <oCoverFlow> := ] TCoverFlow():New( <nRow>, <nCol>, <nWidth>,;
-   <nHeight>, <oWnd> )
-                 
-#xcommand REDEFINE COVERFLOW [ <oCoverFlow> ] ;
-   [ ID <nId> ] ; 
-   [ OF <oWnd> ] ;
-   => ;
-   [ <oCoverFlow> := ] TCoverFlow():Redefine( <nId>, <oWnd> )
                  
 //----------------------------------------------------------------------------//
                                 

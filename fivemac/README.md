@@ -203,6 +203,18 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - **Visuals**: Clean grid layout with customizable item sizing.
 - **Cleanup**: Extensive removal of debug logs (`NSLog`, `MsgInfo`) across the library ensuring a production-ready build.
 
+### Quartz Cleanup & Modernization (February 2026 - Part 17)
+- **PDFKit Migration**: Migrated `PDFView` from the deprecated Quartz framework to the modern **PDFKit** framework.
+    - Updated `pdfviews.m` to import `<PDFKit/PDFKit.h>`.
+    - Updated build scripts to link `PDFKit.framework`.
+    - Verified with `testpdf.prg`.
+- **SF Symbols Integration**: Enhanced `NSIMAGEFROMNAME` in `images.m` to automatically fallback to **SF Symbols** if a local image file is not found.
+    - Allows using system icons like `"gear"`, `"folder"`, `"trash"` directly in `DEFINE BUTTON ... IMAGE "name"`.
+- **CoverFlow Removal**: Removed the deprecated `IKImageFlowView` (CoverFlow) component and its associated files (`testcovf.prg`, `coverflow.prg`, `coverflows.m`) to ensure compatibility with future macOS releases.
+- **TestPDF Updated**: Refactored `nativo/samples/testpdf.prg` to demonstrate:
+    - Loading local PDF files via `cGetFile`.
+    - Using SF Symbols for toolbar navigation icons.
+
 ## Building
 
 To build the library and samples:
