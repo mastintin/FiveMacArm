@@ -188,7 +188,7 @@ fi
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
 HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lhbmysql'
-FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
+FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuartzCore -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
 if [ ! -d "$SWIFTPATH" ]; then

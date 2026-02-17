@@ -59,7 +59,7 @@ clang -c obj/$NAME.c -oobj/$NAME.o -I../include -I../../nativo/include -I../../.
 echo "linking..."
 HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx'
 # Added MusicKit, Combine, SwiftUI
-FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers -framework MusicKit -framework Combine -framework SwiftUI'
+FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuartzCore -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers -framework MusicKit -framework Combine -framework SwiftUI'
 
 CRTLIB=$(xcrun --show-sdk-path)/usr/lib
 
