@@ -1,109 +1,111 @@
-#import <Quartz/Quartz.h>
+#import <Cocoa/Cocoa.h>
 #include <fivemac.h>
 
-
-@interface MIKImageView : IKImageView {
+@interface MIKImageView : NSImageView {
   NSURL *selectedImageURL;
 }
-//- (NSString*)fileName   ;
 
 - (NSURL *)selectedImageURL;
 - (void)setSelectedImageURL:(NSURL *)url;
+- (NSString *)fileName;
+- (void)rotateImageLeft;
+- (void)rotateImageRight;
 
 @end
 
 @implementation MIKImageView
 
-//----------------------------------------------------------------------------------------------------------------------
 - (NSString *)fileName {
   return [[[self selectedImageURL] path] lastPathComponent];
 }
 
-//----------------------------------------------------------------------------------------------------------------------
 - (NSURL *)selectedImageURL {
   return selectedImageURL;
 }
 
-//----------------------------------------------------------------------------------------------------------------------
 - (void)setSelectedImageURL:(NSURL *)url {
   [self willChangeValueForKey:@"fileName"];
-  [selectedImageURL release];
-  selectedImageURL = [url retain];
+  if (selectedImageURL != url) {
+    [selectedImageURL release];
+    selectedImageURL = [url retain];
+  }
   [self didChangeValueForKey:@"fileName"];
 }
 
-- (void)pictureTakerDidEnd:(IKPictureTaker *)pictureTaker
-                returnCode:(NSInteger)returnCode
-               contextInfo:(void *)contextInfo {
-  static int snapCount = 0;
-
-  if (returnCode == NSModalResponseOK) {
-    NSImage *image = [pictureTaker outputImage];
-
-    NSString *outputPath =
-        [NSString stringWithFormat:@"/tmp/snap%d.tiff", ++snapCount];
-
-    [[image TIFFRepresentation] writeToFile:outputPath atomically:YES];
-
-    NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:outputPath];
-    [self setImageWithURL:fileURL];
-    [self setSelectedImageURL:fileURL];
+- (void)setImageWithURL:(NSURL *)url {
+  NSImage *image = [[NSImage alloc] initWithContentsOfURL:url];
+  if (image) {
+    [self setImage:image];
+    [self setSelectedImageURL:url];
+    [image release];
   }
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
+- (void)rotateImage:(CGFloat)degrees {
+  NSImage *image = [self image];
+  if (!image)
+    return;
+
+  NSSize existingSize = [image size];
+  NSSize newSize = NSMakeSize(existingSize.height, existingSize.width);
+  NSImage *rotatedImage = [[NSImage alloc] initWithSize:newSize];
+
+  [rotatedImage lockFocus];
+
+  NSAffineTransform *rotateTF = [NSAffineTransform transform];
+  NSPoint center = NSMakePoint(newSize.width / 2, newSize.height / 2);
+
+  [rotateTF translateXBy:center.x yBy:center.y];
+  [rotateTF rotateByDegrees:degrees];
+  [rotateTF translateXBy:-existingSize.width / 2 yBy:-existingSize.height / 2];
+
+  [rotateTF concat];
+
+  [image drawAtPoint:NSZeroPoint
+            fromRect:NSZeroRect
+           operation:NSCompositingOperationCopy
+            fraction:1.0];
+
+  [rotatedImage unlockFocus];
+
+  [self setImage:rotatedImage];
+  [rotatedImage release];
+}
+
+- (void)rotateImageLeft {
+  [self rotateImage:90];
+}
+
+- (void)rotateImageRight {
+  [self rotateImage:-90];
+}
 
 @end
 
-HB_FUNC(PHOTOCAMLOAD) {
-  MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-  IKPictureTaker *foto = [IKPictureTaker pictureTaker];
+// ---------------------------------------------------------------------------------------------------------------------
 
-  [foto setValue:[NSNumber numberWithBool:YES]
-          forKey:IKPictureTakerShowEffectsKey];
-  [foto beginPictureTakerSheetForWindow:[vista window]
-                           withDelegate:vista
-                         didEndSelector:@selector
-                         (pictureTakerDidEnd:returnCode:contextInfo:)
-                            contextInfo:nil];
+HB_FUNC(PHOTOCAMLOAD) {
+  // Deprecated IKPictureTaker
+  // Generic placeholder or TODO
+  NSLog(@"PHOTOCAMLOAD: IKPictureTaker is deprecated and not available in this "
+        @"version.");
 }
 
 HB_FUNC(SIMAGECREATE) {
-
-  //  NSScrollView * sv = [ [ NSScrollView alloc ]
-  //                  initWithFrame : NSMakeRect( hb_parnl( 2 ), hb_parnl( 1 ),
-  //                  hb_parnl( 3 ), hb_parnl( 4 ) ) ];
-
-  // [ sv setAutoresizingMask : NSViewWidthSizable | NSViewHeightSizable ];
-  //  [ sv setHasVerticalScroller : YES ];
-  //  [ sv setHasHorizontalScroller : YES ];
-  //   sv.hasVerticalRuler =   YES ;
-  //  [ sv setBorderType : NSBezelBorder ];
-
-  //  MIKImageView  * vista = [ [ MIKImageView alloc ] initWithFrame : [ [ sv
-  //  contentView ] frame ] ];
-
   MIKImageView *vista =
       [[MIKImageView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                      hb_parnl(3), hb_parnl(4))];
 
-  // vista.editable = YES;
-  vista.autoresizes = YES;
-  vista.autohidesScrollers = NO;
-  vista.hasHorizontalScroller = YES;
-  vista.hasVerticalScroller = YES;
-
-  // [ vista setAutoresizes: TRUE ];
+  vista.autoresizesSubviews = YES;
   [vista setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  //  [ vista setHasVerticalScroller : YES ];
-  //  [ vista setHasHorizontalScroller : YES ];
+  [vista
+      setImageScaling:NSImageScaleProportionallyUpOrDown]; // Default to "Fit"
+
+  // Enable drag and drop for images
+  [vista registerForDraggedTypes:[NSImage imageTypes]];
+  [vista setEditable:YES]; // Allows drag-drop onto view
 
   NSWindow *window = (NSWindow *)hb_parnll(5);
-
-  //  [ sv setDocumentView : vista ];
-
-  //  [ GetView( window ) addSubview : sv ];
-
   [GetView(window) addSubview:vista];
 
   hb_retnll((HB_LONGLONG)vista);
@@ -113,79 +115,89 @@ HB_FUNC(SIMAGEOPEN) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
   NSString *path = hb_NSSTRING_par(2);
 
-  NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:path];
-
-  [vista setImageWithURL:fileURL];
-
-  hb_retnll((HB_LONGLONG)[fileURL path]);
+  if (path) {
+    NSURL *fileURL = [NSURL fileURLWithPath:path];
+    [vista setImageWithURL:fileURL];
+    hb_retnll((HB_LONGLONG)[fileURL path]);
+  } else {
+    hb_retnll(0);
+  }
 }
 
 HB_FUNC(SIMAGEFIT) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-
-  [vista zoomImageToFit:vista];
+  [vista setImageScaling:NSImageScaleProportionallyUpOrDown];
 }
 
 HB_FUNC(SIMAGEZOOMIN) {
+  // NSImageView does not support zoom factor natively without scrollview + mag.
+  // We simulate "Actual Size" or "None" scaling
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-
-  [vista zoomIn:vista];
+  [vista setImageScaling:NSImageScaleNone];
 }
 
 HB_FUNC(SIMAGEROTALEFT) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-
-  [vista rotateImageLeft:vista];
+  [vista rotateImageLeft];
 }
 
 HB_FUNC(SIMAGEROTARIGHT) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-
-  [vista rotateImageRight:vista];
+  [vista rotateImageRight];
 }
+
 HB_FUNC(SIMAGEZOOMOUT) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-
-  [vista zoomOut:vista];
+  [vista setImageScaling:NSImageScaleProportionallyUpOrDown];
 }
+
 HB_FUNC(SIMAGEVFLIP) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-
-  [vista flipImageVertical:vista];
+  NSImage *image = [vista image];
+  if (image) {
+    // Basic Flip
+    NSImage *flipped = [[NSImage alloc] initWithSize:[image size]];
+    [flipped lockFocus];
+    NSAffineTransform *transform = [NSAffineTransform transform];
+    [transform scaleXBy:1.0 yBy:-1.0];
+    [transform translateXBy:0 yBy:-[image size].height];
+    [transform concat];
+    [image drawAtPoint:NSZeroPoint
+              fromRect:NSZeroRect
+             operation:NSCompositingOperationCopy
+              fraction:1.0];
+    [flipped unlockFocus];
+    [vista setImage:flipped];
+    [flipped release];
+  }
 }
 
 HB_FUNC(SIMAGEEDIT) {
-  MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-
-  [vista setCurrentToolMode:IKToolModeMove];
-  [vista setDoubleClickOpensImageEditPanel:YES];
+  // Not supported in NSImageView
 }
 
 HB_FUNC(SIMAGEAUTORESIZE) {
-
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-  [vista setAutoresizes:hb_parl(2)];
+  // [ vista setAutoresizes: hb_parl( 2 ) ]; // NSView method?
+  // autoresizesSubviews is bool
+  [vista setAutoresizesSubviews:hb_parl(2)];
 }
 
 HB_FUNC(SIMAGEGETAUTORESIZE) {
-
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-  hb_retl((BOOL)[vista autoresizes]);
+  hb_retl((BOOL)[vista autoresizesSubviews]);
 }
 
 HB_FUNC(SIMAGESETCROP) {
-  MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-  [vista setCurrentToolMode:IKToolModeCrop];
+  // Not supported
 }
 
 HB_FUNC(SIMAGESETROTATE) {
-  MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-  [vista setCurrentToolMode:IKToolModeRotate];
+  // Not supported interactive tool
 }
 
 HB_FUNC(SIMAGESETNORMAL) {
-  MIKImageView *vista = (MIKImageView *)hb_parnll(1);
-  [vista setCurrentToolMode:IKToolModeNone];
+  // Not supported tool modes
 }
 
 HB_FUNC(SIMAGESETHIDE) {
@@ -201,20 +213,16 @@ HB_FUNC(SIMAGESETSHOW) {
 HB_FUNC(CHOOSESHEETSIMAGE) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
 
-  // Create and configure the panel.
   NSOpenPanel *panel = [NSOpenPanel openPanel];
-
   [panel setMessage:@"Importe el Archivo"];
+  [panel setAllowedFileTypes:[NSImage imageTypes]];
 
   [panel beginSheetModalForWindow:[vista window]
                 completionHandler:^(NSInteger result) {
                   if (result == NSModalResponseOK) {
+                    NSURL *url = [[panel URLs] objectAtIndex:0];
                     [vista setHidden:NO];
-                    [vista setAutoresizes:TRUE];
-                    [vista setAutoresizingMask:NSViewWidthSizable |
-                                               NSViewHeightSizable];
-                    [vista setImageWithURL:[[panel URLs] objectAtIndex:0]];
-                    [vista setSelectedImageURL:[[panel URLs] objectAtIndex:0]];
+                    [vista setImageWithURL:url];
                   }
                 }];
 }
@@ -222,58 +230,30 @@ HB_FUNC(CHOOSESHEETSIMAGE) {
 HB_FUNC(SIMAGESAVEAS) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
 
-  NSSavePanel *savePanel;
-  NSString *utType;
-  NSDictionary *metaData;
-  NSString *fileName;
-  IKSaveOptions *saveOptions;
+  NSSavePanel *savePanel = [NSSavePanel savePanel];
+  [savePanel setAllowedFileTypes:@[ @"png", @"jpg", @"tiff" ]];
+  [savePanel
+      setNameFieldStringValue:[[vista fileName] stringByDeletingPathExtension]];
+  [savePanel setMessage:@"Grabe el archivo"];
 
-  savePanel = [NSSavePanel savePanel];
-
-  CGImageSourceRef source =
-      CGImageSourceCreateWithURL((CFURLRef)[vista selectedImageURL], NULL);
-  utType = (NSString *)CGImageSourceGetType(source);
-
-  if (utType) {
-
-    metaData = [vista imageProperties];
-    fileName = [vista fileName];
-
-    saveOptions = [[IKSaveOptions alloc] initWithImageProperties:metaData
-                                                     imageUTType:utType];
-
-    [saveOptions addSaveOptionsAccessoryViewToSavePanel:savePanel];
-
-    [savePanel
-        setNameFieldStringValue:[fileName stringByDeletingPathExtension]];
-    [savePanel setMessage:@"Grabe el archivo"];
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-    [savePanel
-        beginSheetModalForWindow:[vista window]
-               completionHandler:^(NSInteger result) {
-                 if (result == NSModalResponseOK) {
-                   NSString *newUTType = [saveOptions imageUTType];
-                   CGImageRef image = (CGImageRef)[vista image];
-
-                   if (image) {
-                     NSURL *url = [savePanel URL];
-                     CGImageDestinationRef dest =
-                         CGImageDestinationCreateWithURL(
-                             (CFURLRef)url, (CFStringRef)newUTType, 1, NULL);
-
-                     if (dest) {
-                       CGImageDestinationAddImage(
-                           dest, image,
-                           (CFDictionaryRef)[saveOptions imageProperties]);
-                       CGImageDestinationFinalize(dest);
-                       CFRelease(dest);
-                     }
-                   }
-                 } else {
-                   NSLog(@"*** saveImageToPath - no image");
-                 }
-               }];
-#endif
-  }
+  [savePanel beginSheetModalForWindow:[vista window]
+                    completionHandler:^(NSInteger result) {
+                      if (result == NSModalResponseOK) {
+                        NSURL *url = [savePanel URL];
+                        NSImage *image = [vista image];
+                        if (image) {
+                          CGImageRef cgRef = [image CGImageForProposedRect:NULL
+                                                                   context:nil
+                                                                     hints:nil];
+                          NSBitmapImageRep *newRep =
+                              [[NSBitmapImageRep alloc] initWithCGImage:cgRef];
+                          [newRep setSize:[image size]];
+                          NSData *data = [newRep
+                              representationUsingType:NSBitmapImageFileTypePNG
+                                           properties:@{}];
+                          [data writeToURL:url atomically:YES];
+                          [newRep release];
+                        }
+                      }
+                    }];
 }
