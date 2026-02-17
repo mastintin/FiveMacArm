@@ -214,6 +214,10 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **SF Symbols Integration**: Enhanced `NSIMAGEFROMNAME` in `images.m` to automatically fallback to **SF Symbols** if a local image file is not found.
     - Allows using system icons like `"gear"`, `"folder"`, `"trash"` directly in `DEFINE BUTTON ... IMAGE "name"`.
 - **CoverFlow Removal**: Removed the deprecated `IKImageFlowView` (CoverFlow) component and its associated files (`testcovf.prg`, `coverflow.prg`, `coverflows.m`) to ensure compatibility with future macOS releases.
+- **ImageBrowser Migration**: Replaced `IKImageBrowserView` (ImageKit) with `NSCollectionView` (AppKit) via `cvbrowser.m`.
+    - Deleted obsolete `IKImabr.m`.
+    - Maintained API compatibility with `TCVBrowse` / `IKImgBr*` functions.
+    - Verified with `testcv.prg`.
 - **TestPDF Updated**: Refactored `nativo/samples/testpdf.prg` to demonstrate:
     - Loading local PDF files via `cGetFile`.
     - Using SF Symbols for toolbar navigation icons.
