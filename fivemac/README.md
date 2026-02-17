@@ -218,6 +218,11 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - Deleted obsolete `IKImabr.m`.
     - Maintained API compatibility with `TCVBrowse` / `IKImgBr*` functions.
     - Verified with `testcv.prg`.
+- **Image Editing Removed**: Replaced `IKImageView` (ImageKit) with `NSImageView` (AppKit) in `simages.m`.
+    - Removed dependency on deprecated `Quartz` framework.
+    - **Note**: Built-in interactive cropping and editing tools are no longer supported.
+    - Added basic image rotation support via `NSAffineTransform`.
+    - Verified with `testsimage.prg`.
 - **TestPDF Updated**: Refactored `nativo/samples/testpdf.prg` to demonstrate:
     - Loading local PDF files via `cGetFile`.
     - Using SF Symbols for toolbar navigation icons.
