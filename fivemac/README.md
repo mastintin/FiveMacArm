@@ -208,6 +208,9 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - Updated `pdfviews.m` to import `<PDFKit/PDFKit.h>`.
     - Updated build scripts to link `PDFKit.framework`.
     - Verified with `testpdf.prg`.
+- **Quartz Framework Removal**: Replaced the deprecated `-framework Quartz` with `-framework QuartzCore` in build scripts.
+    - This retains Core Animation capabilities (gradients, shadows) while removing unused legacy dependencies.
+    - Cleaned up `funcs.m` by removing `Quartz/Quartz.h` imports.
 - **SF Symbols Integration**: Enhanced `NSIMAGEFROMNAME` in `images.m` to automatically fallback to **SF Symbols** if a local image file is not found.
     - Allows using system icons like `"gear"`, `"folder"`, `"trash"` directly in `DEFINE BUTTON ... IMAGE "name"`.
 - **CoverFlow Removal**: Removed the deprecated `IKImageFlowView` (CoverFlow) component and its associated files (`testcovf.prg`, `coverflow.prg`, `coverflows.m`) to ensure compatibility with future macOS releases.
