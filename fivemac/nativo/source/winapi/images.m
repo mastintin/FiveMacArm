@@ -98,8 +98,14 @@ HB_FUNC(NSIMAGEFROMNAME) {
 
   if ([filemgr fileExistsAtPath:string])
     image = [[NSImage alloc] initWithContentsOfFile:string];
-  else
-    image = ImgTemplate(string);
+  else {
+    if (@available(macOS 11.0, *)) {
+      image = [NSImage imageWithSystemSymbolName:string
+                        accessibilityDescription:nil];
+    }
+    if (!image)
+      image = ImgTemplate(string);
+  }
 
   hb_retnll((HB_LONGLONG)image);
 }

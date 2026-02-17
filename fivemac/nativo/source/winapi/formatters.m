@@ -324,6 +324,9 @@ static PHB_SYMB symFMH = NULL;
 
 @end
 
+@implementation FMDateFormatter
+@end
+
 HB_FUNC(FORMATTERCREATE) {
   NSFormatter *formatter = [[[NSFormatter alloc] init] autorelease];
   hb_retnll((HB_LONGLONG)formatter);
