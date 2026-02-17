@@ -16,7 +16,7 @@ function Main()
   @ 520, 140 BUTTON "Rotate Left" OF oWnd ACTION oImg:RotateLeft()
   @ 520, 260 BUTTON "Rotate Right" OF oWnd ACTION oImg:RotateRight()
   @ 520, 380 BUTTON "Fit" OF oWnd ACTION oImg:Fit()
-  @ 520, 460 BUTTON "Flip V" OF oWnd ACTION oImg:FlipVertical()
+  @ 520, 460 BUTTON "Flip V" OF oWnd ACTION oImg:VerticalFlip()
 
   @ 520, 560 BUTTON "Save As..." OF oWnd ACTION oImg:SaveAs()
 
