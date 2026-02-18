@@ -27,6 +27,8 @@ NSString *hb_NSSTRING_par(int iParam) // NSUTF8StringEncoding
              encoding:NSUTF8StringEncoding] autorelease];
 }
 
+id hb_NSObjPar(int iParam) { return (id)hb_parnll(iParam); }
+
 NSAttributedString *hb_NSASTRING_par(int iParam) {
   NSString *string = [[[NSString alloc]
       initWithCString:HB_ISCHAR(iParam) ? hb_parc(iParam) : ""

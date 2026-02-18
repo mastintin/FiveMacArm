@@ -1,4 +1,5 @@
 #import <Cocoa/Cocoa.h>
+#import <Quartz/Quartz.h>
 #import <QuartzCore/QuartzCore.h>
 #include <fivemac.h>
 
@@ -141,13 +142,16 @@ NSView *GetView(NSWindow *window);
 // BROWSER VIEW (CONTROLLER + VIEW)
 //==================================================================================
 
-@interface CVBrowserView : NSView <NSCollectionViewDelegate>
+@interface CVBrowserView
+    : NSView <NSCollectionViewDelegate, QLPreviewPanelDataSource,
+              QLPreviewPanelDelegate>
 @property(strong) NSScrollView *scrollView;
 @property(strong) NSCollectionView *collectionView;
 @property(strong)
     NSCollectionViewDiffableDataSource<NSString *, NSString *> *dataSource;
 @property(strong) NSMutableArray<NSString *> *imagePaths;
 @property(assign) CGFloat zoomLevel;
+@property(strong) QLPreviewPanel *previewPanel;
 @end
 
 static PHB_SYMB symFMH = NULL;
@@ -158,6 +162,18 @@ static PHB_SYMB symFMH = NULL;
 @implementation CVCollectionView
 - (BOOL)isFlipped {
   return YES;
+}
+
+// Pass key events to controller/delegate
+- (void)keyDown:(NSEvent *)event {
+  // Forward Space (49) to delegate if it handles it
+  if ([event keyCode] == 49) {
+    if ([[self delegate] respondsToSelector:@selector(keyDown:)]) {
+      [(NSResponder *)[self delegate] keyDown:event];
+      return;
+    }
+  }
+  [super keyDown:event];
 }
 @end
 
@@ -178,6 +194,13 @@ static PHB_SYMB symFMH = NULL;
 }
 
 - (void)dealloc {
+  // Stop observing/controlling panel
+  if ([QLPreviewPanel sharedPreviewPanelExists] &&
+      [[QLPreviewPanel sharedPreviewPanel] delegate] == self) {
+    [[QLPreviewPanel sharedPreviewPanel] updateController];
+  }
+  _previewPanel = nil;
+
   [_scrollView release];
   [_collectionView release];
   [_dataSource release];
@@ -214,10 +237,101 @@ static PHB_SYMB symFMH = NULL;
            forItemWithIdentifier:@"CVImageItem"];
 
   // DataSource
-  // DataSource
-  // DataSource
   [self configureDataSource];
 }
+
+//-----------------------------------------------------------------------------------------
+// Quick Look Integration
+//-----------------------------------------------------------------------------------------
+
+- (BOOL)acceptsFirstResponder {
+  return YES;
+}
+
+- (void)keyDown:(NSEvent *)event {
+  if ([event keyCode] == 49) { // Space bar
+    [self toggleQuickLookPanel:self];
+  } else {
+    [super keyDown:event];
+  }
+}
+
+- (IBAction)toggleQuickLookPanel:(id)sender {
+  if ([QLPreviewPanel sharedPreviewPanelExists] &&
+      [[QLPreviewPanel sharedPreviewPanel] isVisible]) {
+    [[QLPreviewPanel sharedPreviewPanel] orderOut:nil];
+  } else {
+    [[QLPreviewPanel sharedPreviewPanel] makeKeyAndOrderFront:nil];
+  }
+}
+
+- (BOOL)acceptsPreviewPanelControl:(QLPreviewPanel *)panel {
+  return YES;
+}
+
+- (void)beginPreviewPanelControl:(QLPreviewPanel *)panel {
+  // This document is now responsible for the preview panel
+  // It is allowed to set the delegate, data source and refresh panel.
+  _previewPanel = panel;
+  panel.delegate = self;
+  panel.dataSource = self;
+}
+
+- (void)endPreviewPanelControl:(QLPreviewPanel *)panel {
+  // This document loses its responsisibility on the preview panel
+  // Until the next call to -beginPreviewPanelControl: it must not
+  // change the panel's delegate, data source or refresh it.
+  _previewPanel = nil;
+}
+
+// QLPreviewPanelDataSource
+
+- (NSInteger)numberOfPreviewItemsInPreviewPanel:(QLPreviewPanel *)panel {
+  return [[self.collectionView selectionIndexPaths] count];
+}
+
+- (id<QLPreviewItem>)previewPanel:(QLPreviewPanel *)panel
+               previewItemAtIndex:(NSInteger)index {
+  // We only support single selection for now, so index is likely 0
+  NSIndexPath *ip = [[self.collectionView selectionIndexPaths] anyObject];
+  if (ip) {
+    NSInteger itemIndex = ip.item;
+    if (itemIndex < _imagePaths.count) {
+      NSString *path = [_imagePaths objectAtIndex:itemIndex];
+      return [NSURL fileURLWithPath:path];
+    }
+  }
+  return nil;
+}
+
+// QLPreviewPanelDelegate
+
+- (BOOL)previewPanel:(QLPreviewPanel *)panel handleEvent:(NSEvent *)event {
+  // redirect all key down events to the table view
+  if ([event type] == NSEventTypeKeyDown) {
+    [self.collectionView keyDown:event];
+    return YES;
+  }
+  return NO;
+}
+
+- (NSRect)previewPanel:(QLPreviewPanel *)panel
+    sourceFrameOnScreenForPreviewItem:(id<QLPreviewItem>)item {
+  NSIndexPath *ip = [[self.collectionView selectionIndexPaths] anyObject];
+  if (ip) {
+    NSCollectionViewItem *cvItem = [self.collectionView itemAtIndexPath:ip];
+    if (cvItem) {
+      // Convert view rect to screen rect
+      NSRect viewRect = [cvItem.view bounds];
+      NSRect windowRect = [cvItem.view convertRect:viewRect toView:nil];
+      NSRect screenRect = [[cvItem.view window] convertRectToScreen:windowRect];
+      return screenRect;
+    }
+  }
+  return NSZeroRect;
+}
+
+//-----------------------------------------------------------------------------------------
 
 - (void)handleDoubleClickForItem:(NSNumber *)indexObj {
   NSInteger idx = [indexObj integerValue];
@@ -339,6 +453,11 @@ static PHB_SYMB symFMH = NULL;
 - (void)collectionView:(NSCollectionView *)collectionView
     didSelectItemsAtIndexPaths:(NSSet<NSIndexPath *> *)indexPaths {
   [self notifySelectionChange];
+
+  if ([QLPreviewPanel sharedPreviewPanelExists] &&
+      [[QLPreviewPanel sharedPreviewPanel] isVisible]) {
+    [[QLPreviewPanel sharedPreviewPanel] reloadData];
+  }
 }
 
 - (void)collectionView:(NSCollectionView *)collectionView

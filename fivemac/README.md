@@ -227,6 +227,18 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - Loading local PDF files via `cGetFile`.
     - Using SF Symbols for toolbar navigation icons.
 
+### Advanced Image Filters (February 2026 - Part 18)
+- **Multiple Filter Stack**:
+    - **Layer-Based Stacking**: Implemented a robust filter stack mechanism allowing multiple Core Image filters (e.g., Color Controls + Comic Effect + Sepia) to be applied simultaneously to an image layer.
+    - **Non-Destructive Chain**: Filters usually process the output of the previous one, enabling complex visual effects pipelines.
+    - **Refactored `TCIFilter`**: Updated class to manage an internal array of filter handles, with methods `Add()`, `Clear()`, and `GetValue( nIndex )` for precise control.
+- **Synchronized Adjustments**:
+    - **Real-Time Sliders**: `testsimage.prg` now demonstrates synchronized Brightness, Contrast, and Saturation sliders. Adjusting one parameter maintains the state of others without resetting the filter.
+    - **Smart Reset**: "Reset Values" button restores default parameters (0/1/1) while preserving other active effects in the stack.
+- **Core Optimization**:
+    - **Forced Layer Refresh**: Implemented filter cloning (`[filter copy]`) in `SIMAGESETFILTERSTACK` to bypass `CALayer` caching. This ensures immediate visual updates even when reusing the same filter objects.
+    - **API Consistency**: Refactored `cifilters.m` and `objc.m` to use `HB_LONGLONG` for all object handles, aligning Core Image integration with the standard FiveMac 64-bit architecture.
+
 ## Building
 
 To build the library and samples:

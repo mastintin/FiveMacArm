@@ -34,7 +34,7 @@ CLASS TSimage FROM TControl
 
    METHOD Rotateleft() INLINE SImageRotaLeft(::hWnd)
 
-    METHOD RotateRight() INLINE SImageRotaRight(::hWnd)
+   METHOD RotateRight() INLINE SImageRotaRight(::hWnd)
 
    METHOD crop() INLINE  SImageSetCrop(::hWnd)
 
@@ -52,7 +52,53 @@ CLASS TSimage FROM TControl
    
    METHOD Camera()  INLINE  PhotoCamLoad(::hWnd)
       
+   METHOD Send( cMsg, uParam )
+   
+   METHOD SetWantsLayer( lWnd )
+    
+   METHOD ClearFilters() INLINE SIMAGECLEARFILTERS(::hWnd)
+
+
 ENDCLASS
+
+METHOD Send( cMsg, uParam ) CLASS TSimage
+   local hRes := OBJC_MSGSEND( ::hWnd, cMsg, uParam )
+   local oWrap
+   
+   if !Empty( hRes )
+      oWrap := TNSObjectWrapper():New( hRes )
+      return oWrap
+   endif
+return nil
+
+METHOD SetWantsLayer( lWnd ) CLASS TSimage
+   VIEWSETWANTSLAYER( ::hWnd,lWnd )
+   // OBJC_MSGSEND( ::hWnd, "setWantsLayer:", lWnd )
+return nil
+
+//----------------------------------------------------------------------------//
+
+CLASS TNSObjectWrapper
+   DATA hObj
+   METHOD New( h ) 
+   METHOD Send( cMsg, uParam )
+ENDCLASS
+
+METHOD New( h ) CLASS TNSObjectWrapper
+   ::hObj = h
+return Self
+
+METHOD Send( cMsg, uParam ) CLASS TNSObjectWrapper
+   local hRes := OBJC_MSGSEND( ::hObj, cMsg, uParam )
+   local oWrap
+   
+   if !Empty( hRes )
+      oWrap := TNSObjectWrapper():New( hRes )
+      return oWrap
+   endif
+return nil
+
+//----------------------------------------------------------------------------//
 
 //----------------------------------------------------------------------------//
 
@@ -63,7 +109,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cImage ) CLASS TSimage
    ::hWnd = SImageCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
 
    if !Empty(cImage)
-       SImageOpen(::hWnd,cImage)
+      SImageOpen(::hWnd,cImage)
    endif
 
    ::oWnd = oWnd
