@@ -99,7 +99,8 @@ PRG_OBJS = \
 	./obj/stackitem.o \
         ./obj/tclipget.o \
         ./obj/textbox.o \
-	./obj/Ttimer.o	\
+    ./obj/tcifilter.o \
+    ./obj/Ttimer.o	\
 	./obj/toolbar.o	\
 	./obj/toolbtn.o	\
 	./obj/TRect.o	\
@@ -118,6 +119,7 @@ C_OBJS = ./objc/browses.o	\
    ./objc/checkboxes.o \
    ./objc/choosecolor.o \
    ./objc/choosefont.o \
+    ./objc/cifilters.o \
     ./objc/colors.o \
   	./objc/colorton.o	\
 	./objc/comboboxes.o \

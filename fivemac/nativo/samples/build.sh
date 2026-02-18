@@ -76,6 +76,11 @@ echo "Compiling modified musics.m..."
 clang -ObjC "../source/winapi/musics.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/musics_mod.o"
 OBJS="$OBJS obj/musics_mod.o"
 
+# Compile cifilters.m (New Filter Logic)
+echo "Compiling cifilters.m..."
+clang -ObjC "../source/winapi/cifilters.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/cifilters_mod.o"
+OBJS="$OBJS obj/cifilters_mod.o"
+
 if [ ! -d $APPName.app ]; then
    mkdir $APPName.app
 fi   
@@ -188,7 +193,7 @@ fi
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
 HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lhbmysql'
-FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuartzCore -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
+FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuickLookUI -framework QuartzCore -framework CoreImage -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
 if [ ! -d "$SWIFTPATH" ]; then

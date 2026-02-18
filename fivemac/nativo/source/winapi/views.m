@@ -155,3 +155,26 @@ HB_FUNC(VIEWSETPOS) {
 
   [view setFrameOrigin:NSMakePoint(hb_parnl(3), hb_parnl(2))];
 }
+
+HB_FUNC(VIEWGETLAYER) {
+  // Recuperamos el puntero de la vista (NSView *)
+  NSView *view = (NSView *)hb_parnll(1);
+
+  if (view) {
+    // Retornamos el puntero del layer a Harbour
+    hb_retnll((HB_LONGLONG)[view layer]);
+  } else {
+    hb_retnll((HB_LONGLONG)NULL);
+  }
+}
+
+HB_FUNC(VIEWSETWANTSLAYER) {
+  NSView *view = (NSView *)hb_parnll(1);
+  BOOL wants = hb_parl(2); // Recibe el .T. o .F. de Harbour
+
+  if (view) {
+    [view setWantsLayer:wants];
+    // Forzamos el redibujado para que el motor de capas se active ya
+    [view setNeedsDisplay:YES];
+  }
+}

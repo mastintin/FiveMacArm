@@ -1,4 +1,5 @@
 #include <fivemac.h>
+#include <hbapiitm.h>
 #include <objc/runtime.h>
 
 HB_FUNC(OBJC_OBJINSTANTIATE) // cClassName --> hObject
@@ -11,22 +12,68 @@ HB_FUNC(OBJC_OBJINSTANTIATE) // cClassName --> hObject
     hb_ret();
 }
 
-HB_FUNC(OBJC_OBJSENDMSG) {
-  NSObject *hObj = (NSObject *)hb_parnll(1);
-  SEL Selector = NSSelectorFromString(hb_NSSTRING_par(2));
+HB_FUNC(OBJC_MSGSEND) {
+  id hObj = (id)hb_parnll(1);
+  SEL Selector = sel_registerName(hb_parc(2));
 
-  if (![hObj respondsToSelector:Selector])
+  if (!hObj || !Selector) {
+    hb_retnll(0);
     return;
-
-  switch (hb_pcount()) {
-  case 2:
-    [hObj performSelector:Selector];
-    break;
-
-  case 3:
-    [hObj performSelector:Selector withObject:(id)hb_parnll(3)];
-    break;
   }
+
+  if (![hObj respondsToSelector:Selector]) {
+    hb_retnll(0);
+    return;
+  }
+
+  // Handle common types for 1 argument
+  if (hb_pcount() >= 3) {
+    id arg = nil;
+
+    if (HB_ISARRAY(3)) {
+      PHB_ITEM pArray = hb_param(3, HB_IT_ARRAY);
+      unsigned long len = hb_arrayLen(pArray);
+      NSMutableArray *arr = [NSMutableArray arrayWithCapacity:len];
+      for (unsigned long i = 1; i <= len; i++) {
+        HB_LONGLONG hPtr = hb_arrayGetNLL(pArray, i);
+        if (hPtr) {
+          [arr addObject:(id)hPtr];
+        }
+      }
+      arg = arr;
+    } else if (HB_ISNUM(3)) {
+      // Assume double/float for numbers unless we need int specific
+      arg = [NSNumber numberWithDouble:hb_parnd(3)];
+    } else if (HB_ISCHAR(3)) {
+      arg = hb_NSSTRING_par(3);
+    } else if (HB_ISLOG(3)) {
+      // Special case for setWantsLayer: (BOOL)
+      if ([hb_NSSTRING_par(2) isEqualToString:@"setWantsLayer:"]) {
+        [hObj setWantsLayer:hb_parl(3)];
+        hb_retnll(0);
+        return;
+      }
+      arg = [NSNumber numberWithBool:hb_parl(3)];
+    } else {
+      arg = (id)hb_parnll(3);
+    }
+
+    // We use performSelector. Note: performSelector withObject: only works for
+    // id-based args. Basic types like BOOL usually need NSInvocation or direct
+    // msgSend for primitives. However, most Fivemac properties use objects or
+    // we handle them specifically above.
+
+    id result = [hObj performSelector:Selector withObject:arg];
+    hb_retnll((HB_LONGLONG)result);
+  } else {
+    id result = [hObj performSelector:Selector];
+    hb_retnll((HB_LONGLONG)result);
+  }
+}
+
+HB_FUNC(OBJC_OBJSENDMSG) {
+  // Alias for compatibility
+  HB_FUNC_EXEC(OBJC_MSGSEND);
 }
 
 HB_FUNC(OBJC_GETCLASSNAME) {

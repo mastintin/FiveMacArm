@@ -8,6 +8,7 @@
 #define RGB(nRed, nGreen, nBlue) (nRed + (nGreen * 256) + (nBlue * 65536))
 
 NSString *hb_NSSTRING_par(int iParam);
+id hb_NSObjPar(int iParam);
 
 NSAttributedString *hb_NSASTRING_par(int iParam);
 
