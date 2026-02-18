@@ -239,6 +239,17 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - **Forced Layer Refresh**: Implemented filter cloning (`[filter copy]`) in `SIMAGESETFILTERSTACK` to bypass `CALayer` caching. This ensures immediate visual updates even when reusing the same filter objects.
     - **API Consistency**: Refactored `cifilters.m` and `objc.m` to use `HB_LONGLONG` for all object handles, aligning Core Image integration with the standard FiveMac 64-bit architecture.
 
+### QR Code & System Modernization (February 2026 - Part 19)
+- **Native QR Code Generation**:
+    - **SIMAGEGENQR**: New C function `SIMAGEGENQR( cText, nScale )` that generates high-quality QR codes using `CIQRCodeGenerator`.
+    - **Automatic Scaling**: The function automatically scales the vector output to a usable bitmap size, ready for display in `SIMAGE` controls.
+    - **Demo**: Added `testqr.prg` sample application to demonstrate real-time QR code generation from user input.
+- **Messaging Architecture**:
+    - **Smart OBJC_MSGSEND**: Enhanced `OBJC_MSGSEND` in `objc.m` to use `NSMethodSignature` for runtime type introspection. It now automatically detects if a selector expects an object (`@`) or a class (`#`) argument and correctly casts numeric handles to pointers (`id`). This eliminates the need for manual casting or specific function wrappers for most Cocoa interactions.
+    - **TSimage Enhancement**: Added `SetImage( hImage )` method to `TSimage` class, now fully supported by the improved messaging system.
+- **Legacy Cleanup**:
+    - **Modern File Dialogs**: Removed all deprecated `setAllowedFileTypes:` calls and `@available` checks from `simages.m`. The library now exclusively uses the modern `UTType` API (macOS 11.0+) for file opening and saving operations, ensuring future compatibility.
+
 ## Building
 
 To build the library and samples:

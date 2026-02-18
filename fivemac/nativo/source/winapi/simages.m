@@ -402,6 +402,13 @@ HB_FUNC(SIMAGEOPEN) {
   }
 }
 
+HB_FUNC(SIMGSETNSIMAGE) {
+  MIKImageView *vista = (MIKImageView *)hb_parnll(1);
+  NSImage *hImg = (NSImage *)hb_parnll(2);
+
+  [vista setImage:hImg];
+}
+
 HB_FUNC(SIMAGEFIT) {
   MIKImageView *vista = (MIKImageView *)hb_parnll(1);
   NSScrollView *scroll = [vista enclosingScrollView];
@@ -541,11 +548,8 @@ HB_FUNC(CHOOSESHEETSIMAGE) {
   NSOpenPanel *panel = [NSOpenPanel openPanel];
   [panel setMessage:@"Importe el Archivo"];
 
-  if (@available(macOS 12.0, *)) {
-    [panel setAllowedContentTypes:@[ UTTypeImage ]];
-  } else {
-    [panel setAllowedFileTypes:[NSImage imageTypes]];
-  }
+  [panel
+      setAllowedContentTypes:@[ [UTType typeWithIdentifier:@"public.image"] ]];
 
   [panel beginSheetModalForWindow:[vista window]
                 completionHandler:^(NSInteger result) {
@@ -562,15 +566,11 @@ HB_FUNC(SIMAGESAVEAS) {
 
   NSSavePanel *savePanel = [NSSavePanel savePanel];
   // Modern replacement for setAllowedFileTypes
-  if (@available(macOS 11.0, *)) {
-    [savePanel setAllowedContentTypes:@[
-      [UTType typeWithIdentifier:@"public.png"],
-      [UTType typeWithIdentifier:@"public.jpeg"],
-      [UTType typeWithIdentifier:@"public.tiff"]
-    ]];
-  } else {
-    [savePanel setAllowedFileTypes:@[ @"png", @"jpg", @"tiff" ]];
-  }
+  [savePanel setAllowedContentTypes:@[
+    [UTType typeWithIdentifier:@"public.png"],
+    [UTType typeWithIdentifier:@"public.jpeg"],
+    [UTType typeWithIdentifier:@"public.tiff"]
+  ]];
 
   [savePanel
       setNameFieldStringValue:[[vista fileName] stringByDeletingPathExtension]];

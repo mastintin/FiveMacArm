@@ -71,6 +71,8 @@ function ShowFilters( oImg )
   @ 160, 150 BUTTON "Add Sepia" OF oDlg SIZE 120, 24 ;
     ACTION ( oFilter:Add( "CISepiaTone" ), oFilter:Apply( oImg ) )
 
+
+
   @ 200, 100 BUTTON "Close" OF oDlg SIZE 100, 24 ACTION oDlg:End()
 
   oSldBri:SetMinMaxValue( 0, 100 )

@@ -39,9 +39,46 @@ HB_FUNC(CIFILTERSETVALUE) {
       [filter setValue:[NSNumber numberWithFloat:(float)hb_parnd(3)]
                 forKey:key];
     } else if (HB_ISCHAR(3)) {
-      [filter setValue:[NSString stringWithUTF8String:hb_parc(3)] forKey:key];
+      if ([key isEqualToString:@"inputMessage"]) {
+        // Special handling for QR Code input (needs NSData)
+        NSData *data = [[NSString stringWithUTF8String:hb_parc(3)]
+            dataUsingEncoding:NSUTF8StringEncoding];
+        [filter setValue:data forKey:key];
+      } else {
+        [filter setValue:[NSString stringWithUTF8String:hb_parc(3)] forKey:key];
+      }
     }
   }
+}
+
+HB_FUNC(SIMAGEGENQR) {
+  NSString *content = hb_NSSTRING_par(1);
+  float scale = (float)hb_parnd(2);
+  if (scale <= 0)
+    scale = 10.0;
+
+  CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+  if (!filter) {
+    hb_retnll(0);
+    return;
+  }
+
+  NSData *data = [content dataUsingEncoding:NSUTF8StringEncoding];
+  [filter setValue:data forKey:@"inputMessage"];
+  [filter setValue:@"M" forKey:@"inputCorrectionLevel"];
+
+  CIImage *output = [filter outputImage];
+
+  // Scale up to be visible (QR codes are 1pt per module)
+  CGAffineTransform transform = CGAffineTransformMakeScale(scale, scale);
+  CIImage *scaledOutput = [output imageByApplyingTransform:transform];
+
+  // Convert to NSImage
+  NSCIImageRep *rep = [NSCIImageRep imageRepWithCIImage:scaledOutput];
+  NSImage *nsImage = [[NSImage alloc] initWithSize:rep.size];
+  [nsImage addRepresentation:rep];
+
+  hb_retnll((HB_LONGLONG)nsImage);
 }
 
 // Helper function to apply the filter to an MIKImageView

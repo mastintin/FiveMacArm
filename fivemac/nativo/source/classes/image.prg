@@ -7,10 +7,10 @@ CLASS TImage FROM TControl
    DATA   __cFileName, cResName
    
    CLASSDATA aProps INIT { "nTop", "nLeft", "nWidth", "nHeight", "cFileName",;
-   	                       "nAutoResize" }
+      "nAutoResize" }
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cFileName, cResName,;
-               cToolTip, cVarName )
+      cToolTip, cVarName )
    
    METHOD cGenPrg()
    
@@ -27,7 +27,7 @@ CLASS TImage FROM TControl
    METHOD SetScaling( nScaling ) INLINE ImgSetScaling( ::hWnd, nScaling ) 
    
    METHOD SetResfile( cResName ) INLINE ( ::cResName:= cResName,;
-                                          ImgSetResFile( ::hWnd , ::cResName ) )
+      ImgSetResFile( ::hWnd , ::cResName ) )
 
    METHOD Redefine( nId, oWnd, cFileName, cResName )
     
@@ -36,6 +36,8 @@ CLASS TImage FROM TControl
    METHOD OpenSheet() INLINE ChooseSheetImage( ::hWnd )
    
    METHOD setImage( hImage ) INLINE ImgSetNSImage( ::hwnd, hImage )
+
+   METHOD SetQr(cTexto, nScale ) INLINE ImgSetNSImage( ::hwnd, SIMAGEGENQR( cText, nScale ) )
 
    METHOD GetWidth() INLINE ImgGetWidth( ::hWnd )
 
@@ -54,9 +56,9 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cFileName, cResName, cToolTip,;
-            cVarName ) CLASS TImage
+      cVarName ) CLASS TImage
 
-local aSize
+   local aSize
 
    DEFAULT nWidth := 100, nHeight := 100
 
@@ -66,21 +68,21 @@ local aSize
    aSize := ParseSize( @cFilename, aSize )
 
    if ! Empty( cFileName ) .and. File( cFileName )
-       ::cFileName = cFileName
-       if empty( aSize)
+      ::cFileName = cFileName
+      if empty( aSize)
          ImgSetFile( ::hWnd, cFileName )
-       else
+      else
          ImgSetFile( ::hWnd, cFileName, asize[1], asize[2] )
-       endif
+      endif
 
-endif
+   endif
 
    if ! Empty( cResName ) .and. File( ResPath() + "/" + cResName )
-        ::cResname := cResName
-        ::SetResFile( cResName )
+      ::cResname := cResName
+      ::SetResFile( cResName )
    endif  
     
-	 if !Empty( cToolTip )
+   if !Empty( cToolTip )
       ::SetToolTip( cToolTip )
    endif
 
@@ -119,8 +121,8 @@ METHOD Initiate() CLASS TImage
       ::hWnd = hWnd
    else
       MsgAlert( "Non defined TImage ID" + ;
-                AllTrim( Str( ::nId ) ) + ;
-                " in resource " + ::oWnd:cNibName )
+         AllTrim( Str( ::nId ) ) + ;
+         " in resource " + ::oWnd:cNibName )
    endif
 
    if ! Empty( ::cFileName ) .and. File( ::cFileName )
@@ -138,16 +140,16 @@ return nil
 METHOD cGenPrg() CLASS TImage
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " IMAGE " + ::cVarName + ;
-                  " OF " + ::oWnd:cVarName + " ;" + CRLF + ;
-                  '      FILENAME "' + If( ! Empty( ::cFileName ), ::cFileName,;
-                                           ::cResName ) + '" ;' + CRLF + ;
-                  "      SIZE " + AllTrim( Str( ::nWidth ) ) + ", " + ;
-                                  AllTrim( Str( ::nHeight ) )
-            if ::nAutoResize != 0                  
-   						   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
-   					endif   
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " IMAGE " + ::cVarName + ;
+      " OF " + ::oWnd:cVarName + " ;" + CRLF + ;
+      '      FILENAME "' + If( ! Empty( ::cFileName ), ::cFileName,;
+      ::cResName ) + '" ;' + CRLF + ;
+      "      SIZE " + AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) )
+   if ::nAutoResize != 0                  
+      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
+   endif   
    					                    
 return cCode                                
 
@@ -155,19 +157,19 @@ return cCode
 
 static function ParseSize( cName, aSize )
 
-local w,h,cSize,nAt
+   local w,h,cSize,nAt
 
-if Right( cName, 1 ) == ")" .and. ( nAt := At( "(", cName ) ) > 0
-cSize    := Lower( SubStr( cName, nAt + 1 ) )
-cName    := Trim( Left( cName, nAt - 1 ) )
-w        := Val( cSize )
-if ( nAt := At( "x", cSize ) ) > 0
-h     := Val( SubStr( cSize, nAt + 1 ) )
-else
-h     := w
-endif
-aSize     := { w, h }
-endif
+   if Right( cName, 1 ) == ")" .and. ( nAt := At( "(", cName ) ) > 0
+      cSize    := Lower( SubStr( cName, nAt + 1 ) )
+      cName    := Trim( Left( cName, nAt - 1 ) )
+      w        := Val( cSize )
+      if ( nAt := At( "x", cSize ) ) > 0
+         h     := Val( SubStr( cSize, nAt + 1 ) )
+      else
+         h     := w
+      endif
+      aSize     := { w, h }
+   endif
 
 return aSize
 
