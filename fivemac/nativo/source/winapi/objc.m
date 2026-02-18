@@ -42,8 +42,21 @@ HB_FUNC(OBJC_MSGSEND) {
       }
       arg = arr;
     } else if (HB_ISNUM(3)) {
-      // Assume double/float for numbers unless we need int specific
-      arg = [NSNumber numberWithDouble:hb_parnd(3)];
+      // Dynamic check using Method Signature
+      NSMethodSignature *signature = [hObj methodSignatureForSelector:Selector];
+      if (signature && [signature numberOfArguments] > 2) {
+        const char *argType =
+            [signature getArgumentTypeAtIndex:2]; // 0=self, 1=_cmd, 2=arg
+        if (argType &&
+            (argType[0] == '@' || argType[0] == '#')) { // Object or Class
+          arg = (id)hb_parnll(3);
+        } else {
+          arg = [NSNumber numberWithDouble:hb_parnd(3)];
+        }
+      } else {
+        // Fallback
+        arg = [NSNumber numberWithDouble:hb_parnd(3)];
+      }
     } else if (HB_ISCHAR(3)) {
       arg = hb_NSSTRING_par(3);
     } else if (HB_ISLOG(3)) {

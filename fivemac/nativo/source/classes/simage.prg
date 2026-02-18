@@ -57,9 +57,37 @@ CLASS TSimage FROM TControl
    METHOD SetWantsLayer( lWnd )
     
    METHOD ClearFilters() INLINE SIMAGECLEARFILTERS(::hWnd)
-
-
+   
+   METHOD SetImage( hImage ) INLINE OBJC_MSGSEND( ::hWnd, "setImage:", hImage )
+   METHOD SetQr( cTexto, nScale ) INLINE SIMGSETNSIMAGE( ::hWnd , SIMAGEGENQR( cTexto, nScale  )  ) 
+       
+ 
 ENDCLASS
+
+
+//----------------------------------------------------------------------------//
+
+METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cImage ) CLASS TSimage
+
+   DEFAULT nWidth := 100, nHeight := 200, oWnd := GetWndDefault()
+
+   ::hWnd = SImageCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
+
+   if !Empty(cImage)
+      SImageOpen(::hWnd,cImage)
+   endif
+
+   ::oWnd = oWnd
+
+   oWnd:AddControl( Self )
+
+return Self
+
+//SIMGSETNSIMAGE( oImg:hWnd, SIMAGEGENQR( cText, 10.0 ) )
+
+
+//----------------------------------------------------------------------------//
+
 
 METHOD Send( cMsg, uParam ) CLASS TSimage
    local hRes := OBJC_MSGSEND( ::hWnd, cMsg, uParam )
@@ -99,28 +127,6 @@ METHOD Send( cMsg, uParam ) CLASS TNSObjectWrapper
 return nil
 
 //----------------------------------------------------------------------------//
-
-//----------------------------------------------------------------------------//
-
-METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cImage ) CLASS TSimage
-
-   DEFAULT nWidth := 100, nHeight := 200, oWnd := GetWndDefault()
-
-   ::hWnd = SImageCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
-
-   if !Empty(cImage)
-      SImageOpen(::hWnd,cImage)
-   endif
-
-   ::oWnd = oWnd
-
-   oWnd:AddControl( Self )
-
-return Self
-
-//----------------------------------------------------------------------------//
-
-
 
 
 
