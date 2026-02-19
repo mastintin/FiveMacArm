@@ -2,49 +2,19 @@
 
 function Main()
 
-    local oWnd, oSay, oSay2, oBtn, oGet, oBtnBmp, oBrush, cVar := "Liquid Glass Text"
-    local cResPath := resPath()+"/bitmaps/"+( "glass_bg.png" )
+    local oWnd, oPanel, oGet, oGroup, oBtn
+    local cText := "Testing glass effects"
 
+    DEFINE WINDOW oWnd TITLE "Glass Test" ;
+        FROM 50, 50 TO 500, 800 FLIPPED GLASS
 
-    DEFINE WINDOW oWnd TITLE "Liquid Glass Aesthetic - Pro Mode" ;
-        FROM 100, 100 TO 600, 700 ;
-        PANELED
+    @ 20, 20 PANEL oPanel SIZE 300, 300 OF oWnd GLASS
 
-    // Use the generated background to make glass pop
-    // DEFINE BRUSH oBrush IMAGE cResPath
-    // oWnd:SetBrush( oBrush )
+    @ 20, 340 GROUP oGroup SIZE 200, 100 OF oWnd GLASS
 
-    @ 50, 50 SAY oSay PROMPT "Modern Liquid Glass" ;
-        SIZE 400, 50 ;
-        LIQUID GLASS ;
-        OF oWnd
-    oSay:SetFont( "Inter", 32 )
-    oSay:SetColor( CLR_WHITE )
+    @ 140, 340 MULTIGET oGet VAR cText SIZE 400, 200 OF oWnd GLASS
 
-    @ 130, 50 SAY oSay2 PROMPT "Glassmorphism in FiveMac" ;
-        SIZE 350, 30 ;
-        LIQUID GLASS ;
-        OF oWnd
-    oSay2:SetColor( CLR_WHITE )
-
-    @ 200, 50 GET oGet VAR cVar ;
-        SIZE 350, 40 ;
-        LIQUID GLASS ;
-        OF oWnd
-    oGet:SetColor( CLR_WHITE )
-
-    @ 300, 50 BUTTON oBtn PROMPT "Pro Action Button" ;
-        SIZE 200, 50 ;
-        LIQUID GLASS ;
-        ACTION MsgInfo( "Liquid Glass Clicked!" ) ;
-        OF oWnd GLASS
-    oBtn:SetColor( CLR_WHITE )
-
-    @ 420, 50 BTNBMP oBtnBmp ;
-        FILENAME cResPath ;
-        SIZE 80, 80 ;
-        LIQUID GLASS ;
-        OF oWnd
+    @ 350, 340 BUTTON oBtn PROMPT "Click me" SIZE 100, 40 OF oWnd ACTION MsgInfo( "Ok" ) GLASS
 
     ACTIVATE WINDOW oWnd CENTERED
 
