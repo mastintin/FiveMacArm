@@ -250,6 +250,20 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Legacy Cleanup**:
     - **Modern File Dialogs**: Removed all deprecated `setAllowedFileTypes:` calls and `@available` checks from `simages.m`. The library now exclusively uses the modern `UTType` API (macOS 11.0+) for file opening and saving operations, ensuring future compatibility.
 
+### MapKit, Vision OCR & Advanced Symbols (February 2026 - Part 21)
+- **TNativeMap (MapKit Integration)**: Complete native implementation of Apple's MapKit framework.
+    - **Interactive Maps**: Support for displaying Standard, Satellite, and Hybrid maps.
+    - **Geocoding & POI**: Integrated Points of Interest (POI) search and direct address geocoding (`MKMAPGOTOLOCATION`).
+    - **Routing & Navigation**: Real-time route generation (`MKMAPSHOWROUTE`) with detailed step-by-step turn instructions, distance, and duration callbacks.
+    - **Custom Annotations**: Support for custom map pins (`MKMAPSETANNOTATIONICON`, `MKMAPSETANNOTATIONCOLOR`) and handling annotation selection events.
+    - **Camera Control**: Advanced 3D camera controls for setting Pitch, Heading, and Zoom levels.
+- **Vision Framework (OCR)**: 
+    - **Text Recognition**: New `NSIMGTEXTOCR` function to extract text directly from images using Apple's native Vision framework. Features a sample `testocr.prg` demonstrating image selection and text extraction.
+- **Advanced SF Symbols**:
+    - **Color Configurations**: Enhanced `TSFSymbol` and native functions to support `NSImageSymbolConfiguration` with Palette and Hierarchical color modes. Allows for multi-colored system icons directly from Harbour.
+- **Word Document Support**:
+    - Added `GELOADRTF` and `GESAVERTF` capabilities in the Rich Text/Memo controls to natively open and save `.doc` and `.docx` files using standard macOS text frameworks.
+
 ### Glassmorphism & Translucency (February 2026 - Part 20)
 - **Native macOS Vibrancy**: Implemented robust support for macOS `NSVisualEffectView` to create modern, translucent "Glass" interfaces that automatically adapt to light and dark modes.
 - **Window Level Glass**: `DEFINE WINDOW ... GLASS` applies a "Behind Window" blending mode for full-window frosted effects.
