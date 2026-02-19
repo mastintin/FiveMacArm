@@ -10,6 +10,12 @@ fi
 echo compiling...
 
 APPName=$1
+
+# Fivedit requires multiple modules
+if [ "$APPName" == "fivedit" ] && [ $# -eq 1 ]; then
+   set -- "fivedit" "CreaForm" "CreaBuilder"
+fi
+
 OBJS=""
 PRG_FILES=""
 PATHCONF="./.."
