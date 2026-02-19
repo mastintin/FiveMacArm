@@ -8,6 +8,8 @@
 	<array>
 		<string>Scintilla</string>
 	</array>
+	<key>ExtraPath</key>
+	<string>/Users/manuel/Fivemac/fivemac/Resources/Frameworks/</string>
 	<key>FontName</key>
 	<string>Monaco</string>
 	<key>FontSize</key>
@@ -49,10 +51,10 @@
 	</array>
 	<key>LastFiles</key>
 	<array>
-		<string>/Users/manuel/Fivemac/fivemac/samples/test_multi_main.prg</string>
-		<string>/Users/manuel/Fivemac/fivemac/samples/test_multi_func.prg</string>
-		<string>/Users/manuel/Fivemac/fivemac/samples/fiveform.prg</string>
-		<string>/Users/manuel/Fivemac/fivemac/samples/fiveform.prg</string>
+		<string></string>
+		<string></string>
+		<string></string>
+		<string></string>
 		<string></string>
 		<string></string>
 		<string></string>
@@ -60,7 +62,7 @@
 		<string></string>
 	</array>
 	<key>PathFiveMac</key>
-	<string>/Users/manuel/Fivemac/fivemac</string>
+	<string>/Users/manuel/Fivemac/fivemac/nativo/</string>
 	<key>PathHarbour</key>
 	<string>/Users/manuel/Fivemac/harbour</string>
 	<key>PathSDK</key>
