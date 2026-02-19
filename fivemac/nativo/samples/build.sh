@@ -29,13 +29,9 @@ for FILE in "$@"; do
 done
 
 USE_SCINTILLA=0
-USE_MYSQL=0
 for arg in "$@"; do
     if [ "$arg" == "-scintilla" ]; then
         USE_SCINTILLA=1
-    fi
-    if [ "$arg" == "-mysql" ]; then
-        USE_MYSQL=1
     fi
 done
 
@@ -46,14 +42,9 @@ else
     SCINTILLA_FRAMEWORK=""
 fi
 
-if [ $USE_MYSQL -eq 1 ]; then
-    echo "  MySQL enabled via flag"
-    MYSQL_INC="-I/opt/homebrew/Cellar/mariadb/12.1.2/include/mysql"
-    MYSQL_LIBS="-lhbmysql -lmariadb -lssl -lcrypto"
-else
-    MYSQL_INC=""
-    MYSQL_LIBS=""
-fi
+# MySQL/MariaDB libraries are now always included in the link command.
+# The linker will only include them in the binary if MySQL functions are called.
+MYSQL_LIBS="-lhbmysql -lmariadb -lssl -lcrypto"
 
 # Loop through all arguments (files)
 HB_DIR=../../../harbour

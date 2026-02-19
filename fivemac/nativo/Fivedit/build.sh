@@ -163,7 +163,8 @@ fi
 
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
-HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx'
+HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lhbmysql'
+MYSQL_LIBS='-lmariadb -lssl -lcrypto'
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
@@ -177,7 +178,7 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 #  add -arch ppc -arch i386 for universal binaries
 #  add -arch ppc -arch i386 for universal binaries
 # Link ALL OBJS
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib -lfive -lfivec -lscintilla -L$HARBPATH/lib $HRBLIBS $FRAMEWORKS  -F$RESOURCES/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib -lfive -lfivec -lscintilla -L$HARBPATH/lib $HRBLIBS $MYSQL_LIBS $FRAMEWORKS  -F$RESOURCES/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c
