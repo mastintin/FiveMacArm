@@ -13,6 +13,25 @@ fi
 APP_NAME=$(basename "$1")
 PRG_FILE=$1.prg
 
+USE_SCINTILLA=0
+for arg in "$@"; do
+    if [ "$arg" == "-scintilla" ]; then
+        USE_SCINTILLA=1
+    fi
+done
+
+if [ $USE_SCINTILLA -eq 1 ]; then
+    echo "  Scintilla enabled via flag"
+    SCINTILLA_LIB="-lscintilla"
+    SCINTILLA_FRAMEWORK="-framework Scintilla"
+else
+    SCINTILLA_LIB=""
+    SCINTILLA_FRAMEWORK=""
+fi
+
+# MySQL libraries are now always included (smart linker will optimize out if not used)
+MYSQL_LIBS="-lhbmysql -lmariadb -lssl -lcrypto"
+
 echo "Building $APP_NAME..."
 
 # 1. Clean previous build
@@ -61,9 +80,11 @@ swiftc -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
     -L"../lib" -Xlinker -force_load -Xlinker ../lib/libSwiftFive.a \
     -L"$SDK_PATH/usr/lib" \
     $FIVEMAC_LIBS \
+    $SCINTILLA_LIB \
     $HARBOUR_LIBS \
+    $MYSQL_LIBS \
     $FRAMEWORKS \
-    -F"$FIVEMAC_PATH/Resources/frameworks" -framework Scintilla \
+    -F"$FIVEMAC_PATH/Resources/frameworks" $SCINTILLA_FRAMEWORK \
     -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
     -Xlinker -rpath -Xlinker ../../Resources/frameworks
 
@@ -115,7 +136,14 @@ fi
 
 echo "Copying Frameworks..."
 if [ -d "$FIVEMAC_PATH/Resources/frameworks" ]; then
-   cp -R "$FIVEMAC_PATH/Resources/frameworks/"* "$APP_NAME.app/Contents/Frameworks/"
+   if [ $USE_SCINTILLA -eq 1 ]; then
+      cp -R "$FIVEMAC_PATH/Resources/frameworks/"* "$APP_NAME.app/Contents/Frameworks/"
+   else
+      # If no Scintilla, we could skip copying or only copy what's needed.
+      # For now, let's follow the flag: only copy if Scintilla is requested,
+      # since there aren't many other external frameworks being used here.
+      echo "  Skipping Scintilla framework copy (flag not provided)"
+   fi
 fi
 
 echo "Build done! Run with: open $APP_NAME.app"
