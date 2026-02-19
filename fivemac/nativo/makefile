@@ -71,6 +71,7 @@ PRG_OBJS = \
 	./obj/movie.o \
   	./obj/multiview.o \
 	./obj/nodo.o \
+	./obj/nativemap.o \
         ./obj/notification.o \
   	./obj/nsobject.o \
   	./obj/picture.o \
@@ -84,6 +85,7 @@ PRG_OBJS = \
 	./obj/radmenu.o	\
 	./obj/outline.o	\
 	./obj/say.o	\
+	./obj/sfsymbols.o	\
 	./obj/snippets.o	\
 	./obj/simage.o	\
 	./obj/segment.o \
@@ -180,6 +182,8 @@ C_OBJS = ./objc/browses.o	\
 	./objc/viewstackbar.o	\
   	./objc/views.o \
 	./objc/webviews.o \
+    ./objc/ocr.o \
+    ./objc/mapkit.o \
     ./objc/windows.o
 
 SWIFT_OBJS =

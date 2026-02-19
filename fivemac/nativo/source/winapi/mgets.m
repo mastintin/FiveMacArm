@@ -115,6 +115,62 @@ HB_FUNC(TXTGETRTF) {
       cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
+HB_FUNC(TXTREADWORD) // hWnd, cFile, lDoc
+{
+  TextView *memo = (TextView *)hb_parnll(1);
+  NSString *string = hb_NSSTRING_par(2); // Path
+  BOOL bDoc = hb_parl(3);                // TRUE for .doc, FALSE for .docx
+
+  NSError *error = nil;
+  NSAttributedString *attrString = [[NSAttributedString alloc]
+             initWithURL:[NSURL fileURLWithPath:string]
+                 options:@{
+                   NSDocumentTypeDocumentAttribute :
+                       (bDoc ? NSDocFormatTextDocumentType
+                             : NSOfficeOpenXMLTextDocumentType)
+                 }
+      documentAttributes:nil
+                   error:&error];
+
+  if (attrString) {
+    [[memo textStorage] setAttributedString:attrString];
+    hb_retl(YES);
+  } else {
+    NSLog(@"Error reading Word file: %@", error);
+    hb_retl(NO);
+  }
+}
+
+HB_FUNC(TXTWRITEWORD) // hWnd, cFile, lDoc
+{
+  TextView *memo = (TextView *)hb_parnll(1);
+  NSString *string = hb_NSSTRING_par(2);
+  BOOL bDoc = hb_parl(3);
+
+  NSError *error = nil;
+  NSRange range = NSMakeRange(0, [[memo string] length]);
+
+  NSFileWrapper *wrapper =
+      [[memo attributedString] fileWrapperFromRange:range
+                                 documentAttributes:@{
+                                   NSDocumentTypeDocumentAttribute :
+                                       (bDoc ? NSDocFormatTextDocumentType
+                                             : NSOfficeOpenXMLTextDocumentType)
+                                 }
+                                              error:&error];
+
+  if (wrapper) {
+    [wrapper writeToURL:[NSURL fileURLWithPath:string]
+                    options:NSFileWrapperWritingAtomic
+        originalContentsURL:nil
+                      error:&error];
+    hb_retl(YES);
+  } else {
+    NSLog(@"Error writing Word file: %@", error);
+    hb_retl(NO);
+  }
+}
+
 HB_FUNC(TXTGETTEXT) {
   TextView *memo = (TextView *)hb_parnll(1);
 
