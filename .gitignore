@@ -2,7 +2,6 @@ proyectos fivemac/
 
 *.app
 *.o
-*.a
 *.obj
 *.log
 .DS_Store

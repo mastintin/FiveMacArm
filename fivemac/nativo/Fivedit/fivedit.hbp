@@ -7,6 +7,7 @@
 -L../../../harbour/lib
 -lfive
 -lfivec
+-lscintilla
 -lz
 -lpcre
 -lsqlite3

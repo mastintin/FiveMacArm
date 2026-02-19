@@ -90,24 +90,25 @@ HB_FUNC(IMGSETNSIMAGE) {
   [image setImage:hImg];
 }
 
-HB_FUNC(NSIMAGEFROMNAME) {
-  NSString *string = hb_NSSTRING_par(1);
-  NSImage *image;
+HB_FUNC( NSIMAGEFROMNAME )
+{
+   NSString * string = hb_NSSTRING_par( 1 );
+   NSImage * image = nil;
+       
+   NSFileManager * filemgr = [ NSFileManager defaultManager ];
+   
+   if( [ filemgr fileExistsAtPath: string ] )
+      image = [ [ NSImage alloc ] initWithContentsOfFile: string ];
+   else 
+   {
+      if( @available( macOS 11.0, * ) )
+          image = [ NSImage imageWithSystemSymbolName: string accessibilityDescription: nil ];
 
-  NSFileManager *filemgr = [NSFileManager defaultManager];
-
-  if ([filemgr fileExistsAtPath:string])
-    image = [[NSImage alloc] initWithContentsOfFile:string];
-  else {
-    if (@available(macOS 11.0, *)) {
-      image = [NSImage imageWithSystemSymbolName:string
-                        accessibilityDescription:nil];
-    }
-    if (!image)
-      image = ImgTemplate(string);
-  }
-
-  hb_retnll((HB_LONGLONG)image);
+      if( ! image )
+          image = ImgTemplate( string );   
+   }
+       
+   hb_retnll( ( HB_LONGLONG ) image );
 }
 
 HB_FUNC(IMGSYMBOLS) {
