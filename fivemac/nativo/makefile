@@ -90,6 +90,7 @@ PRG_OBJS = \
 	./obj/settings.o \
 	./obj/slider.o \
 	./obj/sqlite.o \
+	./obj/mysql.o \
 	./obj/splash.o \
 	./obj/split.o \
 	./obj/splitItem.o \

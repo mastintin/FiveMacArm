@@ -110,12 +110,7 @@ clang -c "../source/winapi/sqlite.c" -target arm64-apple-macosx26.0 -I./../inclu
 OBJS="$OBJS obj/sqlite_c_mod.o"
 
 # Compile mysql.prg (enhanced TMySQL)
-if [ $USE_MYSQL -eq 1 ]; then
-    echo "Compiling modified TMySQL..."
-    $HB_DIR/bin/harbour "../source/classes/mysql.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
-    clang -c "obj/mysql.c" -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include $MYSQL_INC -o "obj/mysql_mod.o"
-    OBJS="$OBJS obj/mysql_mod.o"
-fi
+# Moved back to libfive.a
 
 # Scintilla components are now linked from lib/libscintilla.a
 if [ $USE_SCINTILLA -eq 1 ]; then
