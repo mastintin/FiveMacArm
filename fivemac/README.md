@@ -250,6 +250,17 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Legacy Cleanup**:
     - **Modern File Dialogs**: Removed all deprecated `setAllowedFileTypes:` calls and `@available` checks from `simages.m`. The library now exclusively uses the modern `UTType` API (macOS 11.0+) for file opening and saving operations, ensuring future compatibility.
 
+### Glassmorphism & Translucency (February 2026 - Part 20)
+- **Native macOS Vibrancy**: Implemented robust support for macOS `NSVisualEffectView` to create modern, translucent "Glass" interfaces that automatically adapt to light and dark modes.
+- **Window Level Glass**: `DEFINE WINDOW ... GLASS` applies a "Behind Window" blending mode for full-window frosted effects.
+- **Control Level Glass**: Extended support to dynamically apply "Within Window" blending to various UI components using the `GLASS` or `LIQUID GLASS` clauses.
+    - Supported controls include: `PANEL`, `GROUP`, `MULTIGET`, `GET`, `SAY`, and `BUTTON`.
+    - Example: `@ 20, 20 PANEL oPanel SIZE 300, 300 OF oWnd GLASS`
+- **Architecture Improvements**: 
+    - Refactored `TPanel:New()` to natively accept `nAutoResize`.
+    - Stabilized `FiveMac.ch` macros (`#xcommand`) for `PANEL`, `GROUP`, and `MULTIGET` using robust multi-line expansions. This resolves long-standing Harbour parsing ambiguities and syntax errors when certain optional clauses were omitted.
+    - Simplified rendering pipeline by routing all `LIQUID GLASS` aliases to uniform native C/Objective-C functions (`VIEWSETLIQUIDGLASS`, `WNDSETGLASS`, `BTNSETGLASS`).
+
 ## Building
 
 To build the library and samples:

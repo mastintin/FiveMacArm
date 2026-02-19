@@ -178,8 +178,8 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <oBtn> := ] TButton():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    <cPrompt>, <oWnd>, [\{| self |(<uAction>)\}], <nStyle>, <nType>, <cBmp>,;
    [<nAutoResize>], [<cToolTip>], [<(oBtn)>] ) ;
-   ; [ If( <.liquid.>, <oBtn>:SetLiquidGlass( .T. ), ) ] ;
-   ; [ If( <.glass.>, <oBtn>:SetGlass( .T. ), ) ]
+   [; If( <.liquid.>, <oBtn>:SetLiquidGlass( .T. ), ) ] ;
+   [; If( <.glass.>, <oBtn>:SetGlass( .T. ), ) ]
 
 #xcommand REDEFINE BUTTON <oBtn> ;
    [ ID <nId> ] ;
@@ -206,8 +206,8 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <oBtn> := ] TBtnBmp():New( <nRow>, <nCol>, <nWidth>,;
    <nHeight>, <oWnd>, [\{||(<uAction>)\}], [<cFileName>],;
    <nStyle>, [<cToolTip>],[<nAutoResize>] , [<(oBtn)>], [ <(uAction)> ] ) ;
-   ; [ If( <.liquid.>, <oBtn>:SetLiquidGlass( .T. ), ) ] ;
-   ; [ If( <.glass.>, <oBtn>:SetGlass( .T. ), ) ]
+   [; If( <.liquid.>, <oBtn>:SetLiquidGlass( .T. ), ) ] ;
+   [; If( <.glass.>, <oBtn>:SetGlass( .T. ), ) ]
 
 //----------------------------------------------------------------------------//
 
@@ -236,10 +236,12 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <memo: MULTILINE, MEMO, TEXT> ] ;
    [ <update: UPDATE> ] ;
+   [ AUTORESIZE <nAutoResize> ] ;
    [ PIXEL ] ;
    => ;
    [ <oGet> := ] TMultiGet():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>],;
-   [<oWnd>], bSETGET( <uVar> ), <.update.> )			       
+   [<oWnd>], bSETGET( <uVar> ), <.update.>, [<nAutoResize>] )
+			       
         
 //----------------------------------------------------------------------------//
 #xcommand @ <nRow>, <nCol> TEXTBOX [ <oGet> VAR ] <uVar> ;
@@ -261,7 +263,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    <oWnd>, bSETGET(<uVar>), [\{||(<uValid>)\}],;
    <.update.>, <.password.> ,<.lsearch.>, [{|Self|<uChange>}],;
    <.lrounded.>, [<cToolTip>], [<nAutoResize>], [<(oGet)>], [<cPicture>] ) ;
-   ; [ If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
+   [ ; If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
 
 
 
@@ -287,7 +289,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    <.update.>, <.password.> ,<.lsearch.>, [{|Self|<uChange>}],;
    <.lrounded.>, [<cToolTip>], [<nAutoResize>], [<(oGet)>], [<cPicture>],,<.lUtf.>,;
    [\{||(<uWhen>)\}] ) ;
-   ; [ If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
+   [; If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
 
 #xcommand @ <nRow>, <nCol> FMGET [ <oGet> VAR ] <uVar> ;
    [ OF <oWnd> ] ;
@@ -301,7 +303,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <oGet> := ] TFMGet():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    <oWnd>, bSETGET(<uVar>), [\{|Self|(<uValid>)\}],;
    [{|Self|<uChange>}], [\{|c,o|(<uInc>)\}], [<cPicture>] ) ;
-   ; [ If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
+   [ ; If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ]
 		                                   
 #xcommand REDEFINE GET [ <oGet> VAR ] <uVar> ;
    [ ID <nId> ] ;
@@ -323,9 +325,10 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ STYLE <nStyle> ] ;  
    [ AUTORESIZE <nAutoResize> ] ;	
    [ <flipped: FLIPPED> ] ;
+   [ <liquid: LIQUID GLASS> ] ;
+   [ <glass: GLASS> ] ;
    => ;
-   [ <oGroup> := ] TGroup():New( <nTop>, <nLeft>, <nWidth>, <nHeight>,;
-   <oWnd>, <cLabel>, <nStyle>, [<nAutoResize>], [<(oGroup)>],[<.flipped.>] )
+   [ <oGroup> := ] TGroup():New( <nTop>, <nLeft>, [<nWidth>], [<nHeight>], [<oWnd>], [<cLabel>], [<nStyle>], [<nAutoResize>], [<(oGroup)>],[<.flipped.>] ) [; If( <.liquid.>, <oGroup>:SetLiquidGlass( .T. ), ) ] [; If( <.glass.>, <oGroup>:SetGlass( .T. ), ) ]
  
 #xcommand @ <nTop>, <nLeft> LINE HORIZONTAL[ <oGroup> ] ;
    [ SIZE <nWidth> ] ;
@@ -366,7 +369,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <oSay> := ] TSay():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    <oWnd>, <cText>, <.raised.>, [ Upper(<(cPostext)>) ],;
    [<nAutoResize>], [<cToolTip>], [<(oSay)>],, ,[<cPicture>] ) ;
-   ; [ If( <.liquid.>, <oSay>:SetLiquidGlass( .T. ), ) ]
+   [; If( <.liquid.>, <oSay>:SetLiquidGlass( .T. ), ) ]
     
                 
 #xcommand @ <nRow>, <nCol> HIPERLINK [ <oSay> PROMPT ] <cText> ;
@@ -656,13 +659,14 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
               
 //----------------------------------------------------------------------------//
                                     
-#xcommand @ <nRow>, <nCol> PANEL [ <oPanel> ] ;
+#xcommand @ <nRow>, <nCol> PANEL [ <oPnl> ] ;
    [ OF <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
-   [ AUTORESIZE <nAutoResize> ] ;
+   [ AUTORESIZE <nAutoRes> ] ;
+   [ <liquid: LIQUID GLASS> ] ;
+   [ <glass: GLASS> ] ;
    => ;
-   [ <oPanel> := ] TPanel():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd> ) ;
-   [; <oPanel>:nAutoResize := <nAutoResize> ]
+   [ <oPnl> := ] TPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<oWnd>], [<nAutoRes>] ) [; <oPnl>:SetLiquidGlass( <.liquid.> ) ] [; <oPnl>:SetGlass( <.glass.> ) ]
 
 //----------------------------------------------------------------------------//                                  
 #xcommand @ <nRow>, <nCol> SEGMENTBTN [ <oBtn> ] ;
@@ -816,6 +820,18 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    => ;
    <oPrg> := TProgress():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
    <oWnd>, [<nPos>], [<nAutoResize>], [<(oPrg)>] )             
+   
+#xcommand @ <nRow>, <nCol> MULTIGET [ <oGet> ] ;
+   [ VAR <uVar> ] ;
+   [ OF <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ AUTORESIZE <nAutoResize> ] ;
+   [ FONT <oFont> ] ;
+   [ <liquid: LIQUID GLASS> ] ;
+   [ <glass: GLASS> ] ;
+   => ;
+   [ <oGet> := ] TMultiGet():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<oWnd>], bSETGET( <uVar> ), [<nAutoResize>], [<oFont>], [<(oGet)>] ) [; If( <.liquid.>, <oGet>:SetLiquidGlass( .T. ), ) ] [; If( <.glass.>, <oGet>:SetGlass( .T. ), ) ]
+             
    
 #xcommand REDEFINE PROGRESS <oPrg> ;
    [ ID <nId> ] ; 
