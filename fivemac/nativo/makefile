@@ -21,7 +21,11 @@ HB_BIN=$(HB_DIR)/bin/harbour
 HB_INC=$(HB_DIR)/include
 
 
-all : ./lib/libfive.a ./lib/libfivec.a create
+all : fivemac
+
+fivemac : ./lib/libfive.a ./lib/libfivec.a create
+
+scintilla : ./lib/libscintilla.a
 
 PRG_OBJS = \
   	./obj/applicat.o \
@@ -80,14 +84,12 @@ PRG_OBJS = \
 	./obj/radmenu.o	\
 	./obj/outline.o	\
 	./obj/say.o	\
-	./obj/scintilla.o	\
 	./obj/snippets.o	\
 	./obj/simage.o	\
 	./obj/segment.o \
 	./obj/settings.o \
 	./obj/slider.o \
 	./obj/sqlite.o \
-	./obj/mysql.o \
 	./obj/splash.o \
 	./obj/split.o \
 	./obj/splitItem.o \
@@ -155,7 +157,6 @@ C_OBJS = ./objc/browses.o	\
 	./objc/printers.o \
 	./objc/progress.o \
 	./objc/says.o	\
-	./objc/scintillas.o	\
 	./objc/simages.o	\
   	./objc/searchgets.o	\
   	./objc/segments.o	\
@@ -184,12 +185,21 @@ SWIFT_OBJS =
 
 
 ./lib/libfive.a  : $(PRG_OBJS)
-#	ranlib ./lib/libfive.a
+	if [ ! -d "lib" ]; then mkdir -p lib; fi
+	ar rc ./lib/libfive.a $(PRG_OBJS)
+	ranlib ./lib/libfive.a
 	
 ./lib/libfivec.a : $(C_OBJS)
-#	ranlib ./lib/libfivec.a
+	if [ ! -d "lib" ]; then mkdir -p lib; fi
+	ar rc ./lib/libfivec.a $(C_OBJS)
+	ranlib ./lib/libfivec.a
 
 ./lib/libfivec.a : $(SWIFT_OBJS)
+
+./lib/libscintilla.a : ./obj/scintilla.o ./objc/scintillas.o
+	if [ ! -d "lib" ]; then mkdir -p lib; fi
+	ar rc ./lib/libscintilla.a ./obj/scintilla.o ./objc/scintillas.o
+	ranlib ./lib/libscintilla.a
 
 ./obj/%.c : ./source/classes/%.prg
 	if [ ! -d "obj" ]; then mkdir -p obj; fi
@@ -207,54 +217,42 @@ SWIFT_OBJS =
 	-emit-objc-header-path ./source/swift/$*-Swift.h \
 	-enable-testing -enable-objc-interop -parse-as-library \
 	-o $@
-	if [ ! -d "lib" ]; then mkdir -p lib; fi
-	ar rc ./lib/libfivec.a $@
 
 # -arch i386 -arch ppc
 ./obj/%.o : ./obj/%.c
 	$(CC) -ObjC -c -o $@ -I$(HB_INC) -I$(HEADERS) -F$(FRAMEPATH) $(CFLAGS) $<
-	if [ ! -d "lib" ]; then mkdir -p lib; fi	
-	ar rc ./lib/libfive.a $@ 
 
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/function/%.c
 	if [ ! -d "objc" ]; then mkdir -p objc; fi
 	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -F$(FRAMEPATH) $(CFLAGS) -Wall -c -o $@ $<
-	if [ ! -d "lib" ]; then mkdir -p lib; fi
-	ar rc ./lib/libfivec.a $@
 
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/winapi/%.m
 	if [ ! -d "objc" ]; then mkdir -p objc; fi
 	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -F../frameworks -Wall -c -o $@ $<
-	if [ ! -d "lib" ]; then mkdir -p lib; fi
-	ar rc ./lib/libfivec.a $@
 
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/winapi/%.c
 	if [ ! -d "objc" ]; then mkdir -p objc; fi
 	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -Wall -c -o $@ $<
-	if [ ! -d "lib" ]; then mkdir -p lib; fi
-	ar rc ./lib/libfivec.a $@
 
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/internal/%.c
 	if [ ! -d "objc" ]; then mkdir -p objc; fi
 	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -F$(FRAMEPATH) $(CFLAGS) -Wall -c -o $@ $<
-	if [ ! -d "lib" ]; then mkdir -p lib; fi
-	ar rc ./lib/libfivec.a $@
 
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/internal/%.m 
 	if [ ! -d "objc" ]; then mkdir -p objc; fi
 	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -F$(FRAMEPATH) $(CFLAGS) -Wall -c -o $@ $<
-	if [ ! -d "lib" ]; then mkdir -p lib; fi
-	ar rc ./lib/libfivec.a $@
 
 clean:
-	rm -f ./obj/*
-	rm -f ./objc/*
-	rm -f ./lib/*
+	rm -f ./obj/*.o
+	rm -f ./objc/*.o
+	rm -f ./lib/libfive.a
+	rm -f ./lib/libfivec.a
+	rm -f ./lib/libscintilla.a
 
 create:
 	echo '<?xml version="1.0" encoding="UTF-8"?>' > Info.plist

@@ -7,6 +7,13 @@ if [ $# = 0 ]; then
    exit
 fi
 
+if [ "$1" = "clean" ]; then
+   echo cleaning...
+   rm -rf obj
+   rm -rf *.app
+   exit
+fi
+
 echo compiling...
 
 APPName=$1
@@ -14,9 +21,46 @@ mkdir -p obj
 OBJS=""
 PRG_FILES=""
 
+# Populate PRG_FILES for auto-detection
+for FILE in "$@"; do
+    if [ -f "$FILE.prg" ]; then
+        PRG_FILES="$PRG_FILES $FILE.prg"
+    fi
+done
+
+USE_SCINTILLA=0
+USE_MYSQL=0
+for arg in "$@"; do
+    if [ "$arg" == "-scintilla" ]; then
+        USE_SCINTILLA=1
+    fi
+    if [ "$arg" == "-mysql" ]; then
+        USE_MYSQL=1
+    fi
+done
+
+if [ $USE_SCINTILLA -eq 1 ]; then
+    echo "  Scintilla enabled via flag"
+    SCINTILLA_FRAMEWORK="-framework Scintilla"
+else
+    SCINTILLA_FRAMEWORK=""
+fi
+
+if [ $USE_MYSQL -eq 1 ]; then
+    echo "  MySQL enabled via flag"
+    MYSQL_INC="-I/opt/homebrew/Cellar/mariadb/12.1.2/include/mysql"
+    MYSQL_LIBS="-lhbmysql -lmariadb -lssl -lcrypto"
+else
+    MYSQL_INC=""
+    MYSQL_LIBS=""
+fi
+
 # Loop through all arguments (files)
 HB_DIR=../../../harbour
 for FILE in "$@"; do
+    if [[ "$FILE" == -* ]]; then
+        continue
+    fi
     echo "Compiling $FILE.prg..."
     $HB_DIR/bin/harbour "$FILE" -n -w -oobj/ -I./../include -I$HB_DIR/include 
     if [ $? -ne 0 ]; then
@@ -27,7 +71,7 @@ for FILE in "$@"; do
     echo "Compiling C module obj/$FILE.c..."
     #  add -arch ppc -arch i386 for universal binaries
     SDKPATH=$(xcrun --show-sdk-path)
-    clang -ObjC "obj/$FILE.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/$FILE.o"
+    clang -ObjC "obj/$FILE.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include $MYSQL_INC -o "obj/$FILE.o"
     if [ $? -ne 0 ]; then
        echo "Error compiling $FILE.c"
        exit 1
@@ -66,12 +110,19 @@ clang -c "../source/winapi/sqlite.c" -target arm64-apple-macosx26.0 -I./../inclu
 OBJS="$OBJS obj/sqlite_c_mod.o"
 
 # Compile mysql.prg (enhanced TMySQL)
-echo "Compiling modified TMySQL..."
-$HB_DIR/bin/harbour "../source/classes/mysql.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
-clang -c "obj/mysql.c" -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/mysql_mod.o"
-OBJS="$OBJS obj/mysql_mod.o"
+if [ $USE_MYSQL -eq 1 ]; then
+    echo "Compiling modified TMySQL..."
+    $HB_DIR/bin/harbour "../source/classes/mysql.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+    clang -c "obj/mysql.c" -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include $MYSQL_INC -o "obj/mysql_mod.o"
+    OBJS="$OBJS obj/mysql_mod.o"
+fi
 
-# Compile musics.m (enhanced Music control)
+# Scintilla components are now linked from lib/libscintilla.a
+if [ $USE_SCINTILLA -eq 1 ]; then
+    SCINTILLA_LIB="-lscintilla"
+else
+    SCINTILLA_LIB=""
+fi
 echo "Compiling modified musics.m..."
 clang -ObjC "../source/winapi/musics.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/musics_mod.o"
 OBJS="$OBJS obj/musics_mod.o"
@@ -190,9 +241,12 @@ if [ ! -d $APPName.app/Contents/frameworks ]; then
    cp -r ./../../Resources/frameworks/* $APPName.app/Contents/frameworks/
 fi 
 
+# If Scintilla not in frameworks but detected, copy it specifically if needed
+# (Currently we copy ALL frameworks from ../../Resources/frameworks above, so it should be fine)
+
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
-HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lhbmysql'
+HRBLIBS="-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx $MYSQL_LIBS"
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuickLookUI -framework QuartzCore -framework CoreImage -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
@@ -205,7 +259,7 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 
 # Link ALL OBJS
 # Add target and min-version to link step too
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -target arm64-apple-macosx26.0 -L$CRTLIB -L./../lib -lfive -lfivec -L$HB_DIR/lib $HRBLIBS $FRAMEWORKS  -F./../../Resources/frameworks -framework Scintilla -lsqlite3 -lmariadb -lssl -lcrypto $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -target arm64-apple-macosx26.0 -L$CRTLIB -L./../lib -lfive -lfivec $SCINTILLA_LIB -L$HB_DIR/lib $HRBLIBS $FRAMEWORKS  -F./../../Resources/frameworks $SCINTILLA_FRAMEWORK -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c

@@ -3,10 +3,19 @@
 
 function Main()
 
-    local cHost := "134.0.10.187"
-    local cUser := "mastintin"
-    local cPass := "Mas_0210199999"
+    // Remote
+    // local cHost := "134.0.10.187"
+    // local cUser := "mastintin"
+    // local cPass := "Mas_0210199999"
+    // local cDb   := "testfivemac"
+    
+    // Local
+    local cHost := "127.0.0.1"
+    local cUser := "testuser"
+    local cPass := "test"
     local cDb   := "testfivemac"
+    
+    
     local nPort := 3306
     local oDb
 
@@ -14,7 +23,7 @@ function Main()
     MYSQL CONNECT "" HOST cHost USER cUser PASSWORD cPass PORT nPort INTO oDb
    
     if oDb == nil
-        return nil
+    return nil
     endif
 
     // 2. Create and Select DB
@@ -39,10 +48,10 @@ function Main()
 
     oDb:GoTop()
     while ! oDb:EOF()
-        MsgInfo( "ID: " + cValToChar( oDb:FieldGet( 1 ) ) + CRLF + ;
-            "Name: " + oDb:FieldGet( 2 ) + CRLF + ;
-            "City: " + oDb:FieldGet( 3 ) )
-        oDb:Skip()
+    MsgInfo( "ID: " + cValToChar( oDb:FieldGet( 1 ) ) + CRLF + ;
+        "Name: " + oDb:FieldGet( 2 ) + CRLF + ;
+        "City: " + oDb:FieldGet( 3 ) )
+    oDb:Skip()
     enddo
 
     // 5. Update

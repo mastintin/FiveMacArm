@@ -12,13 +12,14 @@ echo compiling...
 APPName=$1
 OBJS=""
 PRG_FILES=""
-PATHCONF="./../../"
+PATHCONF="./.."
+RESOURCES="./../../Resources"
 HARBPATH="./../../../harbour"
 
 # Loop through all arguments (files)
 for FILE in "$@"; do
     echo "Compiling $FILE.prg..."
-    $HARBPATH/bin/harbour "$FILE" -n -w -I$PATHCONF/include:$HARBPATH/include
+    $HARBPATH/bin/harbour "$FILE" -n -w -I$PATHCONF/include -I$HARBPATH/include
     if [ $? -ne 0 ]; then
        echo "Error compiling $FILE.prg"
        exit 1
@@ -98,7 +99,7 @@ fi
 if [ ! -d $APPName.app/Contents/Resources ]; then
    mkdir $APPName.app/Contents/Resources
 fi
-   cp ./../icons/fivetech.icns $APPName.app/Contents/Resources/
+   cp $RESOURCES/icons/fivetech.icns $APPName.app/Contents/Resources/
     cp ./*.inc                    ./$APPName.app/Contents/Resources/
    cp ./*.json                   ./$APPName.app/Contents/Resources/
    cp ./hbdocs.json              ./$APPName.app/Contents/Resources/
@@ -157,7 +158,7 @@ fi
 
 if [ ! -d $APPName.app/Contents/frameworks ]; then
    mkdir $APPName.app/Contents/frameworks
-   cp -r ./../../frameworks/* $APPName.app/Contents/frameworks/
+   cp -r $RESOURCES/frameworks/* $APPName.app/Contents/frameworks/
 fi 
 
 echo linking...
@@ -176,7 +177,7 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 #  add -arch ppc -arch i386 for universal binaries
 #  add -arch ppc -arch i386 for universal binaries
 # Link ALL OBJS
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib $PATHCONF/lib/libfive.a $PATHCONF/lib/libfivec.a -L$HARBPATH/lib $HRBLIBS $FRAMEWORKS  -F$PATHCONF/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib -lfive -lfivec -lscintilla -L$HARBPATH/lib $HRBLIBS $FRAMEWORKS  -F$RESOURCES/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c
