@@ -4,7 +4,7 @@
 
 function Main()
 
-   MyMsgLogo( UserPath() + "/five/Fivemac/fivemac/bitmaps/test.png", 3.0 )
+   MyMsgLogo( UserPath() + "/Fivemac/fivemac/Resources/bitmaps/test.png", 3.0 )
 
 return nil
 
@@ -17,7 +17,7 @@ function MyMsgLogo( cBmp, nSeconds )
    oWnd:SetSplash()
    
                   
-   @ 100, 10 IMAGE oImg OF  SIZE 400,500 FILENAME cBmp  
+   @ 100, 10 IMAGE oImg OF ownd SIZE 400,500 FILENAME cBmp  
                  
    @ 40, 40 BUTTON "Salir" OF oWnd ACTION  WndDestroy( oWnd:hWnd )  
                  
