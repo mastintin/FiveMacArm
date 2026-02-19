@@ -23,7 +23,7 @@ function Main()
     MYSQL CONNECT "" HOST cHost USER cUser PASSWORD cPass PORT nPort INTO oDb
    
     if oDb == nil
-    return nil
+        return nil
     endif
 
     // 2. Create and Select DB
@@ -42,29 +42,32 @@ function Main()
     MYSQL INSERT "test_fivemac" IN oDb HASH { "name" => "Gemini",  "city" => "Cloud" }
 
     // 4. Navigation
-    MYSQL USE "test_fivemac" IN oDb ORDER "name"
+    MYSQL USE "test_fivemac" IN oDb ORDER "id"
    
-    MsgInfo( "Records in table: " + cValToChar( oDb:RecCount() ) )
+    MsgInfo( "Records in table: " + cValToChar( oDb:RecCount() ), "Record Count" )
 
     oDb:GoTop()
     while ! oDb:EOF()
-    MsgInfo( "ID: " + cValToChar( oDb:FieldGet( 1 ) ) + CRLF + ;
-        "Name: " + oDb:FieldGet( 2 ) + CRLF + ;
-        "City: " + oDb:FieldGet( 3 ) )
-    oDb:Skip()
+        MsgInfo( "ID: " + cValToChar( oDb:FieldGet( 1 ) ) + CRLF + ;
+            "Name: " + oDb:FieldGet( 2 ) + CRLF + ;
+            "City: " + oDb:FieldGet( 3 ), "Browsing Records" )
+        oDb:Skip()
     enddo
 
     // 5. Update
     oDb:GoTop()
     MYSQL REPLACE "city" WITH "Malaga" IN oDb
-    MsgInfo( "Updated Antonio's city to Malaga" )
+    MsgInfo( "Updated " + oDb:FieldGet( 2 ) + "'s city to Malaga", "Update" )
 
     // 6. Delete
-    oDb:Skip() // Go to Manuel
-    MYSQL DELETE IN oDb
-    MsgInfo( "Deleted Manuel" )
+    oDb:Skip() // Go to Manuel (Record 2 in ID order)
+    
+    if MsgYesNo( "Do you want to delete record: " + oDb:FieldGet( 2 ) + "?", "Confirm Delete" )
+        MYSQL DELETE IN oDb
+        MsgInfo( "Record deleted", "Delete" )
+    endif
 
-    MsgInfo( "Remaining records: " + cValToChar( oDb:RecCount() ) )
+    MsgInfo( "Remaining records: " + cValToChar( oDb:RecCount() ), "End of test" )
 
     // 7. Cleanup
     MYSQL CLOSE oDb
