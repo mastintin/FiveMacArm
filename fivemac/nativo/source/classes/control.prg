@@ -11,13 +11,15 @@ CLASS TControl FROM TWindow
    DATA   nId
    DATA   nClrText, nClrBack 
    DATA   lLiquidGlass INIT .F.
+   DATA   bDropFiles
 
    METHOD SetLiquidGlass( lActive, nRadius ) INLINE ( ::lLiquidGlass := lActive, ViewSetLiquidGlass( ::hWnd, nRadius ) )
 
       DATA   aProps INIT { "nTop", "nLeft", "nWidth", "nHeight", "cText",; 
-         "cVarName", "nAutoResize" }
-
-   DATA   aEvents INIT { { { "OnClick", "nRow", "nCol" }, nil } } 
+         "cVarName", "nAutoResize", "nClrText", "nClrBack" }
+         
+      DATA   aEvents INIT { { { "OnClick", "nRow", "nCol" }, nil },;
+      { { "OnDropFiles", "aFiles" }, nil } } 
 
    METHOD End()
    
@@ -68,6 +70,8 @@ CLASS TControl FROM TWindow
          PanelSetShadow( ::hWnd, If( nOpacity == nil, 50, nOpacity ),;
          If( nRadius == nil, 5, nRadius ), If( nOffSetW == nil, 0, nOffSetW ),;
       If( nOffSetH == nil, 0, nOffSetH ) )
+      
+   METHOD EnableDragDrop( lOnOff ) INLINE ViewEnableDragAndDrop( ::hWnd, lOnOff )
       
 ENDCLASS
 

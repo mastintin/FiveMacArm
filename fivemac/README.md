@@ -162,6 +162,18 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 
 ## Recent Updates (February 2026)
 
+### Real-Time Object Inspector (Prototype)
+> [!IMPORTANT]
+> This feature is currently an **unfinished prototype**. While functional, it is intended for developer preview and may undergo significant internal changes.
+
+- **Deep Hierarchy Discovery**: New tree-traversal logic that recursively explores both `aControls` and `aViews` arrays. This ensures visibility into complex containers like Panels, SplitViews, and TabViews.
+- **Live Property Editing**: ⚡ Immediate visual feedback when editing properties in the inspector grid:
+  - **Geometry**: Real-time updates for `nTop`, `nLeft`, `nWidth`, and `nHeight` via native `SetPos` and `SetSize` methods.
+  - **Aesthetics**: Support for `nClrText` and `nClrBack` across all controls (Panels, Buttons, Gets).
+  - **Content**: Safe, polymorphic text editing for Windows and Controls (`cText`, `cTitle`) with automatic Harbour variable (`bSetGet`) synchronization.
+- **Lifecycle Management**: Implemented a **Singleton pattern** for the `Inspector()` function to prevent UI duplication and ensure stable window management.
+- **Improved Filtering**: Logic to prevent the inspector from inspecting itself, ensuring a clean and focused debugging experience.
+
 ### Reporting & Swift Enhancements (Part 15)
 - **Advanced Reporting (NiceGui)**:
     - **Image Embedding**: New `TNiceImage` class supporting both local paths and Base64-encoded images (`DEFINE NICE IMAGE`).

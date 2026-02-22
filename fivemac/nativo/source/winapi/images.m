@@ -13,6 +13,8 @@ static PHB_SYMB symFMH = NULL;
 
 @implementation ImageView
 
+FIVEMAC_DRAGDROP_METHODS
+
 - (void)mouseDown:(NSEvent *)theEvent {
 
   NSPoint point = [theEvent locationInWindow];

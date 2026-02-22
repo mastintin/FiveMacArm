@@ -13,6 +13,8 @@
 
 @implementation FiveFlippedView
 
+FIVEMAC_DRAGDROP_METHODS
+
 - (id)initWithFrame:(NSRect)frame flipped:(BOOL)flipped {
   self = [super initWithFrame:frame];
   if (self) {

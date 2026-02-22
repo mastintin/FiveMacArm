@@ -178,3 +178,19 @@ HB_FUNC(VIEWSETWANTSLAYER) {
     [view setNeedsDisplay:YES];
   }
 }
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(VIEWENABLEDRAGANDDROP) {
+  NSView *view = (NSView *)hb_parnll(1);
+
+  if (hb_parl(2)) {
+    [view registerForDraggedTypes:[NSArray
+                                      arrayWithObjects:NSPasteboardTypeFileURL,
+                                                       nil]];
+  } else {
+    [view unregisterDraggedTypes];
+  }
+}
+
+//----------------------------------------------------------------------------//
