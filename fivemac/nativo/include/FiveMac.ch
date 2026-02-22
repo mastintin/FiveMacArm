@@ -630,18 +630,6 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
                  
 //----------------------------------------------------------------------------//
                                 
-#xcommand @ <nRow>, <nCol> SPLITTER [ <oSplitter> ] ;
-   [ OF <oWnd> ] ;
-   [ SIZE <nWidth>, <nHeight> ] ;
-   [ <h: HORIZONTAL> ] ;
-   [ <v: VERTICAL> ] ;
-   [ STYLE <nStyle> ] ;
-   [ AUTORESIZE <nAutoResize> ] ;
-   [ VIEWS <nViews> ] ;
-   => ;
-   [ <oSplitter> := ] TSplitter():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
-   <oWnd>,(!<.h.>) [.or. <.v.>], <nStyle> , <nAutoResize> [,<nViews> ] )
-
 #xcommand @ <nRow>, <nCol> SPLITBOX [ <oSplitter> ] ;
    [ OF <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;

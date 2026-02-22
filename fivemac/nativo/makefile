@@ -98,7 +98,6 @@ PRG_OBJS = \
 	./obj/sqlite.o \
 	./obj/mysql.o \
 	./obj/splash.o \
-	./obj/split.o \
 	./obj/splitItem.o \
 	./obj/splitbox.o \
   	./obj/strings.o	\
@@ -173,7 +172,6 @@ C_OBJS = ./objc/browses.o	\
   	./objc/sheets.o	\
   	./objc/sliders.o	\
   	./objc/sounds.o \
-  	./objc/splits.o	\
   	./objc/splitboxes.o	\
 	./objc/strtoken.o	\
   	./objc/system.o \
