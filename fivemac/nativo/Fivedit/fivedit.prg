@@ -16,6 +16,7 @@ static cDbfPath, popoverMas
 static cFontName := "Monaco", nFontSize := 14
 static oSnippets, oHbDocs
 static lSense := .T.
+static oPanelScintilla
 
 extern dbfcdx, DBCloseArea, DbUseArea, DbGoTo, OrdSetFocus
 
@@ -52,10 +53,10 @@ function Main()
 
    BuildButtonBar()
 
-   @ 21, 0 SPLITTER oSplitV OF oWnd SIZE oWnd:nWidth, oWnd:nHeight - 92 VERTICAL ;
+   @ 21, 0 SPLITBOX oSplitV OF oWnd SIZE oWnd:nWidth, oWnd:nHeight - 92 VERTICAL ;
       AUTORESIZE 18 VIEWS 3
 
-   @ 0, 0 SPLITTER oSplitH OF oSplitV:aViews[ 2 ] ;
+   @ 0, 0 SPLITBOX oSplitH OF oSplitV:aViews[ 2 ] ;
       SIZE oSplitV:aViews[ 2 ]:nWidth, oSplitV:aViews[ 2 ]:nHeight ;
       HORIZONTAL STYLE 3 AUTORESIZE 18 VIEWS 2
 
@@ -216,8 +217,13 @@ function BuildEditor()
       oEditor:RemoveFromSuperview()
    endif
 
-   oEditor = TScintilla():New( 0, 0, oSplitH:aViews[ 1 ]:nWidth  ,;
+   oPanelScintilla := TPanel():New( 0, 0, oSplitH:aViews[ 1 ]:nWidth  ,;
       oSplitH:aViews[ 1 ]:nHeight - 7, oSplitH:aViews[ 1 ]  )
+   oPanelScintilla:SetBkColor( 255, 255, 255, 100 ) // Light Red
+   oPanelScintilla:nAutoResize = 18
+
+   oEditor = TScintilla():New( 0, 0, oPanelScintilla:nWidth  ,;
+      oPanelScintilla:nHeight - 7, oPanelScintilla  )
 
    oEditor:nAutoResize = 18
    oEditor:Send( 2130, 0, 0 ) // SCI_SETHSCROLLBAR, 0
@@ -564,7 +570,7 @@ function Preferences()
       TOOLTIP "Fonts & Colors" IMAGE ImgSymbols( "paintpalette" ) 
 
    @ 0,0 MVIEW PROMPT "WorkSpace" SIZE 700, 582 TITLE "WorkSpace" OF oMulti ;
-      TOOLTIP "WorkSpace" IMAGE ImgSymbols( "desktopcomputer" ) FLIPPED
+      TOOLTIP "WorkSpace" IMAGE ImgSymbols( "desktopcomputer" ) 
 
    @ 0,0 MVIEW PROMPT "Frameworks" SIZE 700, 382 TITLE "Frameworks" OF oMulti ;
       TOOLTIP "Frameworks" IMAGE  ImgSymbols( "square.stack.3d.up" )
@@ -1781,8 +1787,11 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
          local oBrwSniped
          local aSniped
          local oBtnAdd,oBtnDel,obtnnull
+         local oPanel1
 
-         @ 0, 0 SPLITTER oSplitH2 OF oSplit ;
+         @0,0 PANEL oPanel1 OF oSplit SIZE oSplit:nWidth, oSplit:nHeight-10 AUTORESIZE nOr( 16, 2 )
+
+         @ 0, 0 SPLITBOX oSplitH2 OF oPanel1 ;
             SIZE oSplit:nWidth, oSplit:nHeight-10 ;
             HORIZONTAL STYLE 3 AUTORESIZE nOr( 16, 2 ) VIEWS 2
 
@@ -1978,7 +1987,7 @@ return nil
 //----------------------------------------------------------------------------//
 
 function BuildLeft( oSplit )
-
+  
    @ 0, 2 TREE oTree SIZE oSplit:nWidth-2 , oSplit:nHeight-10 OF oSplit ;
       TITLE "Files" AUTORESIZE nOr( 16, 2 ) ;
       ACTION ( SelectFile() )

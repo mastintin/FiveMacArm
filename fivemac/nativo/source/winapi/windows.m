@@ -12,47 +12,6 @@ void CocoaInit(void);
 - (void)drawRect:(NSRect)needsDisplayInRect;
 @end
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-@interface View : NSView <NSWindowDelegate>
-#else
-@interface View : NSView
-#endif
-{
-@public
-  BOOL bDesign;
-  BOOL bVibrancy;
-  NSWindow *originalWindow;
-}
-- (void)setOriginalWindow:(NSWindow *)window;
-- (BOOL)windowShouldClose:(NSNotification *)notification;
-- (void)windowWillClose:(NSNotification *)notification;
-- (BOOL)acceptsFirstResponder;
-
-- (void)windowDidResignKey:(NSNotification *)notification;
-- (void)windowDidBecomeKey:(NSNotification *)notification;
-
-- (void)windowDidUpdate:(NSNotification *)notification;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)rightMouseDown:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)mouseDragged:(NSEvent *)theEvent;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)flagsChanged:(NSEvent *)theEvent;
-- (void)windowDidResize:(NSNotification *)notification;
-- (void)MenuItem:(id)sender;
-- (void)BtnClick:(id)sender;
-- (void)CbxChange:(id)sender;
-- (void)ChkClick:(id)sender;
-- (void)BrwDblClick:(id)sender;
-- (void)TbrClick:(id)sender;
-- (void)OnTimerEvent:(NSTimer *)timer;
-- (void)SliderChanged:(id)sender;
-- (IBAction)changeColor:(id)sender;
-- (NSView *)hitTest:(NSPoint)aPoint;
-//- (BOOL)isFlipped;
-@end
-
 @implementation View
 
 FIVEMAC_DRAGDROP_METHODS
@@ -983,12 +942,8 @@ NSView *GetView(NSWindow *window) {
     return [window contentView];
   }
 
-  else if ([[window className] isEqual:@"NSView"]) {
-    return ((NSView *)window);
-  }
-
-  else if ([[window className] isEqual:@"View"]) {
-    return ((View *)window);
+  else if ([window isKindOfClass:[NSView class]]) {
+    return (NSView *)window;
   }
 
   else if ([[window className] isEqual:@"PrnView"]) {

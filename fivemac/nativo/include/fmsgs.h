@@ -45,5 +45,6 @@
 #define WM_GETFOCUS 42
 #define WM_LOSTFOCUS 43
 #define WM_CVDBLCLICK 50
+#define WM_DROPFILES 51
 
 #endif

@@ -1,10 +1,15 @@
 January 2026
 ============
 
+* New: Class TSplitBox and FMSplitView (`splitbox.prg`, `splitboxes.m`).
+  - Completely rewritten Splitter control using `NSSplitView` for a better and much more robust implementation. 
+  - Replaces the older `TSplitter` class and is now integrated into FiveEdit. Supports `nAutoResize`, `AddView()`, `SetPane()`, and proper coordinate flipping.
+
 * New: SwiftUI SwiftPicker component.
   - Native picklist with integrated search field.
   - Scrollable results popover with custom label/title support.
   - New `SWIFTPICKER` command in `SwiftControls.ch`.
+
 
 * Enhancement: Focus Reliability & Application Activation.
   - Global Activation: `CocoaInit` (msgs.m) now forces app activation (`activateIgnoringOtherApps:YES`), ensuring keyboard focus on launch.

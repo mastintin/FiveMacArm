@@ -29,13 +29,13 @@ void ImgResize(NSImage *image, int nWidth, int nHeight);
 NSImage *ImgTemplate(NSString *);
 
 #define FIVEMAC_DRAGDROP_METHODS                                               \
-  - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {               \
+  -(NSDragOperation)draggingEntered : (id<NSDraggingInfo>)sender {             \
     return NSDragOperationCopy;                                                \
   }                                                                            \
-  - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {               \
+  -(NSDragOperation)draggingUpdated : (id<NSDraggingInfo>)sender {             \
     return NSDragOperationCopy;                                                \
   }                                                                            \
-  - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {                     \
+  -(BOOL)performDragOperation : (id<NSDraggingInfo>)sender {                   \
     NSPasteboard *pboard = [sender draggingPasteboard];                        \
     NSArray *classes = [NSArray arrayWithObject:[NSURL class]];                \
     NSDictionary *options = [NSDictionary dictionary];                         \
@@ -64,3 +64,44 @@ NSImage *ImgTemplate(NSString *);
     }                                                                          \
     return NO;                                                                 \
   }
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+@interface View : NSView <NSWindowDelegate>
+#else
+@interface View : NSView
+#endif
+{
+@public
+  BOOL bDesign;
+  BOOL bVibrancy;
+  NSWindow *originalWindow;
+}
+- (void)setOriginalWindow:(NSWindow *)window;
+- (BOOL)windowShouldClose:(NSNotification *)notification;
+- (void)windowWillClose:(NSNotification *)notification;
+- (BOOL)acceptsFirstResponder;
+
+- (void)windowDidResignKey:(NSNotification *)notification;
+- (void)windowDidBecomeKey:(NSNotification *)notification;
+
+- (void)windowDidUpdate:(NSNotification *)notification;
+- (void)mouseDown:(NSEvent *)theEvent;
+- (void)mouseUp:(NSEvent *)theEvent;
+- (void)rightMouseDown:(NSEvent *)theEvent;
+- (void)mouseMoved:(NSEvent *)theEvent;
+- (void)mouseDragged:(NSEvent *)theEvent;
+- (void)keyDown:(NSEvent *)theEvent;
+- (void)flagsChanged:(NSEvent *)theEvent;
+- (void)windowDidResize:(NSNotification *)notification;
+- (void)MenuItem:(id)sender;
+- (void)BtnClick:(id)sender;
+- (void)CbxChange:(id)sender;
+- (void)ChkClick:(id)sender;
+- (void)BrwDblClick:(id)sender;
+- (void)TbrClick:(id)sender;
+- (void)OnTimerEvent:(NSTimer *)timer;
+- (void)SliderChanged:(id)sender;
+- (IBAction)changeColor:(id)sender;
+- (NSView *)hitTest:(NSPoint)aPoint;
+- (BOOL)isFlipped;
+@end
