@@ -58,10 +58,13 @@ PRG_OBJS = \
   	./obj/get.o \
 	./obj/group.o \
 	./obj/harbour.o \
+   ./obj/inspector.o \
+   ./obj/objinsp.o \
     ./obj/hbdocs.o \
 	./obj/image.o \
 	./obj/inspect.o \
   	./obj/music.o \
+   	./obj/markdown.o \
    	./obj/locale.o \
   	./obj/mail.o \
   	./obj/memoedit.o \
@@ -84,6 +87,7 @@ PRG_OBJS = \
 	./obj/radio.o	\
 	./obj/radmenu.o	\
 	./obj/outline.o	\
+	./obj/objinsp.o \
 	./obj/say.o	\
 	./obj/sfsymbols.o	\
 	./obj/snippets.o	\
@@ -146,6 +150,7 @@ C_OBJS = ./objc/browses.o	\
     ./objc/mailer.o \
 	./objc/menus.o	\
 	./objc/mgets.o	\
+	./objc/markdowns.o	\
 	./objc/movies.o	\
 	./objc/msgs.o	\
 	./objc/nibs.o \

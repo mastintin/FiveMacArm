@@ -24,6 +24,8 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 		
 #xcommand DATABASE <oDbf> => <oDbf> := TDataBase():New()	
 
+#xcommand INSPECTOR => Inspector()
+
 //----------------------------------------------------------------------------//
 
 #xcommand DEFINE TIMER [ <oTimer> ] ;
@@ -530,6 +532,14 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
                                              
 //----------------------------------------------------------------------------//		 								   
 					       
+#xcommand @ <nRow>, <nCol> MARKDOWN <oMd> ;
+   [ OF <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ TEXT <cMarkdown> ] ;
+   => ;
+   <oMd> := TMarkdownView():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cMarkdown> )
+
+//----------------------------------------------------------------------------//
 #xcommand @ <nRow>, <nCol> WEBVIEW <oWeb> ;
    [ OF <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
