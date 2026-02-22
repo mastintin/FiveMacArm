@@ -98,7 +98,6 @@ PRG_OBJS = \
 	./obj/sqlite.o \
 	./obj/mysql.o \
 	./obj/splash.o \
-	./obj/splitItem.o \
 	./obj/splitbox.o \
   	./obj/strings.o	\
 	./obj/sheet.o \
