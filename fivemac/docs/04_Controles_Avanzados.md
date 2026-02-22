@@ -5,6 +5,20 @@ Esta sección documenta los controles de diseño de interfaz de usuario más pot
 ## TSplitBox
 El control `TSplitBox` es la implementación moderna (basada en `NSSplitView`) que sustituye al antiguo `TSplitter`. Proporciona un manejo de disposición robusto con soporte nativo para el redimensionamiento automático.
 
+### Sintaxis (Comando)
+El framework Harbour/FiveMac proporciona un comando específico (definido en `FiveMac.ch`) para instanciar fácilmente un SplitBox:
+
+```harbour
+@ <nRow>, <nCol> SPLITBOX [ <oSplitter> ] ;
+   [ OF <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <h: HORIZONTAL> ] ;
+   [ <v: VERTICAL> ] ;
+   [ STYLE <nStyle> ] ;
+   [ AUTORESIZE <nAutoResize> ] ;
+   [ VIEWS <nViews> ]
+```
+
 ### Atributos Claves
 - Las coordenadas siguen el sistema estándar invertido (Flipped) de FiveMac.
 - Los paneles controlan su propio redimensionamiento y posición.
