@@ -8,6 +8,10 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 
 ## Recent Updates (January 2026)
 
+### SplitBox Control & FiveEdit Integration
+- **New SplitBox Control**: Completely rewritten splitter component (`TSplitBox` and `FMSplitView`) using native `NSSplitView`. This offers a significantly more robust and reliable implementation than the legacy `TSplitter`.
+- **FiveEdit Modernization**: FiveEdit now uses the new `SplitBox` control for its main layout panels, improving resizing stability and visual consistency. The new control fully supports automatic resizing (`AUTORESIZE`), dynamic pane addition (`SetPane`, `AddView`), and standard FiveMac flipped coordinates.
+
 ### Fivedit (Advanced Editor Sample)
 - **Integrated Manual Search**: The Toolbar search field now supports a native manual search workflow. Clicking the magnifying glass icon triggers the search without stealing focus while typing.
 - **Improved Replace Dialog**: Redesigned layout and added "Wrap Around" logic.
