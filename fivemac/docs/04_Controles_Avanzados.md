@@ -9,24 +9,31 @@ El control `TSplitBox` es la implementación moderna (basada en `NSSplitView`) q
 - Las coordenadas siguen el sistema estándar invertido (Flipped) de FiveMac.
 - Los paneles controlan su propio redimensionamiento y posición.
 
-### Uso y Paneles (`aViews`)
-Al crear un `TSplitBox`, se recomienda especificar el número inicial de paneles usando la cláusula `VIEWS n`. Esto creará internamente objetos `TSplitBoxItem` que actuarán como contenedores.
+### Métodos Principales
 
-Para añadir controles u otras vistas dentro del SplitBox, simplemente asigua el control hijo al panel correspondiente accediendo al array `aViews`:
+#### `New( nTop, nLeft, nWidth, nHeight, oWnd, lVertical, nStyle, nAutoResize, nViews )`
+Constructor de la clase. Crea el control `TSplitBox` e inicializa los paneles internos si se solicita.
+- **`lVertical`**: Si es `.T.` (por defecto) crea divisores verticales (paneles de lado a lado). Si es `.F.` crea divisores horizontales (paneles apilados).
+- **`nViews`**: Si se especifica, el constructor llama internamente a `AddView()` este número de veces para preparar los paneles iniciales de forma automática. 
 
-Ejemplo:
+Nota: Al usar el preprocesador, el atributo `VIEWS nViews` invoca este parámetro y genera los paneles.
+
+#### `AddView()`
+Método para crear un nuevo panel vacío dentro de la jerarquía del SplitBox.
+Devuelve un objeto de clase `TSplitBoxItem`. Automáticamente agrega este nuevo sub-panel al final de la matriz `::aViews`.
+
+Para incluir controles hijos dentro del SplitBox, estos se deben instanciar referenciando como contenedor (`OF` / `oWnd`) a los elementos de esta matriz `aViews`.
+
+Ejemplo práctico:
 ```harbour
-// Crea un SplitBox vertical con 2 paneles
+// 1. Crear SplitBox base indicando directamente que queremos 2 paneles (VIEWS 2)
 @ 20, 20 SPLITBOX oSplit OF oWnd SIZE 400, 300 VERTICAL VIEWS 2
 
-// Asigna un editor de texto al primer panel (índice 1)
+// 2. Colocar contenido dentro de los contenedores creados (usando el array oSplit:aViews)
 @ 0, 0 SCINTILLA oEditor OF oSplit:aViews[ 1 ] SIZE 200, 300 
-
-// Asigna otro control al segundo panel (índice 2)
 @ 0, 0 PANEL oPanel OF oSplit:aViews[ 2 ] SIZE 200, 300
-```
 
-También es posible agregar paneles dinámicamente usando el método `AddView()`:
-```harbour
+// 3. (Opcional) Si necesitamos añadir un tercer panel más adelante en ejecución:
 oNuevoPanel := oSplit:AddView()
+@ 0, 0 GET oGet VAR cText OF oNuevoPanel SIZE 200, 300
 ```
