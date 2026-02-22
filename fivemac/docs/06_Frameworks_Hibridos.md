@@ -8,12 +8,14 @@ FiveMac introduce un puente pionero hacia NiceGUI (basado en Vue.js y Quasar) ca
 👉 **[Ver Guía de Controles NiceGUI](06b_NiceGUI_Controles.md)**
 
 ### Ejemplos Visuales (NiceGUI)
-![Ejemplo 1](img/cap1.png)
-![Ejemplo 2](img/cap2.png)
-![Ejemplo 3](img/cap3.png)
+![Ejemplo Informe](img/cap2.png)
 
 ## SwiftUI
 Integración del framework más moderno de Apple en Harbour.
 Permite definir estructuras declarativas (`TSwiftVStack`, `TSwiftList`) con diseño Glassmorphism, y aplicar actualizaciones "Batch" (lotes de JSON precompilados) para un rendimiento brutal en cientos de celdas.
 
 👉 **[Ver Guía de Controles SwiftUI](06a_SwiftUI_Controles.md)**
+
+### Ejemplos Visuales (SwiftUI)
+![Ejemplo SwiftUI 1](img/cap1.png)
+![Ejemplo SwiftUI 2](img/cap3.png)
