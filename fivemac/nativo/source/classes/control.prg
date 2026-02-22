@@ -52,6 +52,12 @@ CLASS TControl FROM TWindow
       
    METHOD SetColor( nClrText, nClrBack ) 
    
+   METHOD SetBkColor( nRed, nGreen, nBlue, nAlfa ) INLINE ;
+      SetBkcolor( ::hWnd, nRed, nGreen, nBlue, nAlfa )
+
+   METHOD SetTextColor( nRed, nGreen, nBlue, nAlfa ) INLINE ;
+      SetTextcolor( ::hWnd, nRed, nGreen, nBlue, nAlfa )
+   
    METHOD SetFont( cFaceName, nSize ) INLINE WndSetFont( ::hWnd, cFaceName, nSize )  
       
    METHOD cGenPrg() INLINE "" 

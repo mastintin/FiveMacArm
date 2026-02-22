@@ -100,6 +100,7 @@ PRG_OBJS = \
 	./obj/splash.o \
 	./obj/split.o \
 	./obj/splitItem.o \
+	./obj/splitbox.o \
   	./obj/strings.o	\
 	./obj/sheet.o \
 	./obj/Tsound.o \
@@ -173,6 +174,7 @@ C_OBJS = ./objc/browses.o	\
   	./objc/sliders.o	\
   	./objc/sounds.o \
   	./objc/splits.o	\
+  	./objc/splitboxes.o	\
 	./objc/strtoken.o	\
   	./objc/system.o \
    	./objc/sqlite.o \
