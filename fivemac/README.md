@@ -174,6 +174,14 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Lifecycle Management**: Implemented a **Singleton pattern** for the `Inspector()` function to prevent UI duplication and ensure stable window management.
 - **Improved Filtering**: Logic to prevent the inspector from inspecting itself, ensuring a clean and focused debugging experience.
 
+### TSplitter API Simplification
+- **Simplified Provisioning**: New `SetPane( nPane, oControl, lFill )` method that automates the complex process of embedding controls into split views. It handles:
+  - Parenting and view hierarchy registration.
+  - Automatic positioning at (0,0) of the subview.
+  - Optional full-pane filling with `AUTORESIZE` pre-configured.
+- **Improved Access**: New `View( n )` helper to safely access child views by index.
+- **Clean Architecture**: Refactored `TSplitItem` to remove redundant data, improving memory efficiency and class consistency.
+
 ### Reporting & Swift Enhancements (Part 15)
 - **Advanced Reporting (NiceGui)**:
     - **Image Embedding**: New `TNiceImage` class supporting both local paths and Base64-encoded images (`DEFINE NICE IMAGE`).

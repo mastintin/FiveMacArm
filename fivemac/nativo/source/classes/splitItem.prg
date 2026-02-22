@@ -4,9 +4,6 @@
 
 CLASS TSplitItem FROM TControl
 
-   DATA   hWnd
-   DATA   oWnd
-
    METHOD New( oWnd )
    
 ENDCLASS
