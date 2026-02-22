@@ -6,4 +6,5 @@ proyectos fivemac/
 *.log
 .DS_Store
 fivemac/samples/*.c
+fivemac/nativo/samples/obj/
 *.dSYM
