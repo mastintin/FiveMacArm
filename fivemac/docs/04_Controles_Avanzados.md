@@ -9,16 +9,24 @@ El control `TSplitBox` es la implementación moderna (basada en `NSSplitView`) q
 - Las coordenadas siguen el sistema estándar invertido (Flipped) de FiveMac.
 - Los paneles controlan su propio redimensionamiento y posición.
 
-### Métodos Principales
+### Uso y Paneles (`aViews`)
+Al crear un `TSplitBox`, se recomienda especificar el número inicial de paneles usando la cláusula `VIEWS n`. Esto creará internamente objetos `TSplitBoxItem` que actuarán como contenedores.
 
-#### `SetPane( nPane, oControl, lFill )`
-Este método simplifica drásticamente el proceso de añadir controles a los paneles del SplitBox. Ajusta automáticamente las jerarquías de vistas, posicionando el control en el origen `(0,0)` y lo redimensiona usando la propiedad `AUTORESIZE` si `lFill` es `.T.`.
+Para añadir controles u otras vistas dentro del SplitBox, simplemente asigua el control hijo al panel correspondiente accediendo al array `aViews`:
 
 Ejemplo:
 ```harbour
-// Asigna el editor al primer panel y colapsa para que llene todo
-oSplit:SetPane( 1, oEditor, .T. )
+// Crea un SplitBox vertical con 2 paneles
+@ 20, 20 SPLITBOX oSplit OF oWnd SIZE 400, 300 VERTICAL VIEWS 2
+
+// Asigna un editor de texto al primer panel (índice 1)
+@ 0, 0 SCINTILLA oEditor OF oSplit:aViews[ 1 ] SIZE 200, 300 
+
+// Asigna otro control al segundo panel (índice 2)
+@ 0, 0 PANEL oPanel OF oSplit:aViews[ 2 ] SIZE 200, 300
 ```
 
-#### `View( n )`
-Permite acceder de manera segura a la vista subyacente hija de un panel por su índice numérico (comenzando en 1).
+También es posible agregar paneles dinámicamente usando el método `AddView()`:
+```harbour
+oNuevoPanel := oSplit:AddView()
+```
