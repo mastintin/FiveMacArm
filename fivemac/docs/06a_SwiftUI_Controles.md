@@ -2,6 +2,15 @@
 
 Esta sección documenta los controles nativos de SwiftUI que han sido envueltos y están disponibles para usarse directamente desde código Harbour en la librería FiveMac.
 
+## Filosofía de Diseño: Standalone vs. Stacks
+Los controles SwiftUI en FiveMac tienen una doble naturaleza:
+1. **Uso Standalone (Independiente)**: Pueden crearse directamente sobre una ventana (`oWnd`) o panel, especificando sus coordenadas (`nRow`, `nCol`) y tamaño (`SIZE`). En este modo, se comportan como controles clásicos absolutos de FiveMac.
+2. **Uso en Stacks (Apilados)**: Para interfaces más complejas, responsivas y modernas (como listas o paneles de control ricos), los controles se instancian *dentro* de contenedores Layout (`TSwiftVStack` o `TSwiftZStack`). Dentro de un Stack, las coordenadas `nRow`, `nCol` suelen ser ignoradas o irrelevantes (habitualmente `0, 0`), ya que el Stack calcula automáticamente la posición y distribución fluida de los elementos (Flow Layout).
+
+---
+
+## Controles Individuales
+
 ## TSwiftButton
 Un botón moderno y altamente personalizable que aprovecha el motor de renderizado de SwiftUI.
 
@@ -52,4 +61,18 @@ Lista de selección desplegable moderna.
 - **Sintaxis**: `@ <nRow>, <nCol> SWIFTPICKER [ <oPick> VAR ] <cVar> [ ITEMS <aItems> ]`
 - **Características**: Integra un campo de búsqueda en el propio popover desplegable y soporta títulos/etiquetas personalizados. Soporta `ON CHANGE`.
 
-*(Nota: Esta guía de controles será ampliada próximamente para cubrir los contenedores de Layout como `TSwiftVStack`, `TSwiftZStack`, y visualizaciones de datos como `TSwiftList` y `TSwiftGrid`).*
+---
+
+## Contenedores de Layout (Stacks)
+
+## TSwiftVStack
+Apila verticalmente las vistas hijas que se coloquen dentro de su contenedor (`OF oStack`).
+- **Sintaxis**: `@ <nRow>, <nCol> SWIFTVSTACK [ <oStack> ] [ SIZE <nWidth>, <nHeight> ] [ OF <oWnd> ]`
+- Ideal para crear listas y menús dinámicos. Usando el sistema de lotes (Batch) se pueden inyectar múltiples controles de golpe con un rendimiento altísimo.
+
+## TSwiftZStack
+Apila vistas en el eje Z (superponiendo una encima de la otra, de fondo hacia adelante).
+- **Sintaxis**: `@ <nRow>, <nCol> SWIFTZSTACK [ <oZStack> ] [ SIZE <nWidth>, <nHeight> ] [ OF <oWnd> ]`
+- Muy útil para crear "Badges" sobre iconos, o colocar texto flotante sobre imágenes.
+
+*(Nota: Esta guía continuará expandiéndose para cubrir las visualizaciones de datos masivas como `TSwiftList` y `TSwiftGrid`).*
