@@ -28,6 +28,8 @@
 
 @implementation MIKImageView
 
+FIVEMAC_DRAGDROP_METHODS
+
 @synthesize isCropping;
 @synthesize cropRect;
 

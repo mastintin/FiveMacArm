@@ -55,6 +55,8 @@ void CocoaInit(void);
 
 @implementation View
 
+FIVEMAC_DRAGDROP_METHODS
+
 - (void)setOriginalWindow:(NSWindow *)window {
   originalWindow = window;
 }

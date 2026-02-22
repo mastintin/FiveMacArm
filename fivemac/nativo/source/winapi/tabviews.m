@@ -9,6 +9,8 @@ static PHB_SYMB symFMH = NULL;
 
 @implementation ViewFlipped
 
+FIVEMAC_DRAGDROP_METHODS
+
 - (BOOL)isFlipped {
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMH"));

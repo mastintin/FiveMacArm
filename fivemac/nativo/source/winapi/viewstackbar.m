@@ -11,6 +11,8 @@
 
 @implementation ViewStackBar
 
+FIVEMAC_DRAGDROP_METHODS
+
 - (instancetype)initWithFrame:(NSRect)frameRect {
   self = [super initWithFrame:frameRect];
   if (self) {

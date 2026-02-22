@@ -11,6 +11,8 @@ static PHB_SYMB symFMH = NULL;
 
 @implementation FMGet
 
+FIVEMAC_DRAGDROP_METHODS
+
 - (void)controlTextDidChange:(NSNotification *)aNotification {
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));

@@ -16,6 +16,8 @@ static PHB_SYMB symFMH = NULL;
 @end
 
 @implementation SGet
+
+FIVEMAC_DRAGDROP_METHODS
 - (BOOL)textShouldEndEditing:(NSText *)text {
   if (symFMH == NULL)
     symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
