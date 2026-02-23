@@ -20,4 +20,6 @@ Bienvenido a la documentación oficial de FiveMac. Aquí encontrarás guías det
    - Uso de TSQLite nativo y la implementación moderna de TMySQL.
 8. [Impresión y PDF](08_Impresion.md)
    - TPrinter (Nativo Cocoa) y TNicePrinter (Generación PDF mediante HTML/Quasar).
+9. [Funciones del Sistema](09_Funciones_del_Sistema.md)
+   - Rutas (Paths), Alertas, Diálogos nativos e interop con macOS.
 
