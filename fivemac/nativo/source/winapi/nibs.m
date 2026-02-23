@@ -1,29 +1,6 @@
 #include <fivemac.h>
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-@interface View : NSView <NSWindowDelegate>
-#else
-@interface View : NSView
-#endif
-{
-  //  @public NSWindow * hWnd;
-}
-- (BOOL)windowShouldClose:(NSNotification *)notification;
-- (void)windowWillClose:(NSNotification *)notification;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseMoved:(NSEvent *)theEvent;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)MenuItem:(id)sender;
-- (void)BtnClick:(id)sender;
-- (void)CbxChange:(id)sender;
-- (void)ChkClick:(id)sender;
-- (void)RadClick:(id)sender;
-- (void)TbrClick:(id)sender;
-- (void)OnTimerEvent:(NSTimer *)timer;
-- (void)SliderChanged:(id)sender;
-@end
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 @interface Get : NSTextField <NSTextFieldDelegate>
 #else
 @interface Get : NSTextField

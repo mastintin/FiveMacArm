@@ -70,6 +70,24 @@ DEFINE MULTIVIEW oMulti OF oWnd RESIZED
 
 ---
 
+---
+
+## TNativeAudio (Audio y Multimedia)
+Integra el motor **AVFoundation** de Apple para reproducción de audio independiente, extracción de metadatos y arte de disco. Ofrece un control total sobre el playback mediante eventos nativos y codeblocks.
+
+```harbour
+oMusic := TNativeAudio():New( "song.mp3" )
+oMusic:Play()
+
+// Observador para actualizar la UI cada 0.5s de forma nativa
+oMusic:SetObserver( { | o | MyUpdateFunc( o ) } )
+```
+*   **GetMetadata()**: Recupera Título, Artista y Álbum de forma automática.
+*   **GetArtwork()**: Obtiene la imagen de la carátula vinculada al archivo.
+*   **SetObserver( bAction )**: Ejecuta un codeblock periódicamente (cada 0.5s) mientras se reproduce el audio.
+
+---
+
 ## TScintilla (Editor de Código)
 FiveMac integra el potente motor **Scintilla** para edición de texto con resaltado de sintaxis, numeración de líneas y autocompletado.
 
@@ -89,3 +107,4 @@ oEd:SetLexer( SCLEX_HARBOUR ) // Ejemplo para Harbour
 > - `testsplitbox.prg` (Splitters)
 > - `testmultiview.prg` (MultiView)
 > - `testscintilla.prg` (Editor de código)
+> - `MusicPlayer.prg` (Reproductor de audio avanzado)

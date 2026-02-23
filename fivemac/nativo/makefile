@@ -76,6 +76,7 @@ PRG_OBJS = \
 	./obj/nodo.o \
 	./obj/nativemap.o \
         ./obj/notification.o \
+  	./obj/nativeaudio.o \
   	./obj/nsobject.o \
   	./obj/picture.o \
   	./obj/printer.o \
@@ -117,7 +118,8 @@ PRG_OBJS = \
 	./obj/viewstack.o \
 	./obj/viewstackbar.o \
   	./obj/window.o	\
-	./obj/webview.o
+	./obj/webview.o \
+	./obj/varios.o
 
 C_OBJS = ./objc/browses.o	\
 	./objc/Areas.o \
@@ -146,6 +148,7 @@ C_OBJS = ./objc/browses.o	\
 	./objc/images.o	\
 	./objc/ImageAndTextCell.o	\
   	./objc/musics.o	\
+  	./objc/nativeaudios.o	\
     ./objc/mailer.o \
 	./objc/menus.o	\
 	./objc/mgets.o	\
