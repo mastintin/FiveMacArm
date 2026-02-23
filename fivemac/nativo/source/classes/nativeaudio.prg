@@ -8,7 +8,7 @@ CLASS TNativeAudio
     DATA nDuration
     DATA cTitle, cArtist, cAlbum
     DATA bOnTime
-    DATA bOnEnd
+    DATA bOnTrackEnd
    
     METHOD New( cFile )
     METHOD Play()       INLINE NativeAudioPlay( ::hWnd )
@@ -92,8 +92,8 @@ function _FMAudio( pPlayer, nMsg )
                 endif
             
             case nMsg == 2 // End of playback
-                if ! Empty( aPlayers[ nAt ]:bOnEnd )
-                    Eval( aPlayers[ nAt ]:bOnEnd, aPlayers[ nAt ] )
+                if ! Empty( aPlayers[ nAt ]:bOnTrackEnd )
+                    Eval( aPlayers[ nAt ]:bOnTrackEnd, aPlayers[ nAt ] )
                 endif
         endcase
     endif
