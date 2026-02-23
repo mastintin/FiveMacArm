@@ -69,6 +69,9 @@ NICE SLIDER oSlider VALUE 50 MIN 0 MAX 100 STEP 5 OF oPage
 
 👉 **[Ver ejemplo visual de estos controles (Stepper & Slider)](img/cap4.png)**
 
+> [!TIP]
+> Puedes ver el código completo de estos controles y su funcionamiento en tiempo real ejecutando el ejemplo [TestControls.prg](file:///Users/manuel/Fivemac/fivemac/NiceGui/samples/TestControls.prg).
+
 ---
 
 ## Visualización de Datos Avanzada
