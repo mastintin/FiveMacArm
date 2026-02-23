@@ -9,6 +9,7 @@ FiveMac introduce un puente pionero hacia NiceGUI (basado en Vue.js y Quasar) ca
 
 ### Ejemplos Visuales (NiceGUI)
 ![Ejemplo Informe](img/cap2.png)
+![Ejemplo Controles NiceGUI](img/cap4.png)
 
 ## SwiftUI
 Integración del framework más moderno de Apple en Harbour.
