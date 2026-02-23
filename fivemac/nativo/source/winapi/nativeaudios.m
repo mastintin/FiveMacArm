@@ -1,6 +1,8 @@
 #import <AVFoundation/AVFoundation.h>
 #import <Cocoa/Cocoa.h>
 #include <fivemac.h>
+#include <hbapi.h>
+#include <hbapiitm.h>
 #import <objc/runtime.h>
 
 #ifndef NSEC_PER_SEC
@@ -14,6 +16,9 @@ static char const *const FMMetadataDelegateKey = "FMMetadataDelegateKey";
 @interface FMMetadataDelegate
     : NSObject <AVPlayerItemMetadataOutputPushDelegate>
 @property(strong) NSMutableDictionary *metadata;
+@property(assign) AVPlayer *player;
+@property(strong) id timeToken;
+@property(strong) id endToken;
 @end
 
 @implementation FMMetadataDelegate
@@ -46,6 +51,71 @@ static char const *const FMMetadataDelegateKey = "FMMetadataDelegateKey";
       }
     }
   }
+
+  if (self.player) {
+    PHB_DYNS pDynSym = hb_dynsymFindName("_FMAUDIO");
+    if (pDynSym) {
+      hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
+      hb_vmPushNil();
+      hb_vmPushNumInt((HB_LONGLONG)self.player);
+      hb_vmPushLong(4); // nMsg == 4 for Metadata ready
+      hb_vmDo(2);
+    }
+  }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey, id> *)change
+                       context:(void *)context {
+  if ([keyPath isEqualToString:@"status"]) {
+    AVPlayerItemStatus status = [change[NSKeyValueChangeNewKey] integerValue];
+
+    if (status == AVPlayerItemStatusReadyToPlay && context != NULL) {
+      AVPlayer *player = (AVPlayer *)context;
+      PHB_DYNS pDynSym = hb_dynsymFindName("_FMAUDIO");
+      if (pDynSym) {
+        hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
+        hb_vmPushNil();
+        hb_vmPushNumInt((HB_LONGLONG)player);
+        hb_vmPushLong(3); // nMsg == 3 for ReadyToPlay
+        hb_vmDo(2);
+      }
+    }
+  } else if ([keyPath isEqualToString:@"timedMetadata"]) {
+    NSArray<AVMetadataItem *> *metadata = change[NSKeyValueChangeNewKey];
+    if ([metadata isKindOfClass:[NSArray class]]) {
+      for (AVMetadataItem *item in metadata) {
+        NSString *key = [item commonKey] ?: [item.key description];
+        if (item.value) {
+          if ([key isEqualToString:AVMetadataCommonKeyTitle] ||
+              [key isEqualToString:@"title"])
+            [_metadata setObject:item.value forKey:@"title"];
+          else if ([key isEqualToString:AVMetadataCommonKeyArtist] ||
+                   [key isEqualToString:@"artist"])
+            [_metadata setObject:item.value forKey:@"artist"];
+        }
+      }
+      if (context != NULL) {
+        AVPlayer *player = (AVPlayer *)context;
+        PHB_DYNS pDynSym = hb_dynsymFindName("_FMAUDIO");
+        if (pDynSym) {
+          hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
+          hb_vmPushNil();
+          hb_vmPushNumInt((HB_LONGLONG)player);
+          hb_vmPushLong(4); // nMsg == 4 for Metadata ready
+          hb_vmDo(2);
+        }
+      }
+    }
+  }
+}
+
+- (void)dealloc {
+  [_metadata release];
+  [_timeToken release];
+  [_endToken release];
+  [super dealloc];
 }
 
 @end
@@ -90,34 +160,47 @@ HB_FUNC(MUSIC_SET_OBSERVER) {
                   }];
     }
 
-    PHB_ITEM pArray = hb_itemArrayNew(2);
-    PHB_ITEM pToken1 = hb_itemPutNLL(NULL, (HB_LONGLONG)timeToken);
-    PHB_ITEM pToken2 = hb_itemPutNLL(NULL, (HB_LONGLONG)endToken);
-    hb_arraySet(pArray, 1, pToken1);
-    hb_arraySet(pArray, 2, pToken2);
-    hb_itemRelease(pToken1);
-    hb_itemRelease(pToken2);
+    FMMetadataDelegate *delegate =
+        objc_getAssociatedObject(player, FMMetadataDelegateKey);
 
-    hb_itemReturnRelease(pArray);
+    if (delegate) {
+      delegate.timeToken = timeToken;
+      delegate.endToken = endToken;
+    }
   }
 }
 
 HB_FUNC(MUSIC_REMOVE_OBSERVERS) {
   AVPlayer *player = (AVPlayer *)hb_parnll(1);
-  id timeToken = (id)hb_parnll(2);
-  id endToken = (id)hb_parnll(3);
 
-  if (player && timeToken) {
-    [player removeTimeObserver:timeToken];
-  }
-  if (endToken) {
-    [[NSNotificationCenter defaultCenter] removeObserver:endToken];
+  FMMetadataDelegate *delegate =
+      objc_getAssociatedObject(player, FMMetadataDelegateKey);
+
+  if (delegate) {
+    if (player && delegate.timeToken) {
+      [player removeTimeObserver:delegate.timeToken];
+      delegate.timeToken = nil;
+    }
+    if (delegate.endToken) {
+      [[NSNotificationCenter defaultCenter] removeObserver:delegate.endToken];
+      delegate.endToken = nil;
+    }
   }
 }
 
 HB_FUNC(MUSIC_LOAD_STREAM) {
   NSString *szUrl = hb_NSSTRING_par(1);
+
+  if (!szUrl || [szUrl length] == 0) {
+    hb_retnll(0);
+    return;
+  }
+
   NSURL *url = [NSURL URLWithString:szUrl];
+  if (!url) {
+    hb_retnll(0);
+    return;
+  }
 
   AVURLAsset *asset = [AVURLAsset URLAssetWithURL:url options:nil];
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:asset];
@@ -130,6 +213,21 @@ HB_FUNC(MUSIC_LOAD_STREAM) {
   [item addOutput:metadataOutput];
 
   AVPlayer *player = [[AVPlayer playerWithPlayerItem:item] retain];
+  delegate.player = player;
+
+  if (item) {
+    @try {
+      [item addObserver:delegate
+             forKeyPath:@"status"
+                options:NSKeyValueObservingOptionNew
+                context:(void *)player];
+      [item addObserver:delegate
+             forKeyPath:@"timedMetadata"
+                options:NSKeyValueObservingOptionNew
+                context:(void *)player];
+    } @catch (id ex) {
+    }
+  }
 
   // Asociamos el delegado al player para que viva lo mismo que él
   objc_setAssociatedObject(player, FMMetadataDelegateKey, delegate,
@@ -144,6 +242,30 @@ HB_FUNC(MUSIC_LOAD_STREAM) {
 HB_FUNC(MUSIC_RELEASE) {
   AVPlayer *player = (AVPlayer *)hb_parnll(1);
   if (player) {
+    FMMetadataDelegate *delegate =
+        objc_getAssociatedObject(player, FMMetadataDelegateKey);
+    if (delegate) {
+      if (delegate.timeToken) {
+        [player removeTimeObserver:delegate.timeToken];
+        delegate.timeToken = nil;
+      }
+      if (delegate.endToken) {
+        [[NSNotificationCenter defaultCenter] removeObserver:delegate.endToken];
+        delegate.endToken = nil;
+      }
+
+      if (player.currentItem) {
+        @try {
+          [player.currentItem removeObserver:delegate forKeyPath:@"status"];
+        } @catch (id ex) {
+        } @
+        try {
+          [player.currentItem removeObserver:delegate
+                                  forKeyPath:@"timedMetadata"];
+        } @catch (id ex) {
+        }
+      }
+    }
     [player release];
   }
 }
@@ -159,7 +281,9 @@ HB_FUNC(NATIVEAUDIOCREATE) {
 
 HB_FUNC(NATIVEAUDIOPLAY) {
   AVPlayer *player = (AVPlayer *)hb_parnll(1);
-  [player play];
+  if (player) {
+    [player play];
+  }
 }
 
 HB_FUNC(NATIVEAUDIOPAUSE) {
@@ -206,7 +330,8 @@ HB_FUNC(NATIVEAUDIOISREADY) {
   AVPlayer *player = (AVPlayer *)hb_parnll(1);
   BOOL bReady = NO;
   if (player && player.currentItem) {
-    bReady = (player.currentItem.status == AVPlayerItemStatusReadyToPlay);
+    AVPlayerItemStatus status = player.currentItem.status;
+    bReady = (status == AVPlayerItemStatusReadyToPlay);
   }
   hb_retl(bReady);
 }
@@ -224,25 +349,47 @@ HB_FUNC(NATIVEAUDIOGETSTATUS) {
   }
 }
 
-HB_FUNC(MUSIC_GET_METADATA) {
-  AVPlayer *player = (AVPlayer *)hb_parnll(1);
+static NSString *ExtractMetadataFromPlayer(AVPlayer *player) {
   NSMutableDictionary *metadataDict = [NSMutableDictionary dictionary];
 
   if (player) {
-    FMMetadataDelegate *delegate =
-        objc_getAssociatedObject(player, FMMetadataDelegateKey);
-    if (delegate) {
-      [metadataDict addEntriesFromDictionary:delegate.metadata];
-    }
-
     if (player.currentItem) {
+      // 1. Check FMMetadataDelegate (asynchronous)
+      FMMetadataDelegate *delegate =
+          objc_getAssociatedObject(player, FMMetadataDelegateKey);
+      if (delegate) {
+        [metadataDict addEntriesFromDictionary:delegate.metadata];
+      }
+
+      // 2. Check currentItem.timedMetadata (active metadata)
+      for (AVMetadataItem *item in player.currentItem.timedMetadata) {
+        NSString *key =
+            [item commonKey] ? [item commonKey] : [item.key description];
+        NSString *valStr =
+            item.stringValue ? item.stringValue : [item.value description];
+        if (valStr) {
+          if ([key isEqualToString:AVMetadataCommonKeyTitle] ||
+              [key containsString:@"title"])
+            [metadataDict setObject:valStr forKey:@"title"];
+          else if ([key isEqualToString:AVMetadataCommonKeyArtist] ||
+                   [key containsString:@"artist"])
+            [metadataDict setObject:valStr forKey:@"artist"];
+        }
+      }
+
+      // 3. Check asset commonMetadata (static metadata)
       for (AVMetadataItem *item in [player.currentItem.asset commonMetadata]) {
-        NSString *key = [item commonKey];
-        if (item.value) {
+        NSString *key =
+            [item commonKey] ? [item commonKey] : [item.key description];
+        NSString *valStr =
+            item.stringValue ? item.stringValue : [item.value description];
+        if (valStr) {
           if ([key isEqualToString:AVMetadataCommonKeyTitle])
-            [metadataDict setObject:item.value forKey:@"title"];
+            [metadataDict setObject:valStr forKey:@"title"];
           else if ([key isEqualToString:AVMetadataCommonKeyArtist])
-            [metadataDict setObject:item.value forKey:@"artist"];
+            [metadataDict setObject:valStr forKey:@"artist"];
+          else if ([key isEqualToString:AVMetadataCommonKeyAlbumName])
+            [metadataDict setObject:valStr forKey:@"album"];
         }
       }
     }
@@ -250,9 +397,10 @@ HB_FUNC(MUSIC_GET_METADATA) {
 
   NSString *artist = [metadataDict objectForKey:@"artist"];
   NSString *title = [metadataDict objectForKey:@"title"];
+  NSString *album = [metadataDict objectForKey:@"album"];
 
   if ((!artist || [artist isEqualToString:@""]) && title &&
-      [title containsString:@" - "]) {
+      [title isKindOfClass:[NSString class]] && [title containsString:@" - "]) {
     NSArray *parts = [title componentsSeparatedByString:@" - "];
     artist =
         [parts[0] stringByTrimmingCharactersInSet:[NSCharacterSet
@@ -262,13 +410,21 @@ HB_FUNC(MUSIC_GET_METADATA) {
                                                       whitespaceCharacterSet]];
   }
 
-  NSString *result =
-      [NSString stringWithFormat:@"%@ - %@", artist ? artist : @"Unknown",
-                                 title ? title : @"Unknown"];
+  return [NSString stringWithFormat:@"%@|%@|%@", title ? title : @"",
+                                    artist ? artist : @"", album ? album : @""];
+}
+
+HB_FUNC(MUSIC_GET_METADATA) {
+  AVPlayer *player = (AVPlayer *)hb_parnll(1);
+  NSString *result = ExtractMetadataFromPlayer(player);
   hb_retc([result UTF8String]);
 }
 
-HB_FUNC(NATIVEAUDIOGETMETADATA) { HB_FUNC_EXEC(MUSIC_GET_METADATA); }
+HB_FUNC(NATIVEAUDIOGETMETADATA) {
+  AVPlayer *player = (AVPlayer *)hb_parnll(1);
+  NSString *result = ExtractMetadataFromPlayer(player);
+  hb_retc([result UTF8String]);
+}
 
 HB_FUNC(NATIVEAUDIOGETARTWORK) {
   AVPlayer *player = (AVPlayer *)hb_parnll(1);

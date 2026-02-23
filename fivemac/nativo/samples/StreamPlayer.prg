@@ -21,19 +21,23 @@ function Main()
     DEFINE WINDOW oWnd TITLE "FiveMac Streaming Player" SIZE 500, 350 FLIPPED
 
     oMusic := TNativeAudio():New()
+    
+    oTmr := TTimer():New( 3, { ||UpdateMetadata() }, oWnd )
 
     @ 20, 20 SAY "Selecciona una emisora:" SIZE 200, 20
    
     @ 50, 20 COMBOBOX oCbx VAR cStation PROMPTS ArrayColumn( aStations, 1 ) ;
         OF oWnd SIZE 300, 25 ;
         ON CHANGE ( nPos := oCbx:nItemSelected(), ;
+        oTmr:DeActivate(), ;
         oSayStation:SetText( aStations[ nPos ][ 1 ] ), ;
+        oMusic:bOnReady := { || oSayStatus:SetText( "Estado: Listo" ), oMusic:Play(), oSayLoading:Hide(), oTmr:Activate() }, ;
+        oMusic:bOnMetadata := { || UpdateMetadata() }, ;
         oMusic:Stream( aStations[ nPos ][ 2 ] ), ;
         oSayStatus:SetText( "Estado: Conectando..." ), ;
         oSayArtist:SetText( "" ), ;
         oSaySong:SetText( "" ), ;
-        oSayLoading:Show(), ;
-        oTmr:Activate() )
+        oSayLoading:Show()   )
 
     @ 90, 20 SAY oSayStation PROMPT "Ninguna seleccionada" SIZE 400, 30 
    
@@ -60,10 +64,6 @@ function Main()
         ON CHANGE oMusic:SetVol( oSld:GetValue() )
     oSld:SetValue( 100 )
 
-    // Definimos el timer (1 segundo para monitorizar buffer y metadatos)
-    DEFINE TIMER oTmr INTERVAL 1 ACTION MonitorPlayer() OF oWnd
-    oTmr:DeActivate()
-
     ACTIVATE WINDOW oWnd ;
         ON INIT oSayLoading:Hide() ;
         CENTERED
@@ -72,39 +72,30 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function MonitorPlayer()
+function UpdateMetadata()
     local cMetadata, aMeta
-   
-    if oMusic:IsReady() 
-        oSayLoading:Hide()
-      
-        // Intentamos obtener metadatos del stream
-        cMetadata := oMusic:GetStreamMetadata()
-      
-        if ! Empty( cMetadata ) .and. " - " $ cMetadata
-            aMeta := hb_ATokens( cMetadata, " - " )
-            if Len( aMeta ) >= 2
-                if ! "Unknown" $ aMeta[ 1 ]
-                    oSayArtist:SetText( aMeta[ 1 ] )
-                endif
-                if ! "Unknown" $ aMeta[ 2 ]
-                    oSaySong:SetText( aMeta[ 2 ] )
-                endif
+    
+    // Intentamos obtener metadatos del stream
+    cMetadata := oMusic:GetStreamMetadata()
+    if ! Empty( cMetadata ) .and. "|" $ cMetadata
+        aMeta := hb_ATokens( cMetadata, "|" )
+        if Len( aMeta ) >= 2
+            if ! "Unknown" $ aMeta[ 1 ]
+                oSaySong:SetText( aMeta[ 1 ] )
             endif
-            oSayStatus:SetText( "Estado: Reproduciendo (con metadatos)" )
-        else
+            if ! "Unknown" $ aMeta[ 2 ]
+                oSayArtist:SetText( aMeta[ 2 ] )
+            endif
+        endif
+        oSayStatus:SetText( "Estado: Reproduciendo (con metadatos)" )
+    else
+        if oMusic:IsPlaying()
             oSayStatus:SetText( "Estado: Reproduciendo..." )
         endif
-      
-        if ! oMusic:IsPlaying()
-            oMusic:Play()
-        endif
-
-    else
-        oSayStatus:SetText( "Estado: Conectando..." )
     endif
-   
+
 return nil
+
 
 //----------------------------------------------------------------------------//
 

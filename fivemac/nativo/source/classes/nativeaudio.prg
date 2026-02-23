@@ -9,7 +9,8 @@ CLASS TNativeAudio
     DATA cTitle, cArtist, cAlbum
     DATA bOnTime
     DATA bOnTrackEnd
-    DATA hTimeObs, hEndObs
+    DATA bOnReady
+    DATA bOnMetadata
    
     METHOD New( cFile )
     METHOD Play()       INLINE NativeAudioPlay( ::hWnd )
@@ -21,7 +22,6 @@ CLASS TNativeAudio
     METHOD Seek( nSec ) INLINE NativeAudioSeek( ::hWnd, nSec )
     METHOD SetVol( nVol ) INLINE NativeAudioSetVol( ::hWnd, nVol )
    
-    METHOD GetMetadata()
     METHOD GetArtwork() INLINE NativeAudioGetArtwork( ::hWnd )
    
     METHOD SetObserver( bAction )
@@ -34,7 +34,7 @@ CLASS TNativeAudio
     
     METHOD GetStreamMetadata() INLINE Music_Get_Metadata( ::hWnd )
     
-    METHOD GetMetadata() INLINE ::GetStreamMetadata()
+    METHOD GetMetadata()
     
     METHOD IsPlaying() INLINE Music_IsPlaying( ::hWnd )
     
@@ -48,11 +48,12 @@ ENDCLASS
 
 METHOD New( cFile ) CLASS TNativeAudio
 
+    if AScan( aPlayers, { | o | o == Self } ) == 0
+        AAdd( aPlayers, Self )
+    endif
+
     if ! Empty( cFile )
         ::Load( cFile )
-        if AScan( aPlayers, { | o | o == Self } ) == 0
-            AAdd( aPlayers, Self )
-        endif
     endif
 
 return Self
@@ -72,7 +73,7 @@ METHOD Load( cFile ) CLASS TNativeAudio
         ::nDuration := ::GetDuration()
         
         // Reinscripción automática de observadores si ya estaban definidos
-        if ! Empty( ::bOnTime ) .or. ! Empty( ::bOnTrackEnd )
+        if ! Empty( ::bOnTime ) .or. ! Empty( ::bOnTrackEnd ) .or. ! Empty( ::bOnReady )
             ::SetObserver( ::bOnTime )
         endif
     endif
@@ -94,7 +95,7 @@ METHOD Stream( cUrl ) CLASS TNativeAudio
         ::nDuration := ::GetDuration()
         
         // Reinscripción automática de observadores si ya estaban definidos
-        if ! Empty( ::bOnTime ) .or. ! Empty( ::bOnTrackEnd )
+        if ! Empty( ::bOnTime ) .or. ! Empty( ::bOnTrackEnd ) .or. ! Empty( ::bOnReady )
             ::SetObserver( ::bOnTime )
         endif
     endif
@@ -106,23 +107,18 @@ return nil
 //----------------------------------------------------------------------------//
 
 METHOD SetObserver( bAction ) CLASS TNativeAudio
-    local aTokens
     ::bOnTime := bAction
     ::RemoveObservers()
     if ! Empty( ::hWnd )
-        aTokens := Music_Set_Observer( ::hWnd )
-        ::hTimeObs := aTokens[ 1 ]
-        ::hEndObs  := aTokens[ 2 ]
+        Music_Set_Observer( ::hWnd )
     endif
 return nil
 
 //----------------------------------------------------------------------------//
 
 METHOD RemoveObservers() CLASS TNativeAudio
-    if ! Empty( ::hTimeObs ) .or. ! Empty( ::hEndObs )
-        Music_Remove_Observers( ::hWnd, ::hTimeObs, ::hEndObs )
-        ::hTimeObs := nil
-        ::hEndObs  := nil
+    if ! Empty( ::hWnd )
+        Music_Remove_Observers( ::hWnd )
     endif
 return nil
 
@@ -179,8 +175,20 @@ function _FMAudio( pPlayer, nMsg )
                 if ! Empty( aPlayers[ nAt ]:bOnTrackEnd )
                     Eval( aPlayers[ nAt ]:bOnTrackEnd, aPlayers[ nAt ] )
                 endif
+
+            case nMsg == 3 // Ready to play
+                if ! Empty( aPlayers[ nAt ]:bOnReady )
+                    Eval( aPlayers[ nAt ]:bOnReady, aPlayers[ nAt ] )
+                endif
+
+            case nMsg == 4 // Metadata updated
+                if ! Empty( aPlayers[ nAt ]:bOnMetadata )
+                    Eval( aPlayers[ nAt ]:bOnMetadata, aPlayers[ nAt ] )
+                endif
         endcase
     endif
+    return nil
+
 return nil
 
 //----------------------------------------------------------------------------//
