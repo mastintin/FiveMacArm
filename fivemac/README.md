@@ -103,17 +103,6 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **TViewStack**: New native control for building modern, multi-view interfaces (like segmented views or tab replacements).
     - **ViewStackBar**: A stylish, floating "capsule" navigation bar using `NSVisualEffectView` with rounded corners (16px) and vibrancy support. Supports customization via `SetColor()`.
 
-### Audio Processing & TNativeAudio (February 2026 - Part 12)
-- **TNativeAudio Modernization**: Completely refactored the native audio engine to use modern **AVFoundation** APIs, ensuring full compatibility with macOS 15+ and 64-bit architectures.
-- **High-Performance Streaming**: New `Stream( cUrl )` method using `AVURLAsset` for robust internet radio and HLS stream playback. Automatically handles URLs without file extensions.
-- **Modern Metadata Engine**: Migrated from deprecated properties to the asynchronous `AVPlayerItemMetadataOutput` API.
-    - **Live Updates**: Real-time extraction of Artist and Song Title from live streams using an optimized Objective-C delegate.
-    - **Smart Parsing**: Automatically detects and splits "Artist - Title" strings from mixed metadata sources.
-    - **Zero Warnings**: Replaced all obsolete `timedMetadata` calls, ensuring a clean and future-proof build.
-- **Event Synchronization**: Integrated `IsPlaying()` and `IsReady()` (buffering detection) for precise UI control. Improved auto-play logic and buffering state visual feedback.
-- **Memory Safety**: Implemented `objc_setAssociatedObject` to link metadata delegates directly to the `AVPlayer` lifecycle, preventing memory leaks and ensuring clean resource management.
-- **New Sample**: `StreamPlayer.prg` demonstrating a professional internet radio player with real-time metadata display and volume control.
-
 ### Popover & Swift Integration Refinements (January 2026 - Part 11)
 - **Popover Mechanism**:
     - **Robust Positioning**: Completely rewrote `popover.m` to use **Window-Relative** coordinates for anchor calculation. This fixes visibility issues when popovers are triggered from deeply nested views (e.g., inside SplitViews or Flipped Panels).
@@ -264,6 +253,17 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Legacy Cleanup**:
     - **Modern File Dialogs**: Removed all deprecated `setAllowedFileTypes:` calls and `@available` checks from `simages.m`. The library now exclusively uses the modern `UTType` API (macOS 11.0+) for file opening and saving operations, ensuring future compatibility.
 
+### Glassmorphism & Translucency (February 2026 - Part 20)
+- **Native macOS Vibrancy**: Implemented robust support for macOS `NSVisualEffectView` to create modern, translucent "Glass" interfaces that automatically adapt to light and dark modes.
+- **Window Level Glass**: `DEFINE WINDOW ... GLASS` applies a "Behind Window" blending mode for full-window frosted effects.
+- **Control Level Glass**: Extended support to dynamically apply "Within Window" blending to various UI components using the `GLASS` or `LIQUID GLASS` clauses.
+    - Supported controls include: `PANEL`, `GROUP`, `MULTIGET`, `GET`, `SAY`, and `BUTTON`.
+    - Example: `@ 20, 20 PANEL oPanel SIZE 300, 300 OF oWnd GLASS`
+- **Architecture Improvements**: 
+    - Refactored `TPanel:New()` to natively accept `nAutoResize`.
+    - Stabilized `FiveMac.ch` macros (`#xcommand`) for `PANEL`, `GROUP`, and `MULTIGET` using robust multi-line expansions. This resolves long-standing Harbour parsing ambiguities and syntax errors when certain optional clauses were omitted.
+    - Simplified rendering pipeline by routing all `LIQUID GLASS` aliases to uniform native C/Objective-C functions (`VIEWSETLIQUIDGLASS`, `WNDSETGLASS`, `BTNSETGLASS`).
+
 ### MapKit, Vision OCR & Advanced Symbols (February 2026 - Part 21)
 - **TNativeMap (MapKit Integration)**: Complete native implementation of Apple's MapKit framework.
     - **Interactive Maps**: Support for displaying Standard, Satellite, and Hybrid maps.
@@ -278,17 +278,16 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Word Document Support**:
     - Added `GELOADRTF` and `GESAVERTF` capabilities in the Rich Text/Memo controls to natively open and save `.doc` and `.docx` files using standard macOS text frameworks.
 
-### Glassmorphism & Translucency (February 2026 - Part 20)
-- **Native macOS Vibrancy**: Implemented robust support for macOS `NSVisualEffectView` to create modern, translucent "Glass" interfaces that automatically adapt to light and dark modes.
-- **Window Level Glass**: `DEFINE WINDOW ... GLASS` applies a "Behind Window" blending mode for full-window frosted effects.
-- **Control Level Glass**: Extended support to dynamically apply "Within Window" blending to various UI components using the `GLASS` or `LIQUID GLASS` clauses.
-    - Supported controls include: `PANEL`, `GROUP`, `MULTIGET`, `GET`, `SAY`, and `BUTTON`.
-    - Example: `@ 20, 20 PANEL oPanel SIZE 300, 300 OF oWnd GLASS`
-- **Architecture Improvements**: 
-    - Refactored `TPanel:New()` to natively accept `nAutoResize`.
-    - Stabilized `FiveMac.ch` macros (`#xcommand`) for `PANEL`, `GROUP`, and `MULTIGET` using robust multi-line expansions. This resolves long-standing Harbour parsing ambiguities and syntax errors when certain optional clauses were omitted.
-    - Simplified rendering pipeline by routing all `LIQUID GLASS` aliases to uniform native C/Objective-C functions (`VIEWSETLIQUIDGLASS`, `WNDSETGLASS`, `BTNSETGLASS`).
-
+### Audio Processing & TNativeAudio (February 2026 - Part 22)
+- **TNativeAudio Modernization**: Completely refactored the native audio engine to use modern **AVFoundation** APIs, ensuring full compatibility with macOS 15+ and 64-bit architectures.
+- **High-Performance Streaming**: New `Stream( cUrl )` method using `AVURLAsset` for robust internet radio and HLS stream playback. Automatically handles URLs without file extensions.
+- **Modern Metadata Engine**: Migrated from deprecated properties to the asynchronous `AVPlayerItemMetadataOutput` API.
+    - **Live Updates**: Real-time extraction of Artist and Song Title from live streams using an optimized Objective-C delegate.
+    - **Smart Parsing**: Automatically detects and splits "Artist - Title" strings from mixed metadata sources.
+    - **Zero Warnings**: Replaced all obsolete `timedMetadata` calls, ensuring a clean and future-proof build.
+- **Event Synchronization**: Integrated `IsPlaying()` and `IsReady()` (buffering detection) for precise UI control. Improved auto-play logic and buffering state visual feedback.
+- **Memory Safety**: Implemented `objc_setAssociatedObject` to link metadata delegates directly to the `AVPlayer` lifecycle, preventing memory leaks and ensuring clean resource management.
+- **New Sample**: `StreamPlayer.prg` demonstrating a professional internet radio player with real-time metadata display and volume control.
 ## Building
 
 To build the library and samples:
