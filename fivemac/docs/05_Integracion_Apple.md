@@ -7,6 +7,8 @@ Integración completa con el reproductor de Apple Music mediante puentes híbrid
 - Sincronización de metadatos de las canciones (Título, Artista, Portada).
 - Accesos a estado de reproducción y acciones de control de la app (Pause, Play).
 
+![Mando a distancia Apple Music (NiceGUI)](img/cap6.png)
+
 ## MapKit (`TNativeMap`)
 Controles de mapas nativos soportando vistas híbridas, geocodificación (`MKMAPGOTOLOCATION`) y renderizado de rutas paso a paso con Puntos de Interés (POI).
 
