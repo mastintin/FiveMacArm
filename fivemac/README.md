@@ -103,26 +103,16 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **TViewStack**: New native control for building modern, multi-view interfaces (like segmented views or tab replacements).
     - **ViewStackBar**: A stylish, floating "capsule" navigation bar using `NSVisualEffectView` with rounded corners (16px) and vibrancy support. Supports customization via `SetColor()`.
 
-### MusicKit & Modern UI (February 2026 - Part 11)
-- **MusicKit Integration**: Full integration with Apple's `MusicKit` framework via a hybrid Swift/Objective-C/Harbour bridge.
-    - **Playback Control**: Native control over the Music app (Play, Pause, Next, Previous, Stop) with real-time state synchronization.
-    - **Metadata & Artwork**: seamless retrieval of Song Title, Artist, Duration, Position, and Album Artwork.
-    - **Hybrid Architecture**: Uses a robust mix of Swift (for modern APIs) and optimized AppleScript (for legacy control) to bypass signing restrictions in ad-hoc builds.
-- **Polished UI Components**:
-    - **TSwiftButton**: Enhanced with **SF Symbols** support (`SetImage`), circular shapes (`SetRadius`), and custom background/foreground colors.
-    - **TSwiftImage**: Improved image handling with `SetFile` to bypass caching and support dynamic artwork updates.
-    - **TSwiftLabel**: Modern label control with support for large fonts and custom styling.
-- **TestMusicKit Sample**: A new flagship sample application (`SwiftUI/samples/TestMusicKit.prg`) demonstrating a modern, vertical music player interface with:
-    - Large 300x300 artwork display.
-    - Real-time progress slider and timer-based updates.
-    - Smart Play/Pause toggle button with state-aware icon switching.
-- **Build System**: Updated `build_lib.sh` and `build.sh` to correctly link `MusicKit`, `SwiftUI`, and `Combine` frameworks, ensuring smooth compilation on macOS 14+.
-    - **Layout**: Flexible architecture allowing views to be added dynamically.
-- **TCVBrowse**: A completely rewritten Image Browser component.
-    - **Modern Backend**: Replaces the legacy `IKImageBrowserView` with `NSCollectionView` and Diffable Data Sources for stability and performance.
-    - **Features**: Supports selection callbacks (`bChange`), double-click actions (`bLDblClick`), and Core Animation effects ("Pulse" on selection).
-    - **Visuals**: Clean grid layout with customizable item sizing.
-- **Cleanup**: Extensive removal of debug logs (`NSLog`, `MsgInfo`) across the library ensuring a production-ready build.
+### Audio Processing & TNativeAudio (February 2026 - Part 12)
+- **TNativeAudio Modernization**: Completely refactored the native audio engine to use modern **AVFoundation** APIs, ensuring full compatibility with macOS 15+ and 64-bit architectures.
+- **High-Performance Streaming**: New `Stream( cUrl )` method using `AVURLAsset` for robust internet radio and HLS stream playback. Automatically handles URLs without file extensions.
+- **Modern Metadata Engine**: Migrated from deprecated properties to the asynchronous `AVPlayerItemMetadataOutput` API.
+    - **Live Updates**: Real-time extraction of Artist and Song Title from live streams using an optimized Objective-C delegate.
+    - **Smart Parsing**: Automatically detects and splits "Artist - Title" strings from mixed metadata sources.
+    - **Zero Warnings**: Replaced all obsolete `timedMetadata` calls, ensuring a clean and future-proof build.
+- **Event Synchronization**: Integrated `IsPlaying()` and `IsReady()` (buffering detection) for precise UI control. Improved auto-play logic and buffering state visual feedback.
+- **Memory Safety**: Implemented `objc_setAssociatedObject` to link metadata delegates directly to the `AVPlayer` lifecycle, preventing memory leaks and ensuring clean resource management.
+- **New Sample**: `StreamPlayer.prg` demonstrating a professional internet radio player with real-time metadata display and volume control.
 
 ### Popover & Swift Integration Refinements (January 2026 - Part 11)
 - **Popover Mechanism**:
