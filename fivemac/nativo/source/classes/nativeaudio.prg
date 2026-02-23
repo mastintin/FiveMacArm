@@ -8,6 +8,7 @@ CLASS TNativeAudio
     DATA nDuration
     DATA cTitle, cArtist, cAlbum
     DATA bOnTime
+    DATA bOnEnd
    
     METHOD New( cFile )
     METHOD Play()       INLINE NativeAudioPlay( ::hWnd )
@@ -80,12 +81,21 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function _FMAudio( pPlayer )
+function _FMAudio( pPlayer, nMsg )
     local nAt := AScan( aPlayers, { | o | o:hWnd == pPlayer } )
+    
     if nAt != 0
-        if ! Empty( aPlayers[ nAt ]:bOnTime )
-            Eval( aPlayers[ nAt ]:bOnTime, aPlayers[ nAt ] )
-        endif
+        do case
+            case nMsg == 1 // Time change
+                if ! Empty( aPlayers[ nAt ]:bOnTime )
+                    Eval( aPlayers[ nAt ]:bOnTime, aPlayers[ nAt ] )
+                endif
+            
+            case nMsg == 2 // End of playback
+                if ! Empty( aPlayers[ nAt ]:bOnEnd )
+                    Eval( aPlayers[ nAt ]:bOnEnd, aPlayers[ nAt ] )
+                endif
+        endcase
     endif
 return nil
 

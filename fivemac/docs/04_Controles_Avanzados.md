@@ -84,7 +84,8 @@ oMusic:SetObserver( { | o | MyUpdateFunc( o ) } )
 ```
 *   **GetMetadata()**: Recupera Título, Artista y Álbum de forma automática.
 *   **GetArtwork()**: Obtiene la imagen de la carátula vinculada al archivo.
-*   **SetObserver( bAction )**: Ejecuta un codeblock periódicamente (cada 0.5s) mientras se reproduce el audio.
+*   **SetObserver( bAction )**: Ejecuta un codeblock periódicamente (cada 0.5s).
+*   **bOnEnd**: Codeblock que se ejecuta automáticamente cuando finaliza la reproducción.
 
 ---
 
