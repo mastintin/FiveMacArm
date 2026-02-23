@@ -39,7 +39,7 @@ CLASS TImage FROM TControl
 
    METHOD GetImage() INLINE ImgGetNSImage( ::hWnd )
 
-   METHOD SetQr(cTexto, nScale ) INLINE ImgSetNSImage( ::hwnd, SIMAGEGENQR( cText, nScale ) )
+   METHOD SetQr(cTexto, nScale ) INLINE ImgSetNSImage( ::hwnd, SIMAGEGENQR( cTexto, nScale ) )
 
    METHOD GetWidth() INLINE ImgGetWidth( ::hWnd )
 
