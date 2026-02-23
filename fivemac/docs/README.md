@@ -18,3 +18,6 @@ Bienvenido a la documentación oficial de FiveMac. Aquí encontrarás guías det
    - Integración con NiceGUI (Vue/Quasar) y SwiftUI.
 7. [Bases de Datos](07_Bases_de_Datos.md)
    - Uso de TSQLite nativo y la implementación moderna de TMySQL.
+8. [Impresión y PDF](08_Impresion.md)
+   - TPrinter (Nativo Cocoa) y TNicePrinter (Generación PDF mediante HTML/Quasar).
+
