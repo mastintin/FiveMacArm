@@ -20,3 +20,16 @@ Extracción rápida de texto de imágenes mediante los algoritmos de redes neuro
 
 ## Filtros de Imagen Avanzados (`TCIFilter` y Core Image)
 Capacidad de apilar recursivamente efectos no destructivos (como Tonos Sepia, Cómic, Brillo, Contraste) controlados por un modelo 64-bit optimizado.
+
+### Generación de Códigos QR
+FiveMac aprovecha el filtro nativo `CIQRCodeGenerator` para generar códigos QR de alta calidad directamente desde el código Harbour, sin dependencias externas.
+
+**Sintaxis:**
+```harbour
+// Usando el objeto TImage o TSimage
+oImg:SetQr( "https://www.fivemac.com", 10.0 )
+
+// Usando la función directa (retorna un handle NSImage)
+hImage := SIMAGEGENQR( "Contenido del QR", 15.0 )
+```
+*El parámetro de escala (segundo argumento) determina el tamaño final del QR, ya que por defecto los filtros de Core Image generan 1 punto por módulo.*
