@@ -4,10 +4,13 @@ FiveMac ofrece acceso directo a frameworks nativos de macOS:
 
 ## MusicKit
 Integración completa con el reproductor de Apple Music mediante puentes híbridos Swift/Objective-C/AppleScript.
-- Sincronización de metadatos de las canciones (Título, Artista, Portada).
-- Accesos a estado de reproducción y acciones de control de la app (Pause, Play).
-
 ![Mando a distancia Apple Music (NiceGUI)](img/cap6.png)
+
+> [!IMPORTANT]
+> **Arquitectura de Tres Vías**: Este ejemplo (`TestMusicNice.prg`) es la demostración definitiva de la potencia de FiveMac al combinar tres tecnologías en tiempo real:
+> 1.  **Cocoa Nativo**: Gestiona la ventana base y el contenedor Webview.
+> 2.  **Swift**: Realiza el enlace de bajo nivel con **MusicKit** para el control de reproducción.
+> 3.  **NiceGUI**: Proporciona la capa visual reactiva y moderna del mando.
 
 ## MapKit (`TNativeMap`)
 Controles de mapas nativos soportando vistas híbridas, geocodificación (`MKMAPGOTOLOCATION`) y renderizado de rutas paso a paso con Puntos de Interés (POI).
