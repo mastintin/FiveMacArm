@@ -24,6 +24,8 @@ CLASS TNativeAudio
     METHOD GetArtwork() INLINE NativeAudioGetArtwork( ::hWnd )
    
     METHOD SetObserver( bAction ) INLINE ( ::bOnTime := bAction, Music_Set_Observer( ::hWnd ) )
+    
+    METHOD Load( cFile )
 
     METHOD End()        
 
@@ -34,14 +36,31 @@ ENDCLASS
 METHOD New( cFile ) CLASS TNativeAudio
 
     if ! Empty( cFile )
+        ::Load( cFile )
+        if AScan( aPlayers, { | o | o == Self } ) == 0
+            AAdd( aPlayers, Self )
+        endif
+    endif
+
+return Self
+
+//----------------------------------------------------------------------------//
+
+METHOD Load( cFile ) CLASS TNativeAudio
+
+    if ! Empty( cFile )
         ::cFile := cFile
         ::hWnd  := NativeAudioCreate( cFile )
         ::GetMetadata()
         ::nDuration := ::GetDuration()
-        AAdd( aPlayers, Self )
+        
+        // Reinscripción automática de observadores si ya estaban definidos
+        if ! Empty( ::bOnTime ) .or. ! Empty( ::bOnTrackEnd )
+            Music_Set_Observer( ::hWnd )
+        endif
     endif
 
-return Self
+return nil
 
 //----------------------------------------------------------------------------//
 
