@@ -4,6 +4,8 @@ static oMusic, oTimer
 static oSaySong, oSayArtist, oSayAlbum, oImg
 static oSlideVol, oSlideProg, oSayDur
 static cLastSong := ""
+static aPlaylist := {}
+static nCurrentPos := 1
 
 
 function Main()
@@ -15,13 +17,27 @@ function Main()
     if Empty( cFile )
         return nil
     endif
+    
+    AAdd( aPlaylist, cFile )
 
     // 2. Inicializar NativeAudio (Nativo AVPlayer, SIN App Música)
-    oMusic := TNativeAudio():New( cFile )
-    // oMusic:bOnTrackEnd := { || MsgInfo( "¡Fin de la canción!" ), oMusic:Stop() }
-    oMusic:bOnTrackEnd := { || oMusic:Seek(0), oMusic:Play() }
+    oMusic := TNativeAudio():New( aPlaylist[ nCurrentPos ] )
+    
+    oMusic:bOnTrackEnd := { || 
+    if nCurrentPos < Len( aPlaylist )
+        nCurrentPos++
+        oMusic:Stop()
+        oMusic:Load( aPlaylist[ nCurrentPos ] )
+        oMusic:Play()
+        UpdateUI()
+    else
+        oMusic:Seek(0)
+        oMusic:Play()
+    endif
+    }
+    
     if Empty( oMusic:hWnd )
-        MsgAlert( "No se pudo cargar el archivo: " + cFile )
+        MsgAlert( "No se pudo cargar el archivo: " + aPlaylist[ nCurrentPos ] )
         return nil
     endif
 
@@ -81,16 +97,22 @@ return nil
 function LoadNew( oMusic )
     local cFile := ChooseFile( "Selecciona otro archivo MP3", "mp3" )
     if ! Empty( cFile )
-        oMusic:Stop()
-        oMusic:Load( cFile )
-        oMusic:Play()
-       
-        // Actualizar UI inmediata
-        oSaySong:SetText( oMusic:cTitle )
-        oSayArtist:SetText( oMusic:cArtist )
-        oSayAlbum:SetText( oMusic:cAlbum )
-        oImg:SetImage( oMusic:GetArtwork() )
-        oSlideProg:SetMinMaxValue( 0, oMusic:GetDuration() )
+        AAdd( aPlaylist, cFile )
+        if Len( aPlaylist ) == 1
+            nCurrentPos := 1
+            oMusic:Stop()
+            oMusic:Load( aPlaylist[ nCurrentPos ] )
+            oMusic:Play()
+           
+            // Actualizar UI inmediata
+            oSaySong:SetText( oMusic:cTitle )
+            oSayArtist:SetText( oMusic:cArtist )
+            oSayAlbum:SetText( oMusic:cAlbum )
+            oImg:SetImage( oMusic:GetArtwork() )
+            oSlideProg:SetMinMaxValue( 0, oMusic:GetDuration() )
+        else
+            MsgInfo( "Añadido a la cola de reproducción: " + cFile )
+        endif
     endif
 return nil
 
