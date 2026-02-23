@@ -14,7 +14,7 @@ HB_FUNC(MUSIC_SET_OBSERVER) {
   if (player) {
     CMTime interval = CMTimeMakeWithSeconds(0.5, NSEC_PER_SEC);
 
-    [player
+    id timeToken = [player
         addPeriodicTimeObserverForInterval:interval
                                      queue:dispatch_get_main_queue()
                                 usingBlock:^(CMTime time) {
@@ -30,8 +30,9 @@ HB_FUNC(MUSIC_SET_OBSERVER) {
                                   }
                                 }];
 
+    __block id endToken = nil;
     if (player.currentItem) {
-      [[NSNotificationCenter defaultCenter]
+      endToken = [[NSNotificationCenter defaultCenter]
           addObserverForName:AVPlayerItemDidPlayToEndTimeNotification
                       object:player.currentItem
                        queue:[NSOperationQueue mainQueue]
@@ -46,6 +47,30 @@ HB_FUNC(MUSIC_SET_OBSERVER) {
                     }
                   }];
     }
+
+    // Devolvemos los tokens a Harbour para poder limpiarlos luego
+    PHB_ITEM pArray = hb_itemArrayNew(2);
+    PHB_ITEM pToken1 = hb_itemPutNLL(NULL, (HB_LONGLONG)timeToken);
+    PHB_ITEM pToken2 = hb_itemPutNLL(NULL, (HB_LONGLONG)endToken);
+    hb_arraySet(pArray, 1, pToken1);
+    hb_arraySet(pArray, 2, pToken2);
+    hb_itemRelease(pToken1);
+    hb_itemRelease(pToken2);
+
+    hb_itemReturnRelease(pArray);
+  }
+}
+
+HB_FUNC(MUSIC_REMOVE_OBSERVERS) {
+  AVPlayer *player = (AVPlayer *)hb_parnll(1);
+  id timeToken = (id)hb_parnll(2);
+  id endToken = (id)hb_parnll(3);
+
+  if (player && timeToken) {
+    [player removeTimeObserver:timeToken];
+  }
+  if (endToken) {
+    [[NSNotificationCenter defaultCenter] removeObserver:endToken];
   }
 }
 

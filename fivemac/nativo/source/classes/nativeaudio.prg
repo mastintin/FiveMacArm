@@ -9,6 +9,7 @@ CLASS TNativeAudio
     DATA cTitle, cArtist, cAlbum
     DATA bOnTime
     DATA bOnTrackEnd
+    DATA hTimeObs, hEndObs
    
     METHOD New( cFile )
     METHOD Play()       INLINE NativeAudioPlay( ::hWnd )
@@ -23,9 +24,11 @@ CLASS TNativeAudio
     METHOD GetMetadata()
     METHOD GetArtwork() INLINE NativeAudioGetArtwork( ::hWnd )
    
-    METHOD SetObserver( bAction ) INLINE ( ::bOnTime := bAction, Music_Set_Observer( ::hWnd ) )
+    METHOD SetObserver( bAction )
     
     METHOD Load( cFile )
+    
+    METHOD RemoveObservers()
 
     METHOD End()        
 
@@ -49,6 +52,7 @@ return Self
 METHOD Load( cFile ) CLASS TNativeAudio
 
     if ! Empty( cFile )
+        ::RemoveObservers()
         ::cFile := cFile
         ::hWnd  := NativeAudioCreate( cFile )
         ::GetMetadata()
@@ -56,7 +60,7 @@ METHOD Load( cFile ) CLASS TNativeAudio
         
         // Reinscripción automática de observadores si ya estaban definidos
         if ! Empty( ::bOnTime ) .or. ! Empty( ::bOnTrackEnd )
-            Music_Set_Observer( ::hWnd )
+            ::SetObserver( ::bOnTime )
         endif
     endif
 
@@ -64,8 +68,32 @@ return nil
 
 //----------------------------------------------------------------------------//
 
+METHOD SetObserver( bAction ) CLASS TNativeAudio
+    local aTokens
+    ::bOnTime := bAction
+    ::RemoveObservers()
+    if ! Empty( ::hWnd )
+        aTokens := Music_Set_Observer( ::hWnd )
+        ::hTimeObs := aTokens[ 1 ]
+        ::hEndObs  := aTokens[ 2 ]
+    endif
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD RemoveObservers() CLASS TNativeAudio
+    if ! Empty( ::hTimeObs ) .or. ! Empty( ::hEndObs )
+        Music_Remove_Observers( ::hWnd, ::hTimeObs, ::hEndObs )
+        ::hTimeObs := nil
+        ::hEndObs  := nil
+    endif
+return nil
+
+//----------------------------------------------------------------------------//
+
 METHOD End() CLASS TNativeAudio
     local nAt 
+    ::RemoveObservers()
     ::Stop()
     nAt := AScan( aPlayers, { | o | o:hWnd == ::hWnd } )
     if nAt != 0
