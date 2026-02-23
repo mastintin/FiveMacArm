@@ -18,7 +18,7 @@ function Main()
 
     // 2. Inicializar NativeAudio (Nativo AVPlayer, SIN App Música)
     oMusic := TNativeAudio():New( cFile )
-    oMusic:bOnEnd := { || MsgInfo( "¡Fin de la canción!" ), oMusic:Stop() }
+    oMusic:bOnTrackEnd := { || MsgInfo( "¡Fin de la canción!" ), oMusic:Stop() }
     
     if Empty( oMusic:hWnd )
         MsgAlert( "No se pudo cargar el archivo: " + cFile )
