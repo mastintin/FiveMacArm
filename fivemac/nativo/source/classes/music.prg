@@ -25,13 +25,14 @@ CLASS TMusic
     METHOD Debug()       INLINE MusicDebug(::hWnd)
     METHOD GetArtWork()  INLINE MusicGetArtWork()    
     METHOD GetTrackArtwork() INLINE MusicGetTrackArtwork()  
-    METHOD GetSonProGress()
+    METHOD GetSonProgress()
     METHOD GetSonDuration()
     METHOD GetSonLyrics() INLINE  MUSICGETSONGLYRICS()
     METHOD SeekToSecond( nSecond ) INLINE MUSICSEEKTOSECOND( nSecond )    
     METHOD GetCurrentTrackNumber() INLINE MUSICGETCURRENTTRACKNUMBER()
     METHOD GetCurrentTrackIndex() INLINE MUSICGETCURRENTTRACKINDEX()  
     METHOD PlaybyIndex(nIndex ) INLINE   MUSICPLAYBYINDEX( nIndex )  
+    METHOD AddTrack( cFile ) INLINE MusicAddTrack( ::hWnd, cFile )
 ENDCLASS   
 
 //----------------------------------------------------------------------------//

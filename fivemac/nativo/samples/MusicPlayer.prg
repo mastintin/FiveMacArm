@@ -5,60 +5,71 @@ static oSaySong, oSayArtist, oSayAlbum, oImg
 static oSlideVol, oSlideProg, oSayDur
 static cLastSong := ""
 
+
 function Main()
     local oWnd
     local cFile
 
-    // 1. Selector de archivo inicial
-    cFile := ChooseFile( "Selecciona un archivo MP3", "mp3" )
+    // 1. Selector de archivo inicial (Nativo)
+    cFile := ChooseFile( "Selecciona un MP3 (Autónomo)", "mp3" )
     if Empty( cFile )
-    return nil
+        return nil
     endif
 
-    // 2. Inicializar Music y añadir el track
-    oMusic := TMusic():New()
-    MusicAddTrack( , cFile ) // Usamos la función de bajo nivel para añadir/abrir el archivo
+    // 2. Inicializar NativeAudio (Nativo AVPlayer, SIN App Música)
+    oMusic := TNativeAudio():New( cFile )
+    
+    if Empty( oMusic:hWnd )
+        MsgAlert( "No se pudo cargar el archivo: " + cFile )
+        return nil
+    endif
 
-    // 3. Crear Interfaz
-    DEFINE WINDOW oWnd TITLE "FiveMac Music Player" ;
-        FROM 100, 100 TO 550, 500 FLIPPED
+    oMusic:Play()
+
+    // 3. Crear Interfaz (Nativa AppKit)
+    DEFINE WINDOW oWnd TITLE "FiveMac Independent Player (AVFoundation)" ;
+        FROM 100, 100 TO 520, 600 FLIPPED
+
+    ownd:SetReSizable( .F. )
 
     @ 20, 20 IMAGE oImg SIZE 180, 180 OF oWnd 
-    oImg:nAutoResize = 12 // Pin to top-left
+    //oImg:nAutoResize = 12 
 
-    @ 20, 220 SAY "Canción:" OF oWnd
-    @ 40, 220 SAY oSaySong PROMPT "Cargando..." SIZE 250, 20 OF oWnd
+    @ 20, 220 SAY "Título:" OF oWnd
+    @ 40, 220 SAY oSaySong PROMPT oMusic:cTitle SIZE 250, 40 OF oWnd
     oSaySong:SetColor( CLR_BLUE, 0 )
+    oSaySong:SetSizeFont( 16 )
 
-    @ 70, 220 SAY "Artista:" OF oWnd
-    @ 90, 220 SAY oSayArtist PROMPT "" SIZE 250, 20 OF oWnd
+    @ 85, 220 SAY "Artista:" OF oWnd
+    @ 105, 220 SAY oSayArtist PROMPT oMusic:cArtist SIZE 250, 20 OF oWnd
 
-    @ 120, 220 SAY "Álbum:" OF oWnd
-    @ 140, 220 SAY oSayAlbum PROMPT "" SIZE 250, 20 OF oWnd
+    @ 135, 220 SAY "Álbum:" OF oWnd
+    @ 155, 220 SAY oSayAlbum PROMPT oMusic:cAlbum SIZE 250, 20 OF oWnd
 
     // Controles de Reproducción
-    @ 220, 20 BUTTON "Play/Pause" SIZE 100, 30 ACTION oMusic:PlayPause() OF oWnd
-    @ 220, 130 BUTTON "Stop" SIZE 80, 30 ACTION oMusic:Stop() OF oWnd
+    @ 210, 20 BUTTON "Play" SIZE 60, 30 ACTION oMusic:Play() OF oWnd
+    @ 210, 90 BUTTON "Pause" SIZE 60, 30 ACTION oMusic:Pause() OF oWnd
+    @ 210, 160 BUTTON "Stop" SIZE 60, 30 ACTION oMusic:Stop() OF oWnd
+    @ 210, 260 BUTTON "Abrir..." SIZE 110, 30 ACTION LoadNew( oMusic ) OF oWnd
     
     // Volumen
     @ 260, 20 SAY "Volumen:" OF oWnd
-    @ 260, 90 SLIDER oSlideVol SIZE 150, 20 OF oWnd
-    oSlideVol:SetValue( oMusic:GetVol() )
+    @ 260, 90 SLIDER oSlideVol SIZE 380, 20 OF oWnd
+    oSlideVol:SetValue( 80 )
+    oMusic:SetVol( 80 )
     oSlideVol:bChange := { | nVal | oMusic:SetVol( nVal ) }
 
     // Progreso
-    @ 310, 20 SAY "Progreso:" OF oWnd
-    @ 330, 20 SLIDER oSlideProg SIZE 350, 20 OF oWnd
-    oSlideProg:bChange := { | nVal | oMusic:SeekToSecond( nVal ) }
+    @ 305, 20 SAY "Posición playback:" OF oWnd
+    @ 325, 20 SLIDER oSlideProg SIZE 460, 20 OF oWnd
+    oSlideProg:SetMinMaxValue( 0, oMusic:GetDuration() )
+    oSlideProg:bChange := { | nVal | oMusic:Seek( nVal ) }
 
-    @ 355, 20 SAY oSayDur PROMPT "0:00 / 0:00" SIZE 200, 20 OF oWnd
-    oSayDur:SetColor( 0x888888, 0 )
+    @ 350, 20 SAY oSayDur PROMPT "0:00 / 0:00" SIZE 200, 20 OF oWnd
+    oSayDur:SetColor( 0x555555, 0 )
 
-    // Timer de Refresco
-    DEFINE TIMER oTimer INTERVAL 1 REPEAT OF oWnd ;
-        ACTION UpdateUI()
-
-    ACTIVATE TIMER oTimer
+    // Observer de Refresco (Nativo, SIN Timer externo)
+    oMusic:SetObserver( { || UpdateUI() } )
 
     ACTIVATE WINDOW oWnd
 
@@ -66,40 +77,51 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function UpdateUI()
-    local cSong, nSecs, nProgs
-
-    if ! oMusic:IsRun()
-    return nil
-    endif
-
-    cSong := oMusic:SongName()
-    
-    // Si ha cambiado la canción, actualizamos metadatos pesados
-    if cSong != cLastSong
-    cLastSong := cSong
-    oSaySong:SetText( cSong )
-    oSayArtist:SetText( oMusic:GetArtist() )
-    oSayAlbum:SetText( oMusic:GetAlbum() )
-    oImg:SetImage( oMusic:GetArtWork() )
+function LoadNew( oMusic )
+    local cFile := ChooseFile( "Selecciona otro archivo MP3", "mp3" )
+    if ! Empty( cFile )
+        oMusic:Stop()
+        oMusic:New( cFile )
+        oMusic:Play()
        
-    nSecs := oMusic:GetSonDuration()
-    oSlideProg:SetMinMaxValue( 0, nSecs )
+        // Actualizar UI inmediata
+        oSaySong:SetText( oMusic:cTitle )
+        oSayArtist:SetText( oMusic:cArtist )
+        oSayAlbum:SetText( oMusic:cAlbum )
+        oImg:SetImage( oMusic:GetArtwork() )
+        oSlideProg:SetMinMaxValue( 0, oMusic:GetDuration() )
     endif
-
-    // Actualizamos progreso cada segundo
-    nSecs := oMusic:GetSonDuration()
-    nProgs := oMusic:GetSonProgress()
-    
-    oSlideProg:SetValue( nProgs )
-    oSayDur:SetText( FormatTime( nProgs ) + " / " + FormatTime( nSecs ) )
-
 return nil
 
 //----------------------------------------------------------------------------//
 
-function FormatTime( nSeconds )
-    local nMin, nSec
-    nMin := Int( nSeconds / 60 )
-    nSec := Int( nSeconds % 60 )
-return AllTrim( Str( nMin ) ) + ":" + PadL( AllTrim( Str( nSec ) ), 2, "0" )
+function UpdateUI()
+    local nSecs, nPos
+
+    if Empty( oMusic:hWnd )
+        return nil
+    endif
+    
+
+    if Empty( cLastSong ) .or. cLastSong != oMusic:cTitle
+        cLastSong := oMusic:cTitle
+        oSaySong:SetText( oMusic:cTitle )
+        oSayArtist:SetText( oMusic:cArtist )
+        oSayAlbum:SetText( oMusic:cAlbum )
+        oImg:SetImage( oMusic:GetArtwork() )
+        oSlideProg:SetMinMaxValue( 0, oMusic:GetDuration() )
+    endif 
+
+    nPos  := oMusic:GetTime()
+    nSecs := oMusic:GetDuration()
+    
+    hb_default( @nPos, 0 )
+    hb_default( @nSecs, 0 )
+
+    oSlideProg:SetValue( nPos )
+    oSayDur:SetText( cTimeMINSEC(nPos) + " / " + cTimeMINSEC(nSecs) )
+    
+  
+return nil
+
+//----------------------------------------------------------------------------//

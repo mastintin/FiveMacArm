@@ -1,3 +1,6 @@
+#ifndef FIVEMAC_H
+#define FIVEMAC_H
+
 #import <Cocoa/Cocoa.h>
 #define HB_DONT_DEFINE_BOOL
 #include "fmsgs.h"
@@ -105,3 +108,5 @@ NSImage *ImgTemplate(NSString *);
 - (NSView *)hitTest:(NSPoint)aPoint;
 - (BOOL)isFlipped;
 @end
+
+#endif

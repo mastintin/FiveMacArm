@@ -630,7 +630,7 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
                  
 //----------------------------------------------------------------------------//
                                 
-#xcommand @ <nRow>, <nCol> SPLITBOX [ <oSplitter> ] ;
+#xcommand @ <nRow>, <nCol> <split: SPLITBOX, SPLITTER> [ <oSplitter> ] ;
    [ OF <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <h: HORIZONTAL> ] ;
@@ -819,6 +819,12 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [VOLUME <nVolume> ] ;
    => ;
    [ <oItunes> := ] TItunes():New( <nVolume> )
+
+//----------------------------------------------------------------------------//
+
+#xcommand DEFINE MUSICKIT <oMusic> [ FILE <cFile> ] ;
+   => ;
+   [ <oMusic> := ] TMusicKit():New( <cFile> )
 
 //----------------------------------------------------------------------------//
    
