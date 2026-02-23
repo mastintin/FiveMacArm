@@ -82,9 +82,13 @@ oMusic:Play()
 // Observador para actualizar la UI cada 0.5s de forma nativa
 oMusic:SetObserver( { | o | MyUpdateFunc( o ) } )
 ```
-*   **GetMetadata()**: Recupera Título, Artista y Álbum de forma automática.
+*   **GetStreamMetadata()**: Recupera Título y Artista de streams en vivo de forma asíncrona y eficiente.
+*   **GetMetadata()**: Recupera Título, Artista y Álbum de archivos locales.
 *   **GetArtwork()**: Obtiene la imagen de la carátula vinculada al archivo.
-*   **Load( cFile )**: Carga un nuevo archivo y reinscribe los observadores automáticamente.
+*   **Load( cFile )**: Carga un nuevo archivo local y reinscribe los observadores automáticamente.
+*   **Stream( cUrl )**: Carga un stream de audio desde una URL remota de forma robusta.
+*   **IsPlaying()**: Indica si el reproductor está actualmente emitiendo sonido.
+*   **IsReady()**: Detecta si el buffer de red está listo para comenzar la reproducción.
 *   **SetObserver( bAction )**: Ejecuta un codeblock periódicamente (cada 0.5s).
 *   **bOnTrackEnd**: Codeblock que se ejecuta automáticamente cuando finaliza la reproducción.
 
