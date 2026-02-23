@@ -41,6 +41,36 @@ NiceGUI soporta estructuras web ricas mediante directivas de bloque (abiertas co
 
 ---
 
+## Wizards y Selectores de Rango
+
+### NICE STEPPER (Wizards)
+Permite crear interfaces por pasos o flujos de trabajo (Wizards).
+```harbour
+DEFINE NICE STEPPER oStepper VALUE 1 OF oPage
+    DEFINE NICE STEP STEP 1 TITLE "Datos Generales" ICON "person"
+        NICE SAY PROMPT "Introduce tus datos" OF oStepper
+    END NICE STEP
+    
+    DEFINE NICE STEP STEP 2 TITLE "Confirmación" ICON "check"
+        NICE SAY PROMPT "¿Estás seguro?" OF oStepper
+    END NICE STEP
+END NICE STEPPER
+
+// Navegación programática:
+NICE STEPPER oStepper NEXT
+NICE STEPPER oStepper PREVIOUS
+```
+
+### NICE SLIDER
+Selector de rango numérico deslizable con previsualización de valor.
+```harbour
+NICE SLIDER oSlider VALUE 50 MIN 0 MAX 100 STEP 5 OF oPage
+```
+
+👉 **[Ver ejemplo visual de estos controles (Stepper & Slider)](img/cap4.png)**
+
+---
+
 ## Visualización de Datos Avanzada
 
 ### NICE TABLE
