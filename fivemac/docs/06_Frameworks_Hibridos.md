@@ -12,6 +12,7 @@ FiveMac introduce un puente pionero hacia NiceGUI (basado en Vue.js y Quasar) ca
 ![Ejemplo Controles NiceGUI](img/cap4.png)
 ![Ejemplo Dashboard NiceGUI](img/cap5.png)
 ![Mando Apple Music (NiceGUI)](img/cap6.png)
+*Ejecución híbrida: Cocoa (Ventana) + Swift (MusicKit) + NiceGUI (UI)*
 
 ## SwiftUI
 Integración del framework más moderno de Apple en Harbour.
