@@ -75,7 +75,14 @@ Selector de rango numérico deslizable con previsualización de valor.
 NICE SLIDER oSlider VALUE 50 MIN 0 MAX 100 STEP 5 OF oPage
 ```
 
-👉 **[Ver ejemplo visual de estos controles (Stepper & Slider)](img/cap4.png)**
+### Iconos e indicadores visuales
+- **Iconos**: `NICE ICON NAME "person" SIZE "sm" COLOR "primary" OF oParent` (Soporta todos los iconos de Material Design).
+- **Progreso (Linear)**: Útil para mostrar estados de carga o porcentajes de objetivos.
+  ```harbour
+  NICE PROGRESS VALUE 0.27 COLOR "indigo" OF oParent
+  ```
+
+👉 **[Ver ejemplo visual de estos controles (Stepper, Slider y Progress)](img/cap4.png)**
 
 > [!TIP]
 > Puedes ver los códigos de estos controles en funcionamiento real en los ejemplos:
@@ -108,4 +115,13 @@ DEFINE NICE CHART oChart WIDTH 600 HEIGHT 400 OF oCard
 END NICE CHART
 ```
 
-*(Nota: Adicionalmente existen comandos para diálogos web interactivos (`DEFINE NICE DIALOG`), controles de pasos o Wizards (`DEFINE NICE STEPPER`), rejillas CSS fluidas (`DEFINE NICE GRID`) y más).*
+### NICE GRID
+Este componente implementa un sistema de rejilla fluido de Quasar. A diferencia de los Stacks (VStack/HStack), el Grid permite organizar elementos en columnas fijas (COLS) que se adaptan al ancho disponible.
+```harbour
+DEFINE NICE GRID oGrid COLS 2 CLASS "w-full gap-4" OF oParent
+    NICE SAY PROMPT "Celda 1" OF oGrid
+    NICE SAY PROMPT "Celda 2" OF oGrid
+END NICE GRID
+```
+
+*(Nota: Adicionalmente existen comandos para diálogos web interactivos (`DEFINE NICE DIALOG`), controles de pasos o Wizards (`DEFINE NICE STEPPER`), y más).*
