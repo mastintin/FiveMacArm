@@ -39,7 +39,7 @@ ENDCLASS
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange, nValue, nAutoResize,;
       cVarName , cOnclick ) CLASS TSlider 
 
-   DEFAULT nWidth := 100, nHeight := 100, nValue := 0
+   DEFAULT nWidth := 100, nHeight := 100, nValue := 0, oWnd := GetWndDefault()
      
    ::hWnd    = SliderCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
    ::nValue  = nValue

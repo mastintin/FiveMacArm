@@ -28,6 +28,16 @@ CLASS TNativeAudio
     
     METHOD Load( cFile )
     
+    METHOD Stream( cUrl )
+    
+    METHOD IsReady() INLINE NativeAudioIsReady( ::hWnd )
+    
+    METHOD GetStreamMetadata() INLINE Music_Get_Metadata( ::hWnd )
+    
+    METHOD GetMetadata() INLINE ::GetStreamMetadata()
+    
+    METHOD IsPlaying() INLINE Music_IsPlaying( ::hWnd )
+    
     METHOD RemoveObservers()
 
     METHOD End()        
@@ -53,6 +63,9 @@ METHOD Load( cFile ) CLASS TNativeAudio
 
     if ! Empty( cFile )
         ::RemoveObservers()
+        if ! Empty( ::hWnd )
+            Music_Release( ::hWnd )
+        endif   
         ::cFile := cFile
         ::hWnd  := NativeAudioCreate( cFile )
         ::GetMetadata()
@@ -65,6 +78,30 @@ METHOD Load( cFile ) CLASS TNativeAudio
     endif
 
 return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD Stream( cUrl ) CLASS TNativeAudio
+
+    if ! Empty( cUrl )
+        ::RemoveObservers()
+        if ! Empty( ::hWnd )
+            Music_Release( ::hWnd )
+        endif   
+        ::cFile := cUrl
+        ::hWnd  := Music_Load_Stream( cUrl )
+        ::GetMetadata()
+        ::nDuration := ::GetDuration()
+        
+        // Reinscripción automática de observadores si ya estaban definidos
+        if ! Empty( ::bOnTime ) .or. ! Empty( ::bOnTrackEnd )
+            ::SetObserver( ::bOnTime )
+        endif
+    endif
+
+return nil
+
+//----------------------------------------------------------------------------//
 
 //----------------------------------------------------------------------------//
 
