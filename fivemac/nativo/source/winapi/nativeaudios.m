@@ -19,17 +19,33 @@ HB_FUNC(MUSIC_SET_OBSERVER) {
                                      queue:dispatch_get_main_queue()
                                 usingBlock:^(CMTime time) {
                                   // --- LLAMADA DE VUELTA A HARBOUR ---
-                                  // Esto ejecuta la función "_FMAUDIO" en
-                                  // tu PRG cada vez que el player avanza
                                   PHB_DYNS pDynSym =
                                       hb_dynsymFindName("_FMAUDIO");
                                   if (pDynSym) {
                                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
                                     hb_vmPushNil();
                                     hb_vmPushNumInt((HB_LONGLONG)player);
-                                    hb_vmDo(1);
+                                    hb_vmPushLong(1); // nMsg (1: Time change)
+                                    hb_vmDo(2);
                                   }
                                 }];
+
+    if (player.currentItem) {
+      [[NSNotificationCenter defaultCenter]
+          addObserverForName:AVPlayerItemDidPlayToEndTimeNotification
+                      object:player.currentItem
+                       queue:[NSOperationQueue mainQueue]
+                  usingBlock:^(NSNotification *_Nonnull note) {
+                    PHB_DYNS pDynSym = hb_dynsymFindName("_FMAUDIO");
+                    if (pDynSym) {
+                      hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
+                      hb_vmPushNil();
+                      hb_vmPushNumInt((HB_LONGLONG)player);
+                      hb_vmPushLong(2); // nMsg (2: End of playback)
+                      hb_vmDo(2);
+                    }
+                  }];
+    }
   }
 }
 
