@@ -19,13 +19,21 @@ ACTIVATE NICE PAGE <oPage>
 ### Contenedores de Layout y Zonas
 NiceGUI soporta estructuras web ricas mediante directivas de bloque (abiertas con `DEFINE` y cerradas con `END`):
 - **Cabeceras y Pies**: `DEFINE NICE HEADER` / `DEFINE NICE FOOTER`.
-- **Menú Lateral**: `DEFINE NICE DRAWER` y sus elementos hijos (`NICE DRAWER ITEM`).
-- **Pilas Fluids (Stacks)**: `DEFINE NICE HSTACK` (Horizontal) y `DEFINE NICE VSTACK` (Vertical). Controlan la alienación y espacios con cláusulas como `GAP`, `ALIGN`, `JUSTIFY`.
-- **Tarjetas (Cards)**: Contenedores con sombra y bordes redondeados.
+- **Menú Lateral (Drawer)**: Permite crear paneles laterales colapsables.
   ```harbour
-  DEFINE NICE CARD oCard RADIUS 8 BORDER WIDTH 1 OF oPage
-  ... // Elementos de la tarjeta
-  END NICE CARD
+  DEFINE NICE DRAWER oSide CLASS "bg-slate-100" OF oPage
+      NICE DRAWER ITEM PROMPT "Inicio" ICON "dashboard" OF oSide
+      NICE DRAWER ITEM PROMPT "Configuración" ICON "settings" OF oSide
+  END NICE DRAWER
+  
+  // Tip: Puedes conmutar el drawer desde un botón con JS:
+  NICE BUTTON PROMPT "" ICON "menu" JS "toggleDrawer()" OF oHeader
+  ```
+- **Pilas Fluids (Stacks)**: `DEFINE NICE HSTACK` (Horizontal) y `DEFINE NICE VSTACK` (Vertical). Controlan la alienación y espacios con cláusulas como `GAP`, `ALIGN`, `JUSTIFY`.
+- **Tarjetas Avanzadas (Cards)**: Contenedores versátiles con sombras y bordes personalizables.
+  ```harbour
+  // Tarjeta con borde lateral grueso (estilo KPI)
+  DEFINE NICE CARD oCard RADIUS 16 BORDER COLOR "#3b82f6" BORDER WIDTH 6 SIDE "left" OF oParent
   ```
 
 ---
@@ -70,7 +78,9 @@ NICE SLIDER oSlider VALUE 50 MIN 0 MAX 100 STEP 5 OF oPage
 👉 **[Ver ejemplo visual de estos controles (Stepper & Slider)](img/cap4.png)**
 
 > [!TIP]
-> Puedes ver el código completo de estos controles y su funcionamiento en tiempo real ejecutando el ejemplo [TestControls.prg](file:///Users/manuel/Fivemac/fivemac/NiceGui/samples/TestControls.prg).
+> Puedes ver los códigos de estos controles en funcionamiento real en los ejemplos:
+> - [TestControls.prg](file:///Users/manuel/Fivemac/fivemac/NiceGui/samples/TestControls.prg) (Controles individuales).
+> - [TestJubila.prg](file:///Users/manuel/Fivemac/fivemac/NiceGui/samples/TestJubila.prg) (Dashboard complejo con Drawer y Cards).
 
 ---
 
