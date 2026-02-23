@@ -2,52 +2,90 @@
 
 Esta sección documenta los controles de diseño de interfaz de usuario más potentes y modernos disponibles en FiveMac.
 
-## TSplitBox
-El control `TSplitBox` es la implementación moderna (basada en `NSSplitView`) que sustituye al antiguo `TSplitter`. Proporciona un manejo de disposición robusto con soporte nativo para el redimensionamiento automático.
+# Controles Avanzados Nativo
 
-### Sintaxis (Comando)
-El framework Harbour/FiveMac proporciona un comando específico (definido en `FiveMac.ch`) para instanciar fácilmente un SplitBox:
+Esta sección documenta los controles de diseño de interfaz de usuario más potentes y modernos disponibles en FiveMac.
+
+---
+
+## TSplitBox (Divisores dinámicos)
+El control `TSplitBox` es la implementación moderna (basada en `NSSplitView`) que permite dividir una ventana en varios paneles redimensionables.
 
 ```harbour
-@ <nRow>, <nCol> SPLITBOX [ <oSplitter> ] ;
-   [ OF <oWnd> ] ;
-   [ SIZE <nWidth>, <nHeight> ] ;
-   [ <h: HORIZONTAL> ] ;
-   [ <v: VERTICAL> ] ;
-   [ STYLE <nStyle> ] ;
-   [ AUTORESIZE <nAutoResize> ] ;
-   [ VIEWS <nViews> ]
-```
-
-### Atributos Claves
-- Las coordenadas siguen el sistema estándar invertido (Flipped) de FiveMac.
-- Los paneles controlan su propio redimensionamiento y posición.
-
-### Métodos Principales
-
-#### `New( nTop, nLeft, nWidth, nHeight, oWnd, lVertical, nStyle, nAutoResize, nViews )`
-Constructor de la clase. Crea el control `TSplitBox` e inicializa los paneles internos si se solicita.
-- **`lVertical`**: Si es `.T.` (por defecto) crea divisores verticales (paneles de lado a lado). Si es `.F.` crea divisores horizontales (paneles apilados).
-- **`nViews`**: Si se especifica, el constructor llama internamente a `AddView()` este número de veces para preparar los paneles iniciales de forma automática. 
-
-Nota: Al usar el preprocesador, el atributo `VIEWS nViews` invoca este parámetro y genera los paneles.
-
-#### `AddView()`
-Método para crear un nuevo panel vacío dentro de la jerarquía del SplitBox.
-Devuelve un objeto de clase `TSplitBoxItem`. Automáticamente agrega este nuevo sub-panel al final de la matriz `::aViews`.
-
-Para incluir controles hijos dentro del SplitBox, estos se deben instanciar referenciando como contenedor (`OF` / `oWnd`) a los elementos de esta matriz `aViews`.
-
-Ejemplo práctico:
-```harbour
-// 1. Crear SplitBox base indicando directamente que queremos 2 paneles (VIEWS 2)
 @ 20, 20 SPLITBOX oSplit OF oWnd SIZE 400, 300 VERTICAL VIEWS 2
-
-// 2. Colocar contenido dentro de los contenedores creados (usando el array oSplit:aViews)
-@ 0, 0 SCINTILLA oEditor OF oSplit:aViews[ 1 ] SIZE 200, 300 
-@ 0, 0 PANEL oPanel OF oSplit:aViews[ 2 ] SIZE 200, 300
-
-// 3. (Opcional) Si necesitamos añadir un tercer panel más adelante en ejecución:
-oNuevoPanel := oSplit:AddView()
-@ 0, 0 GET oGet VAR cText OF oNuevoPanel SIZE 200, 300
+@ 0, 0 SCINTILLA oEditor OF oSplit:aViews[1] SIZE 200, 300 
+@ 0, 0 PANEL oPanel OF oSplit:aViews[2] SIZE 200, 300
 ```
+*   **VIEWS n**: Crea automáticamente `n` contenedores (`aViews`) listos para albergar otros controles.
+
+---
+
+## TWBrowse (Rejillas y Listas)
+El control `BROWSE` es fundamental para mostrar datos tabulares (Dbf, Arrays o SQL).
+
+```harbour
+@ 20, 20 BROWSE oBrw OF oWnd SIZE 400, 300 ;
+   HEADERS "Código", "Descripción", "Precio" ;
+   COLSIZES 80, 200, 100
+```
+*   **SetArray( aData )**: Para visualizar datos en memoria.
+*   **ALIAS "dbf"**: Para visualización directa de bases de datos.
+
+---
+
+## TOutline (Vistas de Árbol)
+Permite crear jerarquías de datos desplegables (TreeViews).
+
+```harbour
+DEFINE ROOTNODE oRoot
+    DEFINE NODE oNode1 PROMPT "Carpeta A" OF oRoot GROUP
+    DEFINE NODE oNode2 PROMPT "Archivo 1" OF oNode1
+ACTIVATE ROOTNODE oRoot
+
+@ 48, 20 OUTLINE oTree SIZE 300, 400 OF oWnd NODE oRoot
+```
+*   **GROUP**: Define si el nodo puede contener hijos.
+
+---
+
+## TTabs / TFolder (Pestañas)
+Organiza la interfaz en múltiples páginas solapadas.
+
+```harbour
+@ 20, 20 TABS oTabs PROMPTS {"General", "Avanzado"} OF oWnd SIZE 400, 300
+// Los controles se añaden al contenedor de cada pestaña:
+@ 50, 20 SAY "ID:" OF oTabs:aControls[1]
+```
+
+---
+
+## TMultiView (Navegación Lateral)
+Implementa un patrón de diseño moderno con un selector lateral para cambiar entre vistas.
+
+```harbour
+DEFINE MULTIVIEW oMulti OF oWnd RESIZED
+    @ 0, 0 MVIEW PROMPT "Dashboard" TITLE "Panel Principal" OF oMulti IMAGE "home"
+    @ 0, 0 MVIEW PROMPT "Config" TITLE "Ajustes de Sistema" OF oMulti IMAGE "gear"
+```
+
+---
+
+## TScintilla (Editor de Código)
+FiveMac integra el potente motor **Scintilla** para edición de texto con resaltado de sintaxis, numeración de líneas y autocompletado.
+
+```harbour
+@ 0, 0 SCINTILLA oEd SIZE 600, 400 OF oWnd
+oEd:SetText( cSource )
+oEd:SetLexer( SCLEX_HARBOUR ) // Ejemplo para Harbour
+```
+
+---
+
+> [!TIP]
+> Puedes encontrar ejemplos completos de estos controles en la carpeta `nativo/samples/`:
+> - `testbrw.prg` (Browse)
+> - `testoutline.prg` (Tree)
+> - `testtab.prg` (Pestañas)
+> - `testsplitbox.prg` (Splitters)
+> - `testmultiview.prg` (MultiView)
+> - `testscintilla.prg` (Editor de código)
