@@ -288,6 +288,7 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Event Synchronization**: Integrated `IsPlaying()` and `IsReady()` (buffering detection) for precise UI control. Improved auto-play logic and buffering state visual feedback.
 - **Memory Safety**: Implemented `objc_setAssociatedObject` to link metadata delegates directly to the `AVPlayer` lifecycle, preventing memory leaks and ensuring clean resource management.
 - **New Sample**: `StreamPlayer.prg` demonstrating a professional internet radio player with real-time metadata display and volume control.
+
 ## Building
 
 To build the library and samples:

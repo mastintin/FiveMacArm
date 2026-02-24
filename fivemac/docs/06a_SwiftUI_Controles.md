@@ -63,6 +63,61 @@ Lista de selección desplegable moderna.
 
 ---
 
+## TSwiftToggle (Interruptores)
+Interruptor nativo con múltiples estilos.
+
+- **Sintaxis**: `@ <nRow>, <nCol> SWIFTTOGGLE [ <oTgl> VAR ] <lVar> [ PROMPT <cCaption> ] [ SWITCH ]`
+- **SWITCH**: Define si el aspecto es de interruptor circular (estilo iOS) o botón de estado.
+- **On Change**: Ejecuta un bloque de código al cambiar de estado (`.T.` / `.F.`).
+
+---
+
+## TSwiftTabView (Navegación por Pestañas)
+Estructura de navegación principal para aplicaciones modernas.
+
+- **Sintaxis**: `@ <nRow>, <nCol> SWIFTTABVIEW [ <oTab> ] ITEMS <aItems>`
+- **Estructura de Items**: Array de arrays `{ { oControl1, "Título 1", "icon.name" }, { oControl2, "Título 2", "gear" } }`.
+- **Iconos**: Soporte nativo para SF Symbols.
+
+---
+
+## TSwiftChart (Gráficos Dinámicos)
+Integración con el framework **Swift Charts**.
+
+- **Sintaxis**: `@ <nRow>, <nCol> SWIFTCHART [ <oChart> ] DATA <hData> TYPE <cType>`
+- **Tipos de Gráfico**: `"bar"`, `"line"`, `"area"`.
+- **Datos**: Acepta un Hash de Harbour que se serializa automáticamente a JSON.
+- **SaveToImage( cPath )**: Exporta el gráfico renderizado a una imagen PNG.
+
+---
+
+## Listas y Rejillas (Data Visualization)
+
+## TSwiftList (Listas de Alto Rendimiento)
+Evolución de `TSwiftVStack` optimizada para visualización de colecciones masivas de datos.
+
+- **Sintaxis**: `@ <nRow>, <nCol> SWIFTLIST <oList>`
+- **Características**: Soporta scroll fluido nativo, selección de índices y colores de fondo personalizados con efectos de vibración (transparencia inteligente macOS).
+
+## TSwiftGrid (Layout de Rejilla Adaptable)
+Permite organizar elementos en múltiples columnas con comportamientos inteligentes.
+
+- **Sintaxis**: `@ <nRow>, <nCol> SWIFTGRID <oGrid> COLUMNS <aCols>`
+- **Configuración de Columnas**: Array de definiciones `{ {"fixed", 100}, {"flexible", 50, 200}, {"adaptive", 80} }`.
+- **Poder SwiftUI**: Los elementos dentro de la rejilla se recolocan automáticamente según el tamaño de la ventana.
+
+---
+
+## Integraciones Especializadas
+
+### TSwiftMusic
+Componente visual para control directo de MusicKit dentro de layouts SwiftUI.
+
+### TSwiftPDF
+Visor de PDF optimizado con renderizado nativo de SwiftUI, ideal para previsualizaciones rápidas dentro de Stacks.
+
+---
+
 ## Contenedores de Layout (Stacks)
 
 ## TSwiftVStack
