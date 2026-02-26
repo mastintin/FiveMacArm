@@ -1,16 +1,72 @@
 #include <Python/Python.h>
 #include <hbapi.h>
 #include <hbapiitm.h>
-
+#include <hbmacro.h>
+#include <hbvmpub.h>
 // --- Forward Declarations ---
 PyObject *Harbour_To_PyObject(PHB_ITEM pItem);
 void PyObject_To_Harbour(PyObject *pyObj, PHB_ITEM pReturn);
 
 // --- C-API Bridge ---
 
+// --- Callbacks ( Python -> Harbour ) ---
+
+// Esta función C es llamada desde Python cuando hacen "fivemac.eval('...')"
+static PyObject *py_hb_eval(PyObject *self, PyObject *args) {
+  const char *code;
+
+  // Extraer el string pasado desde Python
+  if (!PyArg_ParseTuple(args, "s", &code)) {
+    return NULL; // PyArg_ParseTuple ya setea la excepción
+  }
+
+  // Macrocompilar y ejecutar el string como código Harbour
+  PHB_MACRO pMacro = hb_macroCompile(code);
+  PyObject *pPyResult = Py_None;
+
+  if (pMacro) {
+    hb_macroRun(pMacro);
+    pPyResult = Harbour_To_PyObject(hb_param(-1, HB_IT_ANY));
+    hb_macroDelete(pMacro);
+  } else {
+    pPyResult = Py_None;
+    Py_INCREF(Py_None);
+  }
+
+  return pPyResult;
+}
+
+// Mapeo de métodos del módulo 'fivemac'
+static PyMethodDef FivemacMethods[] = {
+    {"eval", py_hb_eval, METH_VARARGS,
+     "Evalua una cadena de código Harbour inyectado mediante hb_macroCompile."},
+    {NULL, NULL, 0, NULL} /* Sentinel */
+};
+
+// Definición del módulo
+static struct PyModuleDef fivemacmodule = {
+    PyModuleDef_HEAD_INIT, "fivemac", /* name of module */
+    NULL,                             /* module documentation, may be NULL */
+    -1, /* size of per-interpreter state of the module, or -1 if the module
+           keeps state in global variables. */
+    FivemacMethods};
+
+// Función de inicialización
+PyMODINIT_FUNC PyInit_fivemac(void) { return PyModule_Create(&fivemacmodule); }
+
+// --- C-API Bridge ---
+
 HB_FUNC(C_PY_INITIALIZE) {
   const char *path = hb_parc(1);
-  setenv("PYTHONHOME", path, 1);
+  if (path) {
+    setenv("PYTHONHOME", path, 1);
+  }
+  setenv("PYTHONUTF8", "1", 1);
+  setenv("PYTHONIOENCODING", "utf-8", 1);
+
+  // Agregar nuestro módulo C empaquetado antes de inicializar la VM
+  PyImport_AppendInittab("fivemac", &PyInit_fivemac);
+
   Py_Initialize();
 }
 
