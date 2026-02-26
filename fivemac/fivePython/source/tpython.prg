@@ -9,11 +9,25 @@ CLASS TPython
     METHOD End()
     METHOD Run( cScript )
     METHOD Call( cModule, cFunc, ... )
+    METHOD IsReady() INLINE .T. // Por ahora devolvemos .T. si el objeto se pudo crear
 ENDCLASS
 
 METHOD New( cPath ) CLASS TPython
+    local cInternalPy := hb_DirBase() + "../Frameworks/Python.framework/Versions/Current"
+    
+    if Empty( cPath ) .and. hb_DirExists( cInternalPy )
+    cPath := hb_DirBase() + "../Frameworks/Python.framework/Versions/Current"
+    endif
+
     ::cPythonHome := cPath
     C_PY_INITIALIZE( ::cPythonHome )
+    
+    // Aseguramos que Python encuentre módulos locales
+    ::Run( "import sys; sys.path.append('" + hb_DirBase() + "')" )
+    // Si estamos en un bundle, los recursos están en ../Resources
+    if hb_DirExists( hb_DirBase() + "../Resources" )
+    ::Run( "import sys; sys.path.append('" + hb_DirBase() + "../Resources" + "')" )
+    endif
 return Self
 
 METHOD End() CLASS TPython
