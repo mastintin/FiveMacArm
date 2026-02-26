@@ -32,4 +32,6 @@ Bienvenido a la documentación oficial de FiveMac. Aquí encontrarás guías det
     - Visor de PDF (TPdfView), Vídeo (TMovie) e integración con Apple Music.
 14. [Fivedit (IDE)](13_Fivedit.md)
     - El entorno de desarrollo integrado: Editor, Diseñador Visual y Builder.
+15. [Integración con Python (fivePython)](14_fivePython.md)
+    - Embeber scripts Python (Pandas/Excel) directamente en aplicaciones Harbour.
 

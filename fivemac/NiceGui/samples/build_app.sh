@@ -25,7 +25,7 @@ if [ $? -ne 0 ]; then echo "Error compiling C"; exit 1; fi
 
 echo "Creating .app bundle structure..."
 mkdir -p $APPName.app/Contents/MacOS
-mkdir -p $APPName.app/Contents/Resources/nicegui
+mkdir -p $APPName.app/Contents/Resources/nicegui_dist
 mkdir -p $APPName.app/Contents/Frameworks
 
 echo "Copying NiceGUI resources to bundle..."

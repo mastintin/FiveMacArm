@@ -61,10 +61,13 @@ METHOD GetHtml() CLASS TNiceTable
     endif
     
     // Columns (Static for now)
-    cHtml += ':columns="' + ::_ColsToJson() + '" '
+    cHtml += ":columns='" + ::_ColsToJson() + "' "
     
     // Rows (Reactive)
-    cHtml += ':rows="' + ::GetModelName() + '" '
+    cHtml += ":rows='" + ::GetModelName() + "' "
+    
+    // Pagination: 0 for all rows by default
+    cHtml += ":pagination='{rowsPerPage: 0}' "
     
     cHtml += 'row-key="id" ' 
     cHtml += '>'
@@ -74,7 +77,7 @@ METHOD GetHtml() CLASS TNiceTable
     cHtml += '<q-tr :props="props">'
     
     cHtml += '<q-td v-for="col in props.cols" :key="col.name" :props="props">'
-    cHtml += '{{ props.row[col.field] }}'
+    cHtml += '{{ props.row[col.name] }}'
     
     // Popup Edit
     cHtml += '<q-popup-edit v-if="col.editable" v-model="props.row[col.field]" v-slot="scope" '
@@ -157,85 +160,43 @@ return 0
 //----------------------------------------------------------------------------//
 
 METHOD _ColsToJson() CLASS TNiceTable
-    local cJson := "["
-    local n, cStyle
+    local aCols := {}
+    local n, hCol
    
     for n := 1 to Len( ::aCols )
-    if n > 1 
-    cJson += ","
-    endif
-       
-    cStyle := ""
+    hCol := { ;
+        "name"     => ::aCols[n][1], ;
+        "label"    => ::aCols[n][2], ;
+        "field"    => ::aCols[n][3], ;
+        "align"    => "left", ;
+        "sortable" => .T., ;
+        "editable" => If( Len( ::aCols[n] ) >= 5, ::aCols[n][5], .F. ) ;
+        }
     if !Empty( ::aCols[n][4] )
-    cStyle := "width: " + ::aCols[n][4] + ";"
+    hCol[ "style" ] := "width: " + ::aCols[n][4] + ";"
+    hCol[ "headerStyle" ] := "width: " + ::aCols[n][4] + ";"
     endif
-       
-    cJson += "{ name: '" + cValToChar( ::aCols[n][1] ) + "', " + ;
-        "label: '" + cValToChar( ::aCols[n][2] ) + "', " + ;
-        "field: '" + cValToChar( ::aCols[n][3] ) + "', " + ;
-        "align: 'left', sortable: true"
-       
-    if !Empty( cStyle )
-    cJson += ", style: '" + cStyle + "', headerStyle: '" + cStyle + "'"
-    endif
-    
-    // Editable flag
-    if Len( ::aCols[n] ) >= 5 .and. ::aCols[n][5]
-    cJson += ", editable: true"
-    endif
-                  
-    cJson += " }"
+    AAdd( aCols, hCol )
     next
-   
-    cJson += "]"
-return cJson
+return hb_jsonEncode( aCols )
 
 METHOD _RowsToJson() CLASS TNiceTable
-    local cJson := "["
-    local n, k
-    local hRow, uVal, cField
-   
+    local aRows := {}
+    local n, k, hRow, hNewRow, cField, uVal
+    
     for n := 1 to Len( ::aRows )
-    if n > 1 
-    cJson += ","
-    endif
-       
-    cJson += "{"
     hRow := ::aRows[ n ]
-       
+    hNewRow := { "id" => n }
+        
     for k := 1 to Len( ::aCols )
-    if k > 1
-    cJson += ","
-    endif
-        
-    cField := ::aCols[ k ][ 3 ]
-        
-    // Get value based on Row Type (Hash or Array)
+    cField := ::aCols[k][3]
     if ValType( hRow ) == "H"
-    if hb_HHasKey( hRow, cField )
-    uVal := hRow[ cField ]
+    uVal := If( hb_HHasKey( hRow, cField ), hRow[cField], "" )
     else
-    uVal := "" 
+    uVal := If( k <= Len( hRow ), hRow[k], "" )
     endif
-    elseif ValType( hRow ) == "A"
-    if k <= Len( hRow )
-    uVal := hRow[ k ]
-    else
-    uVal := ""
-    endif
-    else
-    uVal := ""
-    endif
-        
-    // Serialize
-    cJson += cField + ": '" + If( ValType( uVal ) $ "CM", uVal, hb_ValToStr( uVal ) ) + "'"
+    hNewRow[ cField ] := uVal
     next
-       
-    // Implicit ID
-    cJson += ", id: " + AllTrim( Str( n ) )
-       
-    cJson += "}"
+    AAdd( aRows, hNewRow )
     next
-   
-    cJson += "]"
-return cJson
+return hb_jsonEncode( aRows )
