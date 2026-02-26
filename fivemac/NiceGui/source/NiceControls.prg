@@ -312,6 +312,7 @@ return If( ::lValue, "true", "false" )
 //----------------------------------------------------------------------------//
 
 CLASS TNiceToggle FROM TNiceCheckbox
+    METHOD New( oParent, cId, cLabel, lValue, cClass, cStyle )
     METHOD GetHtml()
 ENDCLASS
 

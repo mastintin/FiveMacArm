@@ -50,7 +50,9 @@ function Main()
     NICE ADD COL TO oTbl NAME "id"    LABEL "RecNo"    FIELD "id"    WIDTH "80px"
     NICE ADD COL TO oTbl NAME "first" LABEL "First"    FIELD "first" WIDTH "200px"
     NICE ADD COL TO oTbl NAME "last"  LABEL "Last"     FIELD "last"  WIDTH "250px"
-           
+      
+    
+    
     // Datos cargados desde DBF
     NICE SET DATA OF oTbl TO GetData()
 

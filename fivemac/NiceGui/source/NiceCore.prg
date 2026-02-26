@@ -38,9 +38,9 @@ METHOD New( oWnd ) CLASS TNicePage
   cResPath := hb_DirBase() + "nicegui_dist/"
   endif
 
-  // Si estamos en un bundle .app, los recursos están en Contents/Resources/nicegui
-  if File( hb_DirBase() + "../Resources/nicegui/vue.global.prod.js" )
-  cResPath := hb_DirBase() + "../Resources/nicegui/"
+  // Si estamos en un bundle .app, los recursos están en Contents/Resources/nicegui_dist
+  if File( hb_DirBase() + "../Resources/nicegui_dist/vue.global.prod.js" )
+  cResPath := hb_DirBase() + "../Resources/nicegui_dist/"
   endif
    
   // Para que el WebView lo entienda bien como URL de archivo
