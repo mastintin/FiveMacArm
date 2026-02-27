@@ -900,3 +900,10 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [; <oBr>:bLDblClick := \{ | o, nIndex | <uDblClick> \} ]
 
 //----------------------------------------------------------------------------//
+
+#xcommand @ <nTop>, <nLeft> QUICKLOOK <oQL> ;
+             [ SIZE <nWidth>, <nHeight> ] ;
+             [ OF <oWnd> ] ;
+             [ FILE <cFileName> ] ;
+       => ;
+          <oQL> := TQuickLook():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <cFileName> )
