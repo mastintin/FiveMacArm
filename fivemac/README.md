@@ -289,6 +289,18 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Memory Safety**: Implemented `objc_setAssociatedObject` to link metadata delegates directly to the `AVPlayer` lifecycle, preventing memory leaks and ensuring clean resource management.
 - **New Sample**: `StreamPlayer.prg` demonstrating a professional internet radio player with real-time metadata display and volume control.
 
+### Excel Integration (February 2026 - Part 23)
+- **Advanced Excel Writer (`hbxlsxwriter`)**:
+    - **UDC Command System**: Introduced a simplified command-based API in `xlsxCmd.ch` (e.g., `CREATE XLS BOOK`, `ADD SHEET`, `@ row, col XLS WRITE`).
+    - **Formula Support**: Full support for Excel formulas including absolute references (e.g., `XLS FORMULA "=A:1 + $B:$5"`).
+    - **Alias System**: Use `BOOK` and `SHEET` as shorter aliases for `WORKBOOK` and `WORKSHEET`.
+    - **Column Referencing**: Support for both numerical indices and Excel-style column letters (e.g., `"A"`, `"BC"`).
+- **Native Excel Reader (`XLSXReader`)**:
+    - **Pure Harbour Implementation**: Integrated a robust `.xlsx` reader class (`XLSXReader`) directly into the library.
+    - **Feature Rich**: Supports reading cell values, shared strings, and basic formatting metadata without external dependencies besides ZIP support.
+    - **Performance**: Optimized for large files with progress callback support.
+- **Build Integration**: Standardized `Makefile` for the wrapper and automated build scripts (`build_xlsx.sh`) to link all required compression libraries (`hbziparc`, `zlib`).
+
 ## Building
 
 To build the library and samples:
