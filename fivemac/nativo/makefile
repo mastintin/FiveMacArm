@@ -49,6 +49,7 @@ PRG_OBJS = \
   	./obj/dbtools.o \
 	./obj/dialog.o	\
 	./obj/errsysm.o \
+	./obj/expat.o \
 	./obj/filename.o \
     ./obj/fmget.o \
 	./obj/folder.o	\
@@ -141,6 +142,7 @@ C_OBJS = ./objc/browses.o	\
 	./objc/fonts.o	\
   	./objc/formatters.o	\
     ./objc/fmget.o \
+	./objc/Md5Wrappers.o \
   	./objc/funcs.o \
 	./objc/gets.o \
 	./objc/groups.o \
@@ -191,10 +193,8 @@ C_OBJS = ./objc/browses.o	\
 	./objc/webviews.o \
     ./objc/ocr.o \
     ./objc/mapkit.o \
+    ./objc/Md5Wrappers.o \
     ./objc/windows.o
-
-SWIFT_OBJS =
-
 
 ./lib/libfive.a  : $(PRG_OBJS)
 	if [ ! -d "lib" ]; then mkdir -p lib; fi
@@ -205,6 +205,9 @@ SWIFT_OBJS =
 	if [ ! -d "lib" ]; then mkdir -p lib; fi
 	ar rc ./lib/libfivec.a $(C_OBJS)
 	ranlib ./lib/libfivec.a
+
+extras :
+	make -C ./source/extras
 
 ./lib/libfivec.a : $(SWIFT_OBJS)
 
@@ -221,12 +224,12 @@ SWIFT_OBJS =
 	if [ ! -d "obj" ]; then mkdir -p obj; fi
 	$(HB_BIN) $< -o./$@ -n -I$(HB_INC) -I./include
 
-./objs/%.o : ./source/swift/%.swift
+./objs/%.o : ../SwiftUI/source/swift/%.swift
 	if [ ! -d "objs" ]; then mkdir -p objs; fi
-	swiftc -frontend -c -color-diagnostics -primary-file -Wno-nullability-completeness $<  \
+	swiftc -frontend -c -color-diagnostics -primary-file $< \
 	-module-name Bridgette \
-	$(SWIFTFLAGS) -emit-module -emit-module-path ./source/swift/$*.swiftmodule \
-	-emit-objc-header-path ./source/swift/$*-Swift.h \
+	$(SWIFTFLAGS) -emit-module -emit-module-path ../SwiftUI/source/swift/$*.swiftmodule \
+	-emit-objc-header-path ../SwiftUI/source/swift/$*-Swift.h \
 	-enable-testing -enable-objc-interop -parse-as-library \
 	-o $@
 
@@ -296,3 +299,5 @@ create:
 
 
 
+
+# Rules for extras are now in ./source/extras/makefile

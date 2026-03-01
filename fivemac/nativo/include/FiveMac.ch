@@ -6,6 +6,8 @@
 #include "hbclass.ch"
 #include "anclas.ch"
 #include "colors.ch"
+#include "hbxlsxwriter.ch"
+#include "xlsxCmd.ch"
 
 #define CRLF hb_OsNewLine()
 
@@ -902,8 +904,8 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 //----------------------------------------------------------------------------//
 
 #xcommand @ <nTop>, <nLeft> QUICKLOOK <oQL> ;
-             [ SIZE <nWidth>, <nHeight> ] ;
-             [ OF <oWnd> ] ;
-             [ FILE <cFileName> ] ;
-       => ;
-          <oQL> := TQuickLook():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <cFileName> )
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ OF <oWnd> ] ;
+   [ FILE <cFileName> ] ;
+   => ;
+   <oQL> := TQuickLook():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <cFileName> )

@@ -29,9 +29,13 @@ for FILE in "$@"; do
 done
 
 USE_SCINTILLA=0
+USE_EXTRAS=0
 for arg in "$@"; do
     if [ "$arg" == "-scintilla" ]; then
         USE_SCINTILLA=1
+    fi
+    if [ "$arg" == "-extras" ]; then
+        USE_EXTRAS=1
     fi
 done
 
@@ -40,6 +44,13 @@ if [ $USE_SCINTILLA -eq 1 ]; then
     SCINTILLA_FRAMEWORK="-framework Scintilla"
 else
     SCINTILLA_FRAMEWORK=""
+fi
+
+if [ $USE_EXTRAS -eq 1 ]; then
+    echo "  Extras (XLSX, Expat) enabled via flag"
+    EXTRAS_LIB="-lfiveextras"
+else
+    EXTRAS_LIB=""
 fi
 
 # MySQL/MariaDB libraries are now always included in the link command.
@@ -119,6 +130,15 @@ OBJS="$OBJS obj/musics_mod.o"
 echo "Compiling cifilters.m..."
 clang -ObjC "../source/winapi/cifilters.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/cifilters_mod.o"
 OBJS="$OBJS obj/cifilters_mod.o"
+
+# Compile QuickLook components
+echo "Compiling QuickLook components..."
+$HB_DIR/bin/harbour "../source/classes/quicklook.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+clang -ObjC "obj/quicklook.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/quicklook_mod.o"
+OBJS="$OBJS obj/quicklook_mod.o"
+
+clang -ObjC "../source/winapi/quicklooks.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/quicklooks_mod.o"
+OBJS="$OBJS obj/quicklooks_mod.o"
 
 if [ ! -d $APPName.app ]; then
    mkdir $APPName.app
@@ -234,7 +254,7 @@ fi
 
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
-HRBLIBS="-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx $MYSQL_LIBS"
+HRBLIBS="-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lminizip -lhbzlib $MYSQL_LIBS"
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuickLookUI -framework QuartzCore -framework CoreImage -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers -framework Vision -framework MapKit -framework CoreLocation'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
@@ -247,7 +267,7 @@ WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks
 
 # Link ALL OBJS
 # Add target and min-version to link step too
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -target arm64-apple-macosx26.0 -L$CRTLIB -L./../lib -lfive -lfivec $SCINTILLA_LIB -L$HB_DIR/lib $HRBLIBS $FRAMEWORKS  -F./../../Resources/frameworks $SCINTILLA_FRAMEWORK -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -target arm64-apple-macosx26.0 -L$CRTLIB -L./../lib -lfive -lfivec $SCINTILLA_LIB $EXTRAS_LIB -L$HB_DIR/lib $HRBLIBS $FRAMEWORKS  -F./../../Resources/frameworks $SCINTILLA_FRAMEWORK -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 
 #rm $1.c
