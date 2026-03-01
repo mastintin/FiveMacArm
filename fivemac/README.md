@@ -301,6 +301,15 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
     - **Performance**: Optimized for large files with progress callback support.
 - **Build Integration**: Standardized `Makefile` for the wrapper and automated build scripts (`build_xlsx.sh`) to link all required compression libraries (`hbziparc`, `zlib`).
 
+### Modular Extras & Advanced Imaging (March 2026 - Part 25)
+- **New Modular Build System**: Introduced the `extras` directory with an independent `Makefile`. This allows for clean, separate building and maintenance of third-party libraries (`libxlsxwriter`, `expat`, `xlsxio`) without cluttering the core FiveMac build scripts.
+- **Enhanced Excel Engine (`libxlsxwriter`)**:
+    - **MD5 Image Deduplication**: Highly optimized image handling. Utilizing a global MD5 hashing mechanism, the library now automatically detects duplicate images. When the same image is inserted multiple times (e.g., a company logo on many rows), it is stored only once in the `.xlsx` bundle, resulting in massive file size savings for image-heavy reports.
+    - **Robust Command Set**: Improved `xlsxCmd.ch` with intelligent defaulting. Commands like `DEFINE WORKSHEET` no longer require an explicit `OF oXlsx` clause if a standard `oXlsx` workbook object exists, simplifying developer code.
+    - **Direct Image Insertion**: New `XLSX INSERT IMAGE` command with support for complex positioning and scaling.
+- **Improved 64-bit Core**: Unified MD5 implementations across the library (`Md5Wrappers.m`) to ensure consistent behavior between different modules and third-party libraries.
+- **Maintenance**: Automated cleanup of legacy development folders and standardization of header include paths (e.g., `stdint.h` for ARM64 compatibility).
+
 ## Building
 
 To build the library and samples:
