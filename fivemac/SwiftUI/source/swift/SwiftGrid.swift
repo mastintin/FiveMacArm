@@ -11,7 +11,7 @@ struct SwiftGridView: View {
                 ScrollView {
                     LazyVGrid(columns: mapSpecsToGridItems(state.gridColumns ?? []), spacing: CGFloat(state.spacing)) {
                         ForEach(Array(state.items.enumerated()), id: \.element.id) { index, item in
-                             RecursiveItemView(item: item, onClick: state.onClick, onAction: state.onAction, index: index)
+                             RecursiveItemView(item: item, onAction: state.onAction, index: index)
                         }
                     }
                     .padding()
@@ -42,7 +42,6 @@ public class SwiftGridLoader: NSObject {
          if #available(OSX 10.15, *) {
              print("SWIFT_PRINT: makeGrid called. Index: \(index)")
              let state = SwiftVStackState()
-             state.onClick = callback
              state.onAction = actionCallback
              
              // Decode Columns

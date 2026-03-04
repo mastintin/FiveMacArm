@@ -1,18 +1,11 @@
 #include "FiveMac.ch"
 
-static aLists := {}
 
 // TSwiftList inherits from TSwiftVStack to get AddItem/AddBatch
 CLASS TSwiftList FROM TSwiftVStack
-
     DATA cId
-    DATA hItems INIT {=>}
-    DATA nChildCount INIT 0
 
     METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
-    
-    METHOD RegItem( cId, oItem ) INLINE ::hItems[ cId ] := oItem
-    METHOD GetItem( cId ) INLINE If( ::hItems[ cId ] != nil, ::hItems[ cId ], nil )
     
     // We inherit AddVStack/AddHStack from TSwiftVStack
     // But we might need to override the bridge calls if they expect SWIFTLIST...
@@ -34,15 +27,11 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftList
 
     ::oWnd = oWnd
     
-    ::nId = Len( aLists ) + 1
-    ::nIndex = ::nId
-    AAdd( aLists, Self )
-    ::hItems := {=>}
+    ::nIndex = SwiftRegisterControl( Self )
     ::aBatch := {}
-    
     ::cId = ""  // Root ID for List items
 
-    ::hWnd = SWIFTLISTCREATE( oWnd:hWnd, ::nId, nRow, nCol, nWidth, nHeight )
+    ::hWnd = SWIFTLISTCREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight )
     
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -60,24 +49,20 @@ return Self
 
 function SwiftListOnClick( nListIndex, nItemIndex )
     local oList
-
-    if nListIndex > 0 .and. nListIndex <= Len( aLists )
-    oList = aLists[ nListIndex ]
-    if oList:bAction != nil
+    oList = SwiftGetControl( nListIndex )
+    if oList != nil .and. oList:bAction != nil
     Eval( oList:bAction, nItemIndex )
     endif
-    endif
-
 return nil
 
 METHOD SelectIndex( nIndex ) CLASS TSwiftList
-    SWIFTLISTSELECTINDEX( ::nId, nIndex )
+    SWIFTLISTSELECTINDEX( ::nIndex, nIndex )
 return nil
 
 METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftList
     DEFAULT nRed := 0, nGreen := 0, nBlue := 0
     DEFAULT nAlpha := 1.0
-    SWIFTLISTSETBGCOLOR( ::nId, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+    SWIFTLISTSETBGCOLOR( ::nIndex, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
 return nil
 
 METHOD SetVibrancy( lOnOff ) CLASS TSwiftList

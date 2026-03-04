@@ -52,7 +52,7 @@ struct SwiftZStackView: View {
         
         return ZStack(alignment: align) {
               ForEach(Array(state.items.enumerated()), id: \.element.id) { index, item in
-                   RecursiveItemView(item: item, onClick: nil, onAction: state.onAction, index: index)
+                   RecursiveItemView(item: item, onAction: state.onAction, index: index)
               }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill container
@@ -66,20 +66,17 @@ struct SwiftZStackView: View {
 @objc(SwiftZStackLoader)
 public class SwiftZStackLoader: NSObject {
     
-    static var lastCreatedState: Any? = nil
+    static var states: [String: SwiftZStackState] = [:]
 
     @objc(makeZStackWithIndex:actionCallback:)
-    public static func makeZStack(index: Int, actionCallback: @escaping (String) -> Void) -> NSView {
+    public static func makeZStack(index: String, actionCallback: @escaping (String) -> Void) -> NSView {
          if #available(OSX 10.15, *) {
              let state = SwiftZStackState()
              state.onAction = actionCallback
-             lastCreatedState = state
+             states[index] = state
              
              let view = SwiftZStackView(state: state)
              
-             // Register
-             ViewRegistry.register(view, for: index)
-
              let hostingView = NSHostingView(rootView: view)
              return hostingView
          } else {
@@ -87,79 +84,76 @@ public class SwiftZStackLoader: NSObject {
          }
     }
     
-    @objc(addItem:)
-    public static func addItem(_ text: String) {
+    @objc(addItem:content:)
+    public static func addItem(_ rootId: String, text: String) -> String {
+        var newItemId = ""
         if #available(OSX 10.15, *) {
              let block = {
-                 if let state = lastCreatedState as? SwiftZStackState {
-                     state.items.append(VStackItem(type: .text, content: text, secondaryContent: nil))
-                 }
+                  if let state = states[rootId] {
+                      let newItem = VStackItem(type: .text, content: text, secondaryContent: nil)
+                      newItemId = newItem.id
+                      state.items.append(newItem)
+                      state.objectWillChange.send()
+                  }
              }
              
-            if Thread.isMainThread {
-                block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
-            }
+            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         }
+        return newItemId
     }
     
-    @objc(addSystemImage:)
-    public static func addSystemImage(_ systemName: String) {
+    @objc(addSystemImage:systemName:)
+    public static func addSystemImage(_ rootId: String, systemName: String) -> String {
+        var newItemId = ""
         if #available(OSX 10.15, *) {
              let block = {
-                 if let state = lastCreatedState as? SwiftZStackState {
-                    state.items.append(VStackItem(type: .systemImage, content: systemName, secondaryContent: nil))
-                 }
+                  if let state = states[rootId] {
+                     let newItem = VStackItem(type: .systemImage, content: systemName, secondaryContent: nil)
+                     newItemId = newItem.id
+                     state.items.append(newItem)
+                     state.objectWillChange.send()
+                  }
              }
              
-            if Thread.isMainThread {
-                block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
-            }
+            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         }
+        return newItemId
     }
 
-    @objc(addFileImage:)
-    public static func addFileImage(_ filePath: String) {
+    @objc(addFileImage:filePath:)
+    public static func addFileImage(_ rootId: String, filePath: String) -> String {
+        var newItemId = ""
         if #available(OSX 10.15, *) {
              let block = {
-                 if let state = lastCreatedState as? SwiftZStackState {
-                    state.items.append(VStackItem(type: .imageFile, content: filePath, secondaryContent: nil))
-                 }
+                  if let state = states[rootId] {
+                     let newItem = VStackItem(type: .imageFile, content: filePath, secondaryContent: nil)
+                     newItemId = newItem.id
+                     state.items.append(newItem)
+                     state.objectWillChange.send()
+                  }
              }
              
-            if Thread.isMainThread {
-                block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
-            }
+            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         }
+        return newItemId
     }
     
-    @objc(setAlignment:)
-    public static func setAlignment(_ alignment: Int) {
+    @objc(setAlignment:alignment:)
+    public static func setAlignment(_ rootId: String, alignment: Int) {
         if #available(OSX 10.15, *) {
             DispatchQueue.main.async {
-                if let state = lastCreatedState as? SwiftZStackState {
+                if let state = states[rootId] {
                     state.alignment = alignment
                 }
             }
         }
     }
     
-    @objc(setBackgroundColorRed:green:blue:alpha:)
-    public static func setBackgroundColor(red: Double, green: Double, blue: Double, alpha: Double) {
+    @objc(setBackgroundColor:red:green:blue:alpha:)
+    public static func setBackgroundColor(_ rootId: String, red: Double, green: Double, blue: Double, alpha: Double) {
          if #available(OSX 10.15, *) {
              DispatchQueue.main.async {
-                 if let state = lastCreatedState as? SwiftZStackState {
+                 if let state = states[rootId] {
                      state.red = red
                      state.green = green
                      state.blue = blue
@@ -169,11 +163,11 @@ public class SwiftZStackLoader: NSObject {
          }
     }
     
-    @objc(setForegroundColorRed:green:blue:alpha:)
-    public static func setForegroundColor(red: Double, green: Double, blue: Double, alpha: Double) {
+    @objc(setForegroundColor:red:green:blue:alpha:)
+    public static func setForegroundColor(_ rootId: String, red: Double, green: Double, blue: Double, alpha: Double) {
          if #available(OSX 10.15, *) {
              DispatchQueue.main.async {
-                 if let state = lastCreatedState as? SwiftZStackState {
+                 if let state = states[rootId] {
                      state.fgRed = red
                      state.fgGreen = green
                      state.fgBlue = blue
@@ -183,24 +177,20 @@ public class SwiftZStackLoader: NSObject {
          }
     }
     
-    @objc(removeAllItems)
-    public static func removeAllItems() {
+    @objc(removeAllItems:)
+    public static func removeAllItems(_ rootId: String) {
         if #available(OSX 10.15, *) {
-             if Thread.isMainThread {
-                 if let state = lastCreatedState as? SwiftZStackState {
-                     state.items.removeAll()
-                 }
-             } else {
-                 DispatchQueue.main.sync {
-                     if let state = lastCreatedState as? SwiftZStackState {
-                         state.items.removeAll()
-                     }
-                 }
+             let block = {
+                  if let state = states[rootId] {
+                      state.items.removeAll()
+                  }
              }
+             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         }
     }
-    @objc(addBatchToParent:json:)
-    public static func addBatch(parentId: String?, json: String) -> String {
+
+    @objc(addBatch:parentId:json:)
+    public static func addBatch(_ rootId: String, parentId: String?, json: String) -> String {
         guard #available(OSX 10.15, *) else { return "[]" }
         
         struct BatchInput: Codable {
@@ -220,7 +210,7 @@ public class SwiftZStackLoader: NSObject {
         var createdIds: [String] = []
         
         let block = {
-            if let state = lastCreatedState as? SwiftZStackState {
+            if let state = states[rootId] {
                 if let pid = parentId, !pid.isEmpty, pid != "nil" {
                     if let parent = findVStackItem(in: state.items, id: pid) {
                         for item in batchItems {
@@ -257,13 +247,7 @@ public class SwiftZStackLoader: NSObject {
             }
         }
         
-        if Thread.isMainThread {
-            block()
-        } else {
-            DispatchQueue.main.sync {
-                block()
-            }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         
         let encoder = JSONEncoder()
         if let idData = try? encoder.encode(createdIds),

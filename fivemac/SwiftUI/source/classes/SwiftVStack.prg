@@ -1,6 +1,5 @@
 #include "FiveMac.ch"
 
-static aSwiftControls := {}
 
 #define SWIFT_TYPE_TEXT          0
 #define SWIFT_TYPE_SYSTEMIMAGE   1
@@ -25,12 +24,13 @@ CLASS TSwiftVStack FROM TControl
     METHOD AddBatch( aItems )
     
     // Legacy / Convenience methods
-    METHOD AddText( cText ) INLINE ::AddItem( SWIFT_TYPE_TEXT, cText )
+    METHOD AddText( cText )
     METHOD AddImage( cSystemName )
+     
     METHOD AddButton( cText, bAction )
-    METHOD AddHStack()
-    METHOD AddList()
-    METHOD AddRow( cImage, cText )
+    METHOD AddHStack( oParent )
+    METHOD AddList( oParent )
+    METHOD AddRow( cText, bAction )
     METHOD SetScroll( lScroll )
     METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha )
     METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha )
@@ -38,7 +38,14 @@ CLASS TSwiftVStack FROM TControl
     METHOD SetSpacing( nSpacing )
     METHOD SetAlignment( nAlign )
     METHOD AddSpacer( oParent )
+    METHOD AddDivider( oParent )
     
+    METHOD SetLastItemId( cId ) INLINE SWIFTSETID( ::nIndex, cId )
+    METHOD GetLastItemId() INLINE SWIFTVSTACKGETLASTITEMID( ::nIndex )
+    METHOD SetItemColor( cId, nRed, nGreen, nBlue, nAlpha ) 
+    METHOD SetItemText( cId, cText ) INLINE SWIFTVSTACKSETITEMTEXT( ::nIndex, cId, cText )
+    METHOD AddSystemImage( cName ) INLINE ::AddImage( cName )
+
     METHOD RegItem( cId, oItem ) INLINE SwiftRegisterItem( cId, oItem )
 
 ENDCLASS
@@ -48,8 +55,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftVStack
     DEFAULT nWidth := 200, nHeight := 300
     DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
-    ::nIndex = Len( aSwiftControls ) + 1
-    AAdd( aSwiftControls, Self )
+    ::nIndex = SwiftRegisterControl( Self )
     ::aBatch := {}
 
     ::hWnd = SWIFTVSTACKCREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight )
@@ -123,47 +129,47 @@ METHOD AddBatch( aItems ) CLASS TSwiftVStack
 
 return aIds
 
+METHOD AddText( cText ) CLASS TSwiftVStack
+    local cId
+    cId := SWIFTVSTACKADDTEXT( ::nIndex, cText )
+return TSwiftStackItem():New( cId, Self )
+
 METHOD AddImage( cSystemName ) CLASS TSwiftVStack
-    SWIFTVSTACKADDSYSTEMIMAGE( ::nIndex, cSystemName )
-return nil
+    local cId
+    cId := SWIFTVSTACKADDSYSTEMIMAGE( ::nIndex, cSystemName )
+return TSwiftStackItem():New( cId, Self )
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftVStack
     local cId, oItem
-    // Pass ::nIndex as rootID, nil as parentID (root)
-    cId := SWIFTVSTACKADDBUTTON( ::nIndex, cText, nil )
-    if bAction != nil .and. !Empty( cId )
+    cId := SWIFTVSTACKADDBUTTONITEM( ::nIndex, cText, nil )
     oItem := TSwiftStackItem():New( cId, Self )
+    if bAction != nil .and. !Empty( cId )
     oItem:bAction := bAction
-    SwiftRegisterItem( cId, oItem )
     endif
-return nil
+return oItem
 
 METHOD AddList( oParent ) CLASS TSwiftVStack
-    local cId
+    local cId, oItem
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    // Pass ::nIndex
     cId := SWIFTVSTACKADDLIST( ::nIndex, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
-METHOD AddRow( cImage, cText ) CLASS TSwiftVStack
-    SWIFTVSTACKADDHSTACK( ::nIndex, cImage, cText )
-return nil
-
-METHOD AddHStack( cText, cImage ) CLASS TSwiftVStack
-    local cId, oItem
-    // Pass ::nIndex, nil parent
-    cId := SWIFTVSTACKADDHSTACKCONTAINER( ::nIndex, nil ) 
-    oItem := TSwiftStackItem():New( cId, Self )
-    
-    if !Empty( cImage )
-    oItem:AddSystemImage( cImage )
-    endif
-    
+METHOD AddRow( cText, bAction ) CLASS TSwiftVStack
+    local oItem
+    oItem := ::AddHStack()
     if !Empty( cText )
     oItem:AddText( cText )
     endif
-    
+    if bAction != nil
+    oItem:bAction := bAction
+    endif
 return oItem
+
+METHOD AddHStack( oParent ) CLASS TSwiftVStack
+    local cId
+    local cParentId := If( oParent != nil, oParent:cId, nil )
+    cId := SWIFTVSTACKADDHSTACKCONTAINER( ::nIndex, cParentId )
+return TSwiftStackItem():New( cId, Self )
 
 METHOD SetScroll( lScroll ) CLASS TSwiftVStack
     DEFAULT lScroll := .T.
@@ -179,21 +185,14 @@ return nil
 METHOD SetInvertedColor( lInvert ) CLASS TSwiftVStack
     DEFAULT lInvert := .T.
     SWIFTVSTACKSETINVERTEDCOLOR( ::nIndex, lInvert )
+    // return nil
+
+    //----------------------------------------------------------------//
+
 return nil
 
-//----------------------------------------------------------------//
-
-function SwiftVStackOnClick( nControlIndex, nItemIndex )
-    local oControl
-   
-    if nControlIndex > 0 .and. nControlIndex <= Len( aSwiftControls )
-    oControl = aSwiftControls[ nControlIndex ]
-    if oControl:bAction != nil
-    Eval( oControl:bAction, nItemIndex )
-    endif
-    endif
-   
-return nil
+function SwiftVStackGetControl( nIndex )
+return SwiftGetControl( nIndex )
 
 METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
     DEFAULT nRed := 0, nGreen := 0, nBlue := 0
@@ -212,5 +211,17 @@ return nil
 
 METHOD AddSpacer( oParent ) CLASS TSwiftVStack
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    SWIFTVSTACKADDSPACER( ::nIndex, cParentId )
+return SWIFTVSTACKADDSPACER( ::nIndex, cParentId )
+
+METHOD AddDivider( oParent ) CLASS TSwiftVStack
+    local cParentId := If( oParent != nil, oParent:cId, nil )
+return SWIFTVSTACKADDDIVIDERTO( ::nIndex, cParentId )
+
+
+
+
+METHOD SetItemColor( cId, nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
+    DEFAULT nRed := 0, nGreen := 0, nBlue := 0
+    DEFAULT nAlpha := 1.0
+    SWIFTVSTACKSETITEMCOLOR( ::nIndex, cId, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
 return nil

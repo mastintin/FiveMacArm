@@ -310,6 +310,27 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Improved 64-bit Core**: Unified MD5 implementations across the library (`Md5Wrappers.m`) to ensure consistent behavior between different modules and third-party libraries.
 - **Maintenance**: Automated cleanup of legacy development folders and standardization of header include paths (e.g., `stdint.h` for ARM64 compatibility).
 
+### SwiftUI Expansion & Speech Recognition (March 2026 - Part 26)
+- **Comprehensive SwiftUI Bridge Refactor**: 
+    - **UUID-based Registry**: Migrated the internal UI registry to a robust UUID system (`SWIFT_UUID`). This ensures absolute uniqueness and reliability for event tracking in complex layouts.
+    - **Memory Safety**: Optimized object lifecycle management and C-bridge logic, resolving critical "excessive recursion" crashes during callback assignments.
+- **Advanced Speech Engine (`TSwiftSpeech`)**:
+    - **Real-Time Transcription**: High-performance, low-latency live speech-to-text with partial result reporting.
+    - **Vocal Metrics**: Native extraction of acoustic features: **Pitch**, **Jitter**, and **Shimmer** (requires macOS 11.3+).
+    - **File Recording**: New `RecordToFile( cPath )` method to save voice sessions directly to high-quality compressed AAC files.
+    - **File Transcription**: New `TranscribeFile( cPath )` to asynchronously process existing audio files and return full text transcripts.
+    - **Smart Locale Management**: Dynamic support for 50+ languages via `SetLocale( cId )`. Defaults to the user's system language (`Locale.current`).
+- **Modern UI Components**:
+    - **TSwiftTextEditor**: New multi-line text editor component ("Multiget" equivalent) in the SwiftUI bridge, supporting large text blocks with automatic scrolling.
+    - **TSwiftTextField**: Enhanced with ID-based data retrieval and improved focus management.
+    - **Architecture Improvements**: Unified common methods (`SetText`, `GetText`, `SetColor`, `SetRadius`) across all Swift input components.
+- **Build System Modernization**:
+    - **macOS 26.0 Target**: Updated `Makefile` and `BuildTest.sh` to target `macosx26.0` (Arm64), resolving all linker version mismatch warnings.
+    - **Flag Standardization**: Unified `TARGET_FLAG` across Swift, Objective-C, and Harbour C compilation steps for a clean, warning-free build.
+- **New flagship samples**:
+    - `TestSpeechFile.prg`: Complete demonstration of the "Record -> Stop -> Select -> Transcribe" workflow with a multi-line editor.
+    - `TestSpeech.prg`: Real-time analysis of voice metrics and transcription.
+
 ## Building
 
 To build the library and samples:

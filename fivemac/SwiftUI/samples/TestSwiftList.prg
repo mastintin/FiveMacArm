@@ -8,33 +8,47 @@ function Main()
     local oRow, oItem
     local nW := 1000
     local nH := 600
-    local i
+    local aIds1 := {}
+    local aIds2 := {}
+    local i, cBlock
 
     DEFINE WINDOW oWnd TITLE "Testing Two Independent Lists" SIZE nW, nH FLIPPED
 
     // List 1: Employees (Left)
     @ 20, 20 SWIFTLIST oList1 SIZE 460, 500 OF oWnd
     
-    oList1:bAction := { | nIndex | MsgInfo( "List 1 Selected: " + Str( nIndex ) ) }
-    
+    oList1:bAction := { | cId | 
+    local nIdx := AScan( aIds1, cId )
+    MsgInfo( "List 1 Selected UUID: " + cId + hb_OsNewLine() + ;
+        "Position in Array: " + AllTrim( Str( nIdx ) ) ) 
+    }
+
     for i := 1 to 10
-    oRow := oList1:AddHStack()
-    oRow:AddSystemImage( "person.fill" )
-    oRow:AddText( "Employee " + AllTrim( Str( i ) ) )
-    oRow:AddSpacer()
+        oRow := oList1:AddHStack()
+        AAdd( aIds1, oRow:cId ) // Store the UUID returned by Swift
+        oRow:AddSystemImage( "person.fill" )
+        oRow:AddText( "Employee " + AllTrim( Str( i ) ) )
+        oRow:AddSpacer()
     next
 
     // List 2: Departments (Right)
     @ 20, 500 SWIFTLIST oList2 SIZE 460, 500 OF oWnd
     
-    oList2:bAction := { | nIndex | MsgInfo( "List 2 Selected: " + Str( nIndex ) ) }
+    oList2:bAction := { | cId | 
+    local nIdx := AScan( aIds2, cId )
+    MsgInfo( "List 2 Selected UUID: " + cId + hb_OsNewLine() + ;
+        "Position in Array: " + AllTrim( Str( nIdx ) ) ) 
+    }
 
     for i := 1 to 5
-    oRow := oList2:AddHStack()
-    oRow:AddSystemImage( "building.2.fill" )
-    oRow:AddText( "Department " + AllTrim( Str( i ) ) )
-    oRow:AddSpacer()
-    oRow:AddButton( "View", { || MsgAlert( "View Dept " + AllTrim( Str( i ) ) ) } )
+        oRow := oList2:AddHStack()
+        AAdd( aIds2, oRow:cId ) // Store the UUID returned by Swift
+        oRow:AddSystemImage( "building.2.fill" )
+        oRow:AddText( "Department " + AllTrim( Str( i ) ) )
+        oRow:AddSpacer()
+        cBlock := CreateMyBlock( i )
+        msginfo(valtype(cBlock))
+        oRow:AddButton( "View", cBlock )
     next
 
     @ 540, 450 BUTTON "Exit" SIZE 100, 30 OF oWnd ACTION oWnd:End()
@@ -42,3 +56,6 @@ function Main()
     ACTIVATE WINDOW oWnd 
 
 return nil
+
+FUNCTION CreateMyBlock( nVal )
+RETURN { || MsgAlert( "View Dept " + AllTrim(Str(nVal)) ) }

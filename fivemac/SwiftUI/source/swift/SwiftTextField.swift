@@ -36,26 +36,36 @@ struct SwiftTextFieldView: View {
     }
 }
 
+@available(OSX 11.0, *)
+struct SwiftTextEditorView: View {
+    @ObservedObject var state: TextFieldState
+    
+    var body: some View {
+        TextEditor(text: $state.text)
+            .font(.system(size: state.fontSize))
+            .border(Color.gray.opacity(0.2))
+    }
+}
+
 @objc(SwiftTextFieldLoader)
 public class SwiftTextFieldLoader: NSObject {
     
-    // CRITICAL: Dictionary to prevent Index Collision
-    // HYBRID MIGRATION: Key is String to support both "123" (legacy indices) and "UUID-..."
+    // Key is String (UUID)
     static var states: [String: TextFieldState] = [:]
 
-    @objc(makeTextFieldWithText:placeholder:id:index:callback:)
-    public static func makeTextField(text: String, placeholder: String, id: String, index: Int, callback: @escaping (String) -> Void) -> NSView {
+    @objc(makeTextFieldWithText:placeholder:id:callback:)
+    public static func makeTextField(text: String, placeholder: String, id: String, callback: @escaping (String) -> Void) -> NSView {
          if #available(OSX 10.15, *) {
             let state = TextFieldState(text: text, placeholder: placeholder, id: id)
             state.onAction = callback
             
-            let key = String(index)
-            states[key] = state // Store in Dictionary using String key
+            states[id] = state 
             
             let view = SwiftTextFieldView(state: state)
             
-            // Register view for layout
-            ViewRegistry.register(view, for: index)
+            if let index = Int(id.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) {
+                 ViewRegistry.register(view, for: index)
+            }
             
             let hostingView = NSHostingView(rootView: view)
             hostingView.translatesAutoresizingMaskIntoConstraints = false
@@ -64,26 +74,37 @@ public class SwiftTextFieldLoader: NSObject {
             return NSView()
         }
     }
+
+    @objc(makeTextEditorWithText:id:)
+    public static func makeTextEditor(text: String, id: String) -> NSView {
+        if #available(OSX 11.0, *) {
+            let state = TextFieldState(text: text, id: id)
+            states[id] = state
+            
+            let view = SwiftTextEditorView(state: state)
+            let hostingView = NSHostingView(rootView: view)
+            hostingView.translatesAutoresizingMaskIntoConstraints = false
+            return hostingView
+        } else {
+            return NSView()
+        }
+    }
     
-    @objc(setText:index:)
-    public static func setText(_ text: String, index: Int) {
+    @objc(setText:id:)
+    public static func setText(_ text: String, id: String) {
         if #available(OSX 10.15, *) {
-            let key = String(index)
             DispatchQueue.main.async {
-                if let state = states[key] {
-                    print("DEBUG: [Swift] Setting text for index \(index) (key: \(key)): \(text)")
+                if let state = states[id] {
                     state.text = text
                 }
             }
         }
     }
     
-    @objc(getTextFromIndex:)
-    public static func getText(fromIndex index: Int) -> String {
+    @objc(getTextFromId:)
+    public static func getText(fromId id: String) -> String {
         if #available(OSX 10.15, *) {
-            let key = String(index)
-            if let state = states[key] {
-                 print("DEBUG: [Swift] Getting text for index \(index) (key: \(key)): \(state.text)")
+            if let state = states[id] {
                 return state.text
             }
         }

@@ -13,13 +13,13 @@ HB_BIN=$(HARBOUR_PATH)/bin/harbour
 # Architecture detection
 ARCH=$(shell uname -m)
 ifeq ($(ARCH),arm64)
-    TARGET_FLAG=-target arm64-apple-macosx15.0
+    TARGET_FLAG=-target arm64-apple-macosx26.0
 else
     TARGET_FLAG=-target x86_64-apple-macosx10.15
 endif
 
 # Flags
-CFLAGS=-c -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include -fmodules
+CFLAGS=$(TARGET_FLAG) -c -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include -fmodules
 HBFLAGS=-n -w -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include
 SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-name SwiftFive $(TARGET_FLAG) -emit-objc-header-path include/SwiftFive-Swift.h
 
