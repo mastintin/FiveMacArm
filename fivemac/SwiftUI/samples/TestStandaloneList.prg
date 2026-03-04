@@ -8,9 +8,8 @@ function Main()
     local oSidebar, oMainList
     local oRow
     local oBtn
-    // Build a standard "Sidebar + Content" Layout
-    // Sidebar: Fixed width (250)
-    // Content: Flexible width
+    local aSidebarIds := {}
+    local aEmailIds := {}
    
     local nWinWidth := 900
     local nWinHeight := 600
@@ -19,104 +18,79 @@ function Main()
         SIZE nWinWidth, nWinHeight FLIPPED
 
     // --- Sidebar (List 1) ---
-    // Top-Left, Fixed Width, Full Height (Anchored Left + Top + Bottom)
     @ 20, 20 SWIFTLIST oSidebar SIZE 250, nWinHeight - 80 OF oWnd ;
         AUTORESIZE ( AnclaTop + AnclaBottom + AnclaLeft )
 
     oSidebar:SetScroll( .T. )
-
-
-    // Simulate Mac Sidebar Style
     oSidebar:SetBackgroundColor( 240, 240, 240, 1.0 ) 
-  
 
     // Add Categories
-    AddSidebarItem( oSidebar, "tray.fill", "Inbox", .T. ) // Default Selected
-    AddSidebarItem( oSidebar, "paperplane.fill", "Sent" )
-    AddSidebarItem( oSidebar, "pencil.circle.fill", "Drafts" )
+    AAdd( aSidebarIds, { "inbox",  AddSidebarItem( oSidebar, "tray.fill", "Inbox" ) } ) 
+    AAdd( aSidebarIds, { "sent",   AddSidebarItem( oSidebar, "paperplane.fill", "Sent" ) } )
+    AAdd( aSidebarIds, { "drafts", AddSidebarItem( oSidebar, "pencil.circle.fill", "Drafts" ) } )
     oSidebar:AddSpacer()
-    AddSidebarItem( oSidebar, "trash.fill", "Trash" )
+    AAdd( aSidebarIds, { "trash",  AddSidebarItem( oSidebar, "trash.fill", "Trash" ) } )
    
     oSidebar:SelectIndex( 1 )
-    oSidebar:bAction := { |nIdx| HandleSidebarSelection( nIdx, oMainList ) }
-
+    oSidebar:bAction := { |cId| HandleSidebarSelection( cId, oMainList, aSidebarIds ) }
 
     // --- Main Content (List 2) ---
-    // Right of Sidebar, fills remaining space (Anchored All Sides or just Width/Height)
-    // Top: 20
-    // Left: 290 (20 margin + 250 sidebar + 20 gap)
-    // Width: nWinWidth - 310 (290 + 20 right margin)
-    // Scale with Width and Height
     @ 20, 290 SWIFTLIST oMainList SIZE nWinWidth - 310, nWinHeight - 80 OF oWnd ;
         AUTORESIZE ( AnclaTop + AnclaBottom + AnclaLeft + AnclaRight + AnchoMovil + AltoMovil )
    
     oMainList:SetScroll( .T. )
     oMainList:SetBackgroundColor( 255, 255, 255, 1.0 )
    
-    //oMainList:SelectIndex( 1 )
-    // Load Initial Data (Inbox)
-    LoadInbox( oMainList )
+    LoadInbox( oMainList, aEmailIds )
 
-    oMainList:bAction := { |nIdx| MsgInfo( "Opening Email #" + AllTrim(Str(nIdx)) ) }
+    oMainList:bAction := { |cId| 
+    local nIdx := AScan( aEmailIds, cId )
+    if nIdx > 0
+    MsgInfo( "Opening Email #" + AllTrim(Str(nIdx)) ) 
+    endif
+    }
    
-    // --- Footer / Status Bar (Optional) ---
     @ nWinHeight - 50, 20 SWIFTLABEL "SwiftList Standalone Demo" OF oWnd ;
         SIZE 300, 30 AUTORESIZE ( AnclaBottom + AnclaLeft )
 
     @ nWinHeight - 50, nWinWidth - 140 BUTTON oBtn PROMPT "Exit" OF oWnd ;
         ACTION oWnd:End() SIZE 120, 30 AUTORESIZE ( AnclaBottom + AnclaRight )
 
-
     ACTIVATE WINDOW oWnd 
 
 return nil
 
 // Helper to add stylized sidebar rows
-function AddSidebarItem( oList, cIcon, cText, lBold )
+function AddSidebarItem( oList, cIcon, cText )
     local oRow := oList:AddHStack()
-    local oImg
-   
-    // Icon
-    oRow:AddSystemImage( cIcon )
-   
-    // Text
-    if lBold == .T.
-        // We don't have explicit Bold text API yet in simple addText, 
-        // but we can assume standard text for now.
-        oRow:AddText( cText ) 
-    else
-        oRow:AddText( cText )
-    endif
-   
+    local oIcon
+    oRow:SetSize( 0, 36 ) // A bit more height for sidebar rows
+    oIcon := oRow:AddSystemImage( cIcon )
+    oIcon:SetSize( 22, 22 ) // Slightly larger icon
+    oRow:AddText( cText )
     oRow:AddSpacer()
-   
-return nil
+return oRow:cId
 
-function HandleSidebarSelection( nIdx, oMainList )
-    // NOTE: We currently lack a 'Clear' method in SwiftList to fully implement
-    // switching views dynamically in a single list instance without creating a mess.
-    // For this visual verification of "Standalone Complex Example",
-    // we will just show an alert confirming the independent event.
-    // A future enhancement would be adding oList:Clear() or oList:SetItems().
-   
+function HandleSidebarSelection( cId, oMainList, aSidebarIds )
+    local nPos := AScan( aSidebarIds, { |a| a[2] == cId } )
+    local cType := ""
+    
+    if nPos > 0
+    cType := aSidebarIds[nPos][1]
     do case
-        case nIdx == 1 
-            MsgInfo( "Switched to Inbox" )
-        case nIdx == 2
-            MsgInfo( "Switched to Sent" )
-        case nIdx == 3
-            MsgInfo( "Switched to Drafts" )
-        case nIdx == 4
-            MsgInfo( "Clicked Spacer" )
-        case nIdx == 5
-            MsgInfo( "Switched to Trash" )
-            otherwise
-            MsgInfo( "Selected Category: " + AllTrim(Str(nIdx)) )
+    case cType == "inbox" 
+    MsgInfo( "Switched to Inbox" )
+    case cType == "sent"
+    MsgInfo( "Switched to Sent" )
+    case cType == "drafts"
+    MsgInfo( "Switched to Drafts" )
+    case cType == "trash"
+    MsgInfo( "Switched to Trash" )
     endcase
-   
+    endif
 return nil
 
-function LoadInbox( oList )
+function LoadInbox( oList, aEmailIds )
     local i
     local aEmails := { ;
         { "envelope.fill", "Welcome to SwiftFive", "Get started with your new controls..." }, ;
@@ -126,34 +100,18 @@ function LoadInbox( oList )
         }
    
     for i := 1 to Len( aEmails )
-    AddEmailRow( oList, aEmails[i][1], aEmails[i][2], aEmails[i][3] )
+    AAdd( aEmailIds, AddEmailRow( oList, aEmails[i][1], aEmails[i][2], aEmails[i][3] ) )
     next
-   
 return nil
 
 function AddEmailRow( oList, cIcon, cSubject, cPreview )
     local oRow := oList:AddHStack()
-   
-    // Leading Icon
-    oRow:AddSystemImage( cIcon )
-   
-    // Vertical Stack for Subject + Preview (simulate with just Text for now or use complex nesting)
-    // Since we don't have explicit VSTACK-inside-row easily w/o complex API wrapping,
-    // we'll just use Text.
-    // But wait! SwiftVStack allows nesting. 
-    // `oRow` is an Item. `AddHStack` returns an Item.
-    // Does `AddVStack` work on an `AddHStack` item? Yes! 
-    // The C-level `addVStackItem` logic handles recursion if parentId is passed.
-    // But `oRow:AddVStack()` isn't explicit in TSwiftStackItem yet?
-    // Let's check `TSwiftStackItem` methods.
-    // Actually `TSwiftStackItem` inherits `TSwiftVStack` methods? No.
-    // `TSwiftVStack` performs actions on the root.
-    // We need to see if `TSwiftStackItem` (returned by AddHStack) has methods to add children.
-    // Let's check `SwiftVStack.prg` again.
-   
+    local oIcon
+    oRow:SetSize( 0, 48 )
+    oRow:SetSpacing( 20 ) // More gap between icon and text
+    oIcon := oRow:AddSystemImage( cIcon )
+    oIcon:SetSize( 28, 28 )
     oRow:AddText( cSubject + " - " + cPreview )
-   
     oRow:AddSpacer()
     oRow:AddSystemImage("chevron.right")
-   
-return nil
+return oRow:cId

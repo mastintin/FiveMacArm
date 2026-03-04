@@ -1,80 +1,70 @@
 import Foundation
-import Combine
 
-@available(macOS 12.0, *)
 @objc(SwiftMusicLoader)
 public class SwiftMusicLoader: NSObject {
     
     // MARK: - Helpers
     
-    private static func runScript(_ source: String) -> String {
+    private static func runAppleScript(_ cmd: String) -> String {
+        let scriptSource = "tell application \"Music\"\n" + cmd + "\nend tell"
         var error: NSDictionary?
-        let script = NSAppleScript(source: "tell application \"Music\" to " + source)
-        let output = script?.executeAndReturnError(&error)
-        
-        if let err = error {
-            print("[SwiftMusic] Error: \(err)")
-            return ""
+        if let script = NSAppleScript(source: scriptSource) {
+            let output = script.executeAndReturnError(&error)
+            if let err = error {
+                print("[SwiftMusic] AppleScript Error: \(err)")
+            }
+            return output.stringValue ?? ""
         }
-        
-        return output?.stringValue ?? ""
+        return ""
     }
     
     // MARK: - Auth
     
     @objc
     public static func requestAuth() {
-        print("[SwiftMusic] Requesting TCC via AppleScript...")
-        // Simple command to trigger "FiveMac wants to control Music" prompt
-        _ = runScript("get player state")
+        print("[SwiftMusic] Requesting Auth via AppleScript...")
+        _ = runAppleScript("get player state")
     }
     
     // MARK: - Playback
     
     @objc
     public static func play() {
-        print("[SwiftMusic] Play")
-        // Try to play; if empty, it might do nothing, but usually Music plays *something*
-        _ = runScript("play")
+        _ = runAppleScript("play")
     }
     
     @objc
     public static func pause() {
-        print("[SwiftMusic] Pause")
-        _ = runScript("pause")
+        _ = runAppleScript("pause")
     }
     
     @objc
     public static func next() {
-        print("[SwiftMusic] Next")
-        _ = runScript("next track")
+        _ = runAppleScript("next track")
     }
     
     @objc
     public static func previous() {
-        print("[SwiftMusic] Previous")
-        _ = runScript("previous track")
+        _ = runAppleScript("previous track")
     }
     
     @objc
     public static func stop() {
-        _ = runScript("stop")
+        _ = runAppleScript("stop")
     }
     
     // MARK: - State/Metadata
     
     @objc
     public static func getState() -> Int {
-        let state = runScript("get player state").lowercased()
-        if state == "playing" { return 1 }
-        if state == "paused" { return 2 }
+        let res = runAppleScript("get player state").lowercased()
+        if res == "playing" { return 1 }
+        if res == "paused" { return 2 }
         return 0 // stopped
     }
     
     @objc
     public static func getCurrentTrack() -> String {
-        // Safe JSON construction via multiple calls to avoid string escaping hell in AS
-        // Or specific AS to build JSON
         let script = """
         try
             set t to current track
@@ -86,67 +76,59 @@ public class SwiftMusicLoader: NSObject {
             return "{}"
         end try
         """
-        return runScript(script)
+        return runAppleScript(script)
     }
-    
-    // MARK: - Advanced Features
     
     @objc
     public static func getArtworkPath() -> String {
         let path = "/tmp/fivemac_cover.jpg"
-        // Based on native implementation which uses 'raw data'
         let script = """
-        tell application "Music"
+        try
+            if exists (artwork 1 of current track) then
+                set d to raw data of artwork 1 of current track
+                set f to open for access (POSIX file "\(path)") with write permission
+                set eof f to 0
+                write d to f
+                close access f
+                return "\(path)"
+            else
+                return ""
+            end if
+        on error err
             try
-                if exists (artwork 1 of current track) then
-                    set d to raw data of artwork 1 of current track
-                    set f to open for access (POSIX file "\(path)") with write permission
-                    set eof f to 0
-                    write d to f
-                    close access f
-                    return "\(path)"
-                else
-                    return ""
-                end if
-            on error err
-                try
-                    close access (POSIX file "\(path)")
-                end try
-                return "ERROR: " & err
+                close access (POSIX file "\(path)")
             end try
-        end tell
+            return ""
+        end try
         """
-        let res = runScript(script)
-        // print("[SwiftMusic] getArtworkPath result: \(res)")
-        if res.starts(with: "ERROR") { return "" }
-        return res
+        return runAppleScript(script)
     }
     
     @objc
     public static func getDuration() -> Double {
-        let res = runScript("get duration of current track") // Returns seconds (real)
+        let res = runAppleScript("get duration of current track")
         return Double(res) ?? 0.0
     }
     
     @objc
     public static func getPosition() -> Double {
-        let res = runScript("get player position") // Returns seconds (real)
+        let res = runAppleScript("get player position")
         return Double(res) ?? 0.0
     }
     
     @objc
     public static func setPosition(seconds: Double) {
-        _ = runScript("set player position to \(seconds)")
+        _ = runAppleScript("set player position to \(seconds)")
     }
     
     @objc
     public static func getVolume() -> Int {
-        let res = runScript("get sound volume") // 0-100
+        let res = runAppleScript("get sound volume")
         return Int(res) ?? 50
     }
     
     @objc
     public static func setVolume(vol: Int) {
-        _ = runScript("set sound volume to \(vol)")
+        _ = runAppleScript("set sound volume to \(vol)")
     }
 }

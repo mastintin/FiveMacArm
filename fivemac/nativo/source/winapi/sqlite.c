@@ -8,7 +8,8 @@
 HB_FUNC(SQLITE_OPEN) {
   sqlite3 *db;
   const char *cFilename = hb_parc(1);
-  int nFlags = HB_ISNUM(2) ? hb_parni(2) : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+  int nFlags =
+      HB_ISNUM(2) ? hb_parni(2) : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
 
   if (sqlite3_open_v2(cFilename, &db, nFlags, NULL) == SQLITE_OK)
     hb_retptr(db);
@@ -119,4 +120,23 @@ HB_FUNC(SQLITE_LASTINSERTROWID) {
     hb_retnll(sqlite3_last_insert_rowid(db));
   else
     hb_retnll(0);
+}
+
+HB_FUNC(SQLITE_COLUMN_NAMES) {
+  sqlite3 *db = (sqlite3 *)hb_parptr(1);
+  const char *sql = hb_parc(2);
+  sqlite3_stmt *stmt;
+
+  if (db && sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+    int i, count = sqlite3_column_count(stmt);
+    PHB_ITEM pArray = hb_itemNew(NULL);
+    hb_arrayNew(pArray, count);
+    for (i = 0; i < count; i++) {
+      hb_arraySetC(pArray, i + 1, sqlite3_column_name(stmt, i));
+    }
+    sqlite3_finalize(stmt);
+    hb_itemReturnRelease(pArray);
+  } else {
+    hb_ret();
+  }
 }

@@ -8,7 +8,6 @@ HB_FUNC(SWIFTTEXTFIELDCREATE) {
   NSString *cText = hb_NSSTRING_par(5);
   NSString *cPlaceholder = hb_NSSTRING_par(6);
   NSWindow *window = (NSWindow *)hb_parnl(7);
-  NSInteger nIndex = (NSInteger)hb_parni(8);
   NSString *cId = hb_NSSTRING_par(9);
 
   NSString *className = @"SwiftTextFieldLoader";
@@ -20,21 +19,17 @@ HB_FUNC(SWIFTTEXTFIELDCREATE) {
   }
 
   if (!swiftClass) {
-    NSLog(@"Error: Could not find class SwiftTextFieldLoader");
     return;
   }
 
-  NSLog(@"SWIFTTEXTFIELDCREATE: nIndex=%ld Text=%@ at %f,%f", (long)nIndex,
-        cText, nTop, nLeft);
-
-  // Callback for text changes
+  // Callback for text changes using String ID
   void (^callbackBlock)(NSString *) = ^(NSString *newText) {
     dispatch_async(dispatch_get_main_queue(), ^{
       PHB_DYNS pDynSym = hb_dynsymFindName("SWIFTTEXTFIELDONCHANGE");
       if (pDynSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
         hb_vmPushNil();
-        hb_vmPushInteger(nIndex);
+        hb_vmPushString([cId UTF8String], [cId length]);
         const char *utf8Text = [newText UTF8String];
         hb_vmPushString(utf8Text, strlen(utf8Text));
         hb_vmDo(2);
@@ -42,8 +37,8 @@ HB_FUNC(SWIFTTEXTFIELDCREATE) {
     });
   };
 
-  SEL selector = NSSelectorFromString(
-      @"makeTextFieldWithText:placeholder:id:index:callback:");
+  SEL selector =
+      NSSelectorFromString(@"makeTextFieldWithText:placeholder:id:callback:");
 
   if ([swiftClass respondsToSelector:selector]) {
     NSMethodSignature *signature =
@@ -56,8 +51,7 @@ HB_FUNC(SWIFTTEXTFIELDCREATE) {
     [invocation setArgument:&cText atIndex:2];
     [invocation setArgument:&cPlaceholder atIndex:3];
     [invocation setArgument:&cId atIndex:4];
-    [invocation setArgument:&nIndex atIndex:5];
-    [invocation setArgument:&callbackBlock atIndex:6];
+    [invocation setArgument:&callbackBlock atIndex:5];
 
     [invocation invoke];
 
@@ -70,16 +64,50 @@ HB_FUNC(SWIFTTEXTFIELDCREATE) {
     }
   }
 }
+HB_FUNC(SWIFTTEXTEDITORCREATE) {
+  CGFloat nTop = (CGFloat)hb_parnd(1);
+  CGFloat nLeft = (CGFloat)hb_parnd(2);
+  CGFloat nWidth = (CGFloat)hb_parnd(3);
+  CGFloat nHeight = (CGFloat)hb_parnd(4);
+  NSString *cText = hb_NSSTRING_par(5);
+  NSWindow *window = (NSWindow *)hb_parnl(6);
+  NSString *cId = hb_NSSTRING_par(7);
+
+  NSString *className = @"SwiftFive.SwiftTextFieldLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"makeTextEditorWithText:id:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&cText atIndex:2];
+      [invocation setArgument:&cId atIndex:3];
+      [invocation invoke];
+
+      NSView *editorView;
+      [invocation getReturnValue:&editorView];
+      if (editorView) {
+        setupSwiftView(editorView, window, nTop, nLeft, nWidth, nHeight);
+        hb_retnl((HB_LONG)editorView);
+      }
+    }
+  }
+}
 
 HB_FUNC(SWIFTTEXTFIELDSETTEXT) {
-  NSInteger nIndex = (NSInteger)hb_parni(1);
+  NSString *cId = hb_NSSTRING_par(1);
   NSString *cText = hb_NSSTRING_par(2);
 
   NSString *className = @"SwiftFive.SwiftTextFieldLoader";
   Class swiftClass = NSClassFromString(className);
 
   if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setText:index:");
+    SEL selector = NSSelectorFromString(@"setText:id:");
     if ([swiftClass respondsToSelector:selector]) {
       NSMethodSignature *signature =
           [swiftClass methodSignatureForSelector:selector];
@@ -89,7 +117,7 @@ HB_FUNC(SWIFTTEXTFIELDSETTEXT) {
       [invocation setTarget:swiftClass];
 
       [invocation setArgument:&cText atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
+      [invocation setArgument:&cId atIndex:3];
 
       [invocation invoke];
     }
@@ -97,13 +125,13 @@ HB_FUNC(SWIFTTEXTFIELDSETTEXT) {
 }
 
 HB_FUNC(SWIFTTEXTFIELDGETTEXT) {
-  NSInteger nIndex = (NSInteger)hb_parni(1);
+  NSString *cId = hb_NSSTRING_par(1);
 
   NSString *className = @"SwiftFive.SwiftTextFieldLoader";
   Class swiftClass = NSClassFromString(className);
 
   if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"getTextFromIndex:");
+    SEL selector = NSSelectorFromString(@"getTextFromId:");
     if ([swiftClass respondsToSelector:selector]) {
       NSMethodSignature *signature =
           [swiftClass methodSignatureForSelector:selector];
@@ -112,7 +140,7 @@ HB_FUNC(SWIFTTEXTFIELDGETTEXT) {
       [invocation setSelector:selector];
       [invocation setTarget:swiftClass];
 
-      [invocation setArgument:&nIndex atIndex:2];
+      [invocation setArgument:&cId atIndex:2];
 
       [invocation invoke];
 

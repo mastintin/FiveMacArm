@@ -146,7 +146,6 @@ HB_FUNC(SWIFTSTANDALONEBATCHCREATE) {
       NSString *text = item[@"text"] ?: @"";
       NSString *placeholder = item[@"placeholder"] ?: @"";
       NSString *cId = item[@"id"] ?: @"";
-      NSInteger nIndex = [item[@"index"] integerValue];
       CGFloat top = [item[@"top"] floatValue];
       CGFloat left = [item[@"left"] floatValue];
       CGFloat width = [item[@"width"] floatValue] ?: 200.0;
@@ -163,7 +162,7 @@ HB_FUNC(SWIFTSTANDALONEBATCHCREATE) {
             if (pDynSym) {
               hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
               hb_vmPushNil();
-              hb_vmPushInteger(nIndex);
+              hb_vmPushString([cId UTF8String], [cId length]);
               const char *utf8Text = [newText UTF8String];
               hb_vmPushString(utf8Text, strlen(utf8Text));
               hb_vmDo(2);
@@ -172,7 +171,7 @@ HB_FUNC(SWIFTSTANDALONEBATCHCREATE) {
         };
 
         SEL selector = NSSelectorFromString(
-            @"makeTextFieldWithText:placeholder:id:index:callback:");
+            @"makeTextFieldWithText:placeholder:id:callback:");
         if ([swiftClass respondsToSelector:selector]) {
           NSMethodSignature *signature =
               [swiftClass methodSignatureForSelector:selector];
@@ -183,8 +182,7 @@ HB_FUNC(SWIFTSTANDALONEBATCHCREATE) {
           [invocation setArgument:&text atIndex:2];
           [invocation setArgument:&placeholder atIndex:3];
           [invocation setArgument:&cId atIndex:4];
-          [invocation setArgument:&nIndex atIndex:5];
-          [invocation setArgument:&callbackBlock atIndex:6];
+          [invocation setArgument:&callbackBlock atIndex:5];
           [invocation invoke];
           [invocation getReturnValue:&fieldView];
 

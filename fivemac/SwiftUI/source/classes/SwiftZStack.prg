@@ -1,6 +1,5 @@
 #include "FiveMac.ch"
 
-static aZStacks := {}
 // Removed s_hRegistry from here, now in SwiftCommon.prg
 
 INIT PROCEDURE SwiftZStackInit()
@@ -47,7 +46,7 @@ CLASS TSwiftZStack FROM TControl
     METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha )
     
     METHOD AddGrid( aColumns ) // Returns Item
-    METHOD AddList()           // Returns Item
+    METHOD AddList( oParent )  // Returns Item
 
     METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD AddBatch( aItems )
@@ -62,8 +61,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftZStack
 
     ::oWnd = oWnd
     
-    ::nIndex = Len( aZStacks ) + 1
-    AAdd( aZStacks, Self )
+    ::nIndex = SwiftRegisterControl( Self )
     ::hItems := {=>}
     ::aBatch := {}
 
@@ -78,57 +76,53 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftZStack
 return Self
 
 METHOD AddText( cText ) CLASS TSwiftZStack
-    SWIFTZSTACKADDITEM( cText )
-return nil
+    local cId
+    cId := SWIFTZSTACKADDITEM( ::nIndex, cText )
+return cId
 
 METHOD AddImage( cSystemName ) CLASS TSwiftZStack
-    SWIFTZSTACKADDIMAGE( cSystemName )
-return nil
+    local cId
+    cId := SWIFTZSTACKADDIMAGE( ::nIndex, cSystemName )
+return cId
 
 METHOD AddImageFile( cFile ) CLASS TSwiftZStack
-    SWIFTZSTACKADDFILEIMAGE( cFile )
-return nil
+    local cId
+    cId := SWIFTZSTACKADDFILEIMAGE( ::nIndex, cFile )
+return cId
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftZStack
     local cId, oItem
-    // Pass nil as parent to add to root ZStack
-    cId := SWIFTZSTACKADDBUTTONTO( cText, nil )
+    cId := SWIFTZSTACKADDBUTTONTO( ::nIndex, cText, nil )
     if bAction != nil .and. !Empty( cId )
     oItem := TSwiftStackItem():New( cId, Self )
     oItem:bAction := bAction
     SwiftRegisterItem( cId, oItem )
     endif
-return nil
+return cId
 
-// Recursion / Nesting Support
 METHOD AddVStack( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := SWIFTZSTACKADDVSTACKCONTAINER( cParentId )
+    cId := SWIFTZSTACKADDVSTACKCONTAINER( ::nIndex, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD Reset() CLASS TSwiftZStack
-    SWIFTZSTACKREMOVEALLITEMS()
+    SWIFTZSTACKREMOVEALLITEMS( ::nIndex )
 return nil
 
 METHOD AddHStack( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := SWIFTZSTACKADDHSTACKCONTAINER( cParentId )
+    cId := SWIFTZSTACKADDHSTACKCONTAINER( ::nIndex, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD SetAlignment( nAlign ) CLASS TSwiftZStack
-    // 0: Center, 1: TopLeading...
-    SWIFTZSTACKSETALIGNMENT( nAlign )
+    SWIFTZSTACKSETALIGNMENT( ::nIndex, nAlign )
 return nil
 
 METHOD AddGrid( aColumns ) CLASS TSwiftZStack
-    local cId, oItem
-    local cJsonColumns := "["
-    local n
-   
+    local cId, oItem, n, cJsonColumns := "["
     DEFAULT aColumns := {}
-    
     for n := 1 to Len( aColumns )
     if n > 1 ; cJsonColumns += "," ; endif
     cJsonColumns += '{"type":"' + aColumns[n][1] + '"'
@@ -137,29 +131,23 @@ METHOD AddGrid( aColumns ) CLASS TSwiftZStack
     cJsonColumns += '}'
     next
     cJsonColumns += "]"
-   
-    cId := SWIFTZSTACKADDLAZYVGRID( nil, cJsonColumns )
-    
-    oItem := TSwiftStackItem():New( cId, Self )
-return oItem
+    cId := SWIFTZSTACKADDLAZYVGRID( ::nIndex, nil, cJsonColumns )
+return TSwiftStackItem():New( cId, Self )
 
-METHOD AddList() CLASS TSwiftZStack
+METHOD AddList( oParent ) CLASS TSwiftZStack
     local cId
-    cId := SWIFTZSTACKADDLIST( nil )
-    SWIFTSETID( cId )
+    local cParentId := If( oParent != nil, oParent:cId, nil )
+    cId := SWIFTZSTACKADDLIST( ::nIndex, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
-    DEFAULT nRed := 0, nGreen := 0, nBlue := 0
-    DEFAULT nAlpha := 1.0
-    SWIFTZSTACKSETFGCOLOR( nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+    DEFAULT nRed := 0, nGreen := 0, nBlue := 0, nAlpha := 1.0
+    SWIFTZSTACKSETFGCOLOR( ::nIndex, nRed, nGreen, nBlue, nAlpha )
 return nil
 
 METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
-    DEFAULT nRed := 0, nGreen := 0, nBlue := 0
-    DEFAULT nAlpha := 1.0
-    // Normalized 0.0-1.0 from 0-255 in Harbour
-    SWIFTZSTACKSETBGCOLOR( nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+    DEFAULT nRed := 0, nGreen := 0, nBlue := 0, nAlpha := 1.0
+    SWIFTZSTACKSETBGCOLOR( ::nIndex, nRed, nGreen, nBlue, nAlpha )
 return nil
 
 METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftZStack
@@ -170,14 +158,10 @@ return nil
 
 METHOD AddBatch( aItems ) CLASS TSwiftZStack
     local aJsonData := {}
-    local aIds, n, cJson, cJsonIds
-    local oItem, oTempItem, hItem
+    local aIds, n, cJson, cJsonIds, oTempItem, hItem
    
     DEFAULT aItems := ::aBatch
-   
-    if Empty( aItems )
-    return {}
-    endif
+    if Empty( aItems ) ; return {} ; endif
 
     for n := 1 to Len( aItems )
     hItem := { "type" => aItems[n]["type"], ;
@@ -190,22 +174,19 @@ METHOD AddBatch( aItems ) CLASS TSwiftZStack
         "b" => nRGBBlue( aItems[n]["nClrBack"] ) / 255.0, ;
         "a" => If( hb_HHasKey( aItems[n], "nAlphaBack" ) .and. aItems[n]["nAlphaBack"] != nil, aItems[n]["nAlphaBack"], 1.0 ) }
     endif
-        
     if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
     hItem["fg"] := { "r" => nRGBRed( aItems[n]["nClrFore"] ) / 255.0, ;
         "g" => nRGBGreen( aItems[n]["nClrFore"] ) / 255.0, ;
         "b" => nRGBBlue( aItems[n]["nClrFore"] ) / 255.0, ;
         "a" => If( hb_HHasKey( aItems[n], "nAlphaFore" ) .and. aItems[n]["nAlphaFore"] != nil, aItems[n]["nAlphaFore"], 1.0 ) }
     endif
-        
     AAdd( aJsonData, hItem )
     next
    
     cJson := hb_jsonEncode( aJsonData )
-    cJsonIds := SWIFTZSTACKADDBATCH( cJson, nil ) // nil parent for root
+    cJsonIds := SWIFTZSTACKADDBATCH( ::nIndex, cJson, nil ) // nil parent for root
    
     aIds := hb_jsonDecode( cJsonIds )
-   
     if ValType( aIds ) == "A"
     for n := 1 to Len( aIds )
     if n <= Len( aItems ) .and. hb_HHasKey( aItems[n], "action" ) .and. !Empty( aItems[n]["action"] )
@@ -215,268 +196,13 @@ METHOD AddBatch( aItems ) CLASS TSwiftZStack
     endif
     next
     endif
-   
+    
     if ValType( aItems ) == "A" .and. aItems == ::aBatch
     ::aBatch := {} // Reset after flush
     endif
-
 return aIds
 
 
 //---------------------------------------------------------//
 
-CLASS TSwiftStackItem
-    DATA cId
-    DATA oOwner
-    DATA bAction
-    
-    DATA nChildCount INIT 0
-    DATA aBatch INIT {}
-
-    METHOD New( cId, oOwner )
-    
-    METHOD Root() 
-    METHOD RegItem( cId, uValue )
-    
-    METHOD AddHStack()
-    METHOD AddVStack()
-    METHOD AddText( cText )
-    METHOD AddSystemImage( cName )
-    METHOD AddSpacer()
-    METHOD AddDivider()
-    
-    METHOD SetColor( nRed, nGreen, nBlue, nAlpha )
-
-    METHOD AddGrid( aColumns ) // Returns Item
-    METHOD AddList()           // Returns Item
-    METHOD AddButton( cText, bAction )
-    
-    METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
-    METHOD AddBatch( aItems )
-
-ENDCLASS
-
-METHOD New( cId, oOwner ) CLASS TSwiftStackItem
-    ::cId = cId
-    ::oOwner = oOwner
-    ::aBatch := {}
-return Self
-
-METHOD Root() CLASS TSwiftStackItem
-    local oParent := ::oOwner
-    // Traverse up until we find a Root control (Window's control or one that has hItems)
-    while oParent != nil .and. __ObjHasMsg( oParent, "OWNER" ) .and. oParent:IsKindOf( "TSWIFTSTACKITEM" )
-    oParent = oParent:oOwner
-    end
-return oParent
-
-METHOD RegItem( cId, uValue ) CLASS TSwiftStackItem
-    local oRoot := ::Root()
-    if oRoot != nil .and. __ObjHasMsg( oRoot, "REGITEM" )
-    oRoot:RegItem( cId, uValue )
-    endif
-return nil
-
-METHOD AddHStack() CLASS TSwiftStackItem
-    local cId, oItem
-    cId := SWIFTZSTACKADDHSTACKCONTAINER( ::cId )
-    oItem := TSwiftStackItem():New( cId, Self )
-    ::nChildCount++
-return oItem
-
-METHOD AddVStack() CLASS TSwiftStackItem
-    local cId, oItem
-    cId := SWIFTZSTACKADDVSTACKCONTAINER( ::cId )
-    oItem := TSwiftStackItem():New( cId, Self )
-    ::nChildCount++
-return oItem
-
-METHOD AddText( cText, bAction ) CLASS TSwiftStackItem
-    local cId, oItem
-    ::nChildCount++
-    
-    if ::Root():IsKindOf( "TSWIFTZSTACK" )
-    // Use the ID returned by Swift
-    cId := SWIFTZSTACKADDTEXTTO( cText, ::cId )
-    else 
-    // SwiftVStack implementation returns void/nil usually, but assumes success?
-    // Wait, SWIFTVSTACKADDTEXTTO (new) is void.
-    // We need items to have logical IDs.
-    // Swift ZStack generates IDs, VStack uses UUIDs internally.
-    // We can't easily get the ID back unless we change C func to return it.
-    // For now, assume it works for display.
-    SWIFTVSTACKADDTEXTTO( ::Root():nIndex, cText, ::cId )
-    cId := ::cId + "_Txt_" + AllTrim( Str( ::nChildCount ) ) // Fake ID for registry?
-    endif
-    
-    if bAction != nil .and. !Empty( cId )
-    oItem := TSwiftStackItem():New( cId, ::oOwner )
-    oItem:bAction := bAction
-    SwiftRegisterItem( cId, oItem )
-    else 
-    // Legacy fallback or just register for ID stability
-    SwiftRegisterItem( cId, { Self, ::nChildCount } )
-    endif 
-    
-return nil
-
-METHOD AddSystemImage( cName ) CLASS TSwiftStackItem
-    local cId
-    ::nChildCount++
-    cId := ::cId + "_Img_" + AllTrim( Str( ::nChildCount ) )
-    
-    if ::Root():IsKindOf( "TSWIFTZSTACK" )
-    SWIFTZSTACKADDSYSTEMIMAGETO( cName, ::cId )
-    else
-    SWIFTVSTACKADDSYSTEMIMAGETO( ::Root():nIndex, cName, ::cId )
-    endif
-
-    SWIFTSETID( cId )
-    
-    ::RegItem( cId, { Self, ::nChildCount } )
-return nil
-
-METHOD AddButton( cText, bAction ) CLASS TSwiftStackItem
-    local cId, oItem
-    cId := SWIFTZSTACKADDBUTTONTO( cText, ::cId )
-    if bAction != nil .and. !Empty( cId )
-    oItem := TSwiftStackItem():New( cId, ::oOwner )
-    oItem:bAction := bAction
-    SwiftRegisterItem( cId, oItem )
-    endif
-return nil
-
-METHOD AddSpacer() CLASS TSwiftStackItem
-    if ::Root():IsKindOf( "TSWIFTZSTACK" )
-    SWIFTZSTACKADDSPACER( ::cId )
-    else 
-    SWIFTVSTACKADDSPACERTO( ::Root():nIndex, ::cId )
-    endif
-return nil
-
-METHOD AddDivider() CLASS TSwiftStackItem
-    SWIFTZSTACKADDDIVIDER( ::cId )
-return nil
-
-METHOD SetColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftStackItem
-    DEFAULT nRed := 0, nGreen := 0, nBlue := 0
-    DEFAULT nAlpha := 1.0
-    // Normalized 0.0-1.0
-    SWIFTZSTACKSETITEMBGCOLOR( ::cId, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
-return nil
-
-METHOD AddGrid( aColumns ) CLASS TSwiftStackItem
-    local cJson := "["
-    local n, oItem
-    local cId
-    
-    DEFAULT aColumns := {}
-    
-    for n := 1 to Len( aColumns )
-    if n > 1
-    cJson += ","
-    endif
-    cJson += "{"
-       
-    do case
-    case Lower( aColumns[n][1] ) == "fixed"
-    cJson += '"type":"fixed","size":' + AllTrim( Str( aColumns[n][2] ) )
-             
-    case Lower( aColumns[n][1] ) == "flexible"
-    cJson += '"type":"flexible"'
-    if Len( aColumns[n] ) >= 2
-    cJson += ',"min":' + AllTrim( Str( aColumns[n][2] ) )
-    endif
-    if Len( aColumns[n] ) >= 3
-    cJson += ',"max":' + AllTrim( Str( aColumns[n][3] ) )
-    endif
-             
-    case Lower( aColumns[n][1] ) == "adaptive"
-    cJson += '"type":"adaptive"'
-    if Len( aColumns[n] ) >= 2
-    cJson += ',"min":' + AllTrim( Str( aColumns[n][2] ) )
-    endif
-    if Len( aColumns[n] ) >= 3
-    cJson += ',"max":' + AllTrim( Str( aColumns[n][3] ) )
-    endif
-    endcase
-       
-    cJson += "}"
-    next
-    cJson += "]"
-    
-    cId := SWIFTZSTACKADDLAZYVGRID( ::cId, cJson )
-    
-    oItem := TSwiftStackItem():New( cId, ::oOwner )
-return oItem
-
-METHOD AddList() CLASS TSwiftStackItem
-    local oItem
-    local cId
-    
-    cId := SWIFTZSTACKADDLIST( ::cId )
-    
-    oItem := TSwiftStackItem():New( cId, ::oOwner )
-return oItem
-
-//----------------------------------------------------------------------------//
-
-METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftStackItem
-    AAdd( ::aBatch, { "type" => nType, "content" => cContent, "action" => bAction, ;
-        "secondaryContent" => cSecondary, "nClrFore" => nClrFore, "nClrBack" => nClrBack, ;
-        "nAlphaFore" => nAlphaFore, "nAlphaBack" => nAlphaBack } )
-return nil
-
-METHOD AddBatch( aItems ) CLASS TSwiftStackItem
-    local aJsonData := {}
-    local aIds, n, cJson, cJsonIds
-    local oItem, oTempItem, hItem
-   
-    DEFAULT aItems := ::aBatch
-
-    if Empty( aItems )
-    return {}
-    endif
-
-    for n := 1 to Len( aItems )
-    hItem := { "type" => aItems[n]["type"], ;
-        "content" => aItems[n]["content"], ;
-        "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
-        
-    if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
-    hItem["bg"] := { "r" => nRGBRed( aItems[n]["nClrBack"] ) / 255.0, ;
-        "g" => nRGBGreen( aItems[n]["nClrBack"] ) / 255.0, ;
-        "b" => nRGBBlue( aItems[n]["nClrBack"] ) / 255.0, ;
-        "a" => If( hb_HHasKey( aItems[n], "nAlphaBack" ) .and. aItems[n]["nAlphaBack"] != nil, aItems[n]["nAlphaBack"], 1.0 ) }
-    endif
-        
-    if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
-    hItem["fg"] := { "r" => nRGBRed( aItems[n]["nClrFore"] ) / 255.0, ;
-        "g" => nRGBGreen( aItems[n]["nClrFore"] ) / 255.0, ;
-        "b" => nRGBBlue( aItems[n]["nClrFore"] ) / 255.0, ;
-        "a" => If( hb_HHasKey( aItems[n], "nAlphaFore" ) .and. aItems[n]["nAlphaFore"] != nil, aItems[n]["nAlphaFore"], 1.0 ) }
-    endif
-        
-    AAdd( aJsonData, hItem )
-    next
-   
-    cJson := hb_jsonEncode( aJsonData )
-    cJsonIds := SWIFTZSTACKADDBATCH( cJson, ::cId ) 
-   
-    aIds := hb_jsonDecode( cJsonIds )
-   
-    if ValType( aIds ) == "A"
-    for n := 1 to Len( aIds )
-    if n <= Len( aItems ) .and. hb_HHasKey( aItems[n], "action" ) .and. !Empty( aItems[n]["action"] )
-    oTempItem := TSwiftStackItem():New( aIds[n], Self )
-    oTempItem:bAction := aItems[n]["action"]
-    SwiftRegisterItem( aIds[n], oTempItem )
-    endif
-    next
-    endif
-
-    if ValType( aItems ) == "A" .and. aItems == ::aBatch
-    ::aBatch := {} // Reset after flush
-    endif
-
-return aIds
+// TSwiftStackItem moved to SwiftStackItem.prg

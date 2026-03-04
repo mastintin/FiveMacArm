@@ -282,3 +282,35 @@ HB_FUNC(WEBVIEWSAVETOPDF) {
 HB_FUNC(WEBVIEWSTOPSPEAKING) {
   // Not supported directly in WKWebView
 }
+
+HB_FUNC(WEBVIEWLOADFILE) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  NSString *cPath = hb_NSSTRING_par(2);
+
+  NSLog(@"WebView LoadFile: Attempting to load path: %@", cPath);
+
+  if (cPath && [Wview isKindOfClass:[WKWebView class]]) {
+    NSURL *fileURL = [NSURL fileURLWithPath:cPath];
+    NSLog(@"WebView LoadFile: Loading URL: %@", fileURL);
+    [Wview loadFileURL:fileURL
+        allowingReadAccessToURL:[fileURL URLByDeletingLastPathComponent]];
+  } else {
+    NSLog(
+        @"WebView LoadFile Error: Invalid path or WebView object. Wview type: "
+        @"%@",
+        NSStringFromClass([Wview class]));
+  }
+}
+
+HB_FUNC(WEBVIEWSETZOOM) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  CGFloat nMagnification = (CGFloat)hb_parnd(2);
+
+  if ([Wview isKindOfClass:[WKWebView class]]) {
+    [Wview setMagnification:nMagnification
+            centeredAtPoint:NSMakePoint(Wview.frame.size.width / 2,
+                                        Wview.frame.size.height / 2)];
+  }
+}

@@ -1,7 +1,7 @@
 #include <fivemac.h>
 
 HB_FUNC(SWIFTVSTACKCREATE) {
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   // Hybrid ID support
   NSString *cId = nil;
   int nIndex = 0;
@@ -18,28 +18,14 @@ HB_FUNC(SWIFTVSTACKCREATE) {
   Class swiftClass = NSClassFromString(className);
 
   if (swiftClass) {
-    // Define a block for the callback
-    // IMPORTANT: Swift Int is NSInteger (64-bit)
-    void (^callbackBlock)(NSInteger) = ^(NSInteger itemIndex) {
-      PHB_DYNS pSym = hb_dynsymFindName("SWIFTVSTACKONCLICK");
-      if (pSym) {
-        hb_vmPushSymbol(hb_dynsymSymbol(pSym));
-        hb_vmPushNil();
-        hb_vmPushLong(nIndex);    // Control Index
-        hb_vmPushLong(itemIndex); // Item Index (1-based from Swift)
-        hb_vmDo(2);
-      }
-    };
-
-    NSMethodSignature *signature = [swiftClass
-        methodSignatureForSelector:@selector(makeVStackWithIndex:callback:)];
+    NSMethodSignature *signature =
+        [swiftClass methodSignatureForSelector:@selector(makeVStackWithIndex:)];
     NSInvocation *invocation =
         [NSInvocation invocationWithMethodSignature:signature];
 
-    [invocation setSelector:@selector(makeVStackWithIndex:callback:)];
+    [invocation setSelector:@selector(makeVStackWithIndex:)];
     [invocation setTarget:swiftClass];
     [invocation setArgument:&cId atIndex:2];
-    [invocation setArgument:&callbackBlock atIndex:3];
 
     [invocation invoke];
 
@@ -117,9 +103,24 @@ HB_FUNC(SWIFTVSTACKADDITEM) { // (rootId, text)
   Class swiftClass = NSClassFromString(className);
 
   if (swiftClass) {
-    [swiftClass performSelector:@selector(addItem:content:)
-                     withObject:rootId
-                     withObject:text];
+    SEL selector = @selector(addItem:content:);
+    NSMethodSignature *signature =
+        [swiftClass methodSignatureForSelector:selector];
+    if (signature) {
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&text atIndex:3];
+      [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
+    }
   }
 }
 
@@ -144,6 +145,12 @@ HB_FUNC(SWIFTVSTACKADDTEXTTO) { // (rootId, text, parentId)
       [invocation setArgument:&text atIndex:3];
       [invocation setArgument:&parentId atIndex:4];
       [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
     }
   }
 }
@@ -167,6 +174,12 @@ HB_FUNC(SWIFTVSTACKADDSPACERTO) { // (rootId, parentId)
       [invocation setArgument:&rootId atIndex:2];
       [invocation setArgument:&parentId atIndex:3];
       [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
     }
   }
 }
@@ -192,6 +205,12 @@ HB_FUNC(SWIFTVSTACKADDSYSTEMIMAGETO) { // (rootId, name, parentId)
       [invocation setArgument:&name atIndex:3];
       [invocation setArgument:&parentId atIndex:4];
       [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
     }
   }
 }
@@ -205,8 +224,22 @@ HB_FUNC(SWIFTVSTACKADDSYSTEMIMAGE) { // (rootId, name)
 
   if (swiftClass) {
     SEL selector = @selector(addSystemImage:systemName:);
-    if ([swiftClass respondsToSelector:selector]) {
-      [swiftClass performSelector:selector withObject:rootId withObject:name];
+    NSMethodSignature *signature =
+        [swiftClass methodSignatureForSelector:selector];
+    if (signature) {
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&name atIndex:3];
+      [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
     }
   }
 }
@@ -233,6 +266,12 @@ HB_FUNC(SWIFTVSTACKADDHSTACK) { // (rootId, imgName, text)
       [invocation setArgument:&text atIndex:3];
       [invocation setArgument:&imgName atIndex:4];
       [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
     }
   }
 }
@@ -395,7 +434,7 @@ HB_FUNC(SWIFTVSTACKSETALIGNMENT) { // (rootId, nAlign)
   }
 }
 
-HB_FUNC(SWIFTVSTACKADDBUTTON) { // (rootId, text, parentId)
+HB_FUNC(SWIFTVSTACKADDBUTTONITEM) { // (rootId, text, parentId)
   NSString *rootId = GetRootIdFromParam(1);
   NSString *text = hb_NSSTRING_par(2);
   NSString *parentId =
@@ -602,6 +641,284 @@ HB_FUNC(SWIFTVSTACKADDSPACER) { // (rootId, parentId)
       [invocation setArgument:&dummy atIndex:3];
       [invocation setArgument:&parentId atIndex:4];
       [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
     }
   }
+}
+
+HB_FUNC(SWIFTVSTACKSETITEMTEXT) { // (rootId, itemId, text)
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *itemId = hb_NSSTRING_par(2);
+  NSString *text = hb_NSSTRING_par(3);
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setItemTextWithRootId:id:text:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&itemId atIndex:3];
+      [invocation setArgument:&text atIndex:4];
+      [invocation invoke];
+    }
+  }
+}
+
+HB_FUNC(SWIFTVSTACKSETITEMCOLOR) { // (rootId, itemId, r, g, b, a)
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *itemId = hb_NSSTRING_par(2);
+  CGFloat r = (CGFloat)hb_parnd(3);
+  CGFloat g = (CGFloat)hb_parnd(4);
+  CGFloat b = (CGFloat)hb_parnd(5);
+  CGFloat a = (CGFloat)hb_parnd(6);
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setItemColorWithRootId:id:r:g:b:a:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&itemId atIndex:3];
+      [invocation setArgument:&r atIndex:4];
+      [invocation setArgument:&g atIndex:5];
+      [invocation setArgument:&b atIndex:6];
+      [invocation setArgument:&a atIndex:7];
+      [invocation invoke];
+    }
+  }
+}
+
+HB_FUNC(SWIFTVSTACKSETITEMLAYOUT) { // (rootId, itemId, width, height, spacing)
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *itemId = hb_NSSTRING_par(2);
+  double width = hb_parnd(3);
+  double height = hb_parnd(4);
+  double spacing = hb_parnd(5);
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setItemLayout:id:w:h:s:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&itemId atIndex:3];
+      [invocation setArgument:&width atIndex:4];
+      [invocation setArgument:&height atIndex:5];
+      [invocation setArgument:&spacing atIndex:6];
+      [invocation invoke];
+    }
+  }
+}
+
+HB_FUNC(SWIFTVSTACKSETITEMFONT) {
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *itemId = hb_NSSTRING_par(2);
+  CGFloat size = (CGFloat)hb_parnd(3);
+  BOOL isBold = hb_parl(4);
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector =
+        NSSelectorFromString(@"setItemFontWithRootId:id:size:isBold:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&itemId atIndex:3];
+      [invocation setArgument:&size atIndex:4];
+      [invocation setArgument:&isBold atIndex:5];
+      [invocation invoke];
+    }
+  }
+}
+
+HB_FUNC(SWIFTVSTACKGETLASTITEMID) {
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = @selector(getLastItemId:);
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation invoke];
+
+      __unsafe_unretained NSString *retVal = nil;
+      [invocation getReturnValue:&retVal];
+      if (retVal) {
+        hb_retc([retVal UTF8String]);
+      } else {
+        hb_retc("");
+      }
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
+}
+
+HB_FUNC(SWIFTVSTACKADDDIVIDERTO) { // (rootId, parentId)
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *parentId = hb_parvc(2) ? hb_NSSTRING_par(2) : nil;
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = @selector(addDivider:dummy:parentId:);
+    NSMethodSignature *signature =
+        [swiftClass methodSignatureForSelector:selector];
+    if (signature) {
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      NSString *dummy = @"";
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&dummy atIndex:3];
+      [invocation setArgument:&parentId atIndex:4];
+      [invocation invoke];
+
+      NSString *itemId;
+      [invocation getReturnValue:&itemId];
+      if (itemId) {
+        hb_retc([itemId UTF8String]);
+      }
+    }
+  }
+}
+
+HB_FUNC(SWIFTVSTACKSETITEMRADIUS) {
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *itemId = hb_NSSTRING_par(2);
+  CGFloat radius = (CGFloat)hb_parnd(3);
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"setItemRadiusWithRootId:id:radius:");
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&itemId atIndex:3];
+      [invocation setArgument:&radius atIndex:4];
+      [invocation invoke];
+    }
+  }
+}
+HB_FUNC(SWIFTVSTACKADDLAZYVGRID) { // (rootId, parentId, columnsJson)
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *parentId = hb_parvc(2) ? hb_NSSTRING_par(2) : nil;
+  NSString *columnsJson = hb_NSSTRING_par(3);
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = NSSelectorFromString(@"addLazyVGrid:parentId:columnsJson:");
+
+    if ([swiftClass respondsToSelector:selector]) {
+      NSMethodSignature *signature =
+          [swiftClass methodSignatureForSelector:selector];
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&parentId atIndex:3];
+      [invocation setArgument:&columnsJson atIndex:4];
+
+      [invocation invoke];
+
+      __unsafe_unretained NSString *retId;
+      [invocation getReturnValue:&retId];
+      hb_retc([retId UTF8String]);
+      return;
+    }
+  }
+  hb_retc("");
+}
+
+HB_FUNC(SWIFTVSTACKADDVSTACKITEM) { // (rootId, dummy, parentId)
+  NSString *rootId = GetRootIdFromParam(1);
+  NSString *parentId = hb_parvc(3) ? hb_NSSTRING_par(3) : nil;
+
+  NSString *className = @"SwiftFive.SwiftVStackLoader";
+  Class swiftClass = NSClassFromString(className);
+
+  if (swiftClass) {
+    SEL selector = @selector(addVStackItem:dummy:parentId:);
+    NSMethodSignature *signature =
+        [swiftClass methodSignatureForSelector:selector];
+    if (signature) {
+      NSInvocation *invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setSelector:selector];
+      [invocation setTarget:swiftClass];
+
+      NSString *dummy = @"";
+      [invocation setArgument:&rootId atIndex:2];
+      [invocation setArgument:&dummy atIndex:3];
+      [invocation setArgument:&parentId atIndex:4];
+
+      [invocation invoke];
+
+      NSString *resId;
+      [invocation getReturnValue:&resId];
+      hb_retc([resId UTF8String]);
+      return;
+    }
+  }
+  hb_retc("");
+}
+
+HB_FUNC(SWIFTVSTACKADDTEXT) { // Alias for SWIFTVSTACKADDITEM or similar
+  HB_FUNC_EXEC(SWIFTVSTACKADDITEM);
 }

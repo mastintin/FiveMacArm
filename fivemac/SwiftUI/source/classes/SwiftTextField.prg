@@ -1,12 +1,9 @@
 #include "FiveMac.ch"
 
-static aTextFields := {}
-
 CLASS TSwiftTextField
 
     DATA hWnd
     DATA oWnd
-    DATA nIndex
     DATA bOnChange
     DATA cId
     DATA nTop, nLeft, nWidth, nHeight
@@ -35,9 +32,8 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
     ::oWnd      = oWnd
     ::bOnChange  = bOnChange
     
-    ::nIndex = Len( aTextFields ) + 1
-    ::cId       = "textfield_" + AllTrim( Str( ::nIndex ) )
-    AAdd( aTextFields, Self )
+    ::cId       = SWIFT_UUID() // Generate a proper UUID
+    SwiftRegisterItem( ::cId, Self )
     
     if oBatch == nil .and. oWnd != nil 
     oBatch := oWnd:oSwiftBatch
@@ -46,15 +42,12 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
     if oBatch != nil
     oBatch:Add( Self )
     else
-    ::hWnd = SWIFTTEXTFIELDCREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::nIndex, ::cId )
+    ::hWnd = SWIFTTEXTFIELDCREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, 0, ::cId )
     endif
 
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
-
-    // We do NOT call oWnd:AddControl( Self ) anymore because we want to avoid 
-    // FiveMac managing this SwiftUI view as a standard Harbour control.
 
 return Self
 
@@ -68,22 +61,17 @@ METHOD GetConfig() CLASS TSwiftTextField
     hConfig["height"]      := ::nHeight
     hConfig["text"]        := ::cText
     hConfig["placeholder"] := ::cPlaceholder
-    hConfig["index"]       := ::nIndex
     hConfig["id"]          := ::cId
     
 return hConfig
 
 METHOD SetText( cText ) CLASS TSwiftTextField
     ::cText = cText
-    if ! Empty( ::hWnd )
-    SWIFTTEXTFIELDSETTEXT( ::nIndex, cText )
-    endif
+    SWIFTTEXTFIELDSETTEXT( ::cId, cText )
 return nil
 
 METHOD GetText() CLASS TSwiftTextField
-    if ! Empty( ::hWnd )
-    ::cText = SWIFTTEXTFIELDGETTEXT( ::nIndex )
-    endif
+    ::cText = SWIFTTEXTFIELDGETTEXT( ::cId )
 return ::cText
 
 METHOD OnChange( cNewText ) CLASS TSwiftTextField
@@ -92,9 +80,33 @@ METHOD OnChange( cNewText ) CLASS TSwiftTextField
     endif
 return nil
 
-// Callback from C
-function SWIFTTEXTFIELDONCHANGE( nIndex, cNewText )
-    if nIndex > 0 .and. nIndex <= Len( aTextFields )
-    aTextFields[ nIndex ]:OnChange( cNewText )
+// Callback from C using String ID
+// Callback from C using String ID
+function SWIFTTEXTFIELDONCHANGE( cId, cNewText )
+    local oTxf := SwiftGetItem( cId )
+    if oTxf != nil
+    oTxf:OnChange( cNewText )
     endif
 return nil
+
+CLASS TSwiftTextEditor FROM TSwiftTextField
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd )
+ENDCLASS
+
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftTextEditor
+    DEFAULT nWidth := 300, nHeight := 100, oWnd := GetWndDefault()
+    DEFAULT cText := ""
+
+    ::nTop      = nTop
+    ::nLeft     = nLeft
+    ::nWidth    = nWidth
+    ::nHeight   = nHeight
+    ::cText     = cText
+    ::oWnd      = oWnd
+    
+    ::cId       = SWIFT_UUID()
+    SwiftRegisterItem( ::cId, Self )
+    
+    ::hWnd = SWIFTTEXTEDITORCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cId )
+
+return Self

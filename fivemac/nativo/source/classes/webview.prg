@@ -6,6 +6,7 @@ CLASS TWebview FROM TControl
 
     DATA cUrl
     DATA bOnMessage
+    DATA nMagnification INIT 1.0
  
     METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName )
 
@@ -14,6 +15,8 @@ CLASS TWebview FROM TControl
     METHOD GoForward() INLINE WebViewGoForward( ::hWnd )
    
     METHOD SetURL( cUrlName ) INLINE ( ::cUrl := cUrlName , WebViewloadRequest( ::hWnd, ::cUrl ) )
+   
+    METHOD LoadFile( cPath )   INLINE WebViewLoadFile( ::hWnd, cPath )
    
     METHOD Stopload()   INLINE WebViewstopLoading( ::hWnd  )
    
