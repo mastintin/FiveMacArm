@@ -1,0 +1,13 @@
+# SwiftUI Build Artifacts
+obj/
+lib/
+*.app/
+.DS_Store
+
+# Swift Macro Build junk
+source/HarbourMacro/.build/
+source/HarbourMacro/.swiftpm/
+
+# Samples build artifacts
+samples/obj/
+samples/TestSwiftSystem

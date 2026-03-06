@@ -24,6 +24,9 @@ fi
 
 # 1. Compile Swift (All files in source/swift)
 echo "Compiling Swift..."
+MACRO_BIN="source/HarbourMacro/bin/HarbourMacroPlugin"
+MACRO_INC="source/HarbourMacro/bin"
+
 swiftc source/swift/*.swift \
     -emit-objc-header-path "include/$SWIFT_MODULE_NAME-Swift.h" \
     -emit-object \
@@ -31,6 +34,8 @@ swiftc source/swift/*.swift \
     -parse-as-library \
     -module-name "$SWIFT_MODULE_NAME" \
     $TARGET_FLAG \
+    -I "$MACRO_INC" \
+    -load-plugin-executable "$MACRO_BIN#HarbourMacroImpl" \
     -o obj/SwiftFive.o
 
 if [ $? -ne 0 ]; then echo "Error compiling Swift"; exit 1; fi
