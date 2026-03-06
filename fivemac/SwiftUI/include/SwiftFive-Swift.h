@@ -540,6 +540,26 @@ SWIFT_CLASS_NAMED("ViewRegistry") SWIFT_AVAILABILITY(macos,introduced=10.15)
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_EXTERN void SW_HOLA_MACRO(int8_t const * _Nullable p0) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN int8_t const * _Nullable swift_get_app_path(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable swift_get_dir(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable swift_get_file(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable swift_get_image(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable swift_get_path(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable swift_get_res_path(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void swift_alert(int8_t const * _Nullable msg, int8_t const * _Nullable title, NSInteger type) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN NSInteger swift_get_color(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN BOOL swift_msg_yes_no(int8_t const * _Nullable msg, int8_t const * _Nullable title) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
 #endif
 #if __has_attribute(external_source_symbol)
 # pragma clang attribute pop

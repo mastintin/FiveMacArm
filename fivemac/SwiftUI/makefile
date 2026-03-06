@@ -18,10 +18,14 @@ else
     TARGET_FLAG=-target x86_64-apple-macosx10.15
 endif
 
+# Macro paths
+MACRO_BIN=source/HarbourMacro/bin/HarbourMacroPlugin
+MACRO_INC=source/HarbourMacro/bin
+
 # Flags
 CFLAGS=$(TARGET_FLAG) -c -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include -fmodules
 HBFLAGS=-n -w -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include
-SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-name SwiftFive $(TARGET_FLAG) -emit-objc-header-path include/SwiftFive-Swift.h
+SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-name SwiftFive $(TARGET_FLAG) -emit-objc-header-path include/SwiftFive-Swift.h -I $(MACRO_INC) -load-plugin-executable $(MACRO_BIN)\#HarbourMacroImpl
 
 # Files
 SWIFT_SOURCES=$(wildcard source/swift/*.swift)
