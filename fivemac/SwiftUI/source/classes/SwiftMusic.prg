@@ -18,6 +18,10 @@ CLASS TSwiftMusic
     METHOD SetPosition(nSec) INLINE SwiftMusicSetPosition(nSec)
     METHOD GetVolume()      INLINE SwiftMusicGetVolume()
     METHOD SetVolume(nVol)  INLINE SwiftMusicSetVolume(nVol)
+    
+    METHOD GetPlaylists()    INLINE hb_jsonDecode( SwiftMusicGetPlaylists() )
+    METHOD PlayPlaylist(cName) INLINE SwiftMusicPlayPlaylist(cName)
+    METHOD PlayFirst()       INLINE SwiftMusicPlayFirst()
 
 ENDCLASS
 

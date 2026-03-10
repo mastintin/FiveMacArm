@@ -40,7 +40,8 @@ CLASS TSwiftStackItem
     METHOD SetSpacing( nSpacing )
     METHOD SetText( cText )
     METHOD SetFont( nSize, lBold )
-    METHOD SetColor( nClr, nAlpha )
+    METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack )
+    METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha )
     METHOD SetRadius( nRadius )
 
 ENDCLASS
@@ -76,9 +77,9 @@ METHOD AddHStack() CLASS TSwiftStackItem
     local cId, oItem
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDHSTACKCONTAINER( oRoot:nIndex, ::cId )
+    cId := VSTK_ADD_HSTACK( hb_ntos( oRoot:nIndex ), ::cId )
     else
-    cId := SWIFTZSTACKADDHSTACKCONTAINER( oRoot:nIndex, ::cId )
+    cId := ZSTK_ADD_HSTACK( hb_ntos( oRoot:nIndex ), ::cId )
     endif
     oItem := TSwiftStackItem():New( cId, Self )
 return oItem
@@ -87,9 +88,9 @@ METHOD AddVStack() CLASS TSwiftStackItem
     local cId, oItem
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDVSTACKITEM( oRoot:nIndex, "", ::cId )
+    cId := VSTK_ADD_VSTACK( hb_ntos( oRoot:nIndex ), ::cId )
     else
-    cId := SWIFTZSTACKADDVSTACKCONTAINER( oRoot:nIndex, ::cId )
+    cId := ZSTK_ADD_VSTACK( hb_ntos( oRoot:nIndex ), ::cId )
     endif
     oItem := TSwiftStackItem():New( cId, Self )
 return oItem
@@ -101,9 +102,9 @@ METHOD AddText( cText, bAction ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDTEXTTO( oRoot:nIndex, cText, ::cId )
+    cId := VSTK_ADD_TEXT_TO( hb_ntos( oRoot:nIndex ), cText, ::cId )
     else
-    cId := SWIFTZSTACKADDTEXTTO( oRoot:nIndex, cText, ::cId )
+    cId := ZSTK_ADD_TEXT_TO( hb_ntos( oRoot:nIndex ), cText, ::cId )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -116,9 +117,9 @@ METHOD AddSystemImage( cName ) CLASS TSwiftStackItem
     local cId
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDSYSTEMIMAGETO( oRoot:nIndex, cName, ::cId )
+    cId := VSTK_ADD_SYSTEM_IMAGE_TO( hb_ntos( oRoot:nIndex ), cName, ::cId )
     else
-    cId := SWIFTZSTACKADDSYSTEMIMAGETO( oRoot:nIndex, cName, ::cId )
+    cId := ZSTK_ADD_SYSTEM_IMAGE_TO( hb_ntos( oRoot:nIndex ), cName, ::cId )
     endif
 return TSwiftStackItem():New( cId, Self )
 
@@ -126,9 +127,9 @@ METHOD AddButton( cText, bAction ) CLASS TSwiftStackItem
     local cId, oItem
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDBUTTONITEM( oRoot:nIndex, cText, ::cId )
+    cId := VSTK_ADD_BUTTON_ITEM( hb_ntos( oRoot:nIndex ), cText, ::cId )
     else
-    cId := SWIFTZSTACKADDBUTTONTO( oRoot:nIndex, cText, ::cId )
+    cId := ZSTK_ADD_BUTTON_TO( hb_ntos( oRoot:nIndex ), cText, ::cId )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -141,9 +142,9 @@ METHOD AddSpacer() CLASS TSwiftStackItem
     local oRoot := ::Root()
     local cId
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDSPACERTO( oRoot:nIndex, ::cId )
+    cId := VSTK_ADD_SPACER_TO( hb_ntos( oRoot:nIndex ), ::cId )
     else 
-    cId := SWIFTZSTACKADDSPACER( oRoot:nIndex, ::cId )
+    cId := ZSTK_ADD_SPACER( hb_ntos( oRoot:nIndex ), ::cId )
     endif
 return TSwiftStackItem():New( cId, Self )
 
@@ -151,9 +152,9 @@ METHOD AddDivider() CLASS TSwiftStackItem
     local oRoot := ::Root()
     local cId
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDDIVIDERTO( oRoot:nIndex, ::cId )
+    cId := VSTK_ADD_DIVIDER_TO( hb_ntos( oRoot:nIndex ), ::cId )
     else 
-    cId := SWIFTZSTACKADDDIVIDER( oRoot:nIndex, ::cId )
+    cId := ZSTK_ADD_DIVIDER( hb_ntos( oRoot:nIndex ), ::cId )
     endif
 return TSwiftStackItem():New( cId, Self )
 
@@ -186,9 +187,9 @@ METHOD AddGrid( aColumns ) CLASS TSwiftStackItem
     cJson += "]"
     
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDLAZYVGRID( oRoot:nIndex, ::cId, cJson )
+    cId := VSTK_ADD_LAZYVGRID( hb_ntos( oRoot:nIndex ), ::cId, cJson )
     else
-    cId := SWIFTZSTACKADDLAZYVGRID( oRoot:nIndex, ::cId, cJson )
+    cId := ZSTK_ADD_LAZYVGRID( hb_ntos( oRoot:nIndex ), ::cId, cJson )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -199,9 +200,9 @@ METHOD AddList() CLASS TSwiftStackItem
     local oRoot := ::Root()
     
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SWIFTVSTACKADDLIST( oRoot:nIndex, ::cId )
+    cId := VSTK_ADD_LIST( hb_ntos( oRoot:nIndex ), ::cId )
     else
-    cId := SWIFTZSTACKADDLIST( oRoot:nIndex, ::cId )
+    cId := ZSTK_ADD_LIST( hb_ntos( oRoot:nIndex ), ::cId )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -247,9 +248,9 @@ METHOD AddBatch( aItems ) CLASS TSwiftStackItem
    
     cJson := hb_jsonEncode( aJsonData )
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cJsonIds := SWIFTVSTACKADDBATCH( oRoot:nIndex, cJson, ::cId ) 
+    cJsonIds := VSTK_ADD_BATCH( hb_ntos( oRoot:nIndex ), cJson, ::cId ) 
     else
-    cJsonIds := SWIFTZSTACKADDBATCH( oRoot:nIndex, cJson, ::cId ) 
+    cJsonIds := ZSTK_ADD_BATCH( hb_ntos( oRoot:nIndex ), cJson, ::cId ) 
     endif
    
     aIds := hb_jsonDecode( cJsonIds )
@@ -272,7 +273,7 @@ METHOD SetSize( nWidth, nHeight ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nWidth := 0, nHeight := 0
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    SWIFTVSTACKSETITEMLAYOUT( oRoot:nIndex, ::cId, nWidth, nHeight, -1 )
+    VSTK_SET_ITEM_LAYOUT( hb_ntos( oRoot:nIndex ), ::cId, hb_ntos( nWidth ), hb_ntos( nHeight ), "-1" )
     endif
 return nil
 
@@ -280,14 +281,14 @@ METHOD SetSpacing( nSpacing ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nSpacing := 8
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    SWIFTVSTACKSETITEMLAYOUT( oRoot:nIndex, ::cId, 0, 0, nSpacing )
+    VSTK_SET_ITEM_LAYOUT( hb_ntos( oRoot:nIndex ), ::cId, "0", "0", hb_ntos( nSpacing ) )
     endif
 return nil
 
 METHOD SetText( cText ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    SWIFTVSTACKSETITEMTEXT( oRoot:nIndex, ::cId, cText )
+    VSTK_SET_ITEM_TEXT( hb_ntos( oRoot:nIndex ), ::cId, cText )
     endif
 return nil
 
@@ -295,25 +296,41 @@ METHOD SetFont( nSize, lBold ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nSize := 0, lBold := .F.
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    SWIFTVSTACKSETITEMFONT( oRoot:nIndex, ::cId, nSize, lBold )
+    VSTK_SET_ITEM_FONT( hb_ntos( oRoot:nIndex ), ::cId, hb_ntos( nSize ), If( lBold, "1", "0" ) )
     endif
 return nil
 
-METHOD SetColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftStackItem
+METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftStackItem
+    local oRoot := ::Root()
+    
+    DEFAULT nAlphaFore := 1.0
+    DEFAULT nAlphaBack := 1.0
+
+    if oRoot:IsKindOf( "TSWIFTVSTACK" )
+    if nClrFore != nil
+    VSTK_SET_ITEM_COLOR_HEX( hb_ntos( oRoot:nIndex ), ::cId, clrToHex( nClrFore, nAlphaFore ) )
+    endif
+        
+    if nClrBack != nil
+    VSTK_SET_ITEM_BGCOLOR_HEX( hb_ntos( oRoot:nIndex ), ::cId, clrToHex( nClrBack, nAlphaBack ) )
+    endif
+    endif
+
+return nil
+
+METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     local nClr 
     DEFAULT nAlpha := 1.0
     
-    // Support both SetColor( nClr ) and SetColor( r, g, b )
-    if pcount() == 1 .or. pcount() == 2
-    nClr := nRed
-    nRed   := nRGBRed( nClr )
-    nGreen := nRGBGreen( nClr )
-    nBlue  := nRGBBlue( nClr )
+    if pcount() <= 2
+    nClr   := nRed
+    else
+    nClr := nRGB( nRed, nGreen, nBlue )
     endif
 
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    SWIFTVSTACKSETITEMCOLOR( oRoot:nIndex, ::cId, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+    VSTK_SET_ITEM_BGCOLOR_HEX( hb_ntos( oRoot:nIndex ), ::cId, clrToHex( nClr, nAlpha ) )
     endif
 return nil
 
@@ -321,6 +338,6 @@ METHOD SetRadius( nRadius ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nRadius := 0
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    SWIFTVSTACKSETITEMRADIUS( oRoot:nIndex, ::cId, nRadius )
+    VSTK_SET_ITEM_RADIUS( hb_ntos( oRoot:nIndex ), ::cId, nRadius )
     endif
 return nil

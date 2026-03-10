@@ -24,6 +24,7 @@ return
 CLASS TSwiftZStack FROM TControl
 
     DATA nIndex
+    DATA bAction
     DATA hItems INIT {=>}
     DATA aBatch INIT {}
 
@@ -65,7 +66,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftZStack
     ::hItems := {=>}
     ::aBatch := {}
 
-    ::hWnd = SWIFTZSTACKCREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight )
+    ::hWnd = ZSTK_CREATE( oWnd:hWnd, hb_ntos( ::nIndex ), nRow, nCol, nWidth, nHeight )
 
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -77,22 +78,22 @@ return Self
 
 METHOD AddText( cText ) CLASS TSwiftZStack
     local cId
-    cId := SWIFTZSTACKADDITEM( ::nIndex, cText )
+    cId := ZSTK_ADD_ITEM( hb_ntos( ::nIndex ), cText )
 return cId
 
 METHOD AddImage( cSystemName ) CLASS TSwiftZStack
     local cId
-    cId := SWIFTZSTACKADDIMAGE( ::nIndex, cSystemName )
+    cId := ZSTK_ADD_IMAGE( hb_ntos( ::nIndex ), cSystemName )
 return cId
 
 METHOD AddImageFile( cFile ) CLASS TSwiftZStack
     local cId
-    cId := SWIFTZSTACKADDFILEIMAGE( ::nIndex, cFile )
+    cId := ZSTK_ADD_FILE_IMAGE( hb_ntos( ::nIndex ), cFile )
 return cId
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftZStack
     local cId, oItem
-    cId := SWIFTZSTACKADDBUTTONTO( ::nIndex, cText, nil )
+    cId := ZSTK_ADD_BUTTON_TO( hb_ntos( ::nIndex ), cText, nil )
     if bAction != nil .and. !Empty( cId )
     oItem := TSwiftStackItem():New( cId, Self )
     oItem:bAction := bAction
@@ -103,51 +104,63 @@ return cId
 METHOD AddVStack( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := SWIFTZSTACKADDVSTACKCONTAINER( ::nIndex, cParentId )
+    cId := ZSTK_ADD_VSTACK( hb_ntos( ::nIndex ), cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD Reset() CLASS TSwiftZStack
-    SWIFTZSTACKREMOVEALLITEMS( ::nIndex )
+    ZSTK_REMOVE_ALL_ITEMS( hb_ntos( ::nIndex ) )
 return nil
 
 METHOD AddHStack( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := SWIFTZSTACKADDHSTACKCONTAINER( ::nIndex, cParentId )
+    cId := ZSTK_ADD_HSTACK( hb_ntos( ::nIndex ), cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD SetAlignment( nAlign ) CLASS TSwiftZStack
-    SWIFTZSTACKSETALIGNMENT( ::nIndex, nAlign )
+    ZSTK_SET_ALIGNMENT( hb_ntos( ::nIndex ), hb_ntos( nAlign ) )
 return nil
 
 METHOD AddGrid( aColumns ) CLASS TSwiftZStack
-    local cId, oItem, n, cJsonColumns := "["
+    local cId
+    local cJsonColumns 
+    
     DEFAULT aColumns := {}
-    for n := 1 to Len( aColumns )
-    if n > 1 ; cJsonColumns += "," ; endif
-    cJsonColumns += '{"type":"' + aColumns[n][1] + '"'
-    if Len( aColumns[n] ) >= 2 ; cJsonColumns += ',"min":' + AllTrim( Str( aColumns[n][2] ) ) ; endif
-    if Len( aColumns[n] ) >= 3 ; cJsonColumns += ',"max":' + AllTrim( Str( aColumns[n][3] ) ) ; endif
-    cJsonColumns += '}'
-    next
-    cJsonColumns += "]"
-    cId := SWIFTZSTACKADDLAZYVGRID( ::nIndex, nil, cJsonColumns )
+    cJsonColumns := hb_jsonEncode( aColumns )
+    
+    cId := ZSTK_ADD_LAZYVGRID( hb_ntos( ::nIndex ), nil, cJsonColumns )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD AddList( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := SWIFTZSTACKADDLIST( ::nIndex, cParentId )
+    cId := ZSTK_ADD_LIST( hb_ntos( ::nIndex ), cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
-    DEFAULT nRed := 0, nGreen := 0, nBlue := 0, nAlpha := 1.0
-    SWIFTZSTACKSETFGCOLOR( ::nIndex, nRed, nGreen, nBlue, nAlpha )
+    local nClr 
+    DEFAULT nAlpha := 1.0
+    
+    if pcount() <= 2
+    nClr   := nRed
+    else
+    nClr := nRGB( nRed, nGreen, nBlue )
+    endif
+
+    ZSTK_SET_FGCOLOR_HEX( hb_ntos( ::nIndex ), clrToHex( nClr, nAlpha ) )
 return nil
 
 METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
-    DEFAULT nRed := 0, nGreen := 0, nBlue := 0, nAlpha := 1.0
-    SWIFTZSTACKSETBGCOLOR( ::nIndex, nRed, nGreen, nBlue, nAlpha )
+    local nClr 
+    DEFAULT nAlpha := 1.0
+    
+    if pcount() <= 2
+    nClr   := nRed
+    else
+    nClr := nRGB( nRed, nGreen, nBlue )
+    endif
+
+    ZSTK_SET_BGCOLOR_HEX( hb_ntos( ::nIndex ), clrToHex( nClr, nAlpha ) )
 return nil
 
 METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftZStack
@@ -169,22 +182,16 @@ METHOD AddBatch( aItems ) CLASS TSwiftZStack
         "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
         
     if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
-    hItem["bg"] := { "r" => nRGBRed( aItems[n]["nClrBack"] ) / 255.0, ;
-        "g" => nRGBGreen( aItems[n]["nClrBack"] ) / 255.0, ;
-        "b" => nRGBBlue( aItems[n]["nClrBack"] ) / 255.0, ;
-        "a" => If( hb_HHasKey( aItems[n], "nAlphaBack" ) .and. aItems[n]["nAlphaBack"] != nil, aItems[n]["nAlphaBack"], 1.0 ) }
+    hItem["bgHex"] := clrToHex( aItems[n]["nClrBack"], If( hb_HHasKey( aItems[n], "nAlphaBack" ), aItems[n]["nAlphaBack"], nil ) )
     endif
     if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
-    hItem["fg"] := { "r" => nRGBRed( aItems[n]["nClrFore"] ) / 255.0, ;
-        "g" => nRGBGreen( aItems[n]["nClrFore"] ) / 255.0, ;
-        "b" => nRGBBlue( aItems[n]["nClrFore"] ) / 255.0, ;
-        "a" => If( hb_HHasKey( aItems[n], "nAlphaFore" ) .and. aItems[n]["nAlphaFore"] != nil, aItems[n]["nAlphaFore"], 1.0 ) }
+    hItem["fgHex"] := clrToHex( aItems[n]["nClrFore"], If( hb_HHasKey( aItems[n], "nAlphaFore" ), aItems[n]["nAlphaFore"], nil ) )
     endif
     AAdd( aJsonData, hItem )
     next
    
     cJson := hb_jsonEncode( aJsonData )
-    cJsonIds := SWIFTZSTACKADDBATCH( ::nIndex, cJson, nil ) // nil parent for root
+    cJsonIds := ZSTK_ADD_BATCH( hb_ntos( ::nIndex ), cJson, nil ) // nil parent for root
    
     aIds := hb_jsonDecode( cJsonIds )
     if ValType( aIds ) == "A"

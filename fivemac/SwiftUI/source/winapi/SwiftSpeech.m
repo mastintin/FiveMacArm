@@ -1,7 +1,4 @@
-#import "SwiftFive-Swift.h"
-#import <Cocoa/Cocoa.h>
-#import <Foundation/Foundation.h>
-#import <fivemac.h>
+#import "SwiftCommon.h"
 
 static PHB_ITEM pOnTranscription = NULL;
 static PHB_ITEM pOnMetrics = NULL;
@@ -12,7 +9,6 @@ static void initManagerBlocks() {
 
   if (manager.onTranscription == nil) {
     manager.onTranscription = ^(NSString *text, BOOL isFinal) {
-      NSLog(@"ObjC: Received transcription: %@ (final: %d)", text, isFinal);
       dispatch_async(dispatch_get_main_queue(), ^{
         if (pOnTranscription) {
           hb_vmPushSymbol(hb_dynsymSymbol(hb_dynsymFindName("EVAL")));
@@ -20,8 +16,6 @@ static void initManagerBlocks() {
           hb_vmPushString([text UTF8String], [text length]);
           hb_vmPushLogical(isFinal);
           hb_vmDo(2);
-        } else {
-          NSLog(@"ObjC: pOnTranscription is NULL!");
         }
       });
     };

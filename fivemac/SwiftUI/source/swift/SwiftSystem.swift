@@ -28,12 +28,8 @@ public struct SystemUtils {
                 .filter { !$0.isEmpty }
 
             if !extensions.isEmpty {
-                if #available(macOS 11.0, *) {
-                    let utTypes = extensions.compactMap { UTType(filenameExtension: $0) }
-                    panel.allowedContentTypes = utTypes
-                } else {
-                    panel.allowedFileTypes = extensions
-                }
+                let utTypes = extensions.compactMap { UTType(filenameExtension: $0) }
+                panel.allowedContentTypes = utTypes
             }
         }
 
@@ -116,11 +112,7 @@ public struct SystemUtils {
             panel.prompt = prompt
         }
 
-        if #available(macOS 11.0, *) {
-            panel.allowedContentTypes = [.image]
-        } else {
-            panel.allowedFileTypes = ["jpg", "png", "gif", "tiff", "bmp"]
-        }
+        panel.allowedContentTypes = [.image]
 
         return panel.runModal() == .OK ? panel.url?.path : nil
     }

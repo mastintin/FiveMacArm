@@ -1,13 +1,21 @@
 import SwiftUI
 import AppKit
+import Observation
+import HarbourMacro
 
 // State for the Slider
-@available(OSX 10.15, *)
-class SliderState: ObservableObject {
-    @Published var value: Double
-    @Published var showValue: Bool
-    @Published var isGlass: Bool
+
+@Observable
+public class SliderState {
+    var value: Double
+    var showValue: Bool
     var callback: ((Double) -> Void)?
+    var accentColor: Color = .blue
+    var backgroundColor: Color = .clear
+    var foregroundColor: Color = .primary
+    var isBold: Bool = false
+    var fontSize: CGFloat = 12
+    var isGlass: Bool = false
     
     init(value: Double, showValue: Bool, isGlass: Bool, callback: ((Double) -> Void)?) {
         self.value = value
@@ -18,9 +26,9 @@ class SliderState: ObservableObject {
 }
 
 // SwiftUI View for the Slider
-@available(OSX 10.15, *)
+
 struct SwiftSliderView: View {
-    @ObservedObject var state: SliderState
+    var state: SliderState
 
     var body: some View {
         let sliderBinding = Binding(
@@ -32,9 +40,7 @@ struct SwiftSliderView: View {
         )
        
         VStack {
-           
-
-            if #available(macOS 26.2, *), state.isGlass {
+            if state.isGlass {
                 ZStack {
                      // 1. Glass Rail (Background Track)
                      Capsule()
@@ -44,7 +50,13 @@ struct SwiftSliderView: View {
                     
                      // 2. The Slider itself
                      Slider(value: sliderBinding, in: 0...100)
-                        .glassEffect(.regular.interactive())
+                        .modify { view in
+                            if #available(macOS 26.0, *) {
+                                view.glassEffect(.regular.interactive())
+                            } else {
+                                view
+                            }
+                        }
                         .tint(.blue.opacity(0.8))
                 }
                 .contentShape(Capsule())
@@ -53,9 +65,12 @@ struct SwiftSliderView: View {
             }
             if state.showValue {
                 Text("Value: \(Int(state.value))")
-                    .font(.caption)
+                    .font(.system(size: state.fontSize))
+                    .fontWeight(state.isBold ? .bold : .regular)
+                    .foregroundColor(state.foregroundColor)
             }
         }
+        .accentColor(state.accentColor)
        
         .padding()
         .background(
@@ -63,8 +78,7 @@ struct SwiftSliderView: View {
                  if state.isGlass {
                      Color.clear
                  } else {
-                    Color.clear
-                     //Color.white.opacity(0.5)
+                    state.backgroundColor
                      .cornerRadius(8)
                  }
              }
@@ -75,63 +89,64 @@ struct SwiftSliderView: View {
 @objc(SwiftSliderLoader)
 public class SwiftSliderLoader: NSObject {
     
-    // CRITICAL: Dictionary to prevent Index Collision
-    // HYBRID MIGRATION: Key is String to support both "123" (legacy indices) and "UUID-..."
-    static var states: [String: SliderState] = [:]
+    public static var states: [String: SliderState] = [:]
     
     @objc(makeSliderWithValue:id:showValue:isGlass:index:callback:)
     public static func makeSlider(value: NSNumber, id: String, showValue: Bool, isGlass: Bool, index: Int, callback: @escaping ((NSNumber) -> Void)) -> NSView {
-        if #available(OSX 10.15, *) {
-            let doubleVal = value.doubleValue
-            
-            // Adapt callback to take Double, output NSNumber
-            let swiftCallback: (Double) -> Void = { val in
-                callback(NSNumber(value: val))
-            }
-            
-            let state = SliderState(value: doubleVal, showValue: showValue, isGlass: isGlass, callback: swiftCallback)
-            
-            // HYBRID: Use ID if provided, otherwise fallback to String(index)
-            let key = id.isEmpty ? String(index) : id
-            
-            states[key] = state // Store in Dictionary using String key
-            
-            let view = SwiftSliderView(state: state)
-            
-            // Register
-            ViewRegistry.register(view, for: index)
-            
-            let hostingView = NSHostingView(rootView: view)
-            hostingView.translatesAutoresizingMaskIntoConstraints = false
-            hostingView.wantsLayer = true
-            hostingView.layer?.backgroundColor = NSColor.clear.cgColor
-            
-            return hostingView
-        } else {
-            return NSView()
+        let doubleVal = value.doubleValue
+        let swiftCallback: (Double) -> Void = { val in
+            callback(NSNumber(value: val))
+        }
+        
+        let state = SliderState(value: doubleVal, showValue: showValue, isGlass: isGlass, callback: swiftCallback)
+        let key = id.isEmpty ? String(index) : id
+        SwiftSliderLoader.states[key] = state
+        
+        let view = SwiftSliderView(state: state)
+        ViewRegistry.register(view, for: index)
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+        
+        return hostingView
+    }
+}
+
+// --- HARBOUR BRIDGE MACROS ---
+
+@HarbourBridge
+public func sld_set_value(id: String, value: String) {
+    let val = Double(value) ?? 0.0
+    DispatchQueue.main.async {
+        if let state = SwiftSliderLoader.states[id] {
+            state.value = val
         }
     }
-    
-    @objc(setSliderValue:id:)
-    public static func setSliderValue(_ value: Double, id: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[id] {
-                    state.objectWillChange.send() // Explicitly notify view
-                    state.value = value
-                }
-            }
+}
+
+@HarbourBridge
+public func sld_get_value(id: String) -> String {
+    let val = SwiftSliderLoader.states[id]?.value ?? 0.0
+    return String(val)
+}
+
+@HarbourBridge
+public func sld_set_accent_color(id: String, hex: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftSliderLoader.states[id] {
+            state.accentColor = Color(hex: hex)
         }
     }
-    
-    @objc(getSliderValueFromIndex:)
-    public static func getSliderValue(fromIndex index: Int) -> Double {
-        if #available(OSX 10.15, *) {
-            let key = String(index)
-            if let state = states[key] {
-                return state.value
-            }
+}
+
+@HarbourBridge
+public func sld_set_colors(id: String, fgHex: String, bgHex: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftSliderLoader.states[id] {
+            state.foregroundColor = Color(hex: fgHex)
+            state.backgroundColor = Color(hex: bgHex)
         }
-        return 0.0
     }
 }

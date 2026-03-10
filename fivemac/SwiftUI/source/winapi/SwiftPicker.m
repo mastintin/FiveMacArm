@@ -23,17 +23,10 @@ HB_FUNC(SWIFTPICKERCREATE) {
     itemsArray = [NSArray arrayWithArray:tempArray];
   }
 
-  NSWindow *window = (NSWindow *)hb_parnl(6);
-  NSInteger nIndex = (NSInteger)hb_parni(7); // Index in control array
-  NSString *cTitle = hb_NSSTRING_par(8);     // Optional title
-
-  NSString *className = @"SwiftFive.SwiftPickerLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (!swiftClass) {
-    NSLog(@"Error: Could not find class %@", className);
-    return;
-  }
+  id parent = (id)hb_parnll(6);
+  NSInteger nIndex = (NSInteger)hb_parnll(7);
+  NSString *cTitle = hb_NSSTRING_par(8);
+  NSString *cId = hb_NSSTRING_par(9);
 
   // Callback
   void (^callbackBlock)(NSString *) = ^(NSString *msg) {
@@ -42,47 +35,23 @@ HB_FUNC(SWIFTPICKERCREATE) {
       if (pDynSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
         hb_vmPushNil();
-        hb_vmPushInteger((int)nIndex);
+        hb_vmPushNLL(nIndex);
         hb_vmPushString([msg UTF8String], [msg length]);
         hb_vmDo(2);
       }
     });
   };
 
-  // Signature: makePicker(title:items:index:callback:)
-  SEL selector =
-      NSSelectorFromString(@"makePickerWithTitle:items:index:callback:");
+  // Direct call to Swift Factory
+  NSView *pickerView = [SwiftPickerLoader makePickerWithTitle:cTitle
+                                                        items:itemsArray
+                                                           id:cId
+                                                        index:nIndex
+                                                     callback:callbackBlock];
 
-  if ([swiftClass respondsToSelector:selector]) {
-    NSMethodSignature *signature =
-        [swiftClass methodSignatureForSelector:selector];
-    NSInvocation *invocation =
-        [NSInvocation invocationWithMethodSignature:signature];
-
-    [invocation setSelector:selector];
-    [invocation setTarget:swiftClass];
-
-    [invocation setArgument:&cTitle atIndex:2];
-    [invocation setArgument:&itemsArray atIndex:3];
-    [invocation setArgument:&nIndex atIndex:4];
-    [invocation setArgument:&callbackBlock atIndex:5];
-
-    [invocation invoke];
-
-    NSView *pickerView;
-    [invocation getReturnValue:&pickerView];
-
-    if (pickerView) {
-      [pickerView setFrame:NSMakeRect(nLeft, nTop, nWidth, nHeight)];
-
-      id parent = (id)hb_parnl(6);
-      if ([parent isKindOfClass:[NSWindow class]]) {
-        [[(NSWindow *)parent contentView] addSubview:pickerView];
-      } else if ([parent isKindOfClass:[NSView class]]) {
-        [(NSView *)parent addSubview:pickerView];
-      }
-      hb_retnll((HB_LONGLONG)pickerView);
-    }
+  if (pickerView) {
+    setupSwiftView(pickerView, parent, nTop, nLeft, nWidth, nHeight);
+    hb_retnll((HB_LONGLONG)pickerView);
   }
 }
 
@@ -102,131 +71,50 @@ HB_FUNC(SWIFTPICKERSETITEMS) {
     }
     itemsArray = [NSArray arrayWithArray:tempArray];
   }
-
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  NSString *className = @"SwiftFive.SwiftPickerLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setPickerItems:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&itemsArray atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+  NSString *cId = hb_NSSTRING_par(2);
+  [SwiftPickerActions setItemsWithId:cId items:itemsArray];
 }
 
-HB_FUNC(SWIFTPICKERSETSELECTION) {
-  NSString *cValue = hb_NSSTRING_par(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  NSString *className = @"SwiftFive.SwiftPickerLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setPickerSelection:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&cValue atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(PKR_SET_SELECTION) {
+  NSString *cId = hb_NSSTRING_par(1);
+  NSString *sel = hb_NSSTRING_par(2);
+  SW_PKR_SET_SELECTION((const int8_t *)[cId UTF8String],
+                       (const int8_t *)[sel UTF8String]);
 }
 
-HB_FUNC(SWIFTPICKERSETGLASS) {
-  BOOL isGlass = hb_parl(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  NSString *className = @"SwiftFive.SwiftPickerLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setPickerGlass:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&isGlass atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(PKR_SET_GLASS) {
+  NSString *cId = hb_NSSTRING_par(1);
+  NSString *isGlass = hb_NSSTRING_par(2);
+  SW_PKR_SET_GLASS((const int8_t *)[cId UTF8String],
+                   (const int8_t *)[isGlass UTF8String]);
 }
 
-HB_FUNC(SWIFTPICKERSETSHOWLABEL) {
-  BOOL showLabel = hb_parl(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  NSString *className = @"SwiftFive.SwiftPickerLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setPickerShowLabel:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&showLabel atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(PKR_SET_SHOW_LABEL) {
+  NSString *cId = hb_NSSTRING_par(1);
+  NSString *show = hb_NSSTRING_par(2);
+  SW_PKR_SET_SHOW_LABEL((const int8_t *)[cId UTF8String],
+                        (const int8_t *)[show UTF8String]);
 }
 
-HB_FUNC(SWIFTPICKERSETTITLE) {
-  NSString *cTitle = hb_NSSTRING_par(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
+HB_FUNC(PKR_SET_TITLE) {
+  NSString *cId = hb_NSSTRING_par(1);
+  NSString *title = hb_NSSTRING_par(2);
+  SW_PKR_SET_TITLE((const int8_t *)[cId UTF8String],
+                   (const int8_t *)[title UTF8String]);
+}
 
-  NSString *className = @"SwiftFive.SwiftPickerLoader";
-  Class swiftClass = NSClassFromString(className);
+HB_FUNC(PKR_GET_SELECTION) {
+  NSString *cId = hb_NSSTRING_par(1);
+  const char *res =
+      (const char *)SW_PKR_GET_SELECTION((const int8_t *)[cId UTF8String]);
+  hb_retc(res ? res : "");
+}
 
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setPickerTitle:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&cTitle atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(PKR_SET_COLORS) {
+  NSString *cId = hb_NSSTRING_par(1);
+  NSString *accent = hb_NSSTRING_par(2);
+  NSString *text = hb_NSSTRING_par(3);
+  SW_PKR_SET_COLORS((const int8_t *)[cId UTF8String],
+                    (const int8_t *)[accent UTF8String],
+                    (const int8_t *)[text UTF8String]);
 }

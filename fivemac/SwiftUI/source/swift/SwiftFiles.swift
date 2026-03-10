@@ -1,14 +1,14 @@
 import SwiftUI
 import AppKit
+import Observation
 
-@available(OSX 10.15, *)
-class AppState: ObservableObject {
-    @Published var labelText: String = "Hello from SwiftUI!"
+@Observable
+class AppState {
+    var labelText: String = "Hello from SwiftUI!"
 }
 
-@available(OSX 10.15, *)
 struct MyView: View {
-    @ObservedObject var state: AppState
+    var state: AppState
     @State private var count = 0
     var callback: ((String) -> Void)?
 
@@ -25,7 +25,6 @@ struct MyView: View {
                 Button(action: {
                     print("Button pressed")
                     self.count += 1
-                    // Call the callback if it exists
                     self.callback?("Button pressed! Count: \(self.count)")
                 }) {
                     Text("Click Me")
@@ -50,37 +49,28 @@ struct MyView: View {
 
 @objc public class SwiftLoader: NSObject {
     
-    // Shared state instance
     static var sharedState: Any? = nil
 
     @objc public static func makeView() -> NSView {
          return makeView(withCallback: nil)
     }
     
-    // Explicit selector name to match what we expect in ObjC
     @objc(makeViewWithCallback:)
     public static func makeView(withCallback callback: ((String) -> Void)?) -> NSView {
-         if #available(OSX 10.15, *) {
-            let state = AppState()
-            sharedState = state // Store reference
-            
-            let view = MyView(state: state, callback: callback)
-            let hostingView = NSHostingView(rootView: view)
-            hostingView.translatesAutoresizingMaskIntoConstraints = false
-            return hostingView
-         } else {
-             let label = NSTextField(labelWithString: "SwiftUI not available on this OS version")
-             return label
-         }
+        let state = AppState()
+        sharedState = state 
+        
+        let view = MyView(state: state, callback: callback)
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        return hostingView
     }
     
     @objc(updateLabel:)
     public static func updateLabel(_ text: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = sharedState as? AppState {
-                    state.labelText = text
-                }
+        DispatchQueue.main.async {
+            if let state = sharedState as? AppState {
+                state.labelText = text
             }
         }
     }

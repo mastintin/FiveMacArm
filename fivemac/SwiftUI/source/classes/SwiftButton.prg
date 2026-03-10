@@ -21,6 +21,7 @@ CLASS TSwiftButton FROM TControl
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
     METHOD SetGlass( lGlass )
+    METHOD SetText( cText )  INLINE BTN_SET_TEXT( hb_ntos( ::nIndex ), cText )
     METHOD SetImage( cImage ) 
     METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
       
@@ -41,7 +42,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
     ::hWnd = SWIFTBTNCREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::nIndex )
 
     if nAutoResize != 0
-        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -51,39 +52,37 @@ return Self
 METHOD Click() CLASS TSwiftButton
    
     if ::bAction != nil
-        Eval( ::bAction, Self )
+    Eval( ::bAction, Self )
     endif
-
-    return nil
 
 return nil
 
 METHOD SetColor( nFgColor, nBgColor ) CLASS TSwiftButton
     if nBgColor != nil
-        SWIFTBTNSETBGCOLOR( nBgColor, ::nIndex )
+    BTN_SET_BG( hb_ntos( ::nIndex ), clrToHex( nBgColor ) )
     endif
     if nFgColor != nil
-        SWIFTBTNSETFGCOLOR( nFgColor, ::nIndex )
+    BTN_SET_FG( hb_ntos( ::nIndex ), clrToHex( nFgColor ) )
     endif
 return nil
 
 METHOD SetRadius( nRadius ) CLASS TSwiftButton
-    SWIFTBTNSETRADIUS( nRadius, ::nIndex )
+    BTN_SET_RADIUS( hb_ntos( ::nIndex ), hb_ntos( nRadius ) )
 return nil
 
 METHOD SetPadding( nPadding ) CLASS TSwiftButton
-    SWIFTBTNSETPADDING( nPadding, ::nIndex )
+    BTN_SET_PADDING( hb_ntos( ::nIndex ), hb_ntos( nPadding ) )
 return nil
 
 METHOD SetGlass( lGlass ) CLASS TSwiftButton
     DEFAULT lGlass := .T.
     ::lGlass := lGlass
-    SWIFTBTNSETGLASS( lGlass, ::nIndex )
+    BTN_SET_GLASS( hb_ntos( ::nIndex ), if( lGlass, "1", "0" ) )
 return nil
 
 METHOD SetImage( cImage ) CLASS TSwiftButton
     if cImage != nil
-        SWIFTBTNSETIMAGE( cImage, ::nIndex )
+    BTN_SET_IMAGE( hb_ntos( ::nIndex ), cImage )
     endif
 return nil
 
@@ -91,7 +90,7 @@ return nil
 function SwiftBtnOnClick( nIndex )
    
     if nIndex > 0 .and. nIndex <= Len( aSwiftButtons )
-        aSwiftButtons[ nIndex ]:Click()
+    aSwiftButtons[ nIndex ]:Click()
     endif
    
 return nil

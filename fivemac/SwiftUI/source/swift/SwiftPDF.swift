@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 import AppKit
 
-@available(OSX 10.15, *)
+
 @objc(SwiftPDF)
 public class SwiftPDF: NSObject {
     

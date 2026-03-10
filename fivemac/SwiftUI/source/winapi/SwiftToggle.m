@@ -6,19 +6,11 @@ HB_FUNC(SWIFTTOGGLECREATE) {
   CGFloat nWidth = (CGFloat)hb_parnd(3);
   CGFloat nHeight = (CGFloat)hb_parnd(4);
   NSString *cCaption = hb_NSSTRING_par(5);
-  BOOL bIsOn = hb_parl(6);
-  NSWindow *window = (NSWindow *)hb_parnl(7);
-  NSInteger nIndex = (NSInteger)hb_parnl(8);
+  BOOL bIsOn = sw_parl(6);
+  id parent = (id)hb_parnll(7);
+  NSInteger nIndex = (NSInteger)hb_parnll(8);
   NSString *cId = hb_NSSTRING_par(9);
-  BOOL bSwitch = hb_parl(10);
-
-  NSString *className = @"SwiftFive.SwiftToggleLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (!swiftClass) {
-    NSLog(@"Error: Could not find class %@", className);
-    return;
-  }
+  BOOL bSwitch = sw_parl(10);
 
   // Callback: Receives Bool from Swift, calls Harbour block
   void (^callbackBlock)(BOOL) = ^(BOOL isOn) {
@@ -27,91 +19,42 @@ HB_FUNC(SWIFTTOGGLECREATE) {
       if (pDynSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
         hb_vmPushNil();
-        hb_vmPushInteger((int)nIndex);
+        hb_vmPushNLL(nIndex);
         hb_vmPushLogical(isOn);
         hb_vmDo(2);
       }
     });
   };
 
-  SEL selector = NSSelectorFromString(
-      @"makeToggleWithCaption:isOn:id:isSwitch:index:callback:");
+  // Call Swift Factory directly
+  NSView *toggleView = [SwiftToggleLoader makeToggleWithCaption:cCaption
+                                                           isOn:bIsOn
+                                                             id:cId
+                                                       isSwitch:bSwitch
+                                                          index:nIndex
+                                                       callback:callbackBlock];
 
-  if ([swiftClass respondsToSelector:selector]) {
-    NSMethodSignature *signature =
-        [swiftClass methodSignatureForSelector:selector];
-    NSInvocation *invocation =
-        [NSInvocation invocationWithMethodSignature:signature];
-    [invocation setSelector:selector];
-    [invocation setTarget:swiftClass];
-
-    [invocation setArgument:&cCaption atIndex:2];
-    [invocation setArgument:&bIsOn atIndex:3];
-    [invocation setArgument:&cId atIndex:4];
-    [invocation setArgument:&bSwitch atIndex:5];
-    [invocation setArgument:&nIndex atIndex:6];
-    [invocation setArgument:&callbackBlock atIndex:7];
-
-    [invocation invoke];
-
-    NSView *toggleView;
-    [invocation getReturnValue:&toggleView];
-
-    if (toggleView) {
-      setupSwiftView(toggleView, window, nTop, nLeft, nWidth, nHeight);
-      hb_retnl((HB_LONG)toggleView);
-    }
-  } else {
-    NSLog(@"ERROR: Selector %@ not found in class %@",
-          NSStringFromSelector(selector), className);
+  if (toggleView) {
+    setupSwiftView(toggleView, parent, nTop, nLeft, nWidth, nHeight);
+    hb_retnll((HB_LONGLONG)toggleView);
   }
 }
 
-HB_FUNC(SWIFTTOGGLESET) {
-  BOOL bIsOn = hb_parl(1);
-  NSString *cId = hb_NSSTRING_par(2);
-
-  NSString *className = @"SwiftFive.SwiftToggleLoader";
-  Class swiftClass = NSClassFromString(className);
-  if (!swiftClass)
-    return;
-
-  SEL selector = NSSelectorFromString(@"setToggle:id:");
-  if ([swiftClass respondsToSelector:selector]) {
-    NSMethodSignature *signature =
-        [swiftClass methodSignatureForSelector:selector];
-    NSInvocation *invocation =
-        [NSInvocation invocationWithMethodSignature:signature];
-    [invocation setSelector:selector];
-    [invocation setTarget:swiftClass];
-    [invocation setArgument:&bIsOn atIndex:2];
-    [invocation setArgument:&cId atIndex:3];
-    [invocation invoke];
-  }
+/*
+HB_FUNC(TGL_SET_CAPTION) {
+  SW_TGL_SET_CAPTION((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                     sw_parc(2));
 }
+*/
 
-HB_FUNC(SWIFTTOGGLEGET) {
-  NSInteger nIndex = (NSInteger)hb_parnl(1);
-  NSString *className = @"SwiftFive.SwiftToggleLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"getToggleFromIndex:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-      [invocation setArgument:&nIndex atIndex:2];
-      [invocation invoke];
-
-      BOOL bResult;
-      [invocation getReturnValue:&bResult];
-      hb_retl(bResult);
-      return;
-    }
-  }
-  hb_retl(NO);
+HB_FUNC(TGL_SET_COLORS) {
+  SW_TGL_SET_COLORS((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                    sw_parc(2), sw_parc(3));
 }
+/*
+HB_FUNC(TGL_GET_VALUE) {
+
+  hb_retc((const char *)SW_TGL_GET_VALUE(
+      (const int8_t *)[GetRootIdFromParam(1) UTF8String]));
+}
+*/

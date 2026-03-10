@@ -1,23 +1,21 @@
 import SwiftUI
 import Cocoa
+import Observation
+import HarbourMacro
 
-@available(OSX 10.15, *)
 struct SwiftGridView: View {
-    @ObservedObject var state: SwiftVStackState
+    var state: SwiftVStackState
     
     var body: some View {
         Group {
-            if #available(OSX 11.0, *) {
-                ScrollView {
-                    LazyVGrid(columns: mapSpecsToGridItems(state.gridColumns ?? []), spacing: CGFloat(state.spacing)) {
-                        ForEach(Array(state.items.enumerated()), id: \.element.id) { index, item in
-                             RecursiveItemView(item: item, onAction: state.onAction, index: index)
-                        }
+            ScrollView {
+                LazyVGrid(columns: mapSpecsToGridItems(state.gridColumns ?? []), spacing: CGFloat(state.spacing)) {
+                    ForEach(0..<state.items.count, id: \.self) { index in
+                         let item = state.items[index]
+                         RecursiveItemView(item: item, onAction: state.onAction, index: index)
                     }
-                    .padding()
                 }
-            } else {
-                Text("Grid requires macOS 11.0+")
+                .padding()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -34,35 +32,39 @@ struct SwiftGridView: View {
     }
 }
 
+@HarbourBridge
 @objc(SwiftGridLoader)
 public class SwiftGridLoader: NSObject {
     
-    @objc(makeGridWithIndex:columnsJson:callback:actionCallback:)
-    public static func makeGrid(index: Int, columnsJson: String, callback: @escaping (Int) -> Void, actionCallback: @escaping (String) -> Void) -> NSView {
-         if #available(OSX 10.15, *) {
-             print("SWIFT_PRINT: makeGrid called. Index: \(index)")
-             let state = SwiftVStackState()
-             state.onAction = actionCallback
-             
-             // Decode Columns
-             if let data = columnsJson.data(using: .utf8),
-                let specs = try? JSONDecoder().decode([GridItemSpec].self, from: data) {
-                 state.gridColumns = specs
-             }
-             
-             SwiftVStackLoader.lastCreatedState = state 
-             
-             // Register state for addItem/addBatch lookups
-             SwiftVStackLoader.states[String(index)] = state
-             
-             let view = SwiftGridView(state: state)
-             
-             ViewRegistry.register(view, for: index)
-
-             let hostingView = NSHostingView(rootView: view)
-             return hostingView
-         } else {
-             return NSView()
+    @objc(makeGridWithIndex:columnsJson:)
+    public static func makeGrid(index: String, columnsJson: String) -> NSView {
+         let state = SwiftVStackState()
+         
+         // Decode Columns
+         if let data = columnsJson.data(using: .utf8),
+            let specs = try? JSONDecoder().decode([GridItemSpec].self, from: data) {
+             state.gridColumns = specs
          }
+         
+         SwiftVStackLoader.lastCreatedState = state 
+         
+         // Register state for addItem/addBatch lookups
+         SwiftVStackLoader.states[index] = state
+         
+         let view = SwiftGridView(state: state)
+         
+         if let intIndex = Int(index) {
+             ViewRegistry.register(view, for: intIndex)
+         }
+
+         let hostingView = NSHostingView(rootView: view)
+         return hostingView
+    }
+
+    @objc(setActionCallbackWithRootId:callback:)
+    public static func setActionCallback(rootId: String, callback: @escaping (String) -> Void) {
+        if let state = SwiftVStackLoader.states[rootId] as? SwiftVStackState {
+            state.onAction = callback
+        }
     }
 }

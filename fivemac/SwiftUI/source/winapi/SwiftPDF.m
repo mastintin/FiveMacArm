@@ -1,4 +1,4 @@
-#include <fivemac.h>
+#import "SwiftCommon.h"
 
 HB_FUNC(SWIFTPDFSAVE) {
   NSString *path = hb_NSSTRING_par(2);
@@ -16,7 +16,7 @@ HB_FUNC(SWIFTPDFSAVE) {
     [invocation setSelector:selector];
     [invocation setTarget:swiftClass];
 
-    NSInteger id = hb_parnl(1);
+    NSInteger id = (NSInteger)hb_parni(1);
     [invocation setArgument:&id atIndex:2];
     [invocation setArgument:&path atIndex:3];
 

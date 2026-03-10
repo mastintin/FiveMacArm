@@ -5,8 +5,8 @@ HB_FUNC(SWIFTCHARTCREATE) {
   CGFloat nLeft = (CGFloat)hb_parnd(2);
   CGFloat nWidth = (CGFloat)hb_parnd(3);
   CGFloat nHeight = (CGFloat)hb_parnd(4);
-  NSWindow *window = (NSWindow *)hb_parnl(5);
-  NSInteger nIndex = (NSInteger)hb_parnl(6);
+  NSWindow *window = (NSWindow *)hb_parnll(5);
+  NSInteger nIndex = (NSInteger)hb_parnll(6);
   NSString *cId = hb_NSSTRING_par(7);
   NSString *cData = hb_NSSTRING_par(8);
   NSString *cType = hb_NSSTRING_par(9);
@@ -41,7 +41,7 @@ HB_FUNC(SWIFTCHARTCREATE) {
 
     if (chartView) {
       setupSwiftView(chartView, window, nTop, nLeft, nWidth, nHeight);
-      hb_retnl((HB_LONG)chartView);
+      hb_retnll((HB_LONGLONG)chartView);
     }
   } else {
     NSLog(@"ERROR: Selector %@ not found in class %@",

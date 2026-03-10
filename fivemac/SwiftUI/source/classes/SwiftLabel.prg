@@ -29,7 +29,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwif
     ::hWnd = SWIFTLABELCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nIndex )
 
     if nAutoResize != 0
-        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -38,7 +38,7 @@ return Self
 
 METHOD SetText( cText ) CLASS TSwiftLabel
    
-    SwiftUpdateLabel( "SwiftFive.SwiftLabelLoader", cText, ::nIndex )
+    SwiftUpdateLabel( , cText, ::nIndex )
 
 return nil
 
@@ -47,5 +47,5 @@ METHOD SetFont( nSize ) CLASS TSwiftLabel
 return nil
 
 METHOD SetColor( nColor ) CLASS TSwiftLabel
-    SWIFTLABELSETCOLOR( nColor, ::nIndex )
+    LBL_SET_COLOR( hb_ntos( ::nIndex ), clrToHex( nColor ) )
 return nil

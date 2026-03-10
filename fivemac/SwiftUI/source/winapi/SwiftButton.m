@@ -6,9 +6,9 @@ HB_FUNC(SWIFTBTNCREATE) {
   CGFloat nWidth = (CGFloat)hb_parnd(3);
   CGFloat nHeight = (CGFloat)hb_parnd(4);
   NSString *cPrompt = hb_NSSTRING_par(5);
-  id parent = (id)hb_parnl(6);
+  id parent = (id)hb_parnll(6);
   NSInteger nIndex =
-      (NSInteger)hb_parni(7); // Receive the Index in aSwiftButtons
+      (NSInteger)hb_parnll(7); // Receive the Index in aSwiftButtons
 
   // Class name hardcoded or passed? We use specific loader.
   NSString *className = @"SwiftFive.SwiftButtonLoader";
@@ -26,200 +26,53 @@ HB_FUNC(SWIFTBTNCREATE) {
       if (pDynSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
         hb_vmPushNil();
-        hb_vmPushInteger((int)nIndex);
+        hb_vmPushNLL(nIndex);
         hb_vmDo(1);
       }
     });
   };
 
-  // Call Swift Factory
-  // Signature: makeButton(title:index:callback:)
-  SEL selector = NSSelectorFromString(@"makeButtonWithTitle:index:callback:");
+  // Direct call to Swift Factory
+  NSView *btnView = [SwiftButtonLoader makeButtonWithTitle:cPrompt
+                                                     index:nIndex
+                                                  callback:callbackBlock];
 
-  if ([swiftClass respondsToSelector:selector]) {
-    NSMethodSignature *signature =
-        [swiftClass methodSignatureForSelector:selector];
-    NSInvocation *invocation =
-        [NSInvocation invocationWithMethodSignature:signature];
-    [invocation setSelector:selector];
-    [invocation setTarget:swiftClass];
-
-    [invocation setArgument:&cPrompt atIndex:2];
-    [invocation setArgument:&nIndex atIndex:3];
-    [invocation setArgument:&callbackBlock atIndex:4];
-
-    [invocation invoke];
-
-    NSView *btnView;
-    [invocation getReturnValue:&btnView];
-
-    if (btnView) {
-      NSLog(@"DEBUG: SWIFTBTNCREATE success for index: %ld", (long)nIndex);
-      setupSwiftView(btnView, parent, nTop, nLeft, nWidth, nHeight);
-      hb_retnll((HB_LONGLONG)btnView);
-    }
+  if (btnView) {
+    NSLog(@"DEBUG: SWIFTBTNCREATE success for index: %ld", (long)nIndex);
+    setupSwiftView(btnView, parent, nTop, nLeft, nWidth, nHeight);
+    hb_retnll((HB_LONGLONG)btnView);
   }
 }
 
-// Helper to get hex color string from Harbour numeric color (duplicated from
-// SwiftLabel.m refactor candidate)
-NSString *HexColorFromHarbour(long nColor) {
-  int r = nColor & 0xFF;
-  int g = (nColor >> 8) & 0xFF;
-  int b = (nColor >> 16) & 0xFF;
-  return [NSString stringWithFormat:@"%02X%02X%02X", r, g, b];
+HB_FUNC(BTN_SET_TEXT) {
+  SW_BTN_SET_TEXT((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                  sw_parc(2));
 }
 
-HB_FUNC(SWIFTBTNSETBGCOLOR) {
-  long nColor = hb_parnl(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-  NSString *hexColor = HexColorFromHarbour(nColor);
-
-  NSString *className = @"SwiftFive.SwiftButtonLoader";
-  Class swiftClass = NSClassFromString(className);
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setButtonBackgroundColor:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&hexColor atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(BTN_SET_BG) {
+  SW_BTN_SET_BG((const int8_t *)[GetRootIdFromParam(1) UTF8String], sw_parc(2));
 }
 
-HB_FUNC(SWIFTBTNSETFGCOLOR) {
-  long nColor = hb_parnl(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-  NSString *hexColor = HexColorFromHarbour(nColor);
-
-  NSString *className = @"SwiftFive.SwiftButtonLoader";
-  Class swiftClass = NSClassFromString(className);
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setButtonForegroundColor:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&hexColor atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(BTN_SET_FG) {
+  SW_BTN_SET_FG((const int8_t *)[GetRootIdFromParam(1) UTF8String], sw_parc(2));
 }
 
-HB_FUNC(SWIFTBTNSETRADIUS) {
-  double nRadius = hb_parnd(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  NSString *className = @"SwiftFive.SwiftButtonLoader";
-  Class swiftClass = NSClassFromString(className);
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setButtonCornerRadius:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&nRadius atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(BTN_SET_RADIUS) {
+  SW_BTN_SET_RADIUS((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                    sw_parc(2));
 }
 
-HB_FUNC(SWIFTBTNSETPADDING) {
-  double nPadding = hb_parnd(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  NSString *className = @"SwiftFive.SwiftButtonLoader";
-  Class swiftClass = NSClassFromString(className);
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setButtonPadding:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&nPadding atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(BTN_SET_PADDING) {
+  SW_BTN_SET_PADDING((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                     sw_parc(2));
 }
 
-HB_FUNC(SWIFTBTNSETGLASS) {
-  BOOL isGlass = hb_parl(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  NSString *className = @"SwiftFive.SwiftButtonLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    NSLog(@"DEBUG: SWIFTBTNSETGLASS: %d for index: %ld", isGlass, (long)nIndex);
-    SEL selector = NSSelectorFromString(@"setButtonGlass:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&isGlass atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-      [invocation invoke];
-    } else {
-      NSLog(@"DEBUG: SWIFTBTNSETGLASS: Selector NOT found!");
-    }
-  }
+HB_FUNC(BTN_SET_GLASS) {
+  SW_BTN_SET_GLASS((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                   sw_parc(2));
 }
 
-HB_FUNC(SWIFTBTNSETIMAGE) {
-  const char *cImage = hb_parc(1);
-  NSInteger nIndex = (NSInteger)hb_parni(2);
-
-  if (!cImage)
-    return;
-  NSString *imageName = [NSString stringWithUTF8String:cImage];
-
-  NSString *className = @"SwiftFive.SwiftButtonLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setButtonImage:index:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&imageName atIndex:2];
-      [invocation setArgument:&nIndex atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(BTN_SET_IMAGE) {
+  SW_BTN_SET_IMAGE((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                   sw_parc(2));
 }
