@@ -37,11 +37,11 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable, nAut
     ::hWnd = SWIFTIMAGECREATE( nTop, nLeft, nWidth, nHeight, cName, oWnd:hWnd, ::nIndex )
     
     if !lResizable
-        ::SetResizable( .t. )
+    ::SetResizable( .t. )
     endif
 
     if nAutoResize != 0
-        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -51,45 +51,45 @@ return Self
 METHOD Click() CLASS TSwiftImage
    
     if ::bAction != nil
-        Eval( ::bAction, Self )
+    Eval( ::bAction, Self )
     endif
 
 return nil
 
 
 METHOD SetSystemName( cName ) CLASS TSwiftImage
-    SWIFTIMAGESETSYSTEMNAME( ::nIndex, cName )
+    IMG_SET_SYSTEM_NAME( hb_ntos( ::nIndex ), cName )
 return nil
 
 METHOD SetName( cName ) CLASS TSwiftImage
-    SWIFTIMAGESETNAME( ::nIndex, cName )
+    IMG_SET_NAME( hb_ntos( ::nIndex ), cName )
 return nil
 
 METHOD SetColor( nColor ) CLASS TSwiftImage
-    SWIFTIMAGESETCOLOR( ::nIndex, nColor )
+    IMG_SET_COLOR( hb_ntos( ::nIndex ), clrToHex( nColor ) )
 return nil
 
 METHOD SetResizable( lResizable ) CLASS TSwiftImage
-    SWIFTIMAGESETRESIZABLE( ::nIndex, lResizable )
+    IMG_SET_RESIZABLE( hb_ntos( ::nIndex ), lResizable )
 return nil
 
 METHOD SetFile( cFile ) CLASS TSwiftImage
-    SWIFTIMAGESETFILE( ::nIndex, cFile )
+    IMG_SET_FILE( hb_ntos( ::nIndex ), cFile )
 return nil
 
 METHOD SetAspectRatio( nMode ) CLASS TSwiftImage
-    SWIFTIMAGESETASPECTRATIO( ::nIndex, nMode )
+    IMG_SET_ASPECT_RATIO( hb_ntos( ::nIndex ), nMode )
 return nil
 
 METHOD SetImage( pImage ) CLASS TSwiftImage
-    SWIFTIMAGESETNSIMAGE( ::nIndex, pImage )
+    // SWIFTIMAGESETNSIMAGE( ::nIndex, pImage ) // Not implemented in standardized bridge yet
 return nil
 
 // Called from C callback
 function SwiftImageOnClick( nIndex )
    
     if nIndex > 0 .and. nIndex <= Len( aSwiftImages )
-        aSwiftImages[ nIndex ]:Click()
+    aSwiftImages[ nIndex ]:Click()
     endif
    
 return nil

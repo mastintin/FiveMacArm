@@ -1,14 +1,18 @@
 import SwiftUI
 import AppKit
+import Observation
+import HarbourMacro
 
-@available(OSX 10.15, *)
-class TextFieldState: ObservableObject {
-    @Published var text: String = ""
-    @Published var placeholder: String = ""
-    @Published var fontSize: CGFloat = 13.0
+@Observable
+public class TextFieldState {
+    var text: String = ""
+    var placeholder: String = ""
+    var fontSize: CGFloat = 13.0
     
     var onAction: ((String) -> Void)? = nil
     var id: String = ""
+    var textColor: Color = .primary
+    var backgroundColor: Color = .clear
     
     init(text: String = "", placeholder: String = "", id: String = "") {
         self.text = text
@@ -17,12 +21,16 @@ class TextFieldState: ObservableObject {
     }
 }
 
-@available(OSX 10.15, *)
 struct SwiftTextFieldView: View {
-    @ObservedObject var state: TextFieldState
+    var state: TextFieldState
     
     var body: some View {
-        TextField(state.placeholder, text: $state.text, onEditingChanged: { isEditing in
+        let textBinding = Binding(
+            get: { state.text },
+            set: { state.text = $0 }
+        )
+        
+        TextField(state.placeholder, text: textBinding, onEditingChanged: { isEditing in
             if !isEditing {
                 print("DEBUG: [Swift] TextField Editing Finished. Final text: \(state.text)")
                 state.onAction?(state.text)
@@ -32,17 +40,26 @@ struct SwiftTextFieldView: View {
             state.onAction?(state.text)
         })
         .font(.system(size: state.fontSize))
+        .foregroundColor(state.textColor)
         .textFieldStyle(RoundedBorderTextFieldStyle())
+        .background(state.backgroundColor)
     }
 }
 
-@available(OSX 11.0, *)
 struct SwiftTextEditorView: View {
-    @ObservedObject var state: TextFieldState
+    var state: TextFieldState
     
     var body: some View {
-        TextEditor(text: $state.text)
+        let textBinding = Binding(
+            get: { state.text },
+            set: { state.text = $0 }
+        )
+        
+        TextEditor(text: textBinding)
             .font(.system(size: state.fontSize))
+            .foregroundColor(state.textColor)
+            .scrollContentBackground(.hidden)
+            .background(state.backgroundColor)
             .border(Color.gray.opacity(0.2))
     }
 }
@@ -50,64 +67,71 @@ struct SwiftTextEditorView: View {
 @objc(SwiftTextFieldLoader)
 public class SwiftTextFieldLoader: NSObject {
     
-    // Key is String (UUID)
-    static var states: [String: TextFieldState] = [:]
+    public static var states: [String: TextFieldState] = [:]
 
     @objc(makeTextFieldWithText:placeholder:id:callback:)
     public static func makeTextField(text: String, placeholder: String, id: String, callback: @escaping (String) -> Void) -> NSView {
-         if #available(OSX 10.15, *) {
-            let state = TextFieldState(text: text, placeholder: placeholder, id: id)
-            state.onAction = callback
-            
-            states[id] = state 
-            
-            let view = SwiftTextFieldView(state: state)
-            
-            if let index = Int(id.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) {
-                 ViewRegistry.register(view, for: index)
-            }
-            
-            let hostingView = NSHostingView(rootView: view)
-            hostingView.translatesAutoresizingMaskIntoConstraints = false
-            return hostingView
-        } else {
-            return NSView()
+        let state = TextFieldState(text: text, placeholder: placeholder, id: id)
+        state.onAction = callback
+        
+        SwiftTextFieldLoader.states[id] = state 
+        
+        let view = SwiftTextFieldView(state: state)
+        
+        if let index = Int(id.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) {
+             ViewRegistry.register(view, for: index)
         }
+        
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        return hostingView
     }
 
     @objc(makeTextEditorWithText:id:)
     public static func makeTextEditor(text: String, id: String) -> NSView {
-        if #available(OSX 11.0, *) {
-            let state = TextFieldState(text: text, id: id)
-            states[id] = state
-            
-            let view = SwiftTextEditorView(state: state)
-            let hostingView = NSHostingView(rootView: view)
-            hostingView.translatesAutoresizingMaskIntoConstraints = false
-            return hostingView
-        } else {
-            return NSView()
+        let state = TextFieldState(text: text, id: id)
+        SwiftTextFieldLoader.states[id] = state
+        
+        let view = SwiftTextEditorView(state: state)
+        let hostingView = NSHostingView(rootView: view)
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        return hostingView
+    }
+}
+
+// --- HARBOUR BRIDGE MACROS ---
+
+@HarbourBridge
+public func tf_set_text(id: String, text: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftTextFieldLoader.states[id] {
+            state.text = text
         }
     }
-    
-    @objc(setText:id:)
-    public static func setText(_ text: String, id: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[id] {
-                    state.text = text
-                }
-            }
+}
+
+@HarbourBridge
+@discardableResult
+public func tf_get_text(id: String) -> String {
+    return SwiftTextFieldLoader.states[id]?.text ?? ""
+}
+
+@HarbourBridge
+public func tf_set_colors(id: String, fgHex: String, bgHex: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftTextFieldLoader.states[id] {
+            state.textColor = Color(hex: fgHex)
+            state.backgroundColor = Color(hex: bgHex)
         }
     }
-    
-    @objc(getTextFromId:)
-    public static func getText(fromId id: String) -> String {
-        if #available(OSX 10.15, *) {
-            if let state = states[id] {
-                return state.text
-            }
+}
+
+@HarbourBridge
+public func tf_set_font_size(id: String, size: String) {
+    let nSize = CGFloat(Double(size) ?? 13.0)
+    DispatchQueue.main.async {
+        if let state = SwiftTextFieldLoader.states[id] {
+            state.fontSize = nSize
         }
-        return ""
     }
 }

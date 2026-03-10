@@ -52,7 +52,7 @@ void setupSwiftView(NSView *swiftView, id parent, CGFloat top, CGFloat left,
 
 HB_FUNC(CREATESWIFTVIEW) {
   NSLog(@"HB_FUNC: CREATESWIFTVIEW start");
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   const char *cClassName = hb_parc(2);
   if (!cClassName)
     return;
@@ -103,7 +103,7 @@ HB_FUNC(CREATESWIFTVIEW) {
 
 HB_FUNC(SWIFTSTANDALONEBATCHCREATE) {
   NSLog(@"HB_FUNC: SWIFTSTANDALONEBATCHCREATE start");
-  NSWindow *window = (NSWindow *)hb_parnl(1);
+  NSWindow *window = (NSWindow *)hb_parnll(1);
   const char *cJson = hb_parc(2);
 
   if (!cJson) {
@@ -211,5 +211,13 @@ HB_FUNC(SWIFTAUTORESIZE) {
   NSView *view = (NSView *)hb_parnll(1);
   if (view) {
     [view setAutoresizingMask:hb_parnl(2)];
+  }
+}
+
+NSString *GetRootIdFromParam(int paramIndex) {
+  if (HB_ISNUM(paramIndex)) {
+    return [NSString stringWithFormat:@"%d", hb_parni(paramIndex)];
+  } else {
+    return hb_NSSTRING_par(paramIndex);
   }
 }

@@ -13,6 +13,9 @@ CLASS TSwiftSlider FROM TControl
 
     METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bChange )
     METHOD SetValue( nValue )
+    METHOD GetValue()
+    METHOD SetAccentColor( nColor )
+    METHOD SetColor( nFg, nBg )
    
 ENDCLASS
 
@@ -45,7 +48,18 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bCha
 return Self
 
 METHOD SetValue( nValue ) CLASS TSwiftSlider
-    SWIFTSLIDERSETVALUE( nValue, ::cID )
+    SLD_SET_VALUE( ::cID, hb_ntos( nValue ) )
+return nil
+
+METHOD GetValue() CLASS TSwiftSlider
+return Val( SLD_GET_VALUE( ::cID ) )
+
+METHOD SetAccentColor( nColor ) CLASS TSwiftSlider
+    SLD_SET_ACCENT_COLOR( ::cID, clrToHex( nColor ) )
+return nil
+
+METHOD SetColor( nFg, nBg ) CLASS TSwiftSlider
+    SLD_SET_COLORS( ::cID, clrToHex( nFg ), clrToHex( nBg ) )
 return nil
 
 // The C callback calls this function

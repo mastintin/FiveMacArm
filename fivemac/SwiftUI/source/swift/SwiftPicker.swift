@@ -1,14 +1,17 @@
 import SwiftUI
 import AppKit
+import Observation
+import HarbourMacro
 
-@available(OSX 10.15, *)
-@available(OSX 10.15, *)
-class PickerState: ObservableObject {
-    @Published var items: [String]
-    @Published var selection: String
-    @Published var isGlass: Bool
-    @Published var showLabel: Bool
-    @Published var title: String
+@Observable
+public class PickerState {
+    var items: [String]
+    var selection: String
+    var isGlass: Bool
+    var showLabel: Bool
+    var title: String
+    var accentColor: Color = .blue
+    var textColor: Color = .primary
     
     init(items: [String] = [], selection: String = "", isGlass: Bool = false, showLabel: Bool = true, title: String = "") {
         self.items = items
@@ -19,9 +22,8 @@ class PickerState: ObservableObject {
     }
 }
 
-@available(OSX 10.15, *)
 struct SwiftPickerView: View {
-    @ObservedObject var state: PickerState
+    var state: PickerState
     var callback: ((String) -> Void)?
     
     @State private var isPopoverPresented = false
@@ -36,17 +38,22 @@ struct SwiftPickerView: View {
     }
     
     var body: some View {
-        if #available(macOS 26.2, *) {
+        let selectionBinding = Binding(
+            get: { state.selection },
+            set: { state.selection = $0 }
+        )
+        
+        if #available(macOS 14.0, *) {
              Button(action: {
                  isPopoverPresented.toggle()
              }) {
                  HStack {
                      if state.showLabel {
                         Text(!state.title.isEmpty ? state.title : state.selection)
-                             .foregroundColor(state.selection.isEmpty ? .secondary : .primary)
+                             .foregroundColor(state.selection.isEmpty ? .secondary : state.textColor)
                      } else {
-                         Text(state.selection)
-                             .foregroundColor(.primary)
+                          Text(state.selection)
+                             .foregroundColor(state.textColor)
                      }
                      
                      Spacer()
@@ -84,7 +91,7 @@ struct SwiftPickerView: View {
                                  Spacer()
                                  if state.selection == item {
                                      Image(systemName: "checkmark")
-                                         .foregroundColor(.blue)
+                                         .foregroundColor(state.accentColor)
                                  }
                              }
                              .contentShape(Rectangle())
@@ -93,12 +100,16 @@ struct SwiftPickerView: View {
                          .padding(.vertical, 4)
                      }
                      .listStyle(.plain)
-                     .frame(height: 200) // Fixed height to ensure scrolling
+                     .frame(height: 200) 
                  }
                  .frame(width: 250)
                  .modify { view in
                     if state.isGlass {
-                        view.glassEffect()
+                        if #available(macOS 26.0, *) {
+                            view.glassEffect()
+                        } else {
+                            view
+                        }
                     } else {
                         view
                     }
@@ -106,15 +117,17 @@ struct SwiftPickerView: View {
              }
              .modify { view in
                  if state.isGlass {
-                     view
-                         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
+                     if #available(macOS 26.0, *) {
+                         view.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
+                     } else {
+                         view
+                     }
                  } else {
                      view
                  }
              }
         } else {
-             // Fallback for older macOS
-             Picker(state.title, selection: $state.selection) {
+             Picker(state.title, selection: selectionBinding) {
                 ForEach(state.items, id: \.self) { item in
                     Text(item).tag(item)
                 }
@@ -124,99 +137,101 @@ struct SwiftPickerView: View {
     }
 }
 
-extension View {
-    func modify<Content: View>(@ViewBuilder _ transform: (Self) -> Content) -> Content {
-        transform(self)
-    }
-}
-
 @objc(SwiftPickerLoader)
 public class SwiftPickerLoader: NSObject {
     
-    static var states: [String: PickerState] = [:]
+    public static var states: [String: PickerState] = [:]
 
-    @objc(makePickerWithTitle:items:index:callback:)
-    public static func makePicker(title: String, items: [String], index: Int, callback: ((String) -> Void)?) -> NSView {
-         if #available(OSX 10.15, *) {
-             let state = PickerState(items: items, selection: items.first ?? "", title: title)
-             let key = String(index)
-             states[key] = state
-             
-             let action: (String) -> Void = { newValue in
-                 _ = callback?(newValue)
+    @objc(makePickerWithTitle:items:id:index:callback:)
+    public static func makePicker(title: String, items: [String], id: String, index: Int, callback: ((String) -> Void)?) -> NSView {
+         let state = PickerState(items: items, selection: items.first ?? "", title: title)
+         let key = id.isEmpty ? String(index) : id
+         SwiftPickerLoader.states[key] = state
+         
+         let action: (String) -> Void = { newValue in
+             _ = callback?(newValue)
+         }
+         
+         let view = SwiftPickerView(state: state, callback: action)
+         ViewRegistry.register(view, for: index)
+         
+         let hostingView = NSHostingView(rootView: view)
+         hostingView.translatesAutoresizingMaskIntoConstraints = false
+         return hostingView
+    }
+}
+
+// --- HARBOUR BRIDGE MACROS ---
+
+@HarbourBridge
+public func pkr_set_selection(id: String, selection: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.selection = selection
+        }
+    }
+}
+
+@HarbourBridge
+public func pkr_set_glass(id: String, isGlass: String) {
+    let glass = (isGlass == "1" || isGlass.lowercased() == "true")
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.isGlass = glass
+        }
+    }
+}
+
+@HarbourBridge
+public func pkr_set_show_label(id: String, show: String) {
+    let showLabel = (show == "1" || show.lowercased() == "true")
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.showLabel = showLabel
+        }
+    }
+}
+
+@HarbourBridge
+public func pkr_set_title(id: String, title: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.title = title
+        }
+    }
+}
+
+@HarbourBridge
+public func pkr_set_colors(id: String, accentHex: String, textHex: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.accentColor = Color(hex: accentHex)
+            state.textColor = Color(hex: textHex)
+        }
+    }
+}
+
+@HarbourBridge
+@discardableResult
+public func pkr_get_selection(id: String) -> String {
+    return SwiftPickerLoader.states[id]?.selection ?? ""
+}
+
+// Special case for items as it's an array
+@objc(SwiftPickerActions)
+public class SwiftPickerActions: NSObject {
+    @objc public static func setItems(id: String, items: [String]) {
+         DispatchQueue.main.async {
+             if let state = SwiftPickerLoader.states[id] {
+                 state.items = items
+                 if !items.contains(state.selection) {
+                     state.selection = items.first ?? ""
+                 }
              }
-             
-             let view = SwiftPickerView(state: state, callback: action)
-             ViewRegistry.register(view, for: index)
-             
-             let hostingView = NSHostingView(rootView: view)
-             hostingView.translatesAutoresizingMaskIntoConstraints = true
-             return hostingView
-         } else {
-             return NSView()
          }
     }
     
-    @objc(setPickerSelection:index:)
-    public static func setPickerSelection(_ value: String, index: Int) {
-        if #available(OSX 10.15, *) {
-             let key = String(index)
-             DispatchQueue.main.async {
-                 if let state = states[key] {
-                     state.selection = value
-                 }
-             }
-        }
-    }
-    
-    @objc(setPickerItems:index:)
-    public static func setPickerItems(_ items: [String], index: Int) {
-        if #available(OSX 10.15, *) {
-             let key = String(index)
-             DispatchQueue.main.async {
-                 if let state = states[key] {
-                     state.items = items
-                     if !items.contains(state.selection) {
-                         state.selection = items.first ?? ""
-                     }
-                 }
-             }
-        }
-    }
-
-    @objc(setPickerGlass:index:)
-    public static func setPickerGlass(_ isGlass: Bool, index: Int) {
-        if #available(OSX 10.15, *) {
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.isGlass = isGlass
-                }
-            }
-        }
-    }
-    
-    @objc(setPickerShowLabel:index:)
-    public static func setPickerShowLabel(_ showLabel: Bool, index: Int) {
-        if #available(OSX 10.15, *) {
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.showLabel = showLabel
-                }
-            }
-        }
-    }
-
-    @objc(setPickerTitle:index:)
-    public static func setPickerTitle(_ title: String, index: Int) {
-        if #available(OSX 10.15, *) {
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.title = title
-                }
-            }
-        }
+    @objc public static func getSelection(id: String) -> String {
+        return SwiftPickerLoader.states[id]?.selection ?? ""
     }
 }

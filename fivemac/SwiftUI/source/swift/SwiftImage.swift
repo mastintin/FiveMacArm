@@ -1,15 +1,17 @@
 import SwiftUI
 import AppKit
+import Observation
+import HarbourMacro
 
-@available(OSX 10.15, *)
-class SwiftImageState: ObservableObject {
-    @Published var systemName: String
-    @Published var name: String
-    @Published var filePath: String
-    @Published var resizable: Bool
-    @Published var contentMode: Int // 0: fit, 1: fill
-    @Published var foregroundColor: Color?
-    @Published var image: NSImage?
+@Observable
+public class SwiftImageState {
+    var systemName: String
+    var name: String
+    var filePath: String
+    var resizable: Bool
+    var contentMode: Int // 0: fit, 1: fill
+    var foregroundColor: Color?
+    var image: NSImage?
     
     init(systemName: String = "", name: String = "", filePath: String = "", resizable: Bool = true, contentMode: Int = 0, foregroundColor: Color? = nil, image: NSImage? = nil) {
         self.systemName = systemName
@@ -22,9 +24,8 @@ class SwiftImageState: ObservableObject {
     }
 }
 
-@available(OSX 10.15, *)
 struct SwiftImageView: View {
-    @ObservedObject var state: SwiftImageState
+    var state: SwiftImageState
     var callback: (() -> Void)?
     
     var body: some View {
@@ -33,15 +34,16 @@ struct SwiftImageView: View {
                 Image(nsImage: img)
                     .if(state.resizable) { $0.resizable() }
             } else if !state.systemName.isEmpty {
-                if #available(OSX 11.0, *) {
-                    Image(systemName: state.systemName)
+                Image(systemName: state.systemName)
+                    .if(state.resizable) { $0.resizable() }
+            } else if !state.filePath.isEmpty {
+                if let img = NSImage(contentsOfFile: state.filePath) {
+                     Image(nsImage: img)
                         .if(state.resizable) { $0.resizable() }
                 } else {
-                    Text(state.systemName) 
+                     Image(nsImage: NSImage(byReferencingFile: state.filePath) ?? NSImage())
+                        .if(state.resizable) { $0.resizable() }
                 }
-            } else if !state.filePath.isEmpty {
-                Image(nsImage: NSImage(byReferencingFile: state.filePath) ?? NSImage())
-                     .if(state.resizable) { $0.resizable() }
             } else if !state.name.isEmpty {
                 Image(state.name)
                      .if(state.resizable) { $0.resizable() }
@@ -58,171 +60,114 @@ struct SwiftImageView: View {
     }
 }
 
-@available(OSX 10.15, *)
-extension View {
-    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
-        if condition {
-            transform(self)
-        } else {
-            self
-        }
-    }
-}
-
 @objc(SwiftImageLoader)
 public class SwiftImageLoader: NSObject {
     
-    static var states: [String: SwiftImageState] = [:]
+    public static var states: [String: SwiftImageState] = [:]
 
     @objc(makeImageWithSystemName:index:callback:)
     public static func makeImage(systemName: String, index: String, callback: ((String) -> Void)?) -> NSView {
-         if #available(OSX 10.15, *) {
-             let state = SwiftImageState(systemName: systemName)
-             states[index] = state
-             
-             let action: () -> Void = {
-                 _ = callback?("Click")
-             }
-             
-             let view = SwiftImageView(state: state, callback: action)
-             
-             // Register - converting string index to Int if possible for ViewRegistry legacy support
-             if let intIndex = Int(index) {
-                 ViewRegistry.register(view, for: intIndex)
-             }
-
-             let hostingView = NSHostingView(rootView: view)
-             hostingView.translatesAutoresizingMaskIntoConstraints = false
-             return hostingView
-         } else {
-             return NSView()
+         let state = SwiftImageState(systemName: systemName)
+         states[index] = state
+         
+         let action: () -> Void = {
+             _ = callback?("Click")
          }
-    }
-    
-    // Setters
-    
-    @objc(setImageSystemName:name:)
-    public static func setImageSystemName(_ index: String, name: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[index] {
-                    state.systemName = name
-                    state.name = ""
-                    state.filePath = ""
-                    state.image = nil
-                }
-            }
-        }
-    }
+         
+         let view = SwiftImageView(state: state, callback: action)
+         
+         if let intIndex = Int(index) {
+             ViewRegistry.register(view, for: intIndex)
+         }
 
-    @objc(setImageName:name:)
-    public static func setImageName(_ index: String, name: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[index] {
-                    state.name = name
-                    state.systemName = ""
-                    state.filePath = ""
-                    state.image = nil
-                }
-            }
-        }
+         let hostingView = NSHostingView(rootView: view)
+         hostingView.translatesAutoresizingMaskIntoConstraints = false
+         return hostingView
     }
+}
 
-    @objc(setImageFile:path:)
-    public static func setImageFile(_ index: String, path: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[index] {
-                    // Try to load immediately to avoid caching of same-path files
-                    if let img = NSImage(contentsOfFile: path) {
-                        state.image = img
-                        state.filePath = ""
-                        state.systemName = ""
-                        state.name = ""
-                    } else {
-                        // Fallback
-                        state.filePath = path
-                        state.systemName = ""
-                        state.name = ""
-                        state.image = nil
-                    }
-                }
-            }
-        }
-    }
-    
-    @objc(setImageColor:colorHex:)
-    public static func setImageColor(_ index: String, colorHex: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[index] {
-                    state.foregroundColor = Color(hexImg: colorHex)
-                }
-            }
-        }
-    }
-    
-    @objc(setImageResizable:resizable:)
-    public static func setImageResizable(_ index: String, resizable: NSNumber) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[index] {
-                    state.resizable = resizable.boolValue
-                }
-            }
-        }
-    }
+// --- HARBOUR BRIDGE MACROS ---
 
-    @objc(setImageAspectRatio:mode:)
-    public static func setImageAspectRatio(_ index: String, mode: NSNumber) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[index] {
-                    state.contentMode = mode.intValue
-                }
-            }
+@HarbourBridge
+public func img_set_system_name(id: String, name: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftImageLoader.states[id] {
+            state.systemName = name
+            state.name = ""
+            state.filePath = ""
+            state.image = nil
         }
     }
+}
 
-    @objc(setImageObj:image:)
-    public static func setImageObj(_ index: String, image: NSImage) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[index] {
-                    state.image = image
-                    state.systemName = ""
-                    state.name = ""
-                    state.filePath = ""
-                }
+@HarbourBridge
+public func img_set_name(id: String, name: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftImageLoader.states[id] {
+            state.name = name
+            state.systemName = ""
+            state.filePath = ""
+            state.image = nil
+        }
+    }
+}
+
+@HarbourBridge
+public func img_set_file(id: String, path: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftImageLoader.states[id] {
+            if let img = NSImage(contentsOfFile: path) {
+                state.image = img
+            } else {
+                state.filePath = path
+                state.image = nil
+            }
+            state.systemName = ""
+            state.name = ""
+        }
+    }
+}
+
+@HarbourBridge
+public func img_set_color(id: String, hexColor: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftImageLoader.states[id] {
+            state.foregroundColor = Color(hex: hexColor)
+        }
+    }
+}
+
+@HarbourBridge
+public func img_set_resizable(id: String, resizable: String) {
+    let isResizable = (resizable == "1" || resizable.lowercased() == "true")
+    DispatchQueue.main.async {
+        if let state = SwiftImageLoader.states[id] {
+            state.resizable = isResizable
+        }
+    }
+}
+
+@HarbourBridge
+public func img_set_aspect_ratio(id: String, mode: String) {
+    let nMode = Int(mode) ?? 0
+    DispatchQueue.main.async {
+        if let state = SwiftImageLoader.states[id] {
+            state.contentMode = nMode
+        }
+    }
+}
+
+@objc(SwiftImageActions)
+public class SwiftImageActions: NSObject {
+    @objc public static func setImageObj(index: String, image: NSImage) {
+        DispatchQueue.main.async {
+            if let state = SwiftImageLoader.states[index] {
+                state.image = image
+                state.systemName = ""
+                state.name = ""
+                state.filePath = ""
             }
         }
     }
 }
 
-@available(OSX 10.15, *)
-extension Color {
-    init(hexImg: String) { 
-        let hex = hexImg.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: 
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: 
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: 
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}

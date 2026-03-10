@@ -1,9 +1,9 @@
-
 import SwiftUI
 import Speech
 import AVFoundation
+import HarbourMacro
 
-@available(macOS 11.3, *)
+@HarbourBridge
 @objc(SwiftSpeechManager)
 public class SwiftSpeechManager: NSObject {
     
@@ -21,13 +21,13 @@ public class SwiftSpeechManager: NSObject {
     @objc public var onVocalMetrics: ((Double, Double, Double) -> Void)?
     @objc public var onError: ((String) -> Void)?
     
-    @objc public func start() {
+    @objc(start)
+    public func start() {
         if recognitionTask != nil {
             stop()
         }
         
         do {
-            // Request permissions first
             SFSpeechRecognizer.requestAuthorization { authStatus in
                 OperationQueue.main.addOperation {
                     switch authStatus {
@@ -41,9 +41,7 @@ public class SwiftSpeechManager: NSObject {
                 }
             }
             
-            // Resolve locale
             let targetLocale = resolveLocale()
-            
             print("Speech: Initializing recognizer with locale: \(targetLocale.identifier)")
             speechRecognizer = SFSpeechRecognizer(locale: targetLocale)
             
@@ -58,10 +56,7 @@ public class SwiftSpeechManager: NSObject {
             guard let recognitionRequest = recognitionRequest else { return }
             
             recognitionRequest.shouldReportPartialResults = true
-            
-            if #available(macOS 10.15, *) {
-                recognitionRequest.requiresOnDeviceRecognition = false 
-            }
+            recognitionRequest.requiresOnDeviceRecognition = false 
             
             recognitionTask = recognizer.recognitionTask(with: recognitionRequest) { result, error in
                 var isFinal = false
@@ -97,7 +92,8 @@ public class SwiftSpeechManager: NSObject {
         }
     }
     
-    @objc public func recordToFile(_ path: String) {
+    @objc(recordToFile:)
+    public func recordToFile(_ path: String) {
         let url = URL(fileURLWithPath: path)
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
@@ -115,13 +111,15 @@ public class SwiftSpeechManager: NSObject {
         }
     }
 
-    @objc public func stopRecording() {
+    @objc(stopRecording)
+    public func stopRecording() {
         audioRecorder?.stop()
         audioRecorder = nil
         print("Recording stopped.")
     }
 
-    @objc public func transcribeFile(_ path: String) {
+    @objc(transcribeFile:)
+    public func transcribeFile(_ path: String) {
         let url = URL(fileURLWithPath: path)
         let targetLocale = resolveLocale()
         
@@ -135,7 +133,6 @@ public class SwiftSpeechManager: NSObject {
         let request = SFSpeechURLRecognitionRequest(url: url)
         request.shouldReportPartialResults = true
         
-        // IMPORTANT: Store the task to prevent it from being cancelled/deallocated immediately
         self.recognitionTask = recognizer.recognitionTask(with: request) { result, error in
             if let result = result {
                 let transcription = result.bestTranscription.formattedString
@@ -155,7 +152,8 @@ public class SwiftSpeechManager: NSObject {
         }
     }
 
-    @objc public func stop() {
+    @objc(stop)
+    public func stop() {
         if audioEngine.isRunning {
              audioEngine.stop()
              audioEngine.inputNode.removeTap(onBus: 0)
@@ -178,7 +176,8 @@ public class SwiftSpeechManager: NSObject {
         return values.reduce(0, +) / Double(values.count)
     }
 
-    @objc public func setLocale(_ identifier: String) {
+    @objc(setLocale:)
+    public func setLocale(_ identifier: String) {
         self.localeIdentifier = identifier
         self.speechRecognizer = nil 
     }

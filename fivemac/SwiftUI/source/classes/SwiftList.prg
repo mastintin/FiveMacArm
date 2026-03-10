@@ -60,9 +60,16 @@ METHOD SelectIndex( nIndex ) CLASS TSwiftList
 return nil
 
 METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftList
-    DEFAULT nRed := 0, nGreen := 0, nBlue := 0
+    local nClr 
     DEFAULT nAlpha := 1.0
-    SWIFTLISTSETBGCOLOR( ::nIndex, nRed / 255.0, nGreen / 255.0, nBlue / 255.0, nAlpha )
+    
+    if pcount() <= 2
+    nClr   := nRed
+    else
+    nClr := nRGB( nRed, nGreen, nBlue )
+    endif
+
+    VSTK_SET_BGCOLOR_HEX( hb_ntos( ::nIndex ), clrToHex( nClr, nAlpha ) )
 return nil
 
 METHOD SetVibrancy( lOnOff ) CLASS TSwiftList

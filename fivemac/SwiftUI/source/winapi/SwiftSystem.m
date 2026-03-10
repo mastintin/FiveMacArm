@@ -14,6 +14,11 @@ extern const char *swift_get_app_path(void);
 extern const char *swift_get_res_path(void);
 extern const char *swift_get_image(const char *title, const char *prompt);
 
+// Observation Bridge (from SwiftMacro generated names)
+extern void SW_OBS_SET_COUNT(const char *val);
+extern void SW_OBS_SET_MSG(const char *nombre);
+extern int sw_obs_get_count(void);
+
 HB_FUNC(CSWGETFILE) {
   const char *title = hb_parc(1);
   const char *types = hb_parc(2);
@@ -54,6 +59,13 @@ HB_FUNC(CSWPATH) { hb_retc(swift_get_path()); }
 HB_FUNC(CSWAPPPATH) { hb_retc(swift_get_app_path()); }
 
 HB_FUNC(CSWRESPATH) { hb_retc(swift_get_res_path()); }
+
+// Observation Bridge Functions (HB_FUNCs)
+HB_FUNC(SW_OBS_SETCOUNT) { SW_OBS_SET_COUNT(hb_parc(1)); }
+
+HB_FUNC(SW_OBS_SETMSG) { SW_OBS_SET_MSG(hb_parc(1)); }
+
+HB_FUNC(SW_OBS_GETCOUNT) { hb_retni(sw_obs_get_count()); }
 
 HB_FUNC(CSWGETIMAGEFILE) {
   const char *title = hb_parc(1);

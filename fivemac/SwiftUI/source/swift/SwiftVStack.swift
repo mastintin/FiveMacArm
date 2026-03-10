@@ -1,24 +1,23 @@
 import SwiftUI
-import AppKit
+import Cocoa
+import Observation
+import HarbourMacro
 
-@available(OSX 10.15, *)
-struct GridItemSpec: Codable {
-    let type: String // "fixed", "flexible", "adaptive"
-    let size: Double?
-    let min: Double?
-    let max: Double?
-    let spacing: Double?
+public struct GridItemSpec: Codable {
+    public let type: String // "fixed", "flexible", "adaptive"
+    public let size: Double?
+    public let min: Double?
+    public let max: Double?
+    public let spacing: Double?
 }
 
-@available(OSX 10.15, *)
-struct ColorRGBA: Codable {
-    let r: Double
-    let g: Double
-    let b: Double
-    let a: Double
+public struct ColorRGBA: Codable {
+    public let r: Double
+    public let g: Double
+    public let b: Double
+    public let a: Double
 }
 
-@available(OSX 10.15, *)
 func mapSpecsToGridItems(_ specs: [GridItemSpec]) -> [GridItem] {
     return specs.map { spec in
         let spacing = spec.spacing.map { CGFloat($0) }
@@ -35,35 +34,35 @@ func mapSpecsToGridItems(_ specs: [GridItemSpec]) -> [GridItem] {
     }
 }
 
-@available(OSX 10.15, *)
-class VStackItem: Identifiable, ObservableObject {
-    var id: String
-    let type: ItemType
-    @Published var content: String
-    let secondaryContent: String?
-    @Published var children: [VStackItem] = []
+@Observable
+public class VStackItem: Identifiable {
+    public var id: String
+    public let type: ItemType
+    public var content: String
+    public let secondaryContent: String?
+    public var children: [VStackItem] = []
 
     // Grid Props
-    var gridColumns: [GridItemSpec]? = nil
+    public var gridColumns: [GridItemSpec]? = nil
 
     // Background & Foreground Color
-    @Published var bgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
-    @Published var fgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
-    @Published var itemHeight: Double? = nil
-    @Published var itemWidth: Double? = nil
-    @Published var spacing: Double? = nil
-    @Published var fontSize: Double? = nil
-    @Published var isBold: Bool = false
-    @Published var cornerRadius: Double? = nil
+    public var bgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
+    public var fgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
+    public var itemHeight: Double? = nil
+    public var itemWidth: Double? = nil
+    public var spacing: Double? = nil
+    public var fontSize: Double? = nil
+    public var isBold: Bool = false
+    public var cornerRadius: Double? = nil
 
-    init(type: ItemType, content: String, secondaryContent: String? = nil, id: String? = nil) {
+    public init(type: ItemType, content: String, secondaryContent: String? = nil, id: String? = nil) {
         self.id = id ?? UUID().uuidString
         self.type = type
         self.content = content
         self.secondaryContent = secondaryContent
     }
 
-    enum ItemType: Int, Codable {
+    public enum ItemType: Int, Codable {
         case text = 0
         case systemImage = 1
         case hstack = 2
@@ -78,7 +77,6 @@ class VStackItem: Identifiable, ObservableObject {
     }
 }
 
-@available(OSX 10.15, *)
 func findVStackItem(in items: [VStackItem], id: String) -> VStackItem? {
     for item in items {
         if item.id == id {
@@ -91,35 +89,34 @@ func findVStackItem(in items: [VStackItem], id: String) -> VStackItem? {
     return nil
 }
 
+@Observable
+public class SwiftVStackState: StackStateProtocol {
+    public var items: [VStackItem] = []
+    public var scrollable: Bool = false
+    public var red: Double = 0.5
+    public var green: Double = 0.5
+    public var blue: Double = 0.5
+    public var alpha: Double = 0.5
+    public var useInvertedColor: Bool = false
+    public var fgRed: Double = 0.0
+    public var fgGreen: Double = 0.0
+    public var fgBlue: Double = 0.0
+    public var fgAlpha: Double = 1.0
+    public var spacing: Double = 12.0
+    public var alignment: Int = 0
+    public var lastItem: VStackItem? = nil
+    
+    public var gridColumns: [GridItemSpec]? = nil
+    public var onAction: ((String) -> Void)?
+    
+    public var selectedIndex: Int? = nil
+    public var selectedId: String? = nil
 
-@available(OSX 10.15, *)
-class SwiftVStackState: ObservableObject {
-    @Published var items: [VStackItem] = []
-    @Published var scrollable: Bool = false
-    @Published var red: Double = 0.5
-    @Published var green: Double = 0.5
-    @Published var blue: Double = 0.5
-    @Published var alpha: Double = 0.5
-    @Published var useInvertedColor: Bool = false
-    @Published var fgRed: Double = 0.0
-    @Published var fgGreen: Double = 0.0
-    @Published var fgBlue: Double = 0.0
-    @Published var fgAlpha: Double = 1.0
-    @Published var spacing: Double = 12.0
-    @Published var alignment: Int = 0
-    // To track last item for property setting context (bg color etc) -> Should be safe if single-threaded main queue
-    weak var lastItem: VStackItem? = nil
-    
-    @Published var gridColumns: [GridItemSpec]? = nil
-    var onAction: ((String) -> Void)?
-    
-    @Published var selectedIndex: Int? = nil
-    @Published var selectedId: String? = nil
+    public init() {}
 }
 
-@available(OSX 10.15, *)
 struct RecursiveItemView: View {
-    @ObservedObject var item: VStackItem
+    var item: VStackItem
     var onAction: ((String) -> Void)?
     var index: Int
     var remoteIndex: Int? = nil 
@@ -130,6 +127,7 @@ struct RecursiveItemView: View {
         Group {
             if let bg = item.bgColor {
                 Color(red: bg.r, green: bg.g, blue: bg.b, opacity: bg.a)
+                    .cornerRadius(CGFloat(item.cornerRadius ?? 0))
             } else {
                 Color.clear
             }
@@ -143,54 +141,50 @@ struct RecursiveItemView: View {
                     .font(item.fontSize.map { .system(size: CGFloat($0)) } ?? .body)
                     .fontWeight(item.isBold ? .bold : .regular)
                     .background(getBackground())
+                    .cornerRadius(CGFloat(item.cornerRadius ?? 0))
             } else if item.type == .systemImage {
-                if #available(OSX 11.0, *) {
-                    Image(systemName: item.content)
+                Image(systemName: item.content)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: item.itemWidth.map { CGFloat($0) }, height: item.itemHeight.map { CGFloat($0) } ?? 24)
+                    .background(getBackground())
+                    .cornerRadius(CGFloat(item.cornerRadius ?? 0))
+            } else if item.type == .imageFile {
+                if let nsImage = NSImage(contentsOfFile: item.content) {
+                    Image(nsImage: nsImage)
                         .resizable()
                         .scaledToFit()
                         .frame(width: item.itemWidth.map { CGFloat($0) }, height: item.itemHeight.map { CGFloat($0) } ?? 24)
                         .background(getBackground())
+                        .cornerRadius(CGFloat(item.cornerRadius ?? 0))
                 } else {
-                    Text("Img: " + item.content)
-                }
-            } else if item.type == .imageFile {
-                if #available(OSX 10.15, *) {
-                    if let nsImage = NSImage(contentsOfFile: item.content) {
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: item.itemWidth.map { CGFloat($0) }, height: item.itemHeight.map { CGFloat($0) } ?? 24)
-                            .background(getBackground())
-                    } else {
-                        Text("Img error")
-                    }
+                    Text("Img error")
                 }
             } else if item.type == .hstack {
                 HStack(alignment: .center) {
-                    if #available(OSX 11.0, *) {
-                        Image(systemName: item.secondaryContent ?? "")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 20, height: 20)
-                    } else {
-                        Text("I")
-                    }
+                    Image(systemName: item.secondaryContent ?? "")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
                     Text(item.content)
                         .font(item.fontSize.map { .system(size: CGFloat($0)) } ?? .body)
                         .fontWeight(item.isBold ? .bold : .regular)
                     Spacer()
                 }
                 .background(getBackground())
+                .cornerRadius(CGFloat(item.cornerRadius ?? 0))
             } else if item.type == .vstack {
                 VStack(alignment: .leading) {
-                    ForEach(Array(item.children.enumerated()), id: \.element.id) { childIndex, child in
+                    ForEach(0..<item.children.count, id: \.self) { childIndex in
+                        let child = item.children[childIndex]
                         RecursiveItemView(item: child, onAction: onAction, index: childIndex, remoteIndex: remoteIndex ?? (index+1), selectedIndex: selectedIndex, isInsideList: isInsideList)
                     }
                 }
                 .background(getBackground())
             } else if item.type == .hstackContainer {
                 HStack(alignment: .center, spacing: item.spacing.map { CGFloat($0) } ?? 8) {
-                    ForEach(item.children) { child in
+                    ForEach(0..<item.children.count, id: \.self) { childIndex in
+                        let child = item.children[childIndex]
                         RecursiveItemView(item: child, onAction: onAction, index: 0, remoteIndex: remoteIndex, selectedIndex: selectedIndex, isInsideList: isInsideList)
                     }
                 }
@@ -201,18 +195,18 @@ struct RecursiveItemView: View {
             } else if item.type == .divider {
                 Rectangle().fill(Color.secondary.opacity(0.3)).frame(height: 1)
             } else if item.type == .lazyVGrid {
-                if #available(OSX 11.0, *) {
-                    let columns = mapSpecsToGridItems(item.gridColumns ?? [])
-                    LazyVGrid(columns: columns, spacing: 20) {
-                        ForEach(Array(item.children.enumerated()), id: \.element.id) { childIndex, child in
-                             RecursiveItemView(item: child, onAction: onAction, index: childIndex, remoteIndex: remoteIndex ?? (index+1), selectedIndex: selectedIndex, isInsideList: isInsideList)
-                        }
+                let columns = mapSpecsToGridItems(item.gridColumns ?? [])
+                LazyVGrid(columns: columns, spacing: 20) {
+                    ForEach(0..<item.children.count, id: \.self) { childIndex in
+                         let child = item.children[childIndex]
+                         RecursiveItemView(item: child, onAction: onAction, index: childIndex, remoteIndex: remoteIndex ?? (index+1), selectedIndex: selectedIndex, isInsideList: isInsideList)
                     }
-                    .background(getBackground())
                 }
+                .background(getBackground())
             } else if item.type == .list {
                 List {
-                    ForEach(Array(item.children.enumerated()), id: \.element.id) { childIndex, child in
+                    ForEach(0..<item.children.count, id: \.self) { childIndex in
+                        let child = item.children[childIndex]
                         RecursiveItemView(item: child, onAction: onAction, index: childIndex, remoteIndex: remoteIndex ?? (index+1), selectedIndex: selectedIndex, isInsideList: true)
                     }
                 }
@@ -223,13 +217,22 @@ struct RecursiveItemView: View {
                     .padding(.horizontal, 15)
                     .padding(.vertical, 8)
                     .foregroundColor(item.fgColor.map { Color(red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) } ?? .white)
-                    .background(item.bgColor.map { Color(red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) } ?? Color.blue)
+                    .background(
+                        Group {
+                             if let bg = item.bgColor {
+                                 Color(red: bg.r, green: bg.g, blue: bg.b, opacity: bg.a)
+                             } else {
+                                 Color.blue
+                             }
+                        }
+                    )
                     .cornerRadius(CGFloat(item.cornerRadius ?? 8))
                     .simultaneousGesture(TapGesture().onEnded {
                         onAction?(item.id)
                     })
             }
         }
+        .foregroundColor(item.fgColor.map { Color(red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) } ?? (item.type == .button ? .white : .primary))
         .if(!isInsideList) { view in
             view.contentShape(Rectangle())
                 .simultaneousGesture(TapGesture().onEnded {
@@ -242,9 +245,8 @@ struct RecursiveItemView: View {
     }
 }
 
-@available(OSX 10.15, *)
 struct SwiftVStackView: View {
-    @ObservedObject var state: SwiftVStackState
+    var state: SwiftVStackState
 
     var body: some View {
         Group {
@@ -254,6 +256,13 @@ struct SwiftVStackView: View {
                 }
             } else {
                 content
+            }
+        }
+        .modify { view in
+            if #available(macOS 26.0, *) {
+                view.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
+            } else {
+                view
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -281,7 +290,8 @@ struct SwiftVStackView: View {
         }
 
         return VStack(alignment: align, spacing: CGFloat(state.spacing)) {
-            ForEach(Array(state.items.enumerated()), id: \.element.id) { index, item in
+            ForEach(0..<state.items.count, id: \.self) { index in
+                 let item = state.items[index]
                  RecursiveItemView(item: item, onAction: state.onAction, index: index)
             }
         }
@@ -294,49 +304,57 @@ struct SwiftVStackView: View {
 @objc(SwiftVStackLoader)
 public class SwiftVStackLoader: NSObject {
 
-    // Dictionary to store states by ID
-    static var states: [String: SwiftVStackState] = [:]
+    // Dictionary to store states by ID - now using shared registry
+    static var states: [String: StackStateProtocol] {
+        get { SwiftStackRegistry.sharedStates }
+        set { SwiftStackRegistry.sharedStates = newValue }
+    }
 
     // Legacy support
     public static var lastCreatedState: Any? = nil
     static weak var lastCreatedItem: VStackItem? = nil
+
     @objc(makeVStackWithIndex:)
     public static func makeVStack(index: String) -> NSView {
-         if #available(OSX 10.15, *) {
-             let state = SwiftVStackState()
-             
-             // Register in dictionary
-             states[index] = state 
-             
-             // Restore legacy global state for compatibility
-             lastCreatedState = state
-             lastCreatedItem = nil
+         let state = SwiftVStackState()
+         
+         // Register in dictionary
+         states[index] = state 
+         
+         // Restore legacy global state for compatibility
+         lastCreatedState = state
+         lastCreatedItem = nil
 
-             let view = SwiftVStackView(state: state)
+         let view = SwiftVStackView(state: state)
 
-             // Register
-             if let intIndex = Int(index) {
-                 ViewRegistry.register(view, for: intIndex)
-             }
-
-             let hostingView = NSHostingView(rootView: view)
-             hostingView.translatesAutoresizingMaskIntoConstraints = false
-             return hostingView
-         } else {
-             return NSView()
+         // Register
+         if let intIndex = Int(index) {
+             ViewRegistry.register(view, for: intIndex)
          }
+
+         let hostingView = NSHostingView(rootView: view)
+         hostingView.translatesAutoresizingMaskIntoConstraints = false
+         return hostingView
     }
 
     // --- NEW METHODS (With RootID) ---
 
-    @objc(setActionCallback:callback:)
+    @objc(setActionCallbackWithRootId:callback:)
     public static func setActionCallback(rootId: String, callback: @escaping (String) -> Void) {
-        if #available(OSX 10.15, *) {
-             if let state = states[rootId] {
-                 state.onAction = callback
-                 state.objectWillChange.send()
-             }
+        if let state = states[rootId] {
+            state.onAction = callback
         }
+    }
+
+    @objc(removeAllItems:)
+    public static func removeAllItems(_ rootId: String) {
+        let block = {
+            if let state = states[rootId] {
+                state.items.removeAll()
+                state.lastItem = nil
+            }
+        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
     }
 
     @objc(addItem:content:)
@@ -349,12 +367,9 @@ public class SwiftVStackLoader: NSObject {
                     newItemId = newItem.id
                     state.items.append(newItem)
                     state.lastItem = newItem
-                    state.objectWillChange.send()
                 }
         }
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
     
@@ -374,15 +389,12 @@ public class SwiftVStackLoader: NSObject {
                     }
                     
                     state.lastItem = newItem
-                    state.objectWillChange.send()
                 }
          }
-         if #available(OSX 10.15, *) {
-             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-         }
+         if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
          return newItemId
      }
- 
+  
      @objc(addSpacerItem:parentId:)
      @discardableResult
      public static func addSpacerItem(_ rootId: String, parentId: String?) -> String {
@@ -399,21 +411,18 @@ public class SwiftVStackLoader: NSObject {
                     }
                     
                     state.lastItem = newItem
-                    state.objectWillChange.send()
                 }
          }
-         if #available(OSX 10.15, *) {
-             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-         }
+         if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
          return newItemId
      }
- 
+  
      @objc(addSystemImage:systemName:)
      @discardableResult
      public static func addSystemImage(_ rootId: String, systemName: String) -> String {
          return addSystemImageItem(rootId, systemName: systemName, parentId: nil)
      }
- 
+  
      @objc(addSystemImageItem:systemName:parentId:)
      @discardableResult
      public static func addSystemImageItem(_ rootId: String, systemName: String, parentId: String?) -> String {
@@ -429,15 +438,12 @@ public class SwiftVStackLoader: NSObject {
                          state.items.append(newItem)
                      }
                      state.lastItem = newItem
-                     state.objectWillChange.send()
                 }
          }
-         if #available(OSX 10.15, *) {
-             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-         }
+         if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
          return newItemId
      }
-
+ 
     @objc(addHStackItem:text:systemName:)
     @discardableResult
     public static func addHStackItem(_ rootId: String, text: String, systemName: String) -> String {
@@ -448,94 +454,93 @@ public class SwiftVStackLoader: NSObject {
                     newItemId = newItem.id
                     state.items.append(newItem)
                     state.lastItem = newItem
-                    state.objectWillChange.send()
                 }
         }
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(setScrollable:scrollable:)
     public static func setScrollable(_ rootId: String, scrollable: Bool) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId] {
-                    state.scrollable = scrollable
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId] as? SwiftVStackState {
+                state.scrollable = scrollable
             }
         }
     }
 
     @objc(setBackgroundColorRed:red:green:blue:alpha:)
     public static func setBackgroundColor(rootId: String, red: Double, green: Double, blue: Double, alpha: Double) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                  // If we have a last item, set ITS background color
-                  if let state = states[rootId], let item = state.lastItem {
-                      item.bgColor = (r: red, g: green, b: blue, a: alpha)
-                      state.objectWillChange.send()
-                  }
-             }
+         DispatchQueue.main.async {
+              if let state = states[rootId] as? SwiftVStackState {
+                  state.red = red
+                  state.green = green
+                  state.blue = blue
+                  state.alpha = alpha
+              }
          }
     }
     
     @objc(setForegroundColorRed:red:green:blue:alpha:)
     public static func setForegroundColor(rootId: String, red: Double, green: Double, blue: Double, alpha: Double) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                 if let state = states[rootId] {
-                     state.fgRed = red
-                     state.fgGreen = green
-                     state.fgBlue = blue
-                     state.fgAlpha = alpha
-                 }
+         DispatchQueue.main.async {
+             if let state = states[rootId] as? SwiftVStackState {
+                 state.fgRed = red
+                 state.fgGreen = green
+                 state.fgBlue = blue
+                 state.fgAlpha = alpha
              }
          }
     }
 
     @objc(setSpacing:spacing:)
     public static func setSpacing(_ rootId: String, spacing: Double) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId] {
-                    state.spacing = spacing
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId] as? SwiftVStackState {
+                state.spacing = spacing
             }
         }
     }
 
     @objc(setAlignment:alignment:)
     public static func setAlignment(_ rootId: String, alignment: Int) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId] {
-                    state.alignment = alignment
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId] as? SwiftVStackState {
+                state.alignment = alignment
             }
         }
     }
 
     @objc(setInvertedColor:useInverted:)
     public static func setInvertedColor(_ rootId: String, useInverted: Bool) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId] {
-                    state.useInvertedColor = useInverted
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId] as? SwiftVStackState {
+                state.useInvertedColor = useInverted
             }
         }
+    }
+
+    @objc(setBackgroundColorHex:hex:)
+    public static func setBackgroundColorHex(rootId: String, hex: String) {
+        let color = Color(hex: hex)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+        setBackgroundColor(rootId: rootId, red: Double(r), green: Double(g), blue: Double(b), alpha: Double(a))
+    }
+
+    @objc(setForegroundColorHex:hex:)
+    public static func setForegroundColorHex(rootId: String, hex: String) {
+        let color = Color(hex: hex)
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+        setForegroundColor(rootId: rootId, red: Double(r), green: Double(g), blue: Double(b), alpha: Double(a))
     }
     
     @objc(setLastItemId:id:)
     public static func setLastItemId(_ rootId: String, id: String) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                 if let state = states[rootId], let item = state.lastItem {
-                     item.id = id
-                     state.objectWillChange.send()
-                 }
+         DispatchQueue.main.async {
+             if let state = states[rootId], let item = state.lastItem {
+                 item.id = id
              }
          }
     }
@@ -548,9 +553,7 @@ public class SwiftVStackLoader: NSObject {
                  result = item.id
              }
         }
-        if #available(OSX 10.15, *) {
-             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return result
     }
 
@@ -568,6 +571,7 @@ public class SwiftVStackLoader: NSObject {
     }
 
     @objc(addVStackItem:dummy:parentId:)
+    @discardableResult
     public static func addVStackItem(_ rootId: String, dummy: String, parentId: String?) -> String {
         var newItemId = ""
         let block = {
@@ -583,14 +587,12 @@ public class SwiftVStackLoader: NSObject {
                   }
              }
         }
-
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(addHStackContainer:dummy:parentId:)
+    @discardableResult
     public static func addHStackContainer(_ rootId: String, dummy: String, parentId: String?) -> String {
         var newItemId = ""
         let block = {
@@ -603,20 +605,17 @@ public class SwiftVStackLoader: NSObject {
                       print("DEBUG: [Swift] Adding HStackContainer to parent \(pId)")
                       parent.children.append(newItem)
                   } else {
-                      print("DEBUG: [Swift] Adding HStackContainer to ROOT")
+                      // print("DEBUG: [Swift] Adding HStackContainer to ROOT")
                       state.items.append(newItem)
                   }
-                  state.objectWillChange.send()
              }
         }
-
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(addLazyVGrid:parentId:columnsJson:)
+    @discardableResult
     public static func addLazyVGrid(_ rootId: String, parentId: String?, columnsJson: String) -> String {
         var newItemId = ""
         let block = {
@@ -635,17 +634,15 @@ public class SwiftVStackLoader: NSObject {
                   } else {
                       state.items.append(newItem)
                   }
-                  state.objectWillChange.send()
              }
         }
 
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(addList:dummy:parentId:)
+    @discardableResult
     public static func addList(_ rootId: String, dummy: String, parentId: String?) -> String {
         var newItemId = ""
         let block = {
@@ -662,13 +659,12 @@ public class SwiftVStackLoader: NSObject {
              }
         }
         
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(addTextItem:text:parentId:)
+    @discardableResult
     public static func addTextItem(_ rootId: String, text: String, parentId: String?) -> String {
         var newItemId = ""
         let block = {
@@ -682,59 +678,55 @@ public class SwiftVStackLoader: NSObject {
                   } else {
                       state.items.append(newItem)
                   }
-                  state.objectWillChange.send()
              }
         }
         
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
     
     @objc(addSpacer:dummy:parentId:)
+    @discardableResult
     public static func addSpacer(_ rootId: String, dummy: String, parentId: String?) -> String {
         var newItemId = ""
-        if #available(OSX 10.15, *) {
-             let block = {
-                  let newItem = VStackItem(type: .spacer, content: "")
-                  newItemId = newItem.id
-                  if let state = states[rootId] {
-                       state.lastItem = newItem
-                       if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
-                           parent.children.append(newItem)
-                       } else {
-                           state.items.append(newItem)
-                       }
+        let block = {
+             let newItem = VStackItem(type: .spacer, content: "")
+             newItemId = newItem.id
+             if let state = states[rootId] {
+                  state.lastItem = newItem
+                  if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
+                      parent.children.append(newItem)
+                  } else {
+                      state.items.append(newItem)
                   }
              }
-             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(addDivider:dummy:parentId:)
+    @discardableResult
     public static func addDivider(_ rootId: String, dummy: String, parentId: String?) -> String {
         var newItemId = ""
-        if #available(OSX 10.15, *) {
-             let block = {
-                 let newItem = VStackItem(type: .divider, content: "")
-                 newItemId = newItem.id
-                 if let state = states[rootId] {
-                     state.lastItem = newItem
-                     if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
-                         parent.children.append(newItem)
-                     } else {
-                         state.items.append(newItem)
-                     }
+        let block = {
+             let newItem = VStackItem(type: .divider, content: "")
+             newItemId = newItem.id
+             if let state = states[rootId] {
+                 state.lastItem = newItem
+                 if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
+                     parent.children.append(newItem)
+                 } else {
+                     state.items.append(newItem)
                  }
              }
-             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(addButtonItem:text:parentId:)
+    @discardableResult
     public static func addButtonItem(_ rootId: String, text: String, parentId: String?) -> String {
         var newItemId = ""
         let block = {
@@ -751,33 +743,25 @@ public class SwiftVStackLoader: NSObject {
              }
         }
 
-        if #available(OSX 10.15, *) {
-             if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
-        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         return newItemId
     }
 
     @objc(setItemText:id:text:)
     public static func setItemText(_ rootId: String, id: String, text: String) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                 if let state = states[rootId], let item = findItem(id: id, in: state.items) {
-                     item.content = text
-                     state.objectWillChange.send()
-                 }
+         DispatchQueue.main.async {
+             if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                 item.content = text
              }
          }
     }
 
     @objc(setItem:id:red:green:blue:alpha:)
     public static func setItemBackgroundColor(rootId: String, id: String, red: Double, green: Double, blue: Double, alpha: Double) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                 if let state = states[rootId] {
-                     if let item = findItem(id: id, in: state.items) {
-                         item.bgColor = (red, green, blue, alpha)
-                         state.objectWillChange.send()
-                     }
+         DispatchQueue.main.async {
+             if let state = states[rootId] {
+                 if let item = findItem(id: id, in: state.items) {
+                     item.bgColor = (red, green, blue, alpha)
                  }
              }
          }
@@ -785,21 +769,18 @@ public class SwiftVStackLoader: NSObject {
 
     @objc(setItemLayout:id:w:h:s:)
     public static func setItemLayout(rootId: String, id: String, w: Double, h: Double, s: Double) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                 if let state = states[rootId], let item = findItem(id: id, in: state.items) {
-                     if w > 0 { item.itemWidth = w }
-                     if h > 0 { item.itemHeight = h }
-                     if s >= 0 { item.spacing = s }
-                     state.objectWillChange.send()
-                 }
+         DispatchQueue.main.async {
+             if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                 if w > 0 { item.itemWidth = w }
+                 if h > 0 { item.itemHeight = h }
+                 if s >= 0 { item.spacing = s }
              }
          }
     }
 
-    @objc(addBatchToParent:parentId:json:)
+    @objc(addBatch:parentId:json:)
+    @discardableResult
     public static func addBatch(_ rootId: String, parentId: String?, json: String) -> String {
-        guard #available(OSX 10.15, *) else { return "[]" }
         
         struct BatchInput: Codable {
             let type: Int
@@ -820,8 +801,6 @@ public class SwiftVStackLoader: NSObject {
         let block = {
             guard let state = states[rootId] else { return }
             
-
-            
             let parentItem = (parentId != nil) ? findItem(id: parentId!, in: state.items) : nil
             
             for itemIn in batchItems {
@@ -841,7 +820,6 @@ public class SwiftVStackLoader: NSObject {
                     state.items.append(newItem)
                 }
             }
-            state.objectWillChange.send()
         }
         
         if Thread.isMainThread {
@@ -860,132 +838,102 @@ public class SwiftVStackLoader: NSObject {
 
     @objc(setActionCallback:)
     public static func setActionCallback(callback: @escaping (String) -> Void) {
-        if #available(OSX 10.15, *) {
-             if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                 state.onAction = callback
-                 state.objectWillChange.send()
-             }
-        }
+         if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+             state.onAction = callback
+         }
     }
 
     @objc(addItem:)
     public static func addItem(_ text: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                    state.items.append(VStackItem(type: .text, content: text, secondaryContent: nil))
-                }
+        DispatchQueue.main.async {
+            if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                state.items.append(VStackItem(type: .text, content: text, secondaryContent: nil))
             }
         }
     }
 
     @objc(addSystemImage:)
     public static func addSystemImageLegacy(_ systemName: String) {
-        // Renamed to avoid selector conflict? No, selector is addSystemImage: vs addSystemImage:systemName:
-        // C function calls 'addSystemImage:' for Legacy, 'addSystemImage:systemName:' for New.
-        // Wait, C function SWIFTVSTACKADDSYSTEMIMAGE calls `addSystemImage:` with name in Legacy.
-        // In my new SwiftVStack.m, it calls `addSystemImage:systemName:`.
-        // So this Legacy method is ONLY for OLD C functions if any exist.
         addSystemImageItemLegacy(systemName, parentId: nil)
     }
 
     @objc(addSystemImageItem:parentId:)
     public static func addSystemImageItemLegacy(_ systemName: String, parentId: String?) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                let newItem = VStackItem(type: .systemImage, content: systemName, secondaryContent: nil)
-                
-                if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                     if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
-                         parent.children.append(newItem)
-                     } else {
-                         state.items.append(newItem)
-                     }
-                }
+        DispatchQueue.main.async {
+            let newItem = VStackItem(type: .systemImage, content: systemName, secondaryContent: nil)
+            
+            if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                 if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
+                     parent.children.append(newItem)
+                 } else {
+                     state.items.append(newItem)
+                 }
             }
         }
     }
 
     @objc(addHStackItem:systemName:)
     public static func addHStackItemLegacy(_ text: String, systemName: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                    let newItem = VStackItem(type: .hstack, content: text, secondaryContent: systemName)
-                    state.items.append(newItem)
-                    lastCreatedItem = newItem
-                }
+        DispatchQueue.main.async {
+            if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                let newItem = VStackItem(type: .hstack, content: text, secondaryContent: systemName)
+                state.items.append(newItem)
+                lastCreatedItem = newItem
             }
         }
     }
 
     @objc(setScrollable:)
     public static func setScrollableLegacy(_ scrollable: Bool) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                    state.scrollable = scrollable
-                }
+        DispatchQueue.main.async {
+            if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                state.scrollable = scrollable
             }
         }
     }
 
     @objc(setBackgroundColorRed:green:blue:alpha:)
     public static func setBackgroundColorLegacy(red: Double, green: Double, blue: Double, alpha: Double) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                  // If we have a last item, set ITS background color
-                  if let item = lastCreatedItem {
-                      item.bgColor = (r: red, g: green, b: blue, a: alpha)
-                  } 
-             }
+         DispatchQueue.main.async {
+              // If we have a last item, set ITS background color
+              if let item = lastCreatedItem {
+                  item.bgColor = (r: red, g: green, b: blue, a: alpha)
+              } 
          }
     }
 
     @objc(setSpacing:)
     public static func setSpacingLegacy(_ spacing: Double) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                    state.spacing = spacing
-                }
+        DispatchQueue.main.async {
+            if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                state.spacing = spacing
             }
         }
     }
 
     @objc(setAlignment:)
     public static func setAlignmentLegacy(_ alignment: Int) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                    state.alignment = alignment
-                }
+        DispatchQueue.main.async {
+            if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                state.alignment = alignment
             }
         }
     }
 
     @objc(setInvertedColor:)
     public static func setInvertedColorLegacy(_ useInverted: Bool) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                    state.useInvertedColor = useInverted
-                }
+        DispatchQueue.main.async {
+            if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                state.useInvertedColor = useInverted
             }
         }
     }
     
     @objc(setLastItemId:)
     public static func setLastItemIdLegacy(_ id: String) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                 if let item = lastCreatedItem {
-                     item.id = id
-                     // Force update
-                     if let state = lastCreatedState as? SwiftVStackState {
-                         state.objectWillChange.send()
-                     }
-                 }
+         DispatchQueue.main.async {
+             if let item = lastCreatedItem {
+                 item.id = id
              }
          }
     }
@@ -1007,13 +955,11 @@ public class SwiftVStackLoader: NSObject {
              }
         }
 
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.sync {
                 block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
             }
         }
         return newItemId
@@ -1036,13 +982,11 @@ public class SwiftVStackLoader: NSObject {
              }
         }
 
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.sync {
                 block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
             }
         }
         return newItemId
@@ -1069,17 +1013,14 @@ public class SwiftVStackLoader: NSObject {
                   } else {
                       state.items.append(newItem)
                   }
-                  state.objectWillChange.send()
              }
         }
 
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.sync {
                 block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
             }
         }
         return newItemId
@@ -1102,13 +1043,11 @@ public class SwiftVStackLoader: NSObject {
              }
         }
         
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.sync {
                 block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
             }
         }
         return newItemId
@@ -1128,17 +1067,14 @@ public class SwiftVStackLoader: NSObject {
                   } else {
                       state.items.append(newItem)
                   }
-                  state.objectWillChange.send()
              }
         }
         
-        if #available(OSX 10.15, *) {
-            if Thread.isMainThread {
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.sync {
                 block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
             }
         }
         return newItemId
@@ -1146,58 +1082,49 @@ public class SwiftVStackLoader: NSObject {
     
     @objc(addSpacer:parentId:)
     public static func addSpacerLegacy(_ dummy: String, parentId: String?) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                 let newItem = VStackItem(type: .spacer, content: "")
-                 lastCreatedItem = newItem
-                 
-                 if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                      if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
-                          parent.children.append(newItem)
-                      } else {
-                          state.items.append(newItem)
-                      }
-                 }
-            }
+        DispatchQueue.main.async {
+             let newItem = VStackItem(type: .spacer, content: "")
+             lastCreatedItem = newItem
+             
+             if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                  if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
+                      parent.children.append(newItem)
+                  } else {
+                      state.items.append(newItem)
+                  }
+             }
         }
     }
 
     @objc(addDivider:parentId:)
     public static func addDividerLegacy(_ dummy: String, parentId: String?) {
-        // print("DEBUG: [Swift] addDivider called. Parent: \(parentId ?? "nil")")
-        if #available(OSX 10.15, *) {
-             let block = {
-                 let newItem = VStackItem(type: .divider, content: "")
-                 if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                     if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
-                         print("DEBUG: [Swift] Parent found. Appending divider.")
-                         parent.children.append(newItem)
-                     } else {
-                         print("DEBUG: [Swift] Parent NOT found. Appending to root.")
-                         state.items.append(newItem)
-                     }
+         let block = {
+             let newItem = VStackItem(type: .divider, content: "")
+             if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                 if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
+                     parent.children.append(newItem)
+                 } else {
+                     state.items.append(newItem)
                  }
              }
-             
-            if Thread.isMainThread {
+         }
+         
+        if Thread.isMainThread {
+            block()
+        } else {
+            DispatchQueue.main.sync {
                 block()
-            } else {
-                DispatchQueue.main.sync {
-                    block()
-                }
             }
         }
     }
 
     @objc(addButtonItem:parentId:)
     public static func addButtonItemLegacy(_ text: String, parentId: String?) -> String {
-        // print("DEBUG: [Swift] addButtonItem called for '\(text)'")
         var newItemId = ""
         let block = {
              let newItem = VStackItem(type: .button, content: text)
              newItemId = newItem.id
              lastCreatedItem = newItem
-             // print("DEBUG: [Swift] Created button with ID: \(newItemId)")
              
              if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
                   if let pId = parentId, let parent = findItem(id: pId, in: state.items) {
@@ -1208,26 +1135,22 @@ public class SwiftVStackLoader: NSObject {
              }
         }
 
-        if #available(OSX 10.15, *) {
-             if Thread.isMainThread {
+         if Thread.isMainThread {
+             block()
+         } else {
+             DispatchQueue.main.sync {
                  block()
-             } else {
-                 DispatchQueue.main.sync {
-                     block()
-                 }
              }
-        }
+         }
         return newItemId
     }
 
     @objc(setItem:backgroundColorRed:green:blue:alpha:)
     public static func setItemBackgroundColorLegacy(id: String, red: Double, green: Double, blue: Double, alpha: Double) {
-         if #available(OSX 10.15, *) {
-             DispatchQueue.main.async {
-                 if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
-                     if let item = findItem(id: id, in: state.items) {
-                         item.bgColor = (red, green, blue, alpha)
-                     }
+         DispatchQueue.main.async {
+             if let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState {
+                 if let item = findItem(id: id, in: state.items) {
+                     item.bgColor = (red, green, blue, alpha)
                  }
              }
          }
@@ -1235,8 +1158,6 @@ public class SwiftVStackLoader: NSObject {
 
     @objc(addBatchToParent:json:)
     public static func addBatchLegacy(parentId: String?, json: String) -> String {
-        guard #available(OSX 10.15, *) else { return "[]" }
-        
         struct BatchInput: Codable {
             let type: Int
             let content: String
@@ -1255,8 +1176,6 @@ public class SwiftVStackLoader: NSObject {
         
         DispatchQueue.main.sync {
             guard let state = SwiftVStackLoader.lastCreatedState as? SwiftVStackState else { return }
-            
-
             
             let parentItem = (parentId != nil) ? findItem(id: parentId!, in: state.items) : nil
             
@@ -1277,7 +1196,6 @@ public class SwiftVStackLoader: NSObject {
                     state.items.append(newItem)
                 }
             }
-            state.objectWillChange.send()
         }
         
         if let encoded = try? JSONEncoder().encode(newIds), let jsonString = String(data: encoded, encoding: .utf8) {
@@ -1287,42 +1205,196 @@ public class SwiftVStackLoader: NSObject {
     }
 
     @objc public static func setItemText(rootId: String, id: String, text: String) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId], let item = findItem(id: id, in: state.items) {
-                    item.content = text
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                item.content = text
             }
         }
     }
     
     @objc public static func setItemColor(rootId: String, id: String, r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId], let item = findItem(id: id, in: state.items) {
-                    item.fgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                item.fgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
             }
         }
     }
     
     @objc public static func setItemFont(rootId: String, id: String, size: CGFloat, isBold: Bool) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId], let item = findItem(id: id, in: state.items) {
-                    item.fontSize = size > 0 ? Double(size) : nil
-                    item.isBold = isBold
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                item.fontSize = size > 0 ? Double(size) : nil
+                item.isBold = isBold
             }
         }
     }
     @objc public static func setItemRadius(rootId: String, id: String, radius: CGFloat) {
-        if #available(OSX 10.15, *) {
-            DispatchQueue.main.async {
-                if let state = states[rootId], let item = findItem(id: id, in: state.items) {
-                    item.cornerRadius = Double(radius)
-                }
+        DispatchQueue.main.async {
+            if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                item.cornerRadius = Double(radius)
             }
         }
     }
+
+    @objc(setItemColor:id:hex:)
+    public static func setItemColor(rootId: String, id: String, hex: String) {
+        DispatchQueue.main.async {
+            if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                let color = Color(hex: hex)
+                var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+                NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+                item.fgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+            }
+        }
+    }
+
+    @objc(setItemBgColor:id:hex:)
+    public static func setItemBgColor(rootId: String, id: String, hex: String) {
+        DispatchQueue.main.async {
+            if let state = states[rootId], let item = findItem(id: id, in: state.items) {
+                let color = Color(hex: hex)
+                var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+                NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
+                item.bgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+            }
+        }
+    }
+}
+
+// --- HARBOUR BRIDGE MACROS ---
+
+@HarbourBridge
+public func vstk_set_scroll(rootId: String, scrollable: String) {
+    SwiftVStackLoader.setScrollable(rootId, scrollable: scrollable == "1")
+}
+
+@HarbourBridge
+public func vstk_set_bgcolor_hex(rootId: String, hex: String) {
+    SwiftVStackLoader.setBackgroundColorHex(rootId: rootId, hex: hex)
+}
+
+@HarbourBridge
+public func vstk_set_fgcolor_hex(rootId: String, hex: String) {
+    SwiftVStackLoader.setForegroundColorHex(rootId: rootId, hex: hex)
+}
+
+@HarbourBridge
+public func vstk_set_inverted_color(rootId: String, inverted: String) {
+    SwiftVStackLoader.setInvertedColor(rootId, useInverted: inverted == "1")
+}
+
+@HarbourBridge
+public func vstk_set_spacing(rootId: String, spacing: String) {
+    if let nSpacing = Double(spacing) {
+        SwiftVStackLoader.setSpacing(rootId, spacing: nSpacing)
+    }
+}
+
+@HarbourBridge
+public func vstk_set_alignment(rootId: String, alignment: String) {
+    if let nAlign = Int(alignment) {
+        SwiftVStackLoader.setAlignment(rootId, alignment: nAlign)
+    }
+}
+
+@HarbourBridge
+public func vstk_set_item_text(rootId: String, id: String, text: String) {
+    SwiftVStackLoader.setItemText(rootId, id: id, text: text)
+}
+
+@HarbourBridge
+public func vstk_set_item_color_hex(rootId: String, id: String, hex: String) {
+    SwiftVStackLoader.setItemColor(rootId: rootId, id: id, hex: hex)
+}
+
+@HarbourBridge
+public func vstk_set_item_bgcolor_hex(rootId: String, id: String, hex: String) {
+    SwiftVStackLoader.setItemBgColor(rootId: rootId, id: id, hex: hex)
+}
+
+@HarbourBridge
+public func vstk_set_item_layout(rootId: String, id: String, w: String, h: String, s: String) {
+    if let width = Double(w), let height = Double(h), let spacing = Double(s) {
+        SwiftVStackLoader.setItemLayout(rootId: rootId, id: id, w: width, h: height, s: spacing)
+    }
+}
+
+@HarbourBridge
+public func vstk_set_item_font(rootId: String, id: String, size: String, isBold: String) {
+    if let nSize = Double(size) {
+        SwiftVStackLoader.setItemFont(rootId: rootId, id: id, size: CGFloat(nSize), isBold: isBold == "1")
+    }
+}
+
+@HarbourBridge
+public func vstk_set_item_radius(rootId: String, id: String, radius: String) {
+    if let nRadius = Double(radius) {
+        SwiftVStackLoader.setItemRadius(rootId: rootId, id: id, radius: CGFloat(nRadius))
+    }
+}
+
+@HarbourBridge
+public func vstk_remove_all(rootId: String) {
+    SwiftVStackLoader.removeAllItems(rootId)
+}
+
+@HarbourBridge
+public func vstk_add_item(rootId: String, content: String) -> String {
+    return SwiftVStackLoader.addItem(rootId, content: content)
+}
+
+@HarbourBridge
+public func vstk_add_text_to(rootId: String, content: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addTextItem(rootId, content: content, parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_add_spacer_to(rootId: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addSpacerItem(rootId, parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_add_system_image_to(rootId: String, systemName: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addSystemImageItem(rootId, systemName: systemName, parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_add_hstack(rootId: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addHStackContainer(rootId, dummy: "", parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_add_vstack(rootId: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addVStackItem(rootId, dummy: "", parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_add_button_item(rootId: String, text: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addButtonItem(rootId, text: text, parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_add_batch(rootId: String, json: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addBatch(rootId, parentId: parentId, json: json)
+}
+
+@HarbourBridge
+public func vstk_add_list(rootId: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addList(rootId, dummy: "", parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_add_lazyvgrid(rootId: String, parentId: String?, columnsJson: String) -> String {
+    return SwiftVStackLoader.addLazyVGrid(rootId, parentId: parentId, columnsJson: columnsJson)
+}
+
+@HarbourBridge
+public func vstk_add_divider_to(rootId: String, parentId: String?) -> String {
+    return SwiftVStackLoader.addDivider(rootId, dummy: "", parentId: parentId)
+}
+
+@HarbourBridge
+public func vstk_get_last_item_id(rootId: String) -> String {
+    let res = SwiftVStackLoader.states[rootId]?.lastItem?.id ?? ""
+    return res
 }

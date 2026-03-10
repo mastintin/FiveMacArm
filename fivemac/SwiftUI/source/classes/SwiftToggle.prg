@@ -14,7 +14,8 @@ CLASS TSwiftToggle FROM TControl
     METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bChange )
     METHOD Set( lOn )
     METHOD Get()
-
+    METHOD SetColor( nAccent, nText )
+    method SetCaption(cCaption ) INLINE SD_TGL_SET_CAPTION(::cID, cCaption )
 ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bChange, nAutoResize ) CLASS TSwiftToggle
@@ -39,11 +40,13 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bChange,
    
     AAdd( aSwiftToggles, Self )
     ::nIndex   = Len( aSwiftToggles )
+    
+    ::hWnd = SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::nIndex, ::cID, ::lSwitch )
 
-    ::hWnd = SWIFTTOGGLECREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::nIndex, ::cID, ::lSwitch )
+    //  ::hWnd = SWIFTTOGGLECREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::nIndex, ::cID, ::lSwitch )
 
     if nAutoResize != 0
-    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -53,19 +56,21 @@ return Self
 METHOD Set( lOn ) CLASS TSwiftToggle
     
     ::lOn = lOn
-    SWIFTTOGGLESET( lOn, ::cID )
-   
+    // TGL_SET_VALUE( ::cID, If( lOn, "1", "0" ) )
+    SD_TGL_SET_VALUE(::cID, ::lOn )
     if ::bChange != nil
-    Eval( ::bChange, ::lOn )
+        Eval( ::bChange, ::lOn )
     endif
 
 return nil
 
 METHOD Get() CLASS TSwiftToggle
-   
-    ::lOn = SWIFTTOGGLEGET( ::nIndex )
-   
+    ::lOn = SD_TGL_GET_VALUE( ::cID )
 return ::lOn
+
+METHOD SetColor( nAccent, nText ) CLASS TSwiftToggle
+    TGL_SET_COLORS( ::cID, clrToHex( nAccent ), clrToHex( nText ) )
+return nil
 
 // ---------------------------------------------------------------------------
 
@@ -74,11 +79,11 @@ function SwiftToggleOnChange( nIndex, lOn )
     local oControl
 
     if nIndex > 0 .and. nIndex <= Len( aSwiftToggles )
-    oControl = aSwiftToggles[ nIndex ]
-    oControl:lOn = lOn
-    if oControl:bChange != nil
-    Eval( oControl:bChange, lOn )
-    endif
+        oControl = aSwiftToggles[ nIndex ]
+        oControl:lOn = lOn
+        if oControl:bChange != nil
+            Eval( oControl:bChange, lOn )
+        endif
     endif
 
 return nil

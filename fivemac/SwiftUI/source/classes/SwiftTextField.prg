@@ -13,6 +13,8 @@ CLASS TSwiftTextField
     METHOD SetText( cText )
     METHOD GetText()
     METHOD GetConfig()
+    METHOD SetColor( nFg, nBg )
+    METHOD SetFontSize( nSize )
     
     METHOD OnChange( cNewText )
 
@@ -67,12 +69,20 @@ return hConfig
 
 METHOD SetText( cText ) CLASS TSwiftTextField
     ::cText = cText
-    SWIFTTEXTFIELDSETTEXT( ::cId, cText )
+    TF_SET_TEXT( ::cId, cText )
 return nil
 
 METHOD GetText() CLASS TSwiftTextField
-    ::cText = SWIFTTEXTFIELDGETTEXT( ::cId )
+    ::cText = TF_GET_TEXT( ::cId )
 return ::cText
+
+METHOD SetColor( nFg, nBg ) CLASS TSwiftTextField
+    TF_SET_COLORS( ::cId, clrToHex( nFg ), clrToHex( nBg ) )
+return nil
+
+METHOD SetFontSize( nSize ) CLASS TSwiftTextField
+    TF_SET_FONT_SIZE( ::cId, hb_ntos( nSize ) )
+return nil
 
 METHOD OnChange( cNewText ) CLASS TSwiftTextField
     if ::bOnChange != nil

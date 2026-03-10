@@ -7,7 +7,7 @@ HB_FUNC(SWIFTTEXTFIELDCREATE) {
   CGFloat nHeight = (CGFloat)hb_parnd(4);
   NSString *cText = hb_NSSTRING_par(5);
   NSString *cPlaceholder = hb_NSSTRING_par(6);
-  NSWindow *window = (NSWindow *)hb_parnl(7);
+  id parent = (id)hb_parnll(7);
   NSString *cId = hb_NSSTRING_par(9);
 
   NSString *className = @"SwiftTextFieldLoader";
@@ -37,31 +37,16 @@ HB_FUNC(SWIFTTEXTFIELDCREATE) {
     });
   };
 
-  SEL selector =
-      NSSelectorFromString(@"makeTextFieldWithText:placeholder:id:callback:");
+  // Direct call to Swift Factory
+  NSView *fieldView =
+      [SwiftTextFieldLoader makeTextFieldWithText:cText
+                                      placeholder:cPlaceholder
+                                               id:cId
+                                         callback:callbackBlock];
 
-  if ([swiftClass respondsToSelector:selector]) {
-    NSMethodSignature *signature =
-        [swiftClass methodSignatureForSelector:selector];
-    NSInvocation *invocation =
-        [NSInvocation invocationWithMethodSignature:signature];
-    [invocation setSelector:selector];
-    [invocation setTarget:swiftClass];
-
-    [invocation setArgument:&cText atIndex:2];
-    [invocation setArgument:&cPlaceholder atIndex:3];
-    [invocation setArgument:&cId atIndex:4];
-    [invocation setArgument:&callbackBlock atIndex:5];
-
-    [invocation invoke];
-
-    NSView *fieldView;
-    [invocation getReturnValue:&fieldView];
-
-    if (fieldView) {
-      setupSwiftView(fieldView, window, nTop, nLeft, nWidth, nHeight);
-      hb_retnl((HB_LONG)fieldView);
-    }
+  if (fieldView) {
+    setupSwiftView(fieldView, parent, nTop, nLeft, nWidth, nHeight);
+    hb_retnll((HB_LONGLONG)fieldView);
   }
 }
 HB_FUNC(SWIFTTEXTEDITORCREATE) {
@@ -70,88 +55,34 @@ HB_FUNC(SWIFTTEXTEDITORCREATE) {
   CGFloat nWidth = (CGFloat)hb_parnd(3);
   CGFloat nHeight = (CGFloat)hb_parnd(4);
   NSString *cText = hb_NSSTRING_par(5);
-  NSWindow *window = (NSWindow *)hb_parnl(6);
+  id parent = (id)hb_parnll(6);
   NSString *cId = hb_NSSTRING_par(7);
 
-  NSString *className = @"SwiftFive.SwiftTextFieldLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"makeTextEditorWithText:id:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-      [invocation setArgument:&cText atIndex:2];
-      [invocation setArgument:&cId atIndex:3];
-      [invocation invoke];
-
-      NSView *editorView;
-      [invocation getReturnValue:&editorView];
-      if (editorView) {
-        setupSwiftView(editorView, window, nTop, nLeft, nWidth, nHeight);
-        hb_retnl((HB_LONG)editorView);
-      }
-    }
+  NSView *editorView = [SwiftTextFieldLoader makeTextEditorWithText:cText
+                                                                 id:cId];
+  if (editorView) {
+    setupSwiftView(editorView, parent, nTop, nLeft, nWidth, nHeight);
+    hb_retnll((HB_LONGLONG)editorView);
   }
 }
 
-HB_FUNC(SWIFTTEXTFIELDSETTEXT) {
-  NSString *cId = hb_NSSTRING_par(1);
-  NSString *cText = hb_NSSTRING_par(2);
-
-  NSString *className = @"SwiftFive.SwiftTextFieldLoader";
-  Class swiftClass = NSClassFromString(className);
-
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"setText:id:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&cText atIndex:2];
-      [invocation setArgument:&cId atIndex:3];
-
-      [invocation invoke];
-    }
-  }
+HB_FUNC(TF_SET_TEXT) {
+  SW_TF_SET_TEXT((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                 sw_parc(2));
 }
 
-HB_FUNC(SWIFTTEXTFIELDGETTEXT) {
-  NSString *cId = hb_NSSTRING_par(1);
+HB_FUNC(TF_GET_TEXT) {
+  const char *res = (const char *)SW_TF_GET_TEXT(
+      (const int8_t *)[GetRootIdFromParam(1) UTF8String]);
+  hb_retc(res ? res : "");
+}
 
-  NSString *className = @"SwiftFive.SwiftTextFieldLoader";
-  Class swiftClass = NSClassFromString(className);
+HB_FUNC(TF_SET_COLORS) {
+  SW_TF_SET_COLORS((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                   sw_parc(2), sw_parc(3));
+}
 
-  if (swiftClass) {
-    SEL selector = NSSelectorFromString(@"getTextFromId:");
-    if ([swiftClass respondsToSelector:selector]) {
-      NSMethodSignature *signature =
-          [swiftClass methodSignatureForSelector:selector];
-      NSInvocation *invocation =
-          [NSInvocation invocationWithMethodSignature:signature];
-      [invocation setSelector:selector];
-      [invocation setTarget:swiftClass];
-
-      [invocation setArgument:&cId atIndex:2];
-
-      [invocation invoke];
-
-      NSString *result;
-      [invocation getReturnValue:&result];
-
-      if (result) {
-        hb_retc([result UTF8String]);
-        return;
-      }
-    }
-  }
-  hb_retc("");
+HB_FUNC(TF_SET_FONT_SIZE) {
+  SW_TF_SET_FONT_SIZE((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                      sw_parc(2));
 }
