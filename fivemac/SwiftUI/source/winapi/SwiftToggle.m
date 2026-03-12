@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 HB_FUNC(SWIFTTOGGLECREATE) {
   CGFloat nTop = (CGFloat)hb_parnd(1);
   CGFloat nLeft = (CGFloat)hb_parnd(2);
@@ -39,19 +39,19 @@ HB_FUNC(SWIFTTOGGLECREATE) {
     hb_retnll((HB_LONGLONG)toggleView);
   }
 }
+*/
 
 /*
 HB_FUNC(TGL_SET_CAPTION) {
   SW_TGL_SET_CAPTION((const int8_t *)[GetRootIdFromParam(1) UTF8String],
                      sw_parc(2));
 }
-*/
 
 HB_FUNC(TGL_SET_COLORS) {
   SW_TGL_SET_COLORS((const int8_t *)[GetRootIdFromParam(1) UTF8String],
                     sw_parc(2), sw_parc(3));
 }
-/*
+
 HB_FUNC(TGL_GET_VALUE) {
 
   hb_retc((const char *)SW_TGL_GET_VALUE(

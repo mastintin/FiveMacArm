@@ -14,7 +14,7 @@ function Main()
     local oGetPOI
     
     DEFINE WINDOW oWnd TITLE "MapKit Routing" ;
-        FROM 50, 50 TO 600, 1000 FLIPPED
+        FROM 50, 50 TO 700, 1000 FLIPPED
       
     oMap = TNativeMap():New( 20, 20, 760, 360, oWnd )
     oMap:SetResizing( 18 ) // NSViewWidthSizable | NSViewHeightSizable

@@ -1,8 +1,4 @@
-#import "SwiftFive-Swift.h"
-#import <Cocoa/Cocoa.h>
-#include <fivemac.h>
-#include <hbapi.h>
-#include <hbapiitm.h>
+#import "SwiftCommon.h"
 
 HB_FUNC(SWIFTOBSERVATIONCREATE) {
   id parent = (id)hb_parnll(1);

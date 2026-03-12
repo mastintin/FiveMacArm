@@ -13,16 +13,18 @@ CLASS TSwiftPicker FROM TControl
     DATA   nIndex
     DATA   cID
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarName )
+    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarName, cTextLabel, nAutoResize )
     METHOD Redefine( nId, oWnd, aItems, bChange, bSetGet, cVarName )
    
-    METHOD SetItems( aItems ) INLINE SwiftPickerSetItems( aItems, ::cID )
-    METHOD Set( cValue )      INLINE PKR_SET_SELECTION( ::cID, cValue )
-    METHOD SetGlass( lGlass ) INLINE PKR_SET_GLASS( ::cID, If( lGlass, "1", "0" ) )
-    METHOD SetShowLabel( lShow ) INLINE PKR_SET_SHOW_LABEL( ::cID, If( lShow, "1", "0" ) )
-    METHOD SetText( cText )      INLINE PKR_SET_TITLE( ::cID, cText )
+    METHOD SetItems( aItems ) 
+    METHOD Set( cValue )      INLINE SD_PKR_SET_SELECTION( ::cID, cValue )
+    METHOD SetGlass( lGlass ) INLINE SD_PKR_SET_GLASS( ::cID, lGlass )
+    METHOD SetShowLabel( lShow ) INLINE SD_PKR_SET_SHOW_LABEL( ::cID, lShow )
+    METHOD SetText( cText )      INLINE SD_PKR_SET_TITLE( ::cID, cText )
     METHOD SetColor( nAccent, nText )
-    METHOD GetValue()            INLINE PKR_GET_SELECTION( ::cID )
+    METHOD GetValue()            INLINE SD_PKR_GET_SELECTION( ::cID )
+    METHOD SetPlaceholder( cText ) INLINE SD_PKR_SET_PLACEHOLDER( ::cID, cText )
+    METHOD End()
     METHOD SetAutoResize( nStyle ) INLINE ::_nAutoResize( nStyle )
    
     METHOD OnChange( cValue )
@@ -31,41 +33,36 @@ ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarName , cTextLabel, nAutoResize ) CLASS TSwiftPicker
+METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarName, cTextLabel, nAutoResize ) CLASS TSwiftPicker
 
     DEFAULT nWidth := 100, nHeight := 24
     DEFAULT oWnd := GetWndDefault()
     DEFAULT aItems := {}
     DEFAULT cTextLabel := "Categoría"
 
-    ::nTop    = nTop
-    ::nLeft   = nLeft
-    ::nWidth  = nWidth
-    ::nHeight = nHeight
     ::oWnd    = oWnd
     ::aItems  = aItems
     ::bChange = bChange
     ::bSetGet = bSetGet
     ::cVarName = cVarName
 
-
     AAdd( aSwiftPickers, Self )
     ::nIndex = Len( aSwiftPickers )
     ::cID = AllTrim( SWIFT_UUID() )
 
-    ::hWnd = SwiftPickerCreate( nTop, nLeft, nWidth, nHeight, aItems, oWnd:hWnd, ::nIndex, cTextLabel, ::cID )
+    ::hWnd = SD_SWIFT_PICKER_CREATE( nTop, nLeft, nWidth, nHeight, hb_jsonEncode( aItems ), oWnd:hWnd, ::nIndex, cTextLabel, ::cID )
     
     oWnd:AddControl( Self )
 
     if nAutoResize != nil
-    ::SetAutoResize( nAutoResize )
+        ::SetAutoResize( nAutoResize )
     endif
 
 return Self
 
 //----------------------------------------------------------------------------//
 
-METHOD Redefine( nId, oWnd, aItems, bChange, cVarName ) CLASS TSwiftPicker
+METHOD Redefine( nId, oWnd, aItems, bChange, bSetGet, cVarName ) CLASS TSwiftPicker
 
     DEFAULT oWnd := GetWndDefault()
    
@@ -73,6 +70,7 @@ METHOD Redefine( nId, oWnd, aItems, bChange, cVarName ) CLASS TSwiftPicker
     ::oWnd    = oWnd
     ::aItems  = aItems
     ::bChange = bChange
+    ::bSetGet = bSetGet
     ::cVarName = cVarName
 
     AAdd( aSwiftPickers, Self )
@@ -87,24 +85,43 @@ return Self
 METHOD OnChange( cValue ) CLASS TSwiftPicker
 
     if ::bSetGet != nil
-    Eval( ::bSetGet, cValue )
+        Eval( ::bSetGet, cValue )
     endif
 
     if ::bChange != nil
-    Eval( ::bChange, cValue, Self )
+        Eval( ::bChange, cValue, Self )
     endif
    
 return nil
 
-METHOD SetColor( nAccent, nText ) CLASS TSwiftPicker
-    PKR_SET_COLORS( ::cID, clrToHex( nAccent ), clrToHex( nText ) )
+METHOD SetItems( aItems ) CLASS TSwiftPicker
+    ::aItems := aItems
+    SD_PKR_SET_ITEMS( ::cId,  aItems  )
 return nil
+
+METHOD SetColor( nAccent, nText ) CLASS TSwiftPicker
+    SD_PKR_SET_COLORS( ::cID, clrToHex( nAccent ), clrToHex( nText ) )
+return nil
+
+METHOD End() CLASS TSwiftPicker
+    if !Empty( ::hWnd )
+        SD_PKR_DESTROY( ::cId, ::nIndex, ::hWnd )
+        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftPickers )
+            aSwiftPickers[ ::nIndex ] := nil
+        endif
+        ::hWnd := 0
+        ::cId  := ""
+    endif
+return ::Super:End()
 
 //----------------------------------------------------------------------------//
 
 function SwiftPickerOnChange( nIndex, cValue )
-    aSwiftPickers[ nIndex ]:OnChange( cValue )
-
+    if nIndex > 0 .and. nIndex <= Len( aSwiftPickers )
+        if aSwiftPickers[ nIndex ] != nil
+            aSwiftPickers[ nIndex ]:OnChange( cValue )
+        endif
+    endif
 return nil
 
 //----------------------------------------------------------------------------//

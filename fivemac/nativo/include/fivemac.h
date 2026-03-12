@@ -4,12 +4,19 @@
 #import <Cocoa/Cocoa.h>
 #define HB_DONT_DEFINE_BOOL
 #include "fmsgs.h"
+
+#include <hbxvm.h>
+
 #include <hbapi.h>
 #include <hbapifs.h>
 #include <hbapiitm.h>
 #include <hbvm.h>
 
 #define RGB(nRed, nGreen, nBlue) (nRed + (nGreen * 256) + (nBlue * 65536))
+
+#define hb_vmPushNLL(n) hb_vmPushNumInt((HB_LONGLONG)n)
+
+// #define hb_vmPushNLL(n) hb_xvmPushLongLong((HB_LONGLONG)n)
 
 NSString *hb_NSSTRING_par(int iParam);
 id hb_NSObjPar(int iParam);

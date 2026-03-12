@@ -18,9 +18,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_WHEN);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 
   if (HB_ISLOG(-1))
@@ -35,9 +35,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_CLRCHANGE);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 }
 

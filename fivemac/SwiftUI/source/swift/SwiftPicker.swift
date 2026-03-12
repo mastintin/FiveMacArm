@@ -9,16 +9,18 @@ public class PickerState {
     var selection: String
     var isGlass: Bool
     var showLabel: Bool
+    var placeholder: String
     var title: String
     var accentColor: Color = .blue
     var textColor: Color = .primary
     
-    init(items: [String] = [], selection: String = "", isGlass: Bool = false, showLabel: Bool = true, title: String = "") {
+    init(items: [String] = [], selection: String = "", isGlass: Bool = false, showLabel: Bool = true, title: String = "", placeholder: String = "Seleccionar...") {
         self.items = items
         self.selection = selection
         self.isGlass = isGlass
         self.showLabel = showLabel
         self.title = title
+        self.placeholder = placeholder
     }
 }
 
@@ -47,16 +49,17 @@ struct SwiftPickerView: View {
              Button(action: {
                  isPopoverPresented.toggle()
              }) {
-                 HStack {
-                     if state.showLabel {
-                        Text(!state.title.isEmpty ? state.title : state.selection)
-                             .foregroundColor(state.selection.isEmpty ? .secondary : state.textColor)
-                     } else {
-                          Text(state.selection)
-                             .foregroundColor(state.textColor)
-                     }
-                     
-                     Spacer()
+                  HStack {
+                      if state.showLabel && !state.title.isEmpty {
+                          Text(state.title + ":")
+                              .font(.subheadline)
+                              .foregroundColor(.secondary)
+                      }
+                      
+                      Text(state.selection.isEmpty ? state.placeholder : state.selection)
+                          .foregroundColor(state.selection.isEmpty ? .secondary : state.textColor)
+                      
+                      Spacer()
                      Image(systemName: "chevron.up.chevron.down")
                          .font(.caption)
                          .foregroundColor(.secondary)
@@ -142,28 +145,34 @@ public class SwiftPickerLoader: NSObject {
     
     public static var states: [String: PickerState] = [:]
 
-    @objc(makePickerWithTitle:items:id:index:callback:)
     public static func makePicker(title: String, items: [String], id: String, index: Int, callback: ((String) -> Void)?) -> NSView {
          let state = PickerState(items: items, selection: items.first ?? "", title: title)
-         let key = id.isEmpty ? String(index) : id
-         SwiftPickerLoader.states[key] = state
+         states[id] = state
          
-         let action: (String) -> Void = { newValue in
-             _ = callback?(newValue)
-         }
-         
-         let view = SwiftPickerView(state: state, callback: action)
+         let view = SwiftPickerView(state: state, callback: callback)
          ViewRegistry.register(view, for: index)
          
          let hostingView = NSHostingView(rootView: view)
+         hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
          return hostingView
     }
+
+    public static func destroyPicker(id: String, index: Int, viewPtr: Int64) {
+        states.removeValue(forKey: id)
+        ViewRegistry.clean(index: index)
+        
+        if viewPtr != 0 {
+            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
+                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            }
+        }
+    }
 }
 
-// --- HARBOUR BRIDGE MACROS ---
+// --- HARBOUR DIRECT BRIDGES ---
 
-@HarbourBridge
+@HarbourDirect
 public func pkr_set_selection(id: String, selection: String) {
     DispatchQueue.main.async {
         if let state = SwiftPickerLoader.states[id] {
@@ -172,27 +181,25 @@ public func pkr_set_selection(id: String, selection: String) {
     }
 }
 
-@HarbourBridge
-public func pkr_set_glass(id: String, isGlass: String) {
-    let glass = (isGlass == "1" || isGlass.lowercased() == "true")
+@HarbourDirect
+public func pkr_set_glass(id: String, isGlass: Bool) {
     DispatchQueue.main.async {
         if let state = SwiftPickerLoader.states[id] {
-            state.isGlass = glass
+            state.isGlass = isGlass
         }
     }
 }
 
-@HarbourBridge
-public func pkr_set_show_label(id: String, show: String) {
-    let showLabel = (show == "1" || show.lowercased() == "true")
+@HarbourDirect
+public func pkr_set_show_label(id: String, show: Bool) {
     DispatchQueue.main.async {
         if let state = SwiftPickerLoader.states[id] {
-            state.showLabel = showLabel
+            state.showLabel = show
         }
     }
 }
 
-@HarbourBridge
+@HarbourDirect
 public func pkr_set_title(id: String, title: String) {
     DispatchQueue.main.async {
         if let state = SwiftPickerLoader.states[id] {
@@ -201,7 +208,7 @@ public func pkr_set_title(id: String, title: String) {
     }
 }
 
-@HarbourBridge
+@HarbourDirect
 public func pkr_set_colors(id: String, accentHex: String, textHex: String) {
     DispatchQueue.main.async {
         if let state = SwiftPickerLoader.states[id] {
@@ -211,27 +218,118 @@ public func pkr_set_colors(id: String, accentHex: String, textHex: String) {
     }
 }
 
-@HarbourBridge
-@discardableResult
+@HarbourDirect
 public func pkr_get_selection(id: String) -> String {
     return SwiftPickerLoader.states[id]?.selection ?? ""
 }
 
-// Special case for items as it's an array
-@objc(SwiftPickerActions)
-public class SwiftPickerActions: NSObject {
-    @objc public static func setItems(id: String, items: [String]) {
-         DispatchQueue.main.async {
-             if let state = SwiftPickerLoader.states[id] {
-                 state.items = items
-                 if !items.contains(state.selection) {
-                     state.selection = items.first ?? ""
-                 }
-             }
-         }
+@HarbourDirect
+public func pkr_set_placeholder(id: String, placeholder: String) {
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.placeholder = placeholder
+        }
     }
+}
+
+@HarbourDirect
+public func pkr_set_items(id: String, arrayPtr: Int64) {
+
+    // 2. Usar la clase auxiliar para obtener el array [String]
+    let items = SwiftPickerArray.from(harbourPtr: arrayPtr)
     
-    @objc public static func getSelection(id: String) -> String {
-        return SwiftPickerLoader.states[id]?.selection ?? ""
+    // 3. Actualizar el estado del Picker en el hilo principal
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.items = items
+            
+            // Seguridad: si la selección actual ya no existe, elegir la primera
+            if !items.contains(state.selection) {
+                state.selection = items.first ?? ""
+            }
+        } else {
+            print("Bridge Error: No existe estado para el Picker ID: \(id)")
+        }
+    }
+}
+
+
+@HarbourDirect
+public func pkr_destroy(id: String, index: Int, viewPtr: Int64) {
+    SwiftPickerLoader.destroyPicker(id: id, index: index, viewPtr: viewPtr)
+}
+
+@HarbourDirect
+public func swift_picker_create(
+    top: Double,
+    left: Double,
+    width: Double,
+    height: Double,
+    itemsJson: String,
+    parentPtr: Int64,
+    index: Int,
+    title: String,
+    id: String
+) -> Int64 {
+    
+    func executeCreation() -> Int64 {
+        var viewAddress: Int64 = 0
+        
+        var items: [String] = []
+        if let data = itemsJson.data(using: .utf8) {
+            items = (try? JSONDecoder().decode([String].self, from: data)) ?? []
+        }
+
+        let callback: (String) -> Void = { newValue in
+            let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTPICKERONCHANGE") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushNumber(Double(index), 0)
+                    hb_vmPushString(newValue)
+                    hb_vmDo(2)
+                }
+            }
+            
+            if Thread.isMainThread {
+                sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
+            }
+        }
+
+        let pickerView = SwiftPickerLoader.makePicker(
+            title: title,
+            items: items,
+            id: id,
+            index: index,
+            callback: callback
+        )
+        
+        if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
+            let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
+            
+            applySwiftViewLayout(
+                swiftView: pickerView, 
+                parent: parentObj, 
+                top: top, 
+                left: left, 
+                w: width, 
+                h: height
+            )
+            
+            let viewPtr = Unmanaged.passRetained(pickerView).toOpaque()
+            viewAddress = Int64(Int(bitPattern: viewPtr))
+        }
+        
+        return viewAddress
+    }
+
+    if Thread.isMainThread {
+        return executeCreation()
+    } else {
+        return DispatchQueue.main.sync {
+            return executeCreation()
+        }
     }
 }

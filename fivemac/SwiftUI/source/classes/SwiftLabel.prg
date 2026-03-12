@@ -6,13 +6,16 @@ static aSwiftLabels := {}
 CLASS TSwiftLabel FROM TControl
 
     DATA nIndex
+    DATA nLbIndex
+    DATA cID
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd )
     METHOD SetText( cText )
     METHOD SetFont( nSize )
     METHOD SetColor( nColor )
     METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
-      
+    METHOD SetAlignment( nAlign )
+    METHOD End()   
 ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwiftLabel
@@ -20,16 +23,19 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwif
     DEFAULT nWidth := 100, nHeight := 20, oWnd := GetWndDefault(), cText := "Swift Label", nAutoResize := 0
 
     ::oWnd    = oWnd
-    ::nId     = ::GetCtrlIndex()
-    
+    // ::nId     = ::GetCtrlIndex()
+    ::cID      = SWIFT_UUID()
+
     AAdd( aSwiftLabels, Self )
-    ::nIndex = Len( aSwiftLabels )
-   
+    ::nLbIndex = Len( aSwiftLabels )
+    
+
     // Pass ::nIndex (Param 7)
-    ::hWnd = SWIFTLABELCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nIndex )
+    //::hWnd = SWIFTLABELCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nLbIndex )
+    ::hWnd = SD_SWIFT_LABEL_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nLbIndex, ::cID )
 
     if nAutoResize != 0
-    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -37,15 +43,55 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwif
 return Self
 
 METHOD SetText( cText ) CLASS TSwiftLabel
+    SD_LBL_SET_TEXT( ::cID, cText )
+return nil
+
+METHOD SetFont( uVal ) CLASS TSwiftLabel
+    if ValType( uVal ) == "N"
+        SD_LBL_SET_FONT( ::cId, uVal )
+    else
+        SD_LBL_SET_FONT_STYLE( ::cId, uVal )
+    endif
+return nil
+
+
+METHOD SetColor( nText, nAlpha ) CLASS TSwiftLabel
+    LOCAL nAcc, nTxt
    
-    SwiftUpdateLabel( , cText, ::nIndex )
+    DEFAULT nAlpha := 255 // Opaco por defecto
+    DEFAULT nText   := 0   // Negro por defecto si no se pasa nada
+ 
+    if !Empty( ::cId )
+        // CASO 1: Colores numéricos (nRGB)
+        if ValType( nText ) == "N"
+            // Si queremos transparencia, usamos el macro de RGBA enviando un Int32
+            // Construimos un ARGB o RGBA. Usemos el bridge tgl_set_colors_int
+            SD_LBL_SET_COLORS_RGBA( ::cId, nText , nAlpha)  
+         
+            // CASO 2: Colores Hexadecimales (pueden traer el alfa en el string)
+        elseif ValType( nText ) == "C"
+            SD_LBL_SET_COLORS_HEX( ::cId, nText , nAlpha )
+        endif
+    endif
+return self
 
-return nil
+//----------------------------------------
 
-METHOD SetFont( nSize ) CLASS TSwiftLabel
-    SWIFTLABELSETFONT( nSize, ::nIndex )
-return nil
+METHOD SetAlignment( nAlign ) CLASS TSwiftLabel
+    if !Empty( ::cId )
+        // 0: Left, 1: Center, 2: Right
+        SD_LBL_SET_ALIGN( ::cId, nAlign )
+    endif
+return self
 
-METHOD SetColor( nColor ) CLASS TSwiftLabel
-    LBL_SET_COLOR( hb_ntos( ::nIndex ), clrToHex( nColor ) )
-return nil
+METHOD End() CLASS TSwiftLabel
+    if !Empty( ::hWnd )
+        // Llamamos al macro de Swift
+        SD_LBL_DESTROY( ::cId, ::nLbIndex, ::hWnd )
+        if ::nLbIndex > 0 .and. ::nLbIndex <= Len( aSwiftLabels )
+            aSwiftLabels[ ::nLbIndex ] := nil
+        endif
+        ::hWnd := 0
+        ::cID := ""
+    endif
+return ::Super:End()

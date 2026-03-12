@@ -17,9 +17,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushLong((HB_LONG)[self window]);
+  hb_vmPushNLL((HB_LONG)[self window]);
   hb_vmPushLong(WM_FLIPPED);
-  hb_vmPushLong((HB_LONG)[self superview]);
+  hb_vmPushNLL((HB_LONG)[self superview]);
   hb_vmDo(3);
 
   return hb_parl(-1);
@@ -46,9 +46,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[tabView window]);
+  hb_vmPushNLL((HB_LONGLONG)[tabView window]);
   hb_vmPushLong(WM_TABITEMSEL);
-  hb_vmPushNumInt((HB_LONGLONG)tabView);
+  hb_vmPushNLL((HB_LONGLONG)tabView);
   hb_vmPushLong([[tabViewItem identifier] intValue] + 1);
   hb_vmDo(4);
 }

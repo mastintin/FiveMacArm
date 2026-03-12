@@ -13,6 +13,7 @@ CLASS TSwiftButton FROM TControl
 
     DATA bAction
     DATA nIndex
+    DATA cID
     DATA lGlass
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction )
@@ -21,9 +22,10 @@ CLASS TSwiftButton FROM TControl
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
     METHOD SetGlass( lGlass )
-    METHOD SetText( cText )  INLINE BTN_SET_TEXT( hb_ntos( ::nIndex ), cText )
+    METHOD SetText( cText )  INLINE SD_BTN_SET_TEXT( ::cID, cText )
     METHOD SetImage( cImage ) 
     METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
+    METHOD End()
       
 ENDCLASS
 
@@ -33,13 +35,12 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
 
     ::bAction = bAction
     ::oWnd    = oWnd
-    ::nId     = ::GetCtrlIndex()
+    ::cID     = SWIFT_UUID()
    
     AAdd( aSwiftButtons, Self )
     ::nIndex  = Len( aSwiftButtons )
 
-    // Pass ::nIndex (Param 7) instead of Action String
-    ::hWnd = SWIFTBTNCREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::nIndex )
+    ::hWnd = SD_SWIFT_BUTTON_CREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::nIndex, ::cID )
 
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -59,32 +60,43 @@ return nil
 
 METHOD SetColor( nFgColor, nBgColor ) CLASS TSwiftButton
     if nBgColor != nil
-    BTN_SET_BG( hb_ntos( ::nIndex ), clrToHex( nBgColor ) )
+    SD_BTN_SET_BG( ::cID, clrToHex( nBgColor ) )
     endif
     if nFgColor != nil
-    BTN_SET_FG( hb_ntos( ::nIndex ), clrToHex( nFgColor ) )
+    SD_BTN_SET_FG( ::cID, clrToHex( nFgColor ) )
     endif
 return nil
 
 METHOD SetRadius( nRadius ) CLASS TSwiftButton
-    BTN_SET_RADIUS( hb_ntos( ::nIndex ), hb_ntos( nRadius ) )
+    SD_BTN_SET_RADIUS( ::cID, nRadius )
 return nil
 
 METHOD SetPadding( nPadding ) CLASS TSwiftButton
-    BTN_SET_PADDING( hb_ntos( ::nIndex ), hb_ntos( nPadding ) )
+    SD_BTN_SET_PADDING( ::cID, nPadding )
 return nil
 
 METHOD SetGlass( lGlass ) CLASS TSwiftButton
     DEFAULT lGlass := .T.
     ::lGlass := lGlass
-    BTN_SET_GLASS( hb_ntos( ::nIndex ), if( lGlass, "1", "0" ) )
+    SD_BTN_SET_GLASS( ::cID, lGlass )
 return nil
 
 METHOD SetImage( cImage ) CLASS TSwiftButton
     if cImage != nil
-    BTN_SET_IMAGE( hb_ntos( ::nIndex ), cImage )
+    SD_BTN_SET_IMAGE( ::cID, cImage )
     endif
 return nil
+
+METHOD End() CLASS TSwiftButton
+    if !Empty( ::hWnd )
+        SD_BTN_DESTROY( ::cID, ::nIndex, ::hWnd )
+        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftButtons )
+            aSwiftButtons[ ::nIndex ] := nil
+        endif
+        ::hWnd := 0
+        ::cID := ""
+    endif
+return ::Super:End()
 
 // Called from C callback
 function SwiftBtnOnClick( nIndex )

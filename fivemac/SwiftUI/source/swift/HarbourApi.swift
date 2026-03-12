@@ -31,6 +31,24 @@ func hb_itemType(_ pItem: UnsafeMutableRawPointer?) -> Int32
 @_silgen_name("hb_vmPushLogical") func hb_vmPushLogical(_ b: Int32)
 @_silgen_name("hb_vmDo") func hb_vmDo(_ nArgs: Int32)
 @_silgen_name("hb_vmPushNumber") func hb_vmPushNumber(_ n: Double, _ dec: Int32)
+@_silgen_name("hb_vmPushDouble") func hb_vmPushDouble(_ n: Double, _ dec: Int32)
+@_silgen_name("hb_vmPushString") func _hb_vmPushString(_ s: UnsafePointer<Int8>, _ len: Int)
+
+
+typealias PHB_ITEM = UnsafeMutableRawPointer
+typealias HB_SIZE = Int 
+
+// Funciones esenciales de la API de Harbour
+@_silgen_name("hb_arrayLen") func hb_arrayLen(_ pArray: PHB_ITEM?) -> HB_SIZE
+@_silgen_name("hb_arrayGetItemPtr") func hb_arrayGetItemPtr(_ pArray: PHB_ITEM?, _ index: HB_SIZE) -> PHB_ITEM?
+@_silgen_name("hb_itemGetCPtr") func hb_itemGetCPtr(_ pItem: PHB_ITEM?) -> UnsafePointer<Int8>?
+
+
+public func hb_vmPushString(_ s: String) {
+    s.withCString { cStr in
+        _hb_vmPushString(cStr, s.utf8.count)
+    }
+}
 
 
 
@@ -83,6 +101,8 @@ public struct Harbour {
     }
 }
 
+//---------------------------------------
+
 public struct HarbourBridgeSupport {
     // Convierte String de Swift a puntero para C
     public static func toC(_ value: String) -> UnsafePointer<Int8>? {
@@ -110,4 +130,40 @@ public struct HarbourBridgeSupport {
     }
 }
 
+//---------------------------------------------
+public struct SwiftPickerArray {
+    
+    /// Convierte un puntero Int64 de Harbour directamente en un [String] nativo
+    public static func from(harbourPtr: Int64) -> [String] {
+        // 1. Casting de Int64 a Puntero de Memoria
+        let pArray = UnsafeMutableRawPointer(bitPattern: Int(harbourPtr))
+        
+        // 2. Ejecutar la extracción segura
+        return getSwiftArray(from: pArray)
+    }
 
+    /// Función interna que recorre la memoria de Harbour
+    private static func getSwiftArray(from pArray: PHB_ITEM?) -> [String] {
+        var result: [String] = []
+        
+        // Validar que sea un array real
+        guard let pArray = pArray, (hb_itemType(pArray) & HB_IT_ARRAY) != 0 else {
+            return []
+        }
+        
+        let nLen = hb_arrayLen(pArray)
+        
+        // Harbour arrays son base 1
+        for i in 1...nLen {
+            if let pItem = hb_arrayGetItemPtr(pArray, i) {
+                // Solo extraemos si el elemento es String
+                if (hb_itemType(pItem) & HB_IT_STRING) != 0 {
+                    if let cStr = hb_itemGetCPtr(pItem) {
+                        result.append(String(cString: cStr))
+                    }
+                }
+            }
+        }
+        return result
+    }
+}

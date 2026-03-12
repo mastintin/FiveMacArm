@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 HB_FUNC(SWIFTPICKERCREATE) {
   CGFloat nTop = (CGFloat)hb_parnd(1);
   CGFloat nLeft = (CGFloat)hb_parnd(2);
@@ -118,3 +118,4 @@ HB_FUNC(PKR_SET_COLORS) {
                     (const int8_t *)[accent UTF8String],
                     (const int8_t *)[text UTF8String]);
 }
+*/

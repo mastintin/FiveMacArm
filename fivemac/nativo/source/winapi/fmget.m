@@ -19,9 +19,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_GETCHANGED);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 }
 
@@ -31,9 +31,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_GETVALID);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 }
 

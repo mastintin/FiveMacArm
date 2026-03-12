@@ -1,12 +1,12 @@
 #include "FiveMac.ch"
 
-CLASS TSwiftTextField
+static aSwiftTextFields := {}
 
-    DATA hWnd
-    DATA oWnd
+CLASS TSwiftTextField FROM TControl
+
     DATA bOnChange
     DATA cId
-    DATA nTop, nLeft, nWidth, nHeight
+    DATA nIndex
     DATA cText, cPlaceholder
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, oBatch )
@@ -15,6 +15,7 @@ CLASS TSwiftTextField
     METHOD GetConfig()
     METHOD SetColor( nFg, nBg )
     METHOD SetFontSize( nSize )
+    METHOD End()
     
     METHOD OnChange( cNewText )
 
@@ -25,31 +26,31 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
     DEFAULT nWidth := 200, nHeight := 24, oWnd := GetWndDefault()
     DEFAULT cText := "", cPlaceholder := "Enter text...", nAutoResize := 0
 
-    ::nTop      = nTop
-    ::nLeft     = nLeft
-    ::nWidth    = nWidth
-    ::nHeight   = nHeight
-    ::cText     = cText
-    ::cPlaceholder = cPlaceholder
-    ::oWnd      = oWnd
+    ::oWnd       = oWnd
     ::bOnChange  = bOnChange
+    ::cText      = cText
+    ::cPlaceholder = cPlaceholder
     
-    ::cId       = SWIFT_UUID() // Generate a proper UUID
-    SwiftRegisterItem( ::cId, Self )
+    ::cId        = SWIFT_UUID()
+   
+    AAdd( aSwiftTextFields, Self )
+    ::nIndex     = Len( aSwiftTextFields )
     
     if oBatch == nil .and. oWnd != nil 
-    oBatch := oWnd:oSwiftBatch
+        oBatch := oWnd:oSwiftBatch
     endif
 
     if oBatch != nil
-    oBatch:Add( Self )
+        oBatch:Add( Self )
     else
-    ::hWnd = SWIFTTEXTFIELDCREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, 0, ::cId )
+        ::hWnd = SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::nIndex, ::cId )
     endif
 
     if nAutoResize != 0
-    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
+
+    oWnd:AddControl( Self )
 
 return Self
 
@@ -69,33 +70,47 @@ return hConfig
 
 METHOD SetText( cText ) CLASS TSwiftTextField
     ::cText = cText
-    TF_SET_TEXT( ::cId, cText )
+    SD_TF_SET_TEXT( ::cId, cText )
 return nil
 
 METHOD GetText() CLASS TSwiftTextField
-    ::cText = TF_GET_TEXT( ::cId )
+    ::cText = SD_TF_GET_TEXT( ::cId )
 return ::cText
 
 METHOD SetColor( nFg, nBg ) CLASS TSwiftTextField
-    TF_SET_COLORS( ::cId, clrToHex( nFg ), clrToHex( nBg ) )
+    SD_TF_SET_COLORS( ::cId, clrToHex( nFg ), clrToHex( nBg ) )
 return nil
 
 METHOD SetFontSize( nSize ) CLASS TSwiftTextField
-    TF_SET_FONT_SIZE( ::cId, hb_ntos( nSize ) )
+    SD_TF_SET_FONT_SIZE( ::cId, nSize )
 return nil
+
+METHOD End() CLASS TSwiftTextField
+    if !Empty( ::hWnd )
+        SD_TF_DESTROY( ::cId, ::nIndex, ::hWnd )
+        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftTextFields )
+            aSwiftTextFields[ ::nIndex ] := nil
+        endif
+        ::hWnd := 0
+        ::cId := ""
+    endif
+return ::Super:End()
 
 METHOD OnChange( cNewText ) CLASS TSwiftTextField
     if ::bOnChange != nil
-    Eval( ::bOnChange, cNewText, Self )
+        Eval( ::bOnChange, cNewText, Self )
     endif
 return nil
 
-// Callback from C using String ID
-// Callback from C using String ID
-function SWIFTTEXTFIELDONCHANGE( cId, cNewText )
-    local oTxf := SwiftGetItem( cId )
-    if oTxf != nil
-    oTxf:OnChange( cNewText )
+// Callback from C using nIndex
+function SWIFTTEXTFIELDONCHANGE( nIndex, cNewText )
+    local oTxf
+    
+    if nIndex > 0 .and. nIndex <= Len( aSwiftTextFields )
+        oTxf := aSwiftTextFields[ nIndex ]
+        if oTxf != nil
+            oTxf:OnChange( cNewText )
+        endif
     endif
 return nil
 
@@ -107,16 +122,16 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftTextEditor
     DEFAULT nWidth := 300, nHeight := 100, oWnd := GetWndDefault()
     DEFAULT cText := ""
 
-    ::nTop      = nTop
-    ::nLeft     = nLeft
-    ::nWidth    = nWidth
-    ::nHeight   = nHeight
-    ::cText     = cText
     ::oWnd      = oWnd
+    ::cText     = cText
     
     ::cId       = SWIFT_UUID()
-    SwiftRegisterItem( ::cId, Self )
     
-    ::hWnd = SWIFTTEXTEDITORCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cId )
+    AAdd( aSwiftTextFields, Self )
+    ::nIndex     = Len( aSwiftTextFields )
+    
+    ::hWnd = SD_SWIFT_TEXTEDITOR_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nIndex, ::cId )
+
+    oWnd:AddControl( Self )
 
 return Self

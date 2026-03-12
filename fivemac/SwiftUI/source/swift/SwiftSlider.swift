@@ -91,48 +91,53 @@ public class SwiftSliderLoader: NSObject {
     
     public static var states: [String: SliderState] = [:]
     
-    @objc(makeSliderWithValue:id:showValue:isGlass:index:callback:)
-    public static func makeSlider(value: NSNumber, id: String, showValue: Bool, isGlass: Bool, index: Int, callback: @escaping ((NSNumber) -> Void)) -> NSView {
-        let doubleVal = value.doubleValue
-        let swiftCallback: (Double) -> Void = { val in
-            callback(NSNumber(value: val))
-        }
-        
-        let state = SliderState(value: doubleVal, showValue: showValue, isGlass: isGlass, callback: swiftCallback)
+    public static func makeSlider(value: Double, id: String, showValue: Bool, isGlass: Bool, index: Int, callback: @escaping ((Double) -> Void)) -> NSView {
+        let state = SliderState(value: value, showValue: showValue, isGlass: isGlass, callback: callback)
         let key = id.isEmpty ? String(index) : id
-        SwiftSliderLoader.states[key] = state
+        states[key] = state
         
         let view = SwiftSliderView(state: state)
         ViewRegistry.register(view, for: index)
         
         let hostingView = NSHostingView(rootView: view)
+        hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         hostingView.wantsLayer = true
         hostingView.layer?.backgroundColor = NSColor.clear.cgColor
         
         return hostingView
     }
-}
 
-// --- HARBOUR BRIDGE MACROS ---
-
-@HarbourBridge
-public func sld_set_value(id: String, value: String) {
-    let val = Double(value) ?? 0.0
-    DispatchQueue.main.async {
-        if let state = SwiftSliderLoader.states[id] {
-            state.value = val
+    public static func destroySlider(id: String, index: Int, viewPtr: Int64) {
+        let key = id.isEmpty ? String(index) : id
+        states.removeValue(forKey: key)
+        ViewRegistry.clean(index:index) 
+        
+        if viewPtr != 0 {
+            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
+                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            }
         }
     }
 }
 
-@HarbourBridge
-public func sld_get_value(id: String) -> String {
-    let val = SwiftSliderLoader.states[id]?.value ?? 0.0
-    return String(val)
+// --- HARBOUR BRIDGE MACROS ---
+
+@HarbourDirect
+public func sld_set_value(id: String, value: Double) {
+    DispatchQueue.main.async {
+        if let state = SwiftSliderLoader.states[id] {
+            state.value = value
+        }
+    }
 }
 
-@HarbourBridge
+@HarbourDirect
+public func sld_get_value(id: String) -> Double {
+    return SwiftSliderLoader.states[id]?.value ?? 0.0
+}
+
+@HarbourDirect
 public func sld_set_accent_color(id: String, hex: String) {
     DispatchQueue.main.async {
         if let state = SwiftSliderLoader.states[id] {
@@ -141,12 +146,89 @@ public func sld_set_accent_color(id: String, hex: String) {
     }
 }
 
-@HarbourBridge
+@HarbourDirect
 public func sld_set_colors(id: String, fgHex: String, bgHex: String) {
     DispatchQueue.main.async {
         if let state = SwiftSliderLoader.states[id] {
             state.foregroundColor = Color(hex: fgHex)
             state.backgroundColor = Color(hex: bgHex)
+        }
+    }
+}
+
+@HarbourDirect
+public func sld_destroy(id: String, index: Int, viewPtr: Int64) {
+    SwiftSliderLoader.destroySlider(id: id, index: index, viewPtr: viewPtr)
+}
+
+@HarbourDirect
+public func swift_slider_create(
+    top: Double, 
+    left: Double, 
+    width: Double, 
+    height: Double,
+    value: Double, 
+    parentPtr: Int64,
+    index: Int,
+    id: String,
+    showValue: Bool,
+    isGlass: Bool
+    ) -> Int64 {
+    
+    func executeCreation() -> Int64 {
+        var viewAddress: Int64 = 0
+        
+        let callback: (Double) -> Void = { newValue in
+            let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTSLIDERONCHANGE") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushNumber(Double(index), 0) 
+                    hb_vmPushDouble(newValue, 0)
+                    hb_vmDo(2)
+                }
+            }
+
+            if Thread.isMainThread {
+               sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
+            }
+        }
+
+        let sliderView = SwiftSliderLoader.makeSlider(
+            value: value, 
+            id: id,
+            showValue: showValue,
+            isGlass: isGlass,
+            index: index, 
+            callback: callback
+        )
+        
+        if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
+            let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
+            
+            applySwiftViewLayout(
+                swiftView: sliderView, 
+                parent: parentObj, 
+                top: top, 
+                left: left, 
+                w: width, 
+                h: height
+            )
+            
+            let viewPtr = Unmanaged.passRetained(sliderView).toOpaque()
+            viewAddress = Int64(Int(bitPattern: viewPtr))
+        }
+        
+        return viewAddress
+    }
+
+    if Thread.isMainThread {
+        return executeCreation()
+    } else {
+        return DispatchQueue.main.sync {
+            return executeCreation()
         }
     }
 }

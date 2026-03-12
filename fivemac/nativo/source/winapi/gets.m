@@ -30,9 +30,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_GETVALID);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 
   // NSLog( @"The contents of the text field end" );
@@ -46,9 +46,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_GETLOSTFOCUS);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 
   // NSLog( @"The contents of the text field end" );
@@ -62,9 +62,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_GETCHANGED);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 
   // NSLog( @"The contents of the text field changed" );
@@ -120,9 +120,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_KEYDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(unichar);
   hb_vmDo(4);
 
@@ -136,9 +136,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_WHEN);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 
   if (HB_ISLOG(-1))
@@ -319,9 +319,9 @@ HB_FUNC(GETCUTSELECTED) // hGet --> cText
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[get window]);
+  hb_vmPushNLL((HB_LONGLONG)[get window]);
   hb_vmPushLong(WM_GETGETSTRING);
-  hb_vmPushNumInt((HB_LONGLONG)get);
+  hb_vmPushNLL((HB_LONGLONG)get);
   hb_vmDo(3);
 
   return hb_NSSTRING_par(-1);
@@ -335,9 +335,9 @@ HB_FUNC(GETCUTSELECTED) // hGet --> cText
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[get window]);
+  hb_vmPushNLL((HB_LONGLONG)[get window]);
   hb_vmPushLong(WM_GETSETVALUE);
-  hb_vmPushNumInt((HB_LONGLONG)get);
+  hb_vmPushNLL((HB_LONGLONG)get);
   hb_vmPushString([string cStringUsingEncoding:NSUTF8StringEncoding],
                   [string length]);
   hb_vmDo(4);
@@ -357,9 +357,9 @@ HB_FUNC(GETCUTSELECTED) // hGet --> cText
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[get window]);
+  hb_vmPushNLL((HB_LONGLONG)[get window]);
   hb_vmPushLong(WM_GETPARTEVALUE);
-  hb_vmPushNumInt((HB_LONGLONG)get);
+  hb_vmPushNLL((HB_LONGLONG)get);
   hb_vmPushString([partial cStringUsingEncoding:NSUTF8StringEncoding],
                   [partial length]);
 

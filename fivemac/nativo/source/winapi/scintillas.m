@@ -91,18 +91,18 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
   if (wParam == 0) {
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushNumInt((HB_LONGLONG)[sv window]);
+    hb_vmPushNLL((HB_LONGLONG)[sv window]);
     hb_vmPushLong(WM_SCINOTIFY);
-    hb_vmPushNumInt((HB_LONGLONG)sv);
+    hb_vmPushNLL((HB_LONGLONG)sv);
     hb_vmPushLong((HB_LONG)wParam);
     hb_vmPushLong((HB_LONG)lParam);
     hb_vmDo(5);
   } else {
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushNumInt((HB_LONGLONG)[sv window]);
+    hb_vmPushNLL((HB_LONGLONG)[sv window]);
     hb_vmPushLong(WM_COMMAND);
-    hb_vmPushNumInt((HB_LONGLONG)sv);
+    hb_vmPushNLL((HB_LONGLONG)sv);
     hb_vmPushLong((HB_LONG)wParam);
     hb_vmPushLong((HB_LONG)lParam);
     hb_vmDo(5);
@@ -119,11 +119,11 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 
     hb_vmPushSymbol( symFMH );
     hb_vmPushNil();
-    hb_vmPushLong( ( HB_LONG ) [ self window ] );
-    hb_vmPushLong( WM_RBUTTONDOWN );
-    hb_vmPushLong( ( HB_LONG ) [ self window ] );
-    hb_vmPushLong( point.y );
-    hb_vmPushLong( point.x );
+    hb_vmPushNLL( ( HB_LONG ) [ self window ] );
+    hb_vmPushNLL( WM_RBUTTONDOWN );
+    hb_vmPushNLL( ( HB_LONG ) [ self window ] );
+    hb_vmPushNLL( point.y );
+    hb_vmPushNLL( point.x );
     hb_vmDo( 5 );
 }
 */
@@ -145,9 +145,9 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(9999); // Manual Sidebar Handler
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong((HB_LONG)p.x);
   hb_vmPushLong((HB_LONG)p.y);
   hb_vmDo(5);
@@ -162,9 +162,9 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(9997); // Manual Drag Handler
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong((HB_LONG)p.x);
   hb_vmPushLong((HB_LONG)p.y);
   hb_vmDo(5);
@@ -198,9 +198,9 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushNumInt((HB_LONGLONG)[self window]);
+    hb_vmPushNLL((HB_LONGLONG)[self window]);
     hb_vmPushLong(9996);
-    hb_vmPushNumInt((HB_LONGLONG)self);
+    hb_vmPushNLL((HB_LONGLONG)self);
     hb_vmPushLong(0);
     hb_vmPushLong(0);
     hb_vmDo(5);
@@ -257,9 +257,9 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(9995); // Code for TAB
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(0);
   hb_vmPushLong(0);
   hb_vmDo(5);
@@ -271,9 +271,9 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(9994); // Code for Ctrl+Space
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(0);
   hb_vmPushLong(0);
   hb_vmDo(5);
@@ -286,11 +286,11 @@ void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(9996);
-  hb_vmPushNumInt((HB_LONGLONG)self);
-  hb_vmPushLong(0);
-  hb_vmPushLong(0);
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushNLL(0);
+  hb_vmPushNLL(0);
   hb_vmDo(5);
 }
 

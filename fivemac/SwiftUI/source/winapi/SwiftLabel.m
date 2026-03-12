@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 HB_FUNC(SWIFTLABELCREATE) {
   CGFloat nTop = (CGFloat)hb_parnd(1);
   CGFloat nLeft = (CGFloat)hb_parnd(2);
@@ -17,7 +17,8 @@ HB_FUNC(SWIFTLABELCREATE) {
     hb_retnll((HB_LONGLONG)labelView);
   }
 }
-
+*/
+/*
 HB_FUNC(SWIFTUPDATELABEL) {
   // Keeping this for legacy/compatibility if needed, but routing it to the new
   // bridge
@@ -59,3 +60,4 @@ HB_FUNC(LBL_SET_COLOR) {
   SW_LBL_SET_COLOR((const int8_t *)[idx UTF8String],
                    (const int8_t *)[hex UTF8String]);
 }
+*/

@@ -42,12 +42,17 @@ static char const *const FMMetadataDelegateKey = "FMMetadataDelegateKey";
         key = [item.key description];
 
       if (item.value) {
+        NSString *valStr =
+            item.stringValue ? item.stringValue : [item.value description];
         if ([key isEqualToString:AVMetadataCommonKeyTitle] ||
             [key isEqualToString:@"title"])
-          [_metadata setObject:item.value forKey:@"title"];
+          [_metadata setObject:valStr forKey:@"title"];
         else if ([key isEqualToString:AVMetadataCommonKeyArtist] ||
                  [key isEqualToString:@"artist"])
-          [_metadata setObject:item.value forKey:@"artist"];
+          [_metadata setObject:valStr forKey:@"artist"];
+        else if ([key isEqualToString:AVMetadataCommonKeyAlbumName] ||
+                 [key isEqualToString:@"album"])
+          [_metadata setObject:valStr forKey:@"album"];
       }
     }
   }
@@ -57,7 +62,7 @@ static char const *const FMMetadataDelegateKey = "FMMetadataDelegateKey";
     if (pDynSym) {
       hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
       hb_vmPushNil();
-      hb_vmPushNumInt((HB_LONGLONG)self.player);
+      hb_vmPushNLL((HB_LONGLONG)self.player);
       hb_vmPushLong(4); // nMsg == 4 for Metadata ready
       hb_vmDo(2);
     }
@@ -77,35 +82,9 @@ static char const *const FMMetadataDelegateKey = "FMMetadataDelegateKey";
       if (pDynSym) {
         hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
         hb_vmPushNil();
-        hb_vmPushNumInt((HB_LONGLONG)player);
+        hb_vmPushNLL((HB_LONGLONG)player);
         hb_vmPushLong(3); // nMsg == 3 for ReadyToPlay
         hb_vmDo(2);
-      }
-    }
-  } else if ([keyPath isEqualToString:@"timedMetadata"]) {
-    NSArray<AVMetadataItem *> *metadata = change[NSKeyValueChangeNewKey];
-    if ([metadata isKindOfClass:[NSArray class]]) {
-      for (AVMetadataItem *item in metadata) {
-        NSString *key = [item commonKey] ?: [item.key description];
-        if (item.value) {
-          if ([key isEqualToString:AVMetadataCommonKeyTitle] ||
-              [key isEqualToString:@"title"])
-            [_metadata setObject:item.value forKey:@"title"];
-          else if ([key isEqualToString:AVMetadataCommonKeyArtist] ||
-                   [key isEqualToString:@"artist"])
-            [_metadata setObject:item.value forKey:@"artist"];
-        }
-      }
-      if (context != NULL) {
-        AVPlayer *player = (AVPlayer *)context;
-        PHB_DYNS pDynSym = hb_dynsymFindName("_FMAUDIO");
-        if (pDynSym) {
-          hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
-          hb_vmPushNil();
-          hb_vmPushNumInt((HB_LONGLONG)player);
-          hb_vmPushLong(4); // nMsg == 4 for Metadata ready
-          hb_vmDo(2);
-        }
       }
     }
   }
@@ -119,6 +98,36 @@ static char const *const FMMetadataDelegateKey = "FMMetadataDelegateKey";
 }
 
 @end
+
+// Helper to setup metadata observing for a player
+static void SetupMetadataForPlayer(AVPlayer *player, AVPlayerItem *item) {
+  if (!player || !item)
+    return;
+
+  FMMetadataDelegate *delegate = [[FMMetadataDelegate alloc] init];
+  delegate.player = player;
+
+  // 1. Create and add modern metadata output
+  AVPlayerItemMetadataOutput *metadataOutput =
+      [[AVPlayerItemMetadataOutput alloc] initWithIdentifiers:nil];
+  [metadataOutput setDelegate:delegate queue:dispatch_get_main_queue()];
+  [item addOutput:metadataOutput];
+  [metadataOutput release];
+
+  // 2. Status observer for load notification
+  @try {
+    [item addObserver:delegate
+           forKeyPath:@"status"
+              options:NSKeyValueObservingOptionNew
+              context:(void *)player];
+  } @catch (id ex) {
+  }
+
+  // 3. Link delegate to player association
+  objc_setAssociatedObject(player, FMMetadataDelegateKey, delegate,
+                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  [delegate release];
+}
 
 //----------------------------------------------------------------------------//
 
@@ -136,7 +145,7 @@ HB_FUNC(MUSIC_SET_OBSERVER) {
                                   if (pDynSym) {
                                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
                                     hb_vmPushNil();
-                                    hb_vmPushNumInt((HB_LONGLONG)player);
+                                    hb_vmPushNLL((HB_LONGLONG)player);
                                     hb_vmPushLong(1);
                                     hb_vmDo(2);
                                   }
@@ -153,7 +162,7 @@ HB_FUNC(MUSIC_SET_OBSERVER) {
                     if (pDynSym) {
                       hb_vmPushSymbol(hb_dynsymSymbol(pDynSym));
                       hb_vmPushNil();
-                      hb_vmPushNumInt((HB_LONGLONG)player);
+                      hb_vmPushNLL((HB_LONGLONG)player);
                       hb_vmPushLong(2);
                       hb_vmDo(2);
                     }
@@ -205,36 +214,8 @@ HB_FUNC(MUSIC_LOAD_STREAM) {
   AVURLAsset *asset = [AVURLAsset URLAssetWithURL:url options:nil];
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:asset];
 
-  // Implementación moderna de metadatos
-  AVPlayerItemMetadataOutput *metadataOutput =
-      [[AVPlayerItemMetadataOutput alloc] initWithIdentifiers:nil];
-  FMMetadataDelegate *delegate = [[FMMetadataDelegate alloc] init];
-  [metadataOutput setDelegate:delegate queue:dispatch_get_main_queue()];
-  [item addOutput:metadataOutput];
-
   AVPlayer *player = [[AVPlayer playerWithPlayerItem:item] retain];
-  delegate.player = player;
-
-  if (item) {
-    @try {
-      [item addObserver:delegate
-             forKeyPath:@"status"
-                options:NSKeyValueObservingOptionNew
-                context:(void *)player];
-      [item addObserver:delegate
-             forKeyPath:@"timedMetadata"
-                options:NSKeyValueObservingOptionNew
-                context:(void *)player];
-    } @catch (id ex) {
-    }
-  }
-
-  // Asociamos el delegado al player para que viva lo mismo que él
-  objc_setAssociatedObject(player, FMMetadataDelegateKey, delegate,
-                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-
-  [metadataOutput release];
-  [delegate release];
+  SetupMetadataForPlayer(player, item);
 
   hb_retnll((HB_LONGLONG)player);
 }
@@ -258,23 +239,20 @@ HB_FUNC(MUSIC_RELEASE) {
         @try {
           [player.currentItem removeObserver:delegate forKeyPath:@"status"];
         } @catch (id ex) {
-        } @
-        try {
-          [player.currentItem removeObserver:delegate
-                                  forKeyPath:@"timedMetadata"];
-        } @catch (id ex) {
         }
       }
     }
-    [player release];
   }
+  [player release];
 }
 
 HB_FUNC(NATIVEAUDIOCREATE) {
   NSString *cFile = hb_NSSTRING_par(1);
   NSURL *url = [NSURL fileURLWithPath:cFile];
-  AVPlayerItem *playerItem = [AVPlayerItem playerItemWithURL:url];
-  AVPlayer *player = [[AVPlayer playerWithPlayerItem:playerItem] retain];
+  AVPlayerItem *item = [AVPlayerItem playerItemWithURL:url];
+  AVPlayer *player = [[AVPlayer playerWithPlayerItem:item] retain];
+
+  SetupMetadataForPlayer(player, item);
 
   hb_retnll((HB_LONGLONG)player);
 }
@@ -359,22 +337,6 @@ static NSString *ExtractMetadataFromPlayer(AVPlayer *player) {
           objc_getAssociatedObject(player, FMMetadataDelegateKey);
       if (delegate) {
         [metadataDict addEntriesFromDictionary:delegate.metadata];
-      }
-
-      // 2. Check currentItem.timedMetadata (active metadata)
-      for (AVMetadataItem *item in player.currentItem.timedMetadata) {
-        NSString *key =
-            [item commonKey] ? [item commonKey] : [item.key description];
-        NSString *valStr =
-            item.stringValue ? item.stringValue : [item.value description];
-        if (valStr) {
-          if ([key isEqualToString:AVMetadataCommonKeyTitle] ||
-              [key containsString:@"title"])
-            [metadataDict setObject:valStr forKey:@"title"];
-          else if ([key isEqualToString:AVMetadataCommonKeyArtist] ||
-                   [key containsString:@"artist"])
-            [metadataDict setObject:valStr forKey:@"artist"];
-        }
       }
 
       // 3. Check asset commonMetadata (static metadata)

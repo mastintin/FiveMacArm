@@ -9,8 +9,13 @@ public class LabelState {
     var text: String
     var fontSize: CGFloat
     var fontStyle: String // Empty means use fontSize
-    var textColor: Color
-    
+
+    var accentColor: Color = .blue // O el tipo que corresponda
+    var textColor: Color = .primary
+    var alignment: TextAlignment = .leading 
+    var isVisible: Bool = true
+    var isEnabled: Bool = true
+  
     init(text: String, fontSize: CGFloat = 24.0, fontStyle: String = "", textColor: Color = .black) {
         self.text = text
         self.fontSize = fontSize
@@ -18,7 +23,6 @@ public class LabelState {
         self.textColor = textColor
     }
 }
-
 
 
 // New SwiftUI View for the label
@@ -38,11 +42,23 @@ struct SwiftLabelView: View {
         default: return .system(size: state.fontSize)
         }
     }
+private var swiftUIAlignment: Alignment {
+        switch state.alignment {
+        case .center: return .center
+        case .trailing:  return .trailing
+        default:      return .leading
+        }
+    }
 
     var body: some View {
+        let _ = state.textColor // Esto le dice a SwiftUI: "Observa este cambio"
+        let _ = state.fontSize
         Text(state.text)
             .font(getFont())
             .foregroundColor(state.textColor)
+            .multilineTextAlignment(state.alignment) // Alineación del texto en sí
+            .frame(maxWidth: .infinity, maxHeight: .infinity, 
+                   alignment: state.alignment == .center ? .center : (state.alignment == .trailing ? .trailing : .leading))
     }
 }
 
@@ -51,77 +67,194 @@ public class SwiftLabelLoader: NSObject {
     
     // Store states by Index (String for Hybrid Support)
     public static var states: [String: LabelState] = [:]
-    
-    @objc(makeLabelWithText:index:)
-    public static func makeLabel(text: String, index: Int) -> NSView {
+
+    public static func makeLabel(text: String,  id: String, index: Int) -> NSView {
          // Default state
         let state = LabelState(text: text, fontSize: 24.0, fontStyle: "", textColor: .black)
-        let key = String(index)
+        let key = id.isEmpty ? String(index) : id
         states[key] = state
         
         let view = SwiftLabelView(state: state)
         ViewRegistry.register(view, for: index)
         
         let hostingView = NSHostingView(rootView: view)
-        hostingView.translatesAutoresizingMaskIntoConstraints = false
+       // hostingView.translatesAutoresizingMaskIntoConstraints = false
         return hostingView
     }
     
-    @objc(updateLabel:index:)
-    public static func updateLabel(_ text: String, index: Int) {
-        let key = String(index)
+    public static func destroyLabel(id: String, index: Int, viewPtr: Int64) {
+        // 1. Limpiar el estado para que el objeto @Observable muera
+        let key = id.isEmpty ? String(index) : id
+        states.removeValue(forKey: key)
+        
+        // 2. Limpiar el registro global de FiveMac (según tu .h)
+        ViewRegistry.clean(index:index) 
+        
+        // 3. Liberar la retención manual del NSHostingView
+        if viewPtr != 0 {
+            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
+                // .takeRetainedValue() "consume" el contador de referencia que iniciamos en la creación
+                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            }
+        }
+    }
+
+
+    public static func updateLabel(_ text: String, id: String ) {
         DispatchQueue.main.async {
-            if let state = states[key] {
+            if let state = states[id] {
                 state.text = text
             }
         }
     }
 
-    @objc(setLabelFontSize:index:)
-    public static func setLabelFontSize(_ size: Double, index: Int) {
-        let key = String(index)
+    public static func setAlignment(id: String, align: Int) {
         DispatchQueue.main.async {
-            if let state = states[key] {
+            if let state = states[id] {
+                // 0: Left, 1: Right, 2: Center (Estándar Harbour/Win)
+                // Ojo: Revisa si tu Harbour usa 0:L, 1:C, 2:R y ajusta los cases:
+                switch align {
+                case 1: state.alignment = .center
+                case 2: state.alignment = .trailing
+                default: state.alignment = .leading
+                }
+            }
+        }
+    }
+
+   
+    public static func setLabelFontSize(_ size: Double, id: String) {
+        DispatchQueue.main.async {
+            if let state = states[id] {
                 state.fontSize = CGFloat(size)
                 state.fontStyle = "" // Clear style to usage size
             }
         }
     }
 
-    @objc(setLabelFontStyle:index:)
-    public static func setLabelFontStyle(_ style: String, index: Int) {
-        let key = String(index)
+    
+    public static func setLabelFontStyle(_ style: String, id: String) {
         DispatchQueue.main.async {
-            if let state = states[key] {
+            if let state = states[id] {
                 state.fontStyle = style
             }
         }
     }
 
-    @objc(setLabelTextColor:index:)
-    public static func setLabelTextColor(_ colorHex: String, index: Int) {
-        let key = String(index)
+    // Versión ultra-rápida para Harbour (nRGB)
+    public static func setColors(id: String, textColor: Int, alpha: Int) {
         DispatchQueue.main.async {
-            if let state = states[key] {
-                state.textColor = Color(hex: colorHex)
+            if let state = states[id] {
+                // Usamos una pequeña variante de nuestra extensión
+                let a = Double(alpha) / 255.0
+                state.textColor = Color(hbColor: textColor).opacity(a)
+            }    
+        }
+    
+}
+    // Versión para Hexadecimal (Strings)
+    public static func setColors(id: String, textHex: String, alpha: Int) {
+        DispatchQueue.main.async {
+            if let state = states[id] {
+                state.textColor = Color(hex: textHex).opacity(Double(alpha) / 255.0)
             }
         }
     }
+
+
 }
 
 // --- HARBOUR BRIDGE MACROS ---
 
-@HarbourBridge
-public func lbl_set_text(index: String, text: String) {
-    SwiftLabelLoader.updateLabel(text, index: Int(index) ?? 0)
+@HarbourDirect
+public func lbl_set_align(id: String, align: Int) {
+    SwiftLabelLoader.setAlignment(id: id, align: align)
 }
 
-@HarbourBridge
-public func lbl_set_font(index: String, size: String) {
-    SwiftLabelLoader.setLabelFontSize(Double(size) ?? 24.0, index: Int(index) ?? 0)
+@HarbourDirect
+public func lbl_set_text(id: String, text: String) {
+    SwiftLabelLoader.updateLabel( text, id: id )
 }
 
-@HarbourBridge
-public func lbl_set_color(index: String, hexColor: String) {
-    SwiftLabelLoader.setLabelTextColor(hexColor, index: Int(index) ?? 0)
+@HarbourDirect
+public func lbl_set_font(id: String, size: Double) {
+    SwiftLabelLoader.setLabelFontSize(size, id:id  )
+}
+
+@HarbourDirect
+public func lbl_set_font_style(id: String, style: String) {
+    SwiftLabelLoader.setLabelFontStyle(style, id:id  )
+}
+
+@HarbourDirect
+public func lbl_set_colors_rgba(id: String, text: Int, alpha: Int) {
+    SwiftLabelLoader.setColors(id: id, textColor: text, alpha: alpha)
+}
+
+@HarbourDirect
+public func lbl_set_colors_hex(id: String, text: String,alpha: Int) {
+    SwiftLabelLoader.setColors(id: id, textHex: text, alpha: alpha)
+}
+@HarbourDirect
+public func lbl_destroy(id: String, index: Int, viewPtr: Int64) {
+    SwiftLabelLoader.destroyLabel(id: id, index: index, viewPtr: viewPtr)
+}
+
+@HarbourDirect
+public func swift_label_create(
+    top: Double, 
+    left: Double, 
+    width: Double, 
+    height: Double,
+    text: String, 
+    parentPtr: Int64,
+    index: Int,
+    id: String
+     ) -> Int64 {
+    
+    // 1. Definimos la lógica de creación en una función interna
+    func executeCreation() -> Int64 {
+        var viewAddress: Int64 = 0
+        
+        // Crear la vista usando el Factory
+        let labelView = SwiftLabelLoader.makeLabel(
+            text: text, 
+            id: id,
+            index: index
+        )
+        
+        // Buscar el contenedor del padre (hWnd de Harbour)
+        if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
+            let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
+            
+            // Aplicar Layout (Asegúrate de que applySwiftViewLayout use .maxXMargin y .minYMargin)
+            applySwiftViewLayout(
+                swiftView: labelView, 
+                parent: parentObj, 
+                top: top, 
+                left: left, 
+                w: width, 
+                h: height
+            )
+            
+            // Retener la vista para Harbour
+            let viewPtr = Unmanaged.passRetained(labelView).toOpaque()
+            viewAddress = Int64(Int(bitPattern: viewPtr))
+        } else {
+            print("Error: El parentPtr \(parentPtr) no es una dirección de memoria válida")
+        }
+        
+        return viewAddress
+    }
+
+    // 2. EVITAR EL DEADLOCK:
+    // Si ya estamos en el hilo principal (Harbour Main Thread), ejecutamos directo.
+    // Si no, usamos sync para esperar el resultado.
+    if Thread.isMainThread {
+        return executeCreation()
+    } else {
+        return DispatchQueue.main.sync {
+            return executeCreation()
+        }
+    }
 }

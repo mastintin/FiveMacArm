@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 HB_FUNC(SWIFTBTNCREATE) {
   CGFloat nTop = (CGFloat)hb_parnd(1);
   CGFloat nLeft = (CGFloat)hb_parnd(2);
@@ -76,3 +76,4 @@ HB_FUNC(BTN_SET_IMAGE) {
   SW_BTN_SET_IMAGE((const int8_t *)[GetRootIdFromParam(1) UTF8String],
                    sw_parc(2));
 }
+*/

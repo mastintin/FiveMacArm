@@ -1,3 +1,5 @@
+
+// #include "hbxvm.h"
 #include <fivemac.h>
 
 static PHB_SYMB symFMH = NULL;
@@ -33,7 +35,7 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmPushLong(WM_WNDVALID);
   hb_vmDo(2);
 
@@ -58,7 +60,7 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmPushLong(WM_WHEN);
   hb_vmDo(2);
 
@@ -77,9 +79,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmPushLong(WM_LOSTFOCUS);
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmDo(3);
 }
 
@@ -93,9 +95,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmPushLong(WM_GETFOCUS);
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmDo(3);
 }
 
@@ -107,8 +109,8 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_PAINT);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_PAINT);
   hb_vmDo(2);
 }
 
@@ -122,11 +124,11 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_LBUTTONDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(point.y);
-  hb_vmPushLong(point.x);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_LBUTTONDOWN);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(point.y);
+  hb_vmPushNLL(point.x);
   hb_vmDo(5);
 }
 
@@ -138,9 +140,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_FLIPPED);
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_FLIPPED);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmDo(3);
 
   return hb_parl(-1);
@@ -156,11 +158,11 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_LBUTTONUP);
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(point.y);
-  hb_vmPushLong(point.x);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_LBUTTONUP);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(point.y);
+  hb_vmPushNLL(point.x);
   hb_vmDo(5);
 }
 
@@ -174,11 +176,11 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_RBUTTONDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(point.y);
-  hb_vmPushLong(point.x);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_RBUTTONDOWN);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(point.y);
+  hb_vmPushNLL(point.x);
   hb_vmDo(5);
 }
 
@@ -197,11 +199,11 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_MOUSEMOVED);
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(point.y);
-  hb_vmPushLong(point.x);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_MOUSEMOVED);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(point.y);
+  hb_vmPushNLL(point.x);
   hb_vmDo(5);
 }
 
@@ -220,11 +222,11 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_MOUSEMOVED);
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(point.y);
-  hb_vmPushLong(point.x);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_MOUSEMOVED);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(point.y);
+  hb_vmPushNLL(point.x);
   hb_vmDo(5);
 }
 
@@ -239,10 +241,10 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_KEYDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(unichar);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_KEYDOWN);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(unichar);
   hb_vmDo(4);
 
   if (hb_parnl(-1) != 1)
@@ -261,9 +263,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_RESIZE);
-  hb_vmPushNumInt((HB_LONGLONG)win);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_RESIZE);
+  hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmDo(3);
 }
 
@@ -275,9 +277,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_MENUITEM);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_MENUITEM);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -290,9 +292,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_BTNCLICK);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_BTNCLICK);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -305,9 +307,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_BRWDBLCLICK);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_BRWDBLCLICK);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -319,9 +321,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_CBXCHANGE);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_CBXCHANGE);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -334,9 +336,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_CHKCLICK);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_CHKCLICK);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -348,9 +350,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_CLRCHANGE);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_CLRCHANGE);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -363,9 +365,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_TBRCLICK);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_TBRCLICK);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 
@@ -377,9 +379,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_TIMER);
-  hb_vmPushNumInt((HB_LONGLONG)timer);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_TIMER);
+  hb_vmPushNLL((HB_LONGLONG)timer);
   hb_vmDo(3);
 }
 
@@ -392,9 +394,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)win);
-  hb_vmPushLong(WM_SLIDERCHANGE);
-  hb_vmPushNumInt((HB_LONGLONG)sender);
+  hb_vmPushNLL((HB_LONGLONG)win);
+  hb_vmPushNLL(WM_SLIDERCHANGE);
+  hb_vmPushNLL((HB_LONGLONG)sender);
   hb_vmDo(3);
 }
 

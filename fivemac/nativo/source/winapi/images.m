@@ -1,4 +1,13 @@
+#import <Cocoa/Cocoa.h>
 #include <fivemac.h>
+
+@interface NSImageSymbolConfiguration (ModernAPIs)
++ (NSImageSymbolConfiguration *)configurationWithPreferringMulticolor;
++ (NSImageSymbolConfiguration *)configurationWithHierarchicalColor:
+    (NSColor *)color;
++ (NSImageSymbolConfiguration *)configurationWithPaletteColors:
+    (NSArray<NSColor *> *)colors;
+@end
 
 void MsgAlert(NSString *, NSString *messageText);
 
@@ -24,9 +33,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_LBUTTONDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -40,9 +49,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_LBUTTONUP);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmDo(5);
@@ -64,9 +73,9 @@ void ImgResize(NSImage *image, int nWidth, int nHeight) {
 HB_FUNC(IMGCREATE) // hWnd
 {
 
-  ImageView *image =
-      [[ImageView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
-                                                  hb_parnl(3), hb_parnl(4))];
+  ImageView *image = [[ImageView alloc]
+      initWithFrame:NSMakeRect((CGFloat)hb_parnd(2), (CGFloat)hb_parnd(1),
+                               (CGFloat)hb_parnd(3), (CGFloat)hb_parnd(4))];
   NSWindow *window = (NSWindow *)hb_parnll(5);
 
   [GetView(window) addSubview:image];
@@ -80,7 +89,7 @@ HB_FUNC(IMGSETFILE) {
 
   [image setImage:[[NSImage alloc] initWithContentsOfFile:string]];
 
-  ImgResize([image image], hb_parnl(3), hb_parnl(4));
+  ImgResize([image image], (int)hb_parnll(3), (int)hb_parnll(4));
 
   [[image image] setName:string];
 }
@@ -92,11 +101,9 @@ HB_FUNC(IMGSETNSIMAGE) {
   [image setImage:hImg];
 }
 
-
-HB_FUNC( IMGGETNSIMAGE )
-{
-   NSImageView * image = ( NSImageView * ) hb_parnll( 1 );
-   hb_retnll( ( HB_LONGLONG ) [ image image ] );
+HB_FUNC(IMGGETNSIMAGE) {
+  NSImageView *image = (NSImageView *)hb_parnll(1);
+  hb_retnll((HB_LONGLONG)[image image]);
 }
 
 HB_FUNC(NSIMAGEFROMNAME) {
@@ -130,10 +137,10 @@ HB_FUNC(IMGSYMBOLCONFIG) // ( pointSize, weight, scale )
     if (pointSize <= 0)
       pointSize = [NSFont systemFontSize];
 
-    NSImageSymbolConfiguration *config = [configClass
-        configurationWithPointSize:pointSize
-                            weight:weight
-                             scale:scale];
+    NSImageSymbolConfiguration *config =
+        [configClass configurationWithPointSize:pointSize
+                                         weight:weight
+                                          scale:scale];
     hb_retnll((HB_LONGLONG)config);
   } else {
     hb_retnll(0);
@@ -144,84 +151,80 @@ HB_FUNC(IMGSYMBOLWITHVARIABLE) // ( name, variableValue, hConfig )
 {
   NSString *name = hb_NSSTRING_par(1);
   double value = hb_parnd(2);
-  NSImageSymbolConfiguration *config = (NSImageSymbolConfiguration *)hb_parnll(3);
+  NSImageSymbolConfiguration *config =
+      (NSImageSymbolConfiguration *)hb_parnll(3);
   NSImage *image = nil;
-  Class imgClass = [NSImage class];
 
-  if (HB_ISNIL(2)) { 
-      if ([imgClass respondsToSelector:@selector(imageWithSystemSymbolName:configuration:)]) {
-          image = [NSImage imageWithSystemSymbolName:name configuration:config];
-      }
+  if (HB_ISNIL(2)) {
+    image = [NSImage imageWithSystemSymbolName:name
+                      accessibilityDescription:nil];
+  } else {
+    image = [NSImage imageWithSystemSymbolName:name
+                                 variableValue:value
+                      accessibilityDescription:nil];
   }
 
-  if (!image) {
-      if ([imgClass respondsToSelector:@selector(imageWithSystemSymbolName:variableValue:configuration:)]) {
-          image = [NSImage imageWithSystemSymbolName:name variableValue:value configuration:config];
-      } else if ([imgClass respondsToSelector:@selector(imageWithSystemSymbolName:accessibilityDescription:)]) {
-          image = [NSImage imageWithSystemSymbolName:name accessibilityDescription:nil];
-          if (image && config && [image respondsToSelector:@selector(imageWithSymbolConfiguration:)]) {
-              image = [image imageWithSymbolConfiguration:config];
-          }
-      }
+  if (image && config) {
+    image = [image imageWithSymbolConfiguration:config];
   }
+
   hb_retnll((HB_LONGLONG)image);
 }
 
 HB_FUNC(IMGSYMBOLHIERARCHICAL) // ( hConfig, nColor )
 {
-  Class configClass = NSClassFromString(@"NSImageSymbolConfiguration");
-  NSImageSymbolConfiguration *config = (NSImageSymbolConfiguration *)hb_parnll(1);
+  NSImageSymbolConfiguration *config =
+      (NSImageSymbolConfiguration *)hb_parnll(1);
 
-  if (configClass && [configClass respondsToSelector:@selector(configurationWithHierarchicalColor:)]) {
-    long nCol = hb_parnl(2);
-    NSColor *color = [NSColor colorWithDeviceRed:(nCol & 0xFF)/255.0 
-                                           green:((nCol >> 8) & 0xFF)/255.0 
-                                            blue:((nCol >> 16) & 0xFF)/255.0 
-                                           alpha:1.0];
+  NSInteger nCol = (NSInteger)hb_parnll(2);
+  NSColor *color = [NSColor colorWithDeviceRed:(nCol & 0xFF) / 255.0
+                                         green:((nCol >> 8) & 0xFF) / 255.0
+                                          blue:((nCol >> 16) & 0xFF) / 255.0
+                                         alpha:1.0];
 
-    NSImageSymbolConfiguration *colorConfig = [configClass configurationWithHierarchicalColor:color];
-    if (config) colorConfig = [config configurationByApplyingConfiguration:colorConfig];
-    hb_retnll((HB_LONGLONG)colorConfig);
-  } else {
-    hb_retnll((HB_LONGLONG)config);
-  }
+  NSImageSymbolConfiguration *colorConfig =
+      [NSImageSymbolConfiguration configurationWithHierarchicalColor:color];
+  if (config)
+    colorConfig = [config configurationByApplyingConfiguration:colorConfig];
+
+  hb_retnll((HB_LONGLONG)colorConfig);
 }
 
 HB_FUNC(IMGSYMBOLMULTICOLOR) // ( hConfig )
 {
-  Class configClass = NSClassFromString(@"NSImageSymbolConfiguration");
-  NSImageSymbolConfiguration *config = (NSImageSymbolConfiguration *)hb_parnll(1);
+  NSImageSymbolConfiguration *config =
+      (NSImageSymbolConfiguration *)hb_parnll(1);
 
-  if (configClass && [configClass respondsToSelector:@selector(configurationWithPreferringMulticolor)]) {
-      NSImageSymbolConfiguration *mcConfig = [configClass configurationWithPreferringMulticolor];
-      if (config) mcConfig = [config configurationByApplyingConfiguration:mcConfig];
-      hb_retnll((HB_LONGLONG)mcConfig);
-  } else
-      hb_retnll((HB_LONGLONG)config);
+  NSImageSymbolConfiguration *mcConfig =
+      [NSImageSymbolConfiguration configurationWithPreferringMulticolor];
+  if (config)
+    mcConfig = [config configurationByApplyingConfiguration:mcConfig];
+
+  hb_retnll((HB_LONGLONG)mcConfig);
 }
 
 HB_FUNC(IMGSYMBOLPALETTE) // ( hConfig, nCol1, nCol2, nCol3 )
 {
-    Class configClass = NSClassFromString(@"NSImageSymbolConfiguration");
-    NSImageSymbolConfiguration *config = (NSImageSymbolConfiguration *)hb_parnll(1);
-    
-    if (configClass && [configClass respondsToSelector:@selector(configurationWithPaletteColors:)]) {
-        NSMutableArray *colors = [NSMutableArray array];
-        for (int i = 2; i <= 4; i++) {
-            if (!HB_ISNIL(i)) {
-                long nCol = hb_parnl(i);
-                NSColor *color = [NSColor colorWithDeviceRed:(nCol & 0xFF)/255.0
-                                                       green:((nCol >> 8) & 0xFF)/255.0
-                                                        blue:((nCol >> 16) & 0xFF)/255.0
-                                                       alpha:1.0];
-                [colors addObject:color];
-            }
-        }
-        NSImageSymbolConfiguration *pConfig = [configClass configurationWithPaletteColors:colors];
-        if (config) pConfig = [config configurationByApplyingConfiguration:pConfig];
-        hb_retnll((HB_LONGLONG)pConfig);
-    } else
-        hb_retnll((HB_LONGLONG)config);
+  NSImageSymbolConfiguration *config =
+      (NSImageSymbolConfiguration *)hb_parnll(1);
+
+  NSMutableArray *colors = [NSMutableArray array];
+  for (int i = 2; i <= 4; i++) {
+    if (!HB_ISNIL(i)) {
+      long nCol = hb_parnl(i);
+      NSColor *color = [NSColor colorWithDeviceRed:(nCol & 0xFF) / 255.0
+                                             green:((nCol >> 8) & 0xFF) / 255.0
+                                              blue:((nCol >> 16) & 0xFF) / 255.0
+                                             alpha:1.0];
+      [colors addObject:color];
+    }
+  }
+  NSImageSymbolConfiguration *pConfig =
+      [NSImageSymbolConfiguration configurationWithPaletteColors:colors];
+  if (config)
+    pConfig = [config configurationByApplyingConfiguration:pConfig];
+
+  hb_retnll((HB_LONGLONG)pConfig);
 }
 HB_FUNC(IMGSYMBOLS) {
   NSString *name = hb_NSSTRING_par(1);
