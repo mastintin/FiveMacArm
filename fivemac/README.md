@@ -330,6 +330,20 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **New flagship samples**:
     - `TestSpeechFile.prg`: Complete demonstration of the "Record -> Stop -> Select -> Transcribe" workflow with a multi-line editor.
     - `TestSpeech.prg`: Real-time analysis of voice metrics and transcription.
+- `testdatepicker.prg`: Demonstration of the new native DatePicker with custom colors and Spanish format support.
+
+### SwiftUI Refinement & Date Support (March 2026 - Part 27)
+- **SwiftDatePicker**:
+    - **Native Component**: New native SwiftUI date selector (`SWIFTDATEPICKER` command) featuring multiple styles.
+    - **Locale Precision**: Forced `es_ES` locale support to ensure the date stepper always follows the **Day/Month/Year** order, regardless of system primary language.
+    - **Async Callback Safety**: Re-engineered the communication bridge to Harbour. Callbacks are now systematically handled asychronously. This prevents critical system crashes (Segfault 11) when Harbour opens modal dialogs (like `MsgInfo`) during the native control's interaction tracking loop.
+- **SwiftPicker Refinements**:
+    - **Placeholder Restoration**: Re-implemented support for placeholders ("Seleccionar...").
+    - **Title & Selection Visibility**: Fixed layout logic to ensure the selected item name is always visible alongside the label, providing immediate visual feedback.
+- **Direct Bridge Architecture (`@HarbourDirect`)**:
+    - **Streamlined Integration**: Continued the migration towards the `@HarbourDirect` macro system. This allows Swift code to be exposed directly as Harbour-callable C functions, bypassing the traditional Objective-C wrapper boilerplate for improved performance and easier maintenance.
+- **HBMISC Library Support**:
+    - **System-Wide Linking**: Updated build scripts for native samples, SwiftUI samples, and the Fivedit editor to automatically link against the **`hbmisc`** Harbour library. This enables the use of miscellaneous Harbour utility functions across the entire ecosystem.
 
 ## Building
 
