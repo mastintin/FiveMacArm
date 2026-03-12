@@ -341,9 +341,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_CVDBLCLICK);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(idx);
   hb_vmDo(4);
 }
@@ -481,9 +481,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONG)[self window]);
+  hb_vmPushNLL((HB_LONG)[self window]);
   hb_vmPushLong(WM_BRWCHANGED);
-  hb_vmPushNumInt((HB_LONG)self);
+  hb_vmPushNLL((HB_LONG)self);
   hb_vmPushLong(firstIndex);
   hb_vmDo(4);
 }
@@ -496,9 +496,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONG)[self window]);
+  hb_vmPushNLL((HB_LONG)[self window]);
   hb_vmPushLong(WM_BRWDBLCLICK);
-  hb_vmPushNumInt((HB_LONG)self);
+  hb_vmPushNLL((HB_LONG)self);
   hb_vmPushLong(idx);
   hb_vmDo(4);
 }

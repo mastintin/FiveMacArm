@@ -6,8 +6,6 @@
 #include <hbvm.h>
 #import <objc/runtime.h>
 
-static PHB_SYMB symFMH = NULL;
-
 @interface MKMapView (FiveMac)
 @end
 
@@ -56,22 +54,20 @@ static PHB_SYMB symFMH = NULL;
     annotationView.image = [NSImage imageNamed:iconName];
     return annotationView;
   } else {
-    MKPinAnnotationView *pinView = (MKPinAnnotationView *)[mapView
-        dequeueReusableAnnotationViewWithIdentifier:@"Pin"];
-    if (!pinView) {
-      pinView =
-          [[[MKPinAnnotationView alloc] initWithAnnotation:annotation
-                                           reuseIdentifier:@"Pin"] autorelease];
-      pinView.canShowCallout = YES;
+    MKMarkerAnnotationView *markerView = (MKMarkerAnnotationView *)[mapView
+        dequeueReusableAnnotationViewWithIdentifier:@"Marker"];
+    if (!markerView) {
+      markerView = [[[MKMarkerAnnotationView alloc]
+          initWithAnnotation:annotation
+             reuseIdentifier:@"Marker"] autorelease];
+      markerView.canShowCallout = YES;
     } else {
-      pinView.annotation = annotation;
+      markerView.annotation = annotation;
     }
     if (color) {
-      if (@available(macOS 10.11, *)) {
-        pinView.pinTintColor = color;
-      }
+      markerView.markerTintColor = color;
     }
-    return pinView;
+    return markerView;
   }
 }
 @end
@@ -105,29 +101,38 @@ HB_FUNC(MKMAPGOTOLOCATION) // ( hMap, cAddress )
   MKMapView *map = (MKMapView *)hb_parnll(1);
   NSString *address = hb_NSSTRING_par(2);
 
-  CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+  MKLocalSearchRequest *request = [[MKLocalSearchRequest alloc] init];
+  request.naturalLanguageQuery = address;
+  request.region = map.region;
 
-  [geocoder geocodeAddressString:address
-               completionHandler:^(NSArray *placemarks, NSError *error) {
-                 if (error) {
-                   NSLog(@"Geocode failed with error: %@", error);
-                   return;
-                 }
+  MKLocalSearch *search = [[MKLocalSearch alloc] initWithRequest:request];
+  [request release];
 
-                 if (placemarks && placemarks.count > 0) {
-                   CLPlacemark *topResult = [placemarks objectAtIndex:0];
-                   MKPlacemark *placemark =
-                       [[MKPlacemark alloc] initWithPlacemark:topResult];
+  [search startWithCompletionHandler:^(MKLocalSearchResponse *response,
+                                       NSError *error) {
+    if (error) {
+      NSLog(@"Search failed with error: %@", error);
+      [search release];
+      return;
+    }
 
-                   MKCoordinateRegion region = map.region;
-                   region.center = placemark.coordinate;
-                   region.span.longitudeDelta /= 8.0;
-                   region.span.latitudeDelta /= 8.0;
+    if (response.mapItems.count > 0) {
+      MKMapItem *item = [response.mapItems firstObject];
+      MKCoordinateRegion region = map.region;
+      region.center = item.location.coordinate;
+      region.span.longitudeDelta /= 8.0;
+      region.span.latitudeDelta /= 8.0;
 
-                   [map setRegion:region animated:YES];
-                   [map addAnnotation:placemark];
-                 }
-               }];
+      [map setRegion:region animated:YES];
+
+      MKPointAnnotation *annotation = [[MKPointAnnotation alloc] init];
+      annotation.coordinate = item.location.coordinate;
+      annotation.title = item.name;
+      [map addAnnotation:annotation];
+      [annotation release];
+    }
+    [search release];
+  }];
 }
 
 //----------------------------------------------------------------------------//
@@ -140,96 +145,110 @@ HB_FUNC(MKMAPSHOWROUTE) // ( hMap, cFrom, cTo, bInstructions )
   PHB_ITEM pCodeBlock =
       hb_param(4, HB_IT_BLOCK) ? hb_itemNew(hb_param(4, HB_IT_BLOCK)) : NULL;
 
-  CLGeocoder *geocoder = [[CLGeocoder alloc] init];
+  MKLocalSearchRequest *requestFrom = [[MKLocalSearchRequest alloc] init];
+  requestFrom.naturalLanguageQuery = cFrom;
+  requestFrom.region = map.region;
 
-  [geocoder
-      geocodeAddressString:cFrom
-         completionHandler:^(NSArray *placemarks, NSError *error) {
-           if (error || placemarks.count == 0) {
-             if (pCodeBlock)
-               hb_itemRelease(pCodeBlock);
-             return;
-           }
+  MKLocalSearch *searchFrom =
+      [[MKLocalSearch alloc] initWithRequest:requestFrom];
+  [requestFrom release];
 
-           CLPlacemark *fromPlacemark = [placemarks objectAtIndex:0];
-           MKPlacemark *fromMKPlacemark =
-               [[MKPlacemark alloc] initWithPlacemark:fromPlacemark];
-           MKMapItem *fromItem =
-               [[MKMapItem alloc] initWithPlacemark:fromMKPlacemark];
+  [searchFrom startWithCompletionHandler:^(MKLocalSearchResponse *responseFrom,
+                                           NSError *errorFrom) {
+    if (errorFrom || responseFrom.mapItems.count == 0) {
+      if (pCodeBlock)
+        hb_itemRelease(pCodeBlock);
+      [searchFrom release];
+      return;
+    }
 
-           [geocoder
-               geocodeAddressString:cTo
-                  completionHandler:^(NSArray *placemarks2, NSError *error2) {
-                    if (error2 || placemarks2.count == 0) {
-                      if (pCodeBlock)
-                        hb_itemRelease(pCodeBlock);
-                      return;
-                    }
+    MKMapItem *fromItem = [responseFrom.mapItems firstObject];
 
-                    CLPlacemark *toPlacemark = [placemarks2 objectAtIndex:0];
-                    MKPlacemark *toMKPlacemark =
-                        [[MKPlacemark alloc] initWithPlacemark:toPlacemark];
-                    MKMapItem *toItem =
-                        [[MKMapItem alloc] initWithPlacemark:toMKPlacemark];
+    MKLocalSearchRequest *requestTo = [[MKLocalSearchRequest alloc] init];
+    requestTo.naturalLanguageQuery = cTo;
+    requestTo.region = map.region;
 
-                    MKDirectionsRequest *request =
-                        [[MKDirectionsRequest alloc] init];
-                    request.source = fromItem;
-                    request.destination = toItem;
-                    request.transportType = MKDirectionsTransportTypeAutomobile;
+    MKLocalSearch *searchTo = [[MKLocalSearch alloc] initWithRequest:requestTo];
+    [requestTo release];
 
-                    MKDirections *directions =
-                        [[MKDirections alloc] initWithRequest:request];
+    [searchTo startWithCompletionHandler:^(MKLocalSearchResponse *responseTo,
+                                           NSError *errorTo) {
+      if (errorTo || responseTo.mapItems.count == 0) {
+        if (pCodeBlock)
+          hb_itemRelease(pCodeBlock);
+        [searchFrom release];
+        [searchTo release];
+        return;
+      }
 
-                    [directions calculateDirectionsWithCompletionHandler:^(
-                                    MKDirectionsResponse *response,
-                                    NSError *error3) {
-                      if (error3 || response.routes.count == 0) {
-                        if (pCodeBlock)
-                          hb_itemRelease(pCodeBlock);
-                        return;
-                      }
+      MKMapItem *toItem = [responseTo.mapItems firstObject];
 
-                      MKRoute *route = [response.routes objectAtIndex:0];
-                      [map addOverlay:route.polyline
-                                level:MKOverlayLevelAboveRoads];
+      MKDirectionsRequest *dirRequest = [[MKDirectionsRequest alloc] init];
+      dirRequest.source = fromItem;
+      dirRequest.destination = toItem;
+      dirRequest.transportType = MKDirectionsTransportTypeAutomobile;
 
-                      [map addAnnotation:fromMKPlacemark];
-                      [map addAnnotation:toMKPlacemark];
+      MKDirections *directions =
+          [[MKDirections alloc] initWithRequest:dirRequest];
+      [dirRequest release];
 
-                      [map setVisibleMapRect:route.polyline.boundingMapRect
-                                 edgePadding:NSEdgeInsetsMake(50, 50, 50, 50)
-                                    animated:YES];
+      [directions calculateDirectionsWithCompletionHandler:^(
+                      MKDirectionsResponse *dirResponse, NSError *dirError) {
+        if (dirError || dirResponse.routes.count == 0) {
+          if (pCodeBlock)
+            hb_itemRelease(pCodeBlock);
+          [searchFrom release];
+          [searchTo release];
+          [directions release];
+          return;
+        }
 
-                      if (pCodeBlock) {
-                        PHB_ITEM pSteps = hb_itemArrayNew(0);
+        MKRoute *route = [dirResponse.routes objectAtIndex:0];
+        [map addOverlay:route.polyline level:MKOverlayLevelAboveRoads];
 
-                        for (MKRouteStep *step in route.steps) {
-                          if (step.instructions.length > 0) {
-                            PHB_ITEM pString = hb_itemPutC(
-                                NULL, [step.instructions UTF8String]);
-                            hb_arrayAdd(pSteps, pString);
-                            hb_itemRelease(pString);
-                          }
-                        }
+        MKPointAnnotation *fromAnn = [[MKPointAnnotation alloc] init];
+        fromAnn.coordinate = fromItem.location.coordinate;
+        fromAnn.title = fromItem.name;
+        [map addAnnotation:fromAnn];
+        [fromAnn release];
 
-                        PHB_ITEM pArray = hb_itemArrayNew(3);
-                        hb_arraySet(pArray, 1, pSteps);
-                        hb_itemRelease(pSteps);
+        MKPointAnnotation *toAnn = [[MKPointAnnotation alloc] init];
+        toAnn.coordinate = toItem.location.coordinate;
+        toAnn.title = toItem.name;
+        [map addAnnotation:toAnn];
+        [toAnn release];
 
-                        hb_arraySetForward(pArray, 2,
-                                           hb_itemPutND(NULL, route.distance));
-                        hb_arraySetForward(
-                            pArray, 3,
-                            hb_itemPutND(NULL, route.expectedTravelTime));
+        [map setVisibleMapRect:route.polyline.boundingMapRect
+                   edgePadding:NSEdgeInsetsMake(50, 50, 50, 50)
+                      animated:YES];
 
-                        hb_vmEvalBlockV(pCodeBlock, 1, pArray);
-                        hb_itemRelease(pArray);
-                        hb_itemRelease(pCodeBlock);
-                      }
-                    }];
-                  }];
-         }];
+        if (pCodeBlock) {
+          PHB_ITEM pSteps = hb_itemArrayNew(0);
+
+          for (MKRouteStep *step in route.steps) {
+            if (step.instructions.length > 0) {
+              PHB_ITEM pString =
+                  hb_itemPutC(NULL, [step.instructions UTF8String]);
+              hb_arrayAdd(pSteps, pString);
+              hb_itemRelease(pString);
+            }
+          }
+
+          PHB_ITEM pArray = hb_itemArrayNew(3);
+          hb_arraySet(pArray, 1, pSteps);
+          hb_itemRelease(pSteps);
+
+          hb_arraySetForward(pArray, 2, hb_itemPutND(NULL, route.distance));
+          hb_arraySetForward(pArray, 3,
+                             hb_itemPutND(NULL, route.expectedTravelTime));
+
+          hb_vmEvalBlockV(pCodeBlock, 1, pArray);
+          hb_itemRelease(pArray);
+          hb_itemRelease(pCodeBlock);
+        }
+      }];
+    }];
+  }];
 }
 
 //----------------------------------------------------------------------------//
@@ -276,14 +295,10 @@ HB_FUNC(MKMAPSETTYPE) // ( hMap, nType )
     [map setMapType:MKMapTypeHybrid];
     break;
   case 3:
-    if (@available(macOS 10.11, *)) {
-      [map setMapType:MKMapTypeSatelliteFlyover];
-    }
+    [map setMapType:MKMapTypeSatelliteFlyover];
     break;
   case 4:
-    if (@available(macOS 10.11, *)) {
-      [map setMapType:MKMapTypeHybridFlyover];
-    }
+    [map setMapType:MKMapTypeHybridFlyover];
     break;
   }
 }
@@ -434,9 +449,9 @@ HB_FUNC(MKMAPSEARCHPOI) // ( hMap, cSearch, bCallback )
           hb_arraySetForward(pSub, 1,
                              hb_itemPutC(NULL, [item.name UTF8String]));
           hb_arraySetForward(
-              pSub, 2, hb_itemPutND(NULL, item.placemark.coordinate.latitude));
+              pSub, 2, hb_itemPutND(NULL, item.location.coordinate.latitude));
           hb_arraySetForward(
-              pSub, 3, hb_itemPutND(NULL, item.placemark.coordinate.longitude));
+              pSub, 3, hb_itemPutND(NULL, item.location.coordinate.longitude));
           hb_arrayAdd(pArray, pSub);
           hb_itemRelease(pSub);
         }

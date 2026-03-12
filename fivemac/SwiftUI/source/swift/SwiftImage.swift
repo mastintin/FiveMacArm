@@ -29,31 +29,36 @@ struct SwiftImageView: View {
     var callback: (() -> Void)?
     
     var body: some View {
-        Group {
+        ZStack {
             if let img = state.image {
                 Image(nsImage: img)
-                    .if(state.resizable) { $0.resizable() }
+                    .resizable()
+                    .aspectRatio(contentMode: state.contentMode == 1 ? .fill : .fit)
             } else if !state.systemName.isEmpty {
                 Image(systemName: state.systemName)
-                    .if(state.resizable) { $0.resizable() }
+                    .resizable()
+                    .aspectRatio(contentMode: state.contentMode == 1 ? .fill : .fit)
             } else if !state.filePath.isEmpty {
                 if let img = NSImage(contentsOfFile: state.filePath) {
                      Image(nsImage: img)
-                        .if(state.resizable) { $0.resizable() }
+                        .resizable()
+                        .aspectRatio(contentMode: state.contentMode == 1 ? .fill : .fit)
                 } else {
                      Image(nsImage: NSImage(byReferencingFile: state.filePath) ?? NSImage())
-                        .if(state.resizable) { $0.resizable() }
+                        .resizable()
+                        .aspectRatio(contentMode: state.contentMode == 1 ? .fill : .fit)
                 }
             } else if !state.name.isEmpty {
                 Image(state.name)
-                     .if(state.resizable) { $0.resizable() }
+                     .resizable()
+                     .aspectRatio(contentMode: state.contentMode == 1 ? .fill : .fit)
             } else {
-                Text("No Image")
+                Color.clear
             }
         }
-        .aspectRatio(contentMode: state.contentMode == 1 ? .fill : .fit)
-        .foregroundColor(state.foregroundColor)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+        .foregroundColor(state.foregroundColor)
         .onTapGesture {
             self.callback?()
         }
@@ -65,30 +70,34 @@ public class SwiftImageLoader: NSObject {
     
     public static var states: [String: SwiftImageState] = [:]
 
-    @objc(makeImageWithSystemName:index:callback:)
-    public static func makeImage(systemName: String, index: String, callback: ((String) -> Void)?) -> NSView {
-         let state = SwiftImageState(systemName: systemName)
-         states[index] = state
+    public static func makeImage(systemName: String, name: String, filePath: String, id: String, index: Int, callback: (() -> Void)?) -> NSView {
+         let state = SwiftImageState(systemName: systemName, name: name, filePath: filePath)
+         states[id] = state
          
-         let action: () -> Void = {
-             _ = callback?("Click")
-         }
-         
-         let view = SwiftImageView(state: state, callback: action)
-         
-         if let intIndex = Int(index) {
-             ViewRegistry.register(view, for: intIndex)
-         }
+         let view = SwiftImageView(state: state, callback: callback)
+         ViewRegistry.register(view, for: index)
 
          let hostingView = NSHostingView(rootView: view)
+         hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
          return hostingView
     }
+
+    public static func destroyImage(id: String, index: Int, viewPtr: Int64) {
+        states.removeValue(forKey: id)
+        ViewRegistry.clean(index: index)
+        
+        if viewPtr != 0 {
+            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
+                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            }
+        }
+    }
 }
 
-// --- HARBOUR BRIDGE MACROS ---
+// --- HARBOUR DIRECT BRIDGES ---
 
-@HarbourBridge
+@HarbourDirect
 public func img_set_system_name(id: String, name: String) {
     DispatchQueue.main.async {
         if let state = SwiftImageLoader.states[id] {
@@ -100,7 +109,7 @@ public func img_set_system_name(id: String, name: String) {
     }
 }
 
-@HarbourBridge
+@HarbourDirect
 public func img_set_name(id: String, name: String) {
     DispatchQueue.main.async {
         if let state = SwiftImageLoader.states[id] {
@@ -112,7 +121,7 @@ public func img_set_name(id: String, name: String) {
     }
 }
 
-@HarbourBridge
+@HarbourDirect
 public func img_set_file(id: String, path: String) {
     DispatchQueue.main.async {
         if let state = SwiftImageLoader.states[id] {
@@ -128,7 +137,7 @@ public func img_set_file(id: String, path: String) {
     }
 }
 
-@HarbourBridge
+@HarbourDirect
 public func img_set_color(id: String, hexColor: String) {
     DispatchQueue.main.async {
         if let state = SwiftImageLoader.states[id] {
@@ -137,31 +146,106 @@ public func img_set_color(id: String, hexColor: String) {
     }
 }
 
-@HarbourBridge
-public func img_set_resizable(id: String, resizable: String) {
-    let isResizable = (resizable == "1" || resizable.lowercased() == "true")
+@HarbourDirect
+public func img_set_resizable(id: String, resizable: Bool) {
     DispatchQueue.main.async {
         if let state = SwiftImageLoader.states[id] {
-            state.resizable = isResizable
+            state.resizable = resizable
         }
     }
 }
 
-@HarbourBridge
-public func img_set_aspect_ratio(id: String, mode: String) {
-    let nMode = Int(mode) ?? 0
+@HarbourDirect
+public func img_set_aspect_ratio(id: String, mode: Int) {
     DispatchQueue.main.async {
         if let state = SwiftImageLoader.states[id] {
-            state.contentMode = nMode
+            state.contentMode = mode
         }
     }
 }
 
-@objc(SwiftImageActions)
-public class SwiftImageActions: NSObject {
-    @objc public static func setImageObj(index: String, image: NSImage) {
-        DispatchQueue.main.async {
-            if let state = SwiftImageLoader.states[index] {
+@HarbourDirect
+public func img_destroy(id: String, index: Int, viewPtr: Int64) {
+    SwiftImageLoader.destroyImage(id: id, index: index, viewPtr: viewPtr)
+}
+
+@HarbourDirect
+public func swift_image_create(
+    top: Double,
+    left: Double,
+    width: Double,
+    height: Double,
+    name: String,
+    parentPtr: Int64,
+    index: Int,
+    id: String
+) -> Int64 {
+    
+    func executeCreation() -> Int64 {
+        var viewAddress: Int64 = 0
+        
+        let callback: () -> Void = {
+            let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTIMAGEONCLICK") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushNumber(Double(index), 0)
+                    hb_vmDo(1)
+                }
+            }
+            
+            if Thread.isMainThread {
+                sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
+            }
+        }
+
+        // We determine if name is system or file based on some heuristic or just pass as system for now
+        // Usually SF Symbols have dots or are known, but here we just follow the old pattern
+        let imgView = SwiftImageLoader.makeImage(
+            systemName: name, 
+            name: "", 
+            filePath: "", 
+            id: id, 
+            index: index, 
+            callback: callback
+        )
+        
+        if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
+            let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
+            
+            applySwiftViewLayout(
+                swiftView: imgView, 
+                parent: parentObj, 
+                top: top, 
+                left: left, 
+                w: width, 
+                h: height
+            )
+            
+            let viewPtr = Unmanaged.passRetained(imgView).toOpaque()
+            viewAddress = Int64(Int(bitPattern: viewPtr))
+        }
+        
+        return viewAddress
+    }
+
+    if Thread.isMainThread {
+        return executeCreation()
+    } else {
+        return DispatchQueue.main.sync {
+            return executeCreation()
+        }
+    }
+}
+
+@HarbourDirect
+public func img_set_nsimage(id: String, imagePtr: Int64) {
+    DispatchQueue.main.async {
+        if let state = SwiftImageLoader.states[id], imagePtr != 0 {
+            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(imagePtr)) {
+                let image = Unmanaged<NSImage>.fromOpaque(rawPtr).takeUnretainedValue()
                 state.image = image
                 state.systemName = ""
                 state.name = ""

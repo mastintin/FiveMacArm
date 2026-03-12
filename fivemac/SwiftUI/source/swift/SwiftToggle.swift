@@ -25,42 +25,39 @@ public class ToggleState {
 // SwiftUI View for the Toggle
 
 struct SwiftToggleView: View {
-    var state: ToggleState
+    @Bindable var state: ToggleState
 
     var body: some View {
-        let toggleBinding = Binding(
-            get: { self.state.isOn },
-            set: { newValue in
-                self.state.isOn = newValue
-                self.state.callback?(newValue)
+        if state.isSwitch {
+            Toggle(isOn: $state.isOn) {
+                Text(state.caption)
+                    .foregroundColor(state.textColor)
             }
-        )
-
-        Group {
-            if state.isSwitch {
-                Toggle(isOn: toggleBinding) {
-                    Text(state.caption)
-                         .foregroundColor(state.textColor)
-                }
-                .toggleStyle(.switch)
-            } else {
-                Toggle(isOn: toggleBinding) {
-                    Text(state.caption)
-                         .foregroundColor(state.textColor)
-                }
+            .toggleStyle(.switch) // Estilo Switch (iOS style)
+            .accentColor(state.accentColor)
+            .padding(4)
+            .onChange(of: state.isOn) { _, newValue in
+                state.callback?(newValue)
+            }
+        } else {
+            Toggle(isOn: $state.isOn) {
+                Text(state.caption)
+                    .foregroundColor(state.textColor)
+            }
+            .toggleStyle(.checkbox) // Estilo Checkbox (macOS standard)
+            .accentColor(state.accentColor)
+            .padding(4)
+            .onChange(of: state.isOn) { _, newValue in
+                state.callback?(newValue)
             }
         }
-        .accentColor(state.accentColor)
-        .padding()
     }
 }
 
 @objc(SwiftToggleLoader)
 public class SwiftToggleLoader: NSObject {
-    
     public static var states: [String: ToggleState] = [:]
     
-    @objc(makeToggleWithCaption:isOn:id:isSwitch:index:callback:)
     public static func makeToggle(caption: String, isOn: Bool, id: String, isSwitch: Bool, index: Int, callback: @escaping ((Bool) -> Void)) -> NSView {
         let state = ToggleState(isOn: isOn, caption: caption, isSwitch: isSwitch, callback: callback)
         let key = id.isEmpty ? String(index) : id
@@ -70,26 +67,49 @@ public class SwiftToggleLoader: NSObject {
         ViewRegistry.register(view, for: index)
         
         let hostingView = NSHostingView(rootView: view)
+        hostingView.sizingOptions = [] 
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         return hostingView
     }
 
-    public static func setValue(id: String, isOn: Bool) {
-        DispatchQueue.main.async {
-            if let state = states[id] {
-                state.isOn = isOn
+    public static func destroyToggle(id: String, index: Int, viewPtr: Int64) {
+        // 1. Limpiar el estado para que el objeto @Observable muera
+        let key = id.isEmpty ? String(index) : id
+        states.removeValue(forKey: key)
+        
+        // 2. Limpiar el registro global de FiveMac (según tu .h)
+        ViewRegistry.clean(index:index) 
+        
+        // 3. Liberar la retención manual del NSHostingView
+        if viewPtr != 0 {
+            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
+                // .takeRetainedValue() "consume" el contador de referencia que iniciamos en la creación
+                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
+    }
+
+    // Métodos de actualización rápida (UI Thread)
+    public static func setValue(id: String, isOn: Bool) {
+        DispatchQueue.main.async { states[id]?.isOn = isOn }
     }
 
     public static func setCaption(id: String, caption: String) {
+        DispatchQueue.main.async { states[id]?.caption = caption }
+    }
+    
+    // Versión ultra-rápida para Harbour (nRGB)
+    public static func setColors(id: String, accentColor: Int, textColor: Int, alpha: Int) {
         DispatchQueue.main.async {
             if let state = states[id] {
-                state.caption = caption
-            }
+                // Usamos una pequeña variante de nuestra extensión
+                let a = Double(alpha) / 255.0
+                state.accentColor = Color(hbColor: accentColor).opacity(a)
+            state.textColor = Color(hbColor: textColor).opacity(a)
         }
     }
-
+}
+    // Versión para Hexadecimal (Strings)
     public static func setColors(id: String, accentHex: String, textHex: String) {
         DispatchQueue.main.async {
             if let state = states[id] {
@@ -102,7 +122,6 @@ public class SwiftToggleLoader: NSObject {
 
 // --- HARBOUR BRIDGE MACROS ---
 
-
 @HarbourDirect
 public func tgl_set_caption(id: String, caption: String) {
     SwiftToggleLoader.setCaption(id: id, caption: caption)
@@ -113,16 +132,28 @@ public func tgl_get_value(id: String) -> Bool {
     return SwiftToggleLoader.states[id]?.isOn ?? false
 }
 
-
-@HarbourBridge
-public func tgl_set_colors(id: String, accentHex: String, textHex: String) {
-    SwiftToggleLoader.setColors(id: id, accentHex: accentHex, textHex: textHex)
+@HarbourDirect
+public func tgl_set_colors_rgba(id: String, accent: Int, text: Int, alpha: Int) {
+    SwiftToggleLoader.setColors(id: id, accentColor: accent, textColor: text, alpha: alpha)
 }
 
 @HarbourDirect
-public func tgl_set_value(id: String, value: Bool) {
-    SwiftToggleLoader.setValue(id: id, isOn: value)
+public func tgl_set_colors_hex(id: String, accent: String, text: String) {
+    SwiftToggleLoader.setColors(id: id, accentHex: accent, textHex: text)
 }
+
+@HarbourDirect
+public func tgl_destroy(id: String, index: Int, viewPtr: Int64) {
+    SwiftToggleLoader.destroyToggle(id: id, index: index, viewPtr: viewPtr)
+}
+
+@HarbourDirect
+public func tgl_set_value(id: String, value: Bool ) {
+    SwiftToggleLoader.setValue(id: id, isOn: value )
+}
+
+
+//---------- creacion del control 
 
 @HarbourDirect
 public func swift_toggle_create(
@@ -136,22 +167,28 @@ public func swift_toggle_create(
     index: Int,
     id: String, 
     isSwitch: Bool
-) -> Int64 {
+    ) -> Int64 {
     
     // 1. Definimos la lógica de creación en una función interna
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
         
-        // Callback que hablará con Harbour (SWIFTTOGGLEONCHANGE)
         let callback: (Bool) -> Void = { newValue in
-            DispatchQueue.main.async {
+            let sendToHarbour = {
                 if let pDynSym = hb_dynsymFindName("SWIFTTOGGLEONCHANGE") {
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
+                    // Usamos PushNumber o el equivalente que prefieras
                     hb_vmPushNumber(Double(index), 0) 
                     hb_vmPushLogical(newValue ? 1 : 0)
                     hb_vmDo(2)
                 }
+            }
+
+            if Thread.isMainThread {
+               sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
             }
         }
 

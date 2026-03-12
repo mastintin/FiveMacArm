@@ -254,7 +254,7 @@ fi
 
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
-HRBLIBS="-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lminizip -lhbzlib $MYSQL_LIBS"
+HRBLIBS="-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lminizip -lhbzlib -lhbmisc $MYSQL_LIBS"
 FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuickLookUI -framework QuartzCore -framework CoreImage -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers -framework Vision -framework MapKit -framework CoreLocation'
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift

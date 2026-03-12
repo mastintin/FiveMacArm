@@ -16,6 +16,7 @@ CLASS TSwiftSlider FROM TControl
     METHOD GetValue()
     METHOD SetAccentColor( nColor )
     METHOD SetColor( nFg, nBg )
+    METHOD End()
    
 ENDCLASS
 
@@ -28,7 +29,6 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bCha
     DEFAULT nAutoResize := 0
 
     ::oWnd    = oWnd
-    ::nId     = ::GetCtrlIndex()
     ::bChange = bChange
     ::lShowValue = lShowValue
     ::lGlass = lGlass
@@ -37,7 +37,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bCha
     ::nIndex = Len( aSwiftSliders )
     ::cID = AllTrim( SWIFT_UUID() )
 
-    ::hWnd = SWIFTSLIDERCREATE( nTop, nLeft, nWidth, nHeight, nValue, oWnd:hWnd, ::nIndex, ::cID, ::lShowValue, ::lGlass )
+    ::hWnd = SD_SWIFT_SLIDER_CREATE( nTop, nLeft, nWidth, nHeight, nValue, oWnd:hWnd, ::nIndex, ::cID, ::lShowValue, ::lGlass )
     
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -48,19 +48,30 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bCha
 return Self
 
 METHOD SetValue( nValue ) CLASS TSwiftSlider
-    SLD_SET_VALUE( ::cID, hb_ntos( nValue ) )
+    SD_SLD_SET_VALUE( ::cID, nValue )
 return nil
 
 METHOD GetValue() CLASS TSwiftSlider
-return Val( SLD_GET_VALUE( ::cID ) )
+return SD_SLD_GET_VALUE( ::cID )
 
 METHOD SetAccentColor( nColor ) CLASS TSwiftSlider
-    SLD_SET_ACCENT_COLOR( ::cID, clrToHex( nColor ) )
+    SD_SLD_SET_ACCENT_COLOR( ::cID, clrToHex( nColor ) )
 return nil
 
 METHOD SetColor( nFg, nBg ) CLASS TSwiftSlider
-    SLD_SET_COLORS( ::cID, clrToHex( nFg ), clrToHex( nBg ) )
+    SD_SLD_SET_COLORS( ::cID, clrToHex( nFg ), clrToHex( nBg ) )
 return nil
+
+METHOD End() CLASS TSwiftSlider
+    if !Empty( ::hWnd )
+        SD_SLD_DESTROY( ::cID, ::nIndex, ::hWnd )
+        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftSliders )
+            aSwiftSliders[ ::nIndex ] := nil
+        endif
+        ::hWnd := 0
+        ::cID := ""
+    endif
+return ::Super:End()
 
 // The C callback calls this function
 function SwiftSliderOnChange( nIndex, nValue )

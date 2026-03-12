@@ -33,10 +33,10 @@ HB_FUNC(SHEETOPENRUN) {
                     // NSLog( @"pulsa sheet" );
                     hb_vmPushSymbol(symFMH);
                     hb_vmPushNil();
-                    hb_vmPushNumInt((HB_LONGLONG)window);
+                    hb_vmPushNLL((HB_LONGLONG)window);
                     hb_vmPushLong(WM_SHEETOK);
-                    hb_vmPushNumInt((HB_LONGLONG)panel);
-                    hb_vmPushNumInt((HB_LONGLONG)cUrl);
+                    hb_vmPushNLL((HB_LONGLONG)panel);
+                    hb_vmPushNLL((HB_LONGLONG)cUrl);
                     hb_vmDo(4);
                   }
                 }];
@@ -69,10 +69,10 @@ HB_FUNC(SHEETSAVERUN) {
                     // NSLog( @"pulsa sheet" );
                     hb_vmPushSymbol(symFMH);
                     hb_vmPushNil();
-                    hb_vmPushNumInt((HB_LONGLONG)window);
+                    hb_vmPushNLL((HB_LONGLONG)window);
                     hb_vmPushLong(WM_SHEETOK);
-                    hb_vmPushNumInt((HB_LONGLONG)panel);
-                    hb_vmPushNumInt((HB_LONGLONG)cUrl);
+                    hb_vmPushNLL((HB_LONGLONG)panel);
+                    hb_vmPushNLL((HB_LONGLONG)cUrl);
                     hb_vmDo(4);
                   }
                 }];

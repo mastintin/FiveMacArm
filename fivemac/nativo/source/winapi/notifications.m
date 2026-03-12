@@ -29,9 +29,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)notification); // Passing notification object
+  hb_vmPushNLL((HB_LONGLONG)notification); // Passing notification object
   hb_vmPushLong(WM_NOTICLICK);
-  hb_vmPushNumInt((HB_LONGLONG)notification);
+  hb_vmPushNLL((HB_LONGLONG)notification);
   hb_vmDo(3);
 
   completionHandler();

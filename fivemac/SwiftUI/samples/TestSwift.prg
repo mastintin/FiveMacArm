@@ -15,7 +15,7 @@ function Main()
     Local lResize := .f.
 
     DEFINE WINDOW oWnd TITLE "SwiftUI in FiveMac" ;
-        FROM 200, 250 TO 600, 950 FLIPPED
+        FROM 200, 250 TO 800, 950 FLIPPED
    
     // --- Left Column: Native Controls ---
 
@@ -75,7 +75,7 @@ function Main()
 
 
     // 7. Toggle Resize
-    @ 350, 450 BUTTON "Toggle Resize" SIZE 120, 40 OF oWnd ACTION (   lresize := !lresize , oImage:SetResizable( lresize ), MsgInfo("Image Fixed (No Resize)") )
+    @ 340, 450 BUTTON "Toggle Resize" SIZE 120, 40 OF oWnd ACTION (   lresize := !lresize , oImage:SetResizable( lresize ), MsgInfo("Image Fixed (No Resize)") )
 
     // 8. TabView
     @ 400, 20 SWIFTBUTTON oTabBtn PROMPT "Tab Button" SIZE 100, 30 OF oWnd ACTION MsgInfo("Tab Btn")

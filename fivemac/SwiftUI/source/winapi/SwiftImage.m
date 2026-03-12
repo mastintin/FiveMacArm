@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 // Helper to get hex color string
 static NSString *HexColorForImage(long nColor) {
   int r = nColor & 0xFF;
@@ -101,3 +101,4 @@ HB_FUNC(IMG_SET_ASPECT_RATIO) {
   SW_IMG_SET_ASPECT_RATIO((const int8_t *)[cId UTF8String],
                           (const int8_t *)[mode UTF8String]);
 }
+*/

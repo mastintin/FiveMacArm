@@ -280,7 +280,6 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
 @import CoreFoundation;
-@import Foundation;
 @import ObjectiveC;
 #endif
 
@@ -304,20 +303,13 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 
 #if defined(__OBJC__)
 
-@class NSString;
-@class NSView;
 SWIFT_CLASS_NAMED("SwiftButtonLoader")
 @interface SwiftButtonLoader : NSObject
-+ (NSView * _Nonnull)makeButtonWithTitle:(NSString * _Nonnull)title index:(NSInteger)index callback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
-+ (void)setButtonBackgroundColor:(NSString * _Nonnull)colorHex index:(NSInteger)index;
-+ (void)setButtonForegroundColor:(NSString * _Nonnull)colorHex index:(NSInteger)index;
-+ (void)setButtonCornerRadius:(double)radius index:(NSInteger)index;
-+ (void)setButtonPadding:(double)padding index:(NSInteger)index;
-+ (void)setButtonGlass:(BOOL)isGlass index:(NSInteger)index;
-+ (void)setButtonImage:(NSString * _Nonnull)imageName index:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
+@class NSString;
+@class NSView;
 SWIFT_CLASS_NAMED("SwiftChartLoader")
 @interface SwiftChartLoader : NSObject
 + (NSView * _Nonnull)makeChart:(NSString * _Nonnull)id data:(NSString * _Nonnull)data type:(NSString * _Nonnull)type index:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
@@ -327,40 +319,32 @@ SWIFT_CLASS_NAMED("SwiftChartLoader")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-SWIFT_CLASS_NAMED("SwiftGridLoader")
-@interface SwiftGridLoader : NSObject
-+ (NSView * _Nonnull)makeGridWithIndex:(NSInteger)index columnsJson:(NSString * _Nonnull)columnsJson callback:(void (^ _Nonnull)(NSInteger))callback actionCallback:(void (^ _Nonnull)(NSString * _Nonnull))actionCallback SWIFT_WARN_UNUSED_RESULT;
+SWIFT_CLASS_NAMED("SwiftDatePickerLoader")
+@interface SwiftDatePickerLoader : NSObject
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-@class NSNumber;
-@class NSImage;
+SWIFT_CLASS_NAMED("SwiftGridLoader")
+@interface SwiftGridLoader : NSObject
++ (NSView * _Nonnull)makeGridWithIndex:(NSString * _Nonnull)index columnsJson:(NSString * _Nonnull)columnsJson SWIFT_WARN_UNUSED_RESULT;
++ (void)setActionCallbackWithRootId:(NSString * _Nonnull)rootId callback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
 SWIFT_CLASS_NAMED("SwiftImageLoader")
 @interface SwiftImageLoader : NSObject
-+ (NSView * _Nonnull)makeImageWithSystemName:(NSString * _Nonnull)systemName index:(NSString * _Nonnull)index callback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
-+ (void)setImageSystemName:(NSString * _Nonnull)index name:(NSString * _Nonnull)name;
-+ (void)setImageName:(NSString * _Nonnull)index name:(NSString * _Nonnull)name;
-+ (void)setImageFile:(NSString * _Nonnull)index path:(NSString * _Nonnull)path;
-+ (void)setImageColor:(NSString * _Nonnull)index colorHex:(NSString * _Nonnull)colorHex;
-+ (void)setImageResizable:(NSString * _Nonnull)index resizable:(NSNumber * _Nonnull)resizable;
-+ (void)setImageAspectRatio:(NSString * _Nonnull)index mode:(NSNumber * _Nonnull)mode;
-+ (void)setImageObj:(NSString * _Nonnull)index image:(NSImage * _Nonnull)image;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 SWIFT_CLASS_NAMED("SwiftLabelLoader")
 @interface SwiftLabelLoader : NSObject
-+ (NSView * _Nonnull)makeLabelWithText:(NSString * _Nonnull)text index:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
-+ (void)updateLabel:(NSString * _Nonnull)text index:(NSInteger)index;
-+ (void)setLabelFontSize:(double)size index:(NSInteger)index;
-+ (void)setLabelFontStyle:(NSString * _Nonnull)style index:(NSInteger)index;
-+ (void)setLabelTextColor:(NSString * _Nonnull)colorHex index:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 SWIFT_CLASS_NAMED("SwiftListLoader")
 @interface SwiftListLoader : NSObject
-+ (NSView * _Nonnull)makeListWithIndex:(NSString * _Nonnull)index callback:(void (^ _Nonnull)(NSInteger))callback SWIFT_WARN_UNUSED_RESULT;
++ (NSView * _Nonnull)makeListWithIndex:(NSString * _Nonnull)index SWIFT_WARN_UNUSED_RESULT;
++ (void)setActionCallbackWithRootId:(NSString * _Nonnull)rootId callback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
 + (void)selectIndex:(NSString * _Nonnull)id index:(NSInteger)index;
 + (void)setBackgroundColorRed:(NSString * _Nonnull)rootId red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
@@ -390,10 +374,20 @@ SWIFT_CLASS_NAMED("SwiftMusicLoader")
 + (void)setPositionWithSeconds:(double)seconds;
 + (NSInteger)getVolume SWIFT_WARN_UNUSED_RESULT;
 + (void)setVolumeWithVol:(NSInteger)vol;
++ (NSString * _Nonnull)getPlaylists SWIFT_WARN_UNUSED_RESULT;
++ (void)playPlaylistWithName:(NSString * _Nonnull)name;
++ (void)playFirstAvailablePlaylist;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-SWIFT_CLASS_NAMED("SwiftPDF") SWIFT_AVAILABILITY(macos,introduced=10.15)
+SWIFT_CLASS_NAMED("SwiftObservationLoader")
+@interface SwiftObservationLoader : NSObject
++ (NSView * _Nonnull)makeObservationTest:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
++ (void)setActionCallback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+SWIFT_CLASS_NAMED("SwiftPDF")
 @interface SwiftPDF : NSObject
 + (void)saveView:(NSInteger)id to:(NSString * _Nonnull)path;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
@@ -401,24 +395,15 @@ SWIFT_CLASS_NAMED("SwiftPDF") SWIFT_AVAILABILITY(macos,introduced=10.15)
 
 SWIFT_CLASS_NAMED("SwiftPickerLoader")
 @interface SwiftPickerLoader : NSObject
-+ (NSView * _Nonnull)makePickerWithTitle:(NSString * _Nonnull)title items:(NSArray<NSString *> * _Nonnull)items index:(NSInteger)index callback:(void (^ _Nullable)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
-+ (void)setPickerSelection:(NSString * _Nonnull)value index:(NSInteger)index;
-+ (void)setPickerItems:(NSArray<NSString *> * _Nonnull)items index:(NSInteger)index;
-+ (void)setPickerGlass:(BOOL)isGlass index:(NSInteger)index;
-+ (void)setPickerShowLabel:(BOOL)showLabel index:(NSInteger)index;
-+ (void)setPickerTitle:(NSString * _Nonnull)title index:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 SWIFT_CLASS_NAMED("SwiftSliderLoader")
 @interface SwiftSliderLoader : NSObject
-+ (NSView * _Nonnull)makeSliderWithValue:(NSNumber * _Nonnull)value id:(NSString * _Nonnull)id showValue:(BOOL)showValue isGlass:(BOOL)isGlass index:(NSInteger)index callback:(void (^ _Nonnull)(NSNumber * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
-+ (void)setSliderValue:(double)value id:(NSString * _Nonnull)id;
-+ (double)getSliderValueFromIndex:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-SWIFT_CLASS_NAMED("SwiftSpeechManager") SWIFT_AVAILABILITY(macos,introduced=11.3)
+SWIFT_CLASS_NAMED("SwiftSpeechManager")
 @interface SwiftSpeechManager : NSObject
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) SwiftSpeechManager * _Nonnull shared;)
 + (SwiftSpeechManager * _Nonnull)shared SWIFT_WARN_UNUSED_RESULT;
@@ -437,6 +422,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) SwiftSpeechM
 SWIFT_CLASS_NAMED("SwiftTabViewLoader")
 @interface SwiftTabViewLoader : NSObject
 + (void)addTabWithIndex:(NSInteger)index title:(NSString * _Nonnull)title icon:(NSString * _Nonnull)icon;
++ (void)addTabWithId:(NSInteger)index title:(NSString * _Nonnull)title icon:(NSString * _Nonnull)icon;
 + (NSView * _Nonnull)makeTabView SWIFT_WARN_UNUSED_RESULT;
 + (void)clearTabs;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
@@ -444,25 +430,19 @@ SWIFT_CLASS_NAMED("SwiftTabViewLoader")
 
 SWIFT_CLASS_NAMED("SwiftTextFieldLoader")
 @interface SwiftTextFieldLoader : NSObject
-+ (NSView * _Nonnull)makeTextFieldWithText:(NSString * _Nonnull)text placeholder:(NSString * _Nonnull)placeholder id:(NSString * _Nonnull)id callback:(void (^ _Nonnull)(NSString * _Nonnull))callback SWIFT_WARN_UNUSED_RESULT;
-+ (NSView * _Nonnull)makeTextEditorWithText:(NSString * _Nonnull)text id:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
-+ (void)setText:(NSString * _Nonnull)text id:(NSString * _Nonnull)id;
-+ (NSString * _Nonnull)getTextFromId:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 SWIFT_CLASS_NAMED("SwiftToggleLoader")
 @interface SwiftToggleLoader : NSObject
-+ (NSView * _Nonnull)makeToggleWithCaption:(NSString * _Nonnull)caption isOn:(BOOL)isOn id:(NSString * _Nonnull)id isSwitch:(BOOL)isSwitch index:(NSInteger)index callback:(void (^ _Nonnull)(BOOL))callback SWIFT_WARN_UNUSED_RESULT;
-+ (void)setToggle:(BOOL)isOn id:(NSString * _Nonnull)id;
-+ (BOOL)getToggleFromIndex:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 SWIFT_CLASS_NAMED("SwiftVStackLoader")
 @interface SwiftVStackLoader : NSObject
 + (NSView * _Nonnull)makeVStackWithIndex:(NSString * _Nonnull)index SWIFT_WARN_UNUSED_RESULT;
-+ (void)setActionCallback:(NSString * _Nonnull)rootId callback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
++ (void)setActionCallbackWithRootId:(NSString * _Nonnull)rootId callback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
++ (void)removeAllItems:(NSString * _Nonnull)rootId;
 + (NSString * _Nonnull)addItem:(NSString * _Nonnull)rootId content:(NSString * _Nonnull)content;
 + (NSString * _Nonnull)addTextItem:(NSString * _Nonnull)rootId content:(NSString * _Nonnull)content parentId:(NSString * _Nullable)parentId;
 + (NSString * _Nonnull)addSpacerItem:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId;
@@ -475,20 +455,22 @@ SWIFT_CLASS_NAMED("SwiftVStackLoader")
 + (void)setSpacing:(NSString * _Nonnull)rootId spacing:(double)spacing;
 + (void)setAlignment:(NSString * _Nonnull)rootId alignment:(NSInteger)alignment;
 + (void)setInvertedColor:(NSString * _Nonnull)rootId useInverted:(BOOL)useInverted;
++ (void)setBackgroundColorHex:(NSString * _Nonnull)rootId hex:(NSString * _Nonnull)hex;
++ (void)setForegroundColorHex:(NSString * _Nonnull)rootId hex:(NSString * _Nonnull)hex;
 + (void)setLastItemId:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id;
 + (NSString * _Nonnull)getLastItemId:(NSString * _Nonnull)rootId SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addVStackItem:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addHStackContainer:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addLazyVGrid:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId columnsJson:(NSString * _Nonnull)columnsJson SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addList:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addTextItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addSpacer:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addDivider:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
-+ (NSString * _Nonnull)addButtonItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addVStackItem:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addHStackContainer:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addLazyVGrid:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId columnsJson:(NSString * _Nonnull)columnsJson;
++ (NSString * _Nonnull)addList:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addTextItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addSpacer:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addDivider:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addButtonItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId;
 + (void)setItemText:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id text:(NSString * _Nonnull)text;
 + (void)setItem:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
 + (void)setItemLayout:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id w:(double)w h:(double)h s:(double)s;
-+ (NSString * _Nonnull)addBatchToParent:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json SWIFT_WARN_UNUSED_RESULT;
++ (NSString * _Nonnull)addBatch:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json;
 + (void)setActionCallback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
 + (void)addItem:(NSString * _Nonnull)text;
 + (void)addSystemImage:(NSString * _Nonnull)systemName;
@@ -514,24 +496,29 @@ SWIFT_CLASS_NAMED("SwiftVStackLoader")
 + (void)setItemColorWithRootId:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id r:(CGFloat)r g:(CGFloat)g b:(CGFloat)b a:(CGFloat)a;
 + (void)setItemFontWithRootId:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id size:(CGFloat)size isBold:(BOOL)isBold;
 + (void)setItemRadiusWithRootId:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id radius:(CGFloat)radius;
++ (void)setItemColor:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id hex:(NSString * _Nonnull)hex;
++ (void)setItemBgColor:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id hex:(NSString * _Nonnull)hex;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 SWIFT_CLASS_NAMED("SwiftZStackLoader")
 @interface SwiftZStackLoader : NSObject
-+ (NSView * _Nonnull)makeZStackWithIndex:(NSString * _Nonnull)index actionCallback:(void (^ _Nonnull)(NSString * _Nonnull))actionCallback SWIFT_WARN_UNUSED_RESULT;
++ (NSView * _Nonnull)makeZStackWithIndex:(NSString * _Nonnull)index SWIFT_WARN_UNUSED_RESULT;
++ (void)setActionCallbackWithRootId:(NSString * _Nonnull)rootId callback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
 + (NSString * _Nonnull)addItem:(NSString * _Nonnull)rootId content:(NSString * _Nonnull)text SWIFT_WARN_UNUSED_RESULT;
 + (NSString * _Nonnull)addSystemImage:(NSString * _Nonnull)rootId systemName:(NSString * _Nonnull)systemName SWIFT_WARN_UNUSED_RESULT;
 + (NSString * _Nonnull)addFileImage:(NSString * _Nonnull)rootId filePath:(NSString * _Nonnull)filePath SWIFT_WARN_UNUSED_RESULT;
++ (void)removeAllItems:(NSString * _Nonnull)rootId;
++ (NSString * _Nonnull)addBatch:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json SWIFT_WARN_UNUSED_RESULT;
 + (void)setAlignment:(NSString * _Nonnull)rootId alignment:(NSInteger)alignment;
 + (void)setBackgroundColor:(NSString * _Nonnull)rootId red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
 + (void)setForegroundColor:(NSString * _Nonnull)rootId red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
-+ (void)removeAllItems:(NSString * _Nonnull)rootId;
-+ (NSString * _Nonnull)addBatch:(NSString * _Nonnull)rootId parentId:(NSString * _Nullable)parentId json:(NSString * _Nonnull)json SWIFT_WARN_UNUSED_RESULT;
++ (void)setItemColor:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id hex:(NSString * _Nonnull)hex;
++ (void)setItemBgColor:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id hex:(NSString * _Nonnull)hex;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-SWIFT_CLASS_NAMED("ViewRegistry") SWIFT_AVAILABILITY(macos,introduced=10.15)
+SWIFT_CLASS_NAMED("ViewRegistry")
 @interface ViewRegistry : NSObject
 + (void)registerObject:(id _Nonnull)object forIndex:(NSInteger)index;
 + (id _Nullable)getObject:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
@@ -540,7 +527,105 @@ SWIFT_CLASS_NAMED("ViewRegistry") SWIFT_AVAILABILITY(macos,introduced=10.15)
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
-SWIFT_EXTERN void SW_HOLA_MACRO(int8_t const * _Nullable p0) SWIFT_NOEXCEPT;
+SWIFT_EXTERN void HB_FUN_SD_BTN_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_BTN_SET_BG(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_BTN_SET_FG(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_BTN_SET_GLASS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_BTN_SET_IMAGE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_BTN_SET_PADDING(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_BTN_SET_RADIUS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_BTN_SET_TEXT(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_DTP_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_DTP_GET_DATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_DTP_SET_COLORS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_DTP_SET_DATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_DTP_SET_ENABLED(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_SET_ASPECT_RATIO(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_SET_COLOR(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_SET_FILE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_SET_NAME(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_SET_NSIMAGE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_SET_RESIZABLE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_IMG_SET_SYSTEM_NAME(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_LBL_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_LBL_SET_ALIGN(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_LBL_SET_COLORS_HEX(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_LBL_SET_COLORS_RGBA(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_LBL_SET_FONT(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_LBL_SET_FONT_STYLE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_LBL_SET_TEXT(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_LST_REMOVE_ALL(int8_t const * _Nullable p0) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_LST_SET_BGCOLOR(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2, int8_t const * _Nullable p3, int8_t const * _Nullable p4) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_LST_SET_BGCOLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_LST_SET_SELECTION(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_OBS_SET_COUNT(int8_t const * _Nullable p0) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_OBS_SET_MSG(int8_t const * _Nullable p0) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_GET_SELECTION(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_SET_COLORS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_SET_GLASS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_SET_ITEMS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_SET_PLACEHOLDER(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_SET_SELECTION(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_SET_SHOW_LABEL(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_PKR_SET_TITLE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SLD_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SLD_GET_VALUE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SLD_SET_ACCENT_COLOR(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SLD_SET_COLORS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SLD_SET_VALUE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_BUTTON_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_DATEPICKER_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN int8_t const * _Nullable swift_get_app_path(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
 
@@ -553,6 +638,136 @@ SWIFT_EXTERN int8_t const * _Nullable swift_get_image(int8_t const * _Nullable p
 SWIFT_EXTERN int8_t const * _Nullable swift_get_path(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
 
 SWIFT_EXTERN int8_t const * _Nullable swift_get_res_path(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_IMAGE_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_LABEL_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_PICKER_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_SLIDER_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_TEXTEDITOR_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_TEXTFIELD_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_TOGGLE_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TF_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TF_GET_TEXT(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TF_SET_COLORS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TF_SET_FONT_SIZE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TF_SET_TEXT(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TGL_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TGL_GET_VALUE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TGL_SET_CAPTION(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TGL_SET_COLORS_HEX(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TGL_SET_COLORS_RGBA(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_TGL_SET_VALUE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_BATCH(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_BUTTON_ITEM(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_DIVIDER_TO(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_HSTACK(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_ITEM(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_LAZYVGRID(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_LIST(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_SPACER_TO(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_SYSTEM_IMAGE_TO(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_TEXT_TO(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_ADD_VSTACK(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_VSTK_GET_LAST_ITEM_ID(int8_t const * _Nullable p0) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void SW_VSTK_REMOVE_ALL(int8_t const * _Nullable p0) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_ALIGNMENT(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_BGCOLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_FGCOLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_INVERTED_COLOR(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_ITEM_BGCOLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_ITEM_COLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_ITEM_FONT(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2, int8_t const * _Nullable p3) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_ITEM_LAYOUT(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2, int8_t const * _Nullable p3, int8_t const * _Nullable p4) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_ITEM_RADIUS(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_ITEM_TEXT(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_SCROLL(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_VSTK_SET_SPACING(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_BATCH(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_BUTTON_TO(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_DIVIDER(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_FILE_IMAGE(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_ITEM(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_LAZYVGRID(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_LIST(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_SPACER(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_SYSTEM_IMAGE_TO(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_ZSTK_ADD_TEXT_TO(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void SW_ZSTK_REMOVE_ALL(int8_t const * _Nullable p0) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_ZSTK_SET_ALIGNMENT(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_ZSTK_SET_BGCOLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_ZSTK_SET_FGCOLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_ZSTK_SET_ITEM_BGCOLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void SW_ZSTK_SET_ITEM_COLOR_HEX(int8_t const * _Nullable p0, int8_t const * _Nullable p1, int8_t const * _Nullable p2) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN int8_t const * _Nullable sw_GetRootId_par(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN NSInteger sw_obs_get_count(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN BOOL sw_obs_get_enabled(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN double sw_obs_get_level(void) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN int8_t const * _Nullable sw_parc(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN BOOL sw_parl(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
 
 SWIFT_EXTERN void swift_alert(int8_t const * _Nullable msg, int8_t const * _Nullable title, NSInteger type) SWIFT_NOEXCEPT;
 

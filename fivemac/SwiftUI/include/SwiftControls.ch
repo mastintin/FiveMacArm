@@ -123,6 +123,15 @@
     [ <oPick> := ] TSwiftPicker():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>,;
     <aItems>, [\{| cVal, o |(<uChange>)\}], bSETGET(<cVar>),, <nAutoResize> )
 
+#xcommand @ <nRow>, <nCol> SWIFTDATEPICKER [ <oDtp> ] ;
+    [ <dVar: VAR, dDATE> <dDate> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    [ ON CHANGE <uChange> ] ;
+    [ TITLE <cTitle> ] ;
+    => ;
+    [ <oDtp> := ] TSwiftDatePicker():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, [<dDate>], [\{| dVal, o |(<uChange>)\}], <cTitle> )
+
 //----------------------------------------------------------------------------//
 
 #endif

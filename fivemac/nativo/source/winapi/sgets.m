@@ -24,9 +24,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)hWnd);
+  hb_vmPushNLL((HB_LONGLONG)hWnd);
   hb_vmPushLong(WM_GETVALID);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 
   return hb_parl(-1);
@@ -38,9 +38,9 @@ FIVEMAC_DRAGDROP_METHODS
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)hWnd);
+  hb_vmPushNLL((HB_LONGLONG)hWnd);
   hb_vmPushLong(WM_GETCHANGED);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmDo(3);
 
   // NSLog( @"The contents of the text field changed" );

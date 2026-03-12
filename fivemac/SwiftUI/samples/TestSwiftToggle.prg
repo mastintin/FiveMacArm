@@ -16,5 +16,8 @@ function Main()
     @ 110, 20 SWIFTBUTTON oBtn PROMPT "Toggle ON" SIZE 100, 30 OF oWnd ;
         ACTION { || oToggle:Set( .T. ) }
 
+    @ 110, 120 SWIFTBUTTON oBtn PROMPT "Estado" SIZE 100, 30 OF oWnd ;
+        ACTION { || msginfo(oToggle:get() ) }
+
     ACTIVATE WINDOW oWnd
 return nil

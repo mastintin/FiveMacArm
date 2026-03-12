@@ -6,16 +6,21 @@ CLASS TSwiftToggle FROM TControl
 
     DATA cID
     DATA nIndex
+    DATA nTglIndex
     DATA cCaption
     DATA bChange
     DATA lOn
     DATA lSwitch
+    DATA nColorAcc   AS NUMERIC
+    DATA nColorText  AS NUMERIC
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bChange )
     METHOD Set( lOn )
     METHOD Get()
+    METHOD Value()    
     METHOD SetColor( nAccent, nText )
-    method SetCaption(cCaption ) INLINE SD_TGL_SET_CAPTION(::cID, cCaption )
+    METHOD SetCaption(cCaption ) 
+    METHOD End() 
 ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bChange, nAutoResize ) CLASS TSwiftToggle
@@ -36,12 +41,14 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bChange,
    
     ::bChange  = bChange
     ::oWnd     = oWnd
-    ::cID      = SWIFT_UUID()
+    ::cID      = hb_UUID()
    
     AAdd( aSwiftToggles, Self )
-    ::nIndex   = Len( aSwiftToggles )
+    ::nTglIndex   = Len( aSwiftToggles )
     
-    ::hWnd = SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::nIndex, ::cID, ::lSwitch )
+    //::nIndex := Len( oWnd:aControls )
+
+    ::hWnd = SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::nTglIndex, ::cID, ::lSwitch )
 
     //  ::hWnd = SWIFTTOGGLECREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::nIndex, ::cID, ::lSwitch )
 
@@ -53,37 +60,103 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bChange,
 
 return Self
 
+//------------------------------------------
 METHOD Set( lOn ) CLASS TSwiftToggle
     
-    ::lOn = lOn
-    // TGL_SET_VALUE( ::cID, If( lOn, "1", "0" ) )
-    SD_TGL_SET_VALUE(::cID, ::lOn )
-    if ::bChange != nil
-        Eval( ::bChange, ::lOn )
+    if ::lOn != lOn  // Solo actuamos si el valor es diferente
+        ::lOn := lOn
+        
+        // Llamamos al macro de Swift (usando el Bool directo)
+        SD_TGL_SET_VALUE( ::cId, ::lOn )
+        
+        // Opcional: Ejecutar el callback también cuando se cambia por código
+        if ::bChange != nil
+            Eval( ::bChange, ::lOn, self )
+        endif
     endif
 
 return nil
+
+//----------------------------------------
 
 METHOD Get() CLASS TSwiftToggle
     ::lOn = SD_TGL_GET_VALUE( ::cID )
 return ::lOn
 
-METHOD SetColor( nAccent, nText ) CLASS TSwiftToggle
-    TGL_SET_COLORS( ::cID, clrToHex( nAccent ), clrToHex( nText ) )
+//-----------------------------------------
+METHOD VALUE( lNewValue )
+
+    if lNewValue != nil
+        ::Set( lNewValue )
+    else
+        ::lOn = SD_TGL_GET_VALUE( ::cID )
+    endif
+return ::lOn
+
+//-----------------------------------------
+
+METHOD SetCaption( cCaption ) CLASS TSwiftToggle
+    ::cCaption := cCaption
+    SD_TGL_SET_CAPTION( ::cId, cCaption )
 return nil
+
+//------------------------------
+METHOD SetColor( nAccent, nText, nAlpha ) CLASS TSwiftToggle
+    LOCAL nAcc, nTxt
+   
+    DEFAULT nAlpha := 255 // Opaco por defecto
+
+    if !Empty( ::cId )
+        // CASO 1: Colores numéricos (nRGB)
+        if ValType( nAccent ) == "N"
+            // Si queremos transparencia, usamos el macro de RGBA enviando un Int32
+            // Construimos un ARGB o RGBA. Usemos el bridge tgl_set_colors_int
+            SD_TGL_SET_COLORS_RGBA( ::cId, nAccent, nText , nAlpha)  
+         
+            // CASO 2: Colores Hexadecimales (pueden traer el alfa en el string)
+        elseif ValType( nAccent ) == "C"
+            SD_TGL_SET_COLORS_HEX( ::cId, nAccent, nText )
+        endif
+    endif
+return self
+
 
 // ---------------------------------------------------------------------------
 
-function SwiftToggleOnChange( nIndex, lOn )
-   
-    local oControl
+METHOD End() CLASS TSwiftToggle
+    if !Empty( ::hWnd )
+        // Llamamos al macro de Swift
+        SD_TGL_DESTROY( ::cId, ::nTglIndex, ::hWnd )
+        if ::nTglIndex > 0 .and. ::nTglIndex <= Len( aSwiftToggles )
+            aSwiftToggles[ ::nTglIndex ] := nil
+        endif
+        ::hWnd := 0
+        ::cID := ""
+    endif
+return ::Super:End()
 
-    if nIndex > 0 .and. nIndex <= Len( aSwiftToggles )
-        oControl = aSwiftToggles[ nIndex ]
-        oControl:lOn = lOn
-        if oControl:bChange != nil
-            Eval( oControl:bChange, lOn )
+//-----------------------------------------
+// --- FUNCION DE EVENTO (CALLBACK DESDE SWIFT) ---
+function SwiftToggleOnChange( nTglIndex, lOn )
+    local oControl
+    
+    // Acceso directo al array de Toggles
+    if nTglIndex > 0 .and. nTglIndex <= Len( aSwiftToggles )
+        oControl := aSwiftToggles[ nTglIndex ]
+      
+        if oControl != nil
+            oControl:lOn := lOn
+            if oControl:bChange != nil
+                Eval( oControl:bChange, lOn, oControl ) // <--- AQUÍ SE DISPARA EL LABEL
+            endif
         endif
     endif
-
 return nil
+
+//-----------------------------------
+
+function GetSwiftToggles() 
+return aSwiftToggles
+
+
+

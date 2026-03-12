@@ -21,6 +21,11 @@ function Main()
     cSongName := ""
     nDur := 0
     nPos := 0
+    
+    // Proactive: If nothing playing, try to find ANY playlist with music
+    if Empty( oMusic:GetMetadata() ) .or. oMusic:GetMetadata() == "{}"
+        oMusic:PlayFirst() 
+    endif
 
     DEFINE WINDOW oWnd TITLE "FiveMac Music" ;
         FROM 100, 100 TO 800, 500 FLIPPED
@@ -77,6 +82,8 @@ function Main()
     oBtnNext:SetImage( "forward.fill" )
     oBtnNext:SetRadius( 25 )
 
+    @ 570, 50 BUTTON "Playlists" SIZE 100, 20 OF oWnd ACTION MsgInfo( hb_ValToExp( oMusic:GetPlaylists() ) )
+
     // --- Volume ---
     @ 600, 100 SLIDER oVol SIZE 200, 20 OF oWnd
     oVol:SetMinMaxValue(0, 100)
@@ -88,7 +95,8 @@ function Main()
 
 
     // --- Timer ---
-    DEFINE TIMER oTimer INTERVAL 1 REPEAT OF oWnd ;
+    // Change interval to 2 seconds to avoid saturating AppleScript bridge
+    DEFINE TIMER oTimer INTERVAL 2 REPEAT OF oWnd ;
         ACTION UpdateUI( oMusic, oImg, oVol, oProg, oSayTime, oSaySong, oSayArtist, oBtnPlay )
     
     ACTIVATE TIMER oTimer

@@ -35,9 +35,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_BRWCHANGED);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong([self selectedRow]);
   hb_vmDo(4);
 }
@@ -49,10 +49,10 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[tableView window]);
+  hb_vmPushNLL((HB_LONGLONG)[tableView window]);
   hb_vmPushLong(WM_HEADCLICK);
-  hb_vmPushNumInt((HB_LONGLONG)self);
-  hb_vmPushLong([[(NSTableColumn *)aTableColumn identifier] integerValue]);
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushNLL([[(NSTableColumn *)aTableColumn identifier] integerValue]);
   hb_vmDo(4);
 }
 
@@ -66,9 +66,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_KEYDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(unichar);
   hb_vmDo(4);
 
@@ -94,9 +94,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_RBUTTONDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(point.y);
   hb_vmPushLong(point.x);
   hb_vmPushLong(self->nRow);
@@ -118,11 +118,11 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_MOUSEDOWN);
-  hb_vmPushNumInt((HB_LONGLONG)self);
-  hb_vmPushLong(self->nRow);
-  hb_vmPushLong(self->nCol);
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushNLL(self->nRow);
+  hb_vmPushNLL(self->nCol);
 
   hb_vmDo(5);
 }
@@ -134,9 +134,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[self window]);
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
   hb_vmPushLong(WM_BRWDRAWRECT);
-  hb_vmPushNumInt((HB_LONGLONG)self);
+  hb_vmPushNLL((HB_LONGLONG)self);
   hb_vmPushLong(row);
   hb_vmDo(4);
 
@@ -157,11 +157,11 @@ static PHB_SYMB symFMH = NULL;
 
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushNumInt((HB_LONGLONG)[self window]);
+    hb_vmPushNLL((HB_LONGLONG)[self window]);
     hb_vmPushLong(WM_BRWCLRTEXT);
-    hb_vmPushNumInt((HB_LONGLONG)self);
-    hb_vmPushNumInt((HB_LONGLONG)aTableColumn);
-    hb_vmPushLong(rowIndex);
+    hb_vmPushNLL((HB_LONGLONG)self);
+    hb_vmPushNLL((HB_LONGLONG)aTableColumn);
+    hb_vmPushNLL(rowIndex);
     hb_vmDo(5);
 
     [aCell setTextColor:(NSColor *)hb_parnll(-1)];
@@ -230,9 +230,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[aTableView window]);
-  hb_vmPushLong(WM_BRWROWS);
-  hb_vmPushNumInt((HB_LONGLONG)aTableView);
+  hb_vmPushNLL((HB_LONGLONG)[aTableView window]);
+  hb_vmPushNLL(WM_BRWROWS);
+  hb_vmPushNLL((HB_LONGLONG)aTableView);
   hb_vmDo(3);
 
   return (NSInteger)hb_parnl(-1);
@@ -249,14 +249,14 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[aTableView window]);
-  hb_vmPushLong(WM_BRWVALUE);
-  hb_vmPushNumInt((HB_LONGLONG)aTableView);
+  hb_vmPushNLL((HB_LONGLONG)[aTableView window]);
+  hb_vmPushNLL(WM_BRWVALUE);
+  hb_vmPushNLL((HB_LONGLONG)aTableView);
 
-  hb_vmPushLong([[(NSTableColumn *)aTableColumn identifier] integerValue]);
-  // hb_vmPushLong( ( ( TableColumn * ) aTableColumn )->id );
+  hb_vmPushNLL([[(NSTableColumn *)aTableColumn identifier] integerValue]);
+  // hb_vmPushNLL( ( ( TableColumn * ) aTableColumn )->id );
 
-  hb_vmPushLong(rowIndex);
+  hb_vmPushNLL(rowIndex);
 
   hb_vmDo(5);
 
@@ -333,12 +333,12 @@ static PHB_SYMB symFMH = NULL;
 
     hb_vmPushSymbol(symFMH);
     hb_vmPushNil();
-    hb_vmPushNumInt((HB_LONGLONG)[aTableView window]);
-    hb_vmPushLong(WM_BRWSETVALUE);
-    hb_vmPushNumInt((HB_LONGLONG)aTableView);
-    hb_vmPushLong([[(NSTableColumn *)aTableColumn identifier] integerValue]);
-    hb_vmPushLong(rowIndex);
-    hb_vmPushNumInt((HB_LONGLONG)aData);
+    hb_vmPushNLL((HB_LONGLONG)[aTableView window]);
+    hb_vmPushNLL(WM_BRWSETVALUE);
+    hb_vmPushNLL((HB_LONGLONG)aTableView);
+    hb_vmPushNLL([[(NSTableColumn *)aTableColumn identifier] integerValue]);
+    hb_vmPushNLL(rowIndex);
+    hb_vmPushNLL((HB_LONGLONG)aData);
     hb_vmDo(6);
   }
 }

@@ -84,142 +84,168 @@ extension View {
 @objc(SwiftButtonLoader)
 public class SwiftButtonLoader: NSObject {
     
-    // CRITICAL: Use Dictionary to prevent Index Collision
-    // HYBRID MIGRATION: Key is String to support both "123" (legacy indices) and "UUID-..."
     public static var states: [String: ButtonState] = [:]
 
-    @objc(makeButtonWithTitle:index:callback:)
-    public static func makeButton(title: String, index: Int, callback: ((String) -> Void)?) -> NSView {
+    public static func makeButton(title: String, id: String, index: Int, callback: @escaping () -> Void) -> NSView {
          let state = ButtonState(title: title)
-         let key = String(index)
-         states[key] = state // Store in Dictionary using String key
+         let key = id.isEmpty ? String(index) : id
+         states[key] = state
          
-         let action: () -> Void = {
-             _ = callback?("Click")
-         }
-         
-         let view = SwiftButtonView(state: state, callback: action)
+         let view = SwiftButtonView(state: state, callback: callback)
          ViewRegistry.register(view, for: index)
          
          let hostingView = NSHostingView(rootView: view)
+         hostingView.sizingOptions = [] 
          hostingView.translatesAutoresizingMaskIntoConstraints = false
          return hostingView
     }
 
-    @objc(setButtonBackgroundColor:index:)
-    public static func setButtonBackgroundColor(_ colorHex: String, index: Int) {
-       
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.backgroundColor = Color(hex: colorHex)
-                }
-            }
-       
-    }
-
-    @objc(setButtonForegroundColor:index:)
-    public static func setButtonForegroundColor(_ colorHex: String, index: Int) {
-       
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.foregroundColor = Color(hex: colorHex)
-                }
-            }
-       
-    }
-
-    @objc(setButtonCornerRadius:index:)
-    public static func setButtonCornerRadius(_ radius: Double, index: Int) {
-       
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.cornerRadius = CGFloat(radius)
-                }
-            }
-       
-    }
-    
-    @objc(setButtonPadding:index:)
-    public static func setButtonPadding(_ padding: Double, index: Int) {
-       
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.padding = CGFloat(padding)
-                }
-            }
+    public static func destroyButton(id: String, index: Int, viewPtr: Int64) {
+        let key = id.isEmpty ? String(index) : id
+        states.removeValue(forKey: key)
+        ViewRegistry.clean(index:index) 
         
-    }
-
-    @objc(setButtonGlass:index:)
-    public static func setButtonGlass(_ isGlass: Bool, index: Int) {
-       
-            NSLog("DEBUG: SwiftButton setButtonGlass: \(isGlass) for index: \(index)")
-            let key = String(index)
-            DispatchQueue.main.async {
-                if let state = states[key] {
-                    state.isGlass = isGlass
-                } else {
-                    NSLog("DEBUG: SwiftButton setButtonGlass: State NOT found for index: \(index)")
-                }
-            }
-        
-    }
-
-    @objc(setButtonImage:index:)
-    public static func setButtonImage(_ imageName: String, index: Int) {
-        let key = String(index)
-        DispatchQueue.main.async {
-            if let state = states[key] {
-                state.imageName = imageName
+        if viewPtr != 0 {
+            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
+                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
-        
+    }
+
+    public static func setText(id: String, text: String) {
+        DispatchQueue.main.async { states[id]?.title = text }
+    }
+
+    public static func setBackgroundColor(id: String, hex: String) {
+        DispatchQueue.main.async { states[id]?.backgroundColor = Color(hex: hex) }
+    }
+
+    public static func setForegroundColor(id: String, hex: String) {
+        DispatchQueue.main.async { states[id]?.foregroundColor = Color(hex: hex) }
+    }
+
+    public static func setCornerRadius(id: String, radius: Double) {
+        DispatchQueue.main.async { states[id]?.cornerRadius = CGFloat(radius) }
+    }
+    
+    public static func setPadding(id: String, padding: Double) {
+        DispatchQueue.main.async { states[id]?.padding = CGFloat(padding) }
+    }
+
+    public static func setGlass(id: String, isGlass: Bool) {
+        DispatchQueue.main.async { states[id]?.isGlass = isGlass }
+    }
+
+    public static func setImage(id: String, imageName: String) {
+        DispatchQueue.main.async { states[id]?.imageName = imageName }
     }
 }
 
 // --- HARBOUR BRIDGE MACROS ---
 
-@_cdecl("SW_BTN_SET_TEXT")
-public func sw_btn_set_text(index: UnsafePointer<Int8>, text: UnsafePointer<Int8>) {
-    let key = String(cString: index)
-    DispatchQueue.main.async {
-        if let state = SwiftButtonLoader.states[key] {
-            state.title = String(cString: text)
+@HarbourDirect
+public func btn_set_text(id: String, text: String) {
+    SwiftButtonLoader.setText(id: id, text: text)
+}
+
+@HarbourDirect
+public func btn_set_bg(id: String, hex: String) {
+    SwiftButtonLoader.setBackgroundColor(id: id, hex: hex)
+}
+
+@HarbourDirect
+public func btn_set_fg(id: String, hex: String) {
+    SwiftButtonLoader.setForegroundColor(id: id, hex: hex)
+}
+
+@HarbourDirect
+public func btn_set_radius(id: String, radius: Double) {
+    SwiftButtonLoader.setCornerRadius(id: id, radius: radius)
+}
+
+@HarbourDirect
+public func btn_set_padding(id: String, padding: Double) {
+    SwiftButtonLoader.setPadding(id: id, padding: padding)
+}
+
+@HarbourDirect
+public func btn_set_glass(id: String, isGlass: Bool) {
+    SwiftButtonLoader.setGlass(id: id, isGlass: isGlass)
+}
+
+@HarbourDirect
+public func btn_set_image(id: String, image: String) {
+    SwiftButtonLoader.setImage(id: id, imageName: image)
+}
+
+@HarbourDirect
+public func btn_destroy(id: String, index: Int, viewPtr: Int64) {
+    SwiftButtonLoader.destroyButton(id: id, index: index, viewPtr: viewPtr)
+}
+
+@HarbourDirect
+public func swift_button_create(
+    top: Double, 
+    left: Double, 
+    width: Double, 
+    height: Double,
+    title: String, 
+    parentPtr: Int64,
+    index: Int,
+    id: String
+    ) -> Int64 {
+    
+    func executeCreation() -> Int64 {
+        var viewAddress: Int64 = 0
+        
+        let callback: () -> Void = {
+            let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTBTNONCLICK") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushNumber(Double(index), 0) 
+                    hb_vmDo(1)
+                }
+            }
+
+            if Thread.isMainThread {
+               sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
+            }
+        }
+
+        let buttonView = SwiftButtonLoader.makeButton(
+            title: title, 
+            id: id,
+            index: index, 
+            callback: callback
+        )
+        
+        if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
+            let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
+            
+            applySwiftViewLayout(
+                swiftView: buttonView, 
+                parent: parentObj, 
+                top: top, 
+                left: left, 
+                w: width, 
+                h: height
+            )
+            
+            let viewPtr = Unmanaged.passRetained(buttonView).toOpaque()
+            viewAddress = Int64(Int(bitPattern: viewPtr))
+        }
+        
+        return viewAddress
+    }
+
+    if Thread.isMainThread {
+        return executeCreation()
+    } else {
+        return DispatchQueue.main.sync {
+            return executeCreation()
         }
     }
-}
-
-@_cdecl("SW_BTN_SET_BG")
-public func sw_btn_set_bg(index: UnsafePointer<Int8>, hex: UnsafePointer<Int8>) {
-    SwiftButtonLoader.setButtonBackgroundColor(String(cString: hex), index: Int(String(cString: index)) ?? 0)
-}
-
-@_cdecl("SW_BTN_SET_FG")
-public func sw_btn_set_fg(index: UnsafePointer<Int8>, hex: UnsafePointer<Int8>) {
-    SwiftButtonLoader.setButtonForegroundColor(String(cString: hex), index: Int(String(cString: index)) ?? 0)
-}
-
-@_cdecl("SW_BTN_SET_RADIUS")
-public func sw_btn_set_radius(index: UnsafePointer<Int8>, radius: UnsafePointer<Int8>) {
-    SwiftButtonLoader.setButtonCornerRadius(Double(String(cString: radius)) ?? 0, index: Int(String(cString: index)) ?? 0)
-}
-
-@_cdecl("SW_BTN_SET_PADDING")
-public func sw_btn_set_padding(index: UnsafePointer<Int8>, padding: UnsafePointer<Int8>) {
-    SwiftButtonLoader.setButtonPadding(Double(String(cString: padding)) ?? 0, index: Int(String(cString: index)) ?? 0)
-}
-
-@_cdecl("SW_BTN_SET_GLASS")
-public func sw_btn_set_glass(index: UnsafePointer<Int8>, glass: UnsafePointer<Int8>) {
-    let bGlass = (String(cString: glass) == "1")
-    SwiftButtonLoader.setButtonGlass(bGlass, index: Int(String(cString: index)) ?? 0)
-}
-
-@_cdecl("SW_BTN_SET_IMAGE")
-public func sw_btn_set_image(index: UnsafePointer<Int8>, image: UnsafePointer<Int8>) {
-    SwiftButtonLoader.setButtonImage(String(cString: image), index: Int(String(cString: index)) ?? 0)
 }

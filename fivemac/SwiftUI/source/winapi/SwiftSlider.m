@@ -1,5 +1,6 @@
 #import "SwiftCommon.h"
 
+/*
 HB_FUNC(SWIFTSLIDERCREATE) {
   CGFloat nTop = (CGFloat)hb_parnd(1);
   CGFloat nLeft = (CGFloat)hb_parnd(2);
@@ -69,3 +70,4 @@ HB_FUNC(SLD_SET_COLORS) {
                     (const int8_t *)[fg UTF8String],
                     (const int8_t *)[bg UTF8String]);
 }
+*/

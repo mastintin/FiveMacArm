@@ -1,7 +1,6 @@
 #include "formatters.h"
 #include <fivemac.h>
 
-
 static PHB_SYMB symFMH = NULL;
 
 @implementation FMFormatter
@@ -27,9 +26,9 @@ static PHB_SYMB symFMH = NULL;
 
   hb_vmPushSymbol(symFMH);
   hb_vmPushNil();
-  hb_vmPushNumInt((HB_LONGLONG)[control window]);
+  hb_vmPushNLL((HB_LONGLONG)[control window]);
   hb_vmPushLong(WM_GETPARTEVALUE);
-  hb_vmPushNumInt((HB_LONGLONG)control);
+  hb_vmPushNLL((HB_LONGLONG)control);
   hb_vmPushString([partial cStringUsingEncoding:NSUTF8StringEncoding],
                   [partial length]);
 
