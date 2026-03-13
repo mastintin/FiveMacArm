@@ -86,13 +86,12 @@ public class SwiftButtonLoader: NSObject {
     
     public static var states: [String: ButtonState] = [:]
 
-    public static func makeButton(title: String, id: String, index: Int, callback: @escaping () -> Void) -> NSView {
+    public static func makeButton(title: String, id: String, callback: @escaping () -> Void) -> NSView {
          let state = ButtonState(title: title)
-         let key = id.isEmpty ? String(index) : id
-         states[key] = state
+         states[id] = state
          
          let view = SwiftButtonView(state: state, callback: callback)
-         ViewRegistry.register(view, for: index)
+         ViewRegistry.register(view, for: id)
          
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = [] 
@@ -100,14 +99,13 @@ public class SwiftButtonLoader: NSObject {
          return hostingView
     }
 
-    public static func destroyButton(id: String, index: Int, viewPtr: Int64) {
-        let key = id.isEmpty ? String(index) : id
-        states.removeValue(forKey: key)
-        ViewRegistry.clean(index:index) 
+    public static func destroyButton(id: String, viewPtr: Int64) {
+        states.removeValue(forKey: id)
+        ViewRegistry.clean(id:id) 
         
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
     }
@@ -179,8 +177,8 @@ public func btn_set_image(id: String, image: String) {
 }
 
 @HarbourDirect
-public func btn_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftButtonLoader.destroyButton(id: id, index: index, viewPtr: viewPtr)
+public func btn_destroy(id: String, viewPtr: Int64) {
+    SwiftButtonLoader.destroyButton(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -191,7 +189,6 @@ public func swift_button_create(
     height: Double,
     title: String, 
     parentPtr: Int64,
-    index: Int,
     id: String
     ) -> Int64 {
     
@@ -203,7 +200,7 @@ public func swift_button_create(
                 if let pDynSym = hb_dynsymFindName("SWIFTBTNONCLICK") {
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
-                    hb_vmPushNumber(Double(index), 0) 
+                    hb_vmPushString(id)
                     hb_vmDo(1)
                 }
             }
@@ -218,7 +215,6 @@ public func swift_button_create(
         let buttonView = SwiftButtonLoader.makeButton(
             title: title, 
             id: id,
-            index: index, 
             callback: callback
         )
         

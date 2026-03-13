@@ -11,12 +11,31 @@ function SwiftRegisterItem( cId, oItem )
     s_hRegistry = {=>}
     endif
 
+    if Empty( cId ) .or. ValType( cId ) != "C"
+       return nil
+    endif
+
     cId = AllTrim( cId ) // Clean key - CRITICAL FIX
     // MsgAlert( "DEBUG: [Harbour] Registering Item: '" + cId + "' Len: " + Str(Len(cId)) + " Type: " + ValType(oItem) )
     // SysWait( 0.1 ) // Validate Timing Hypothesis
     // LogFile( "swift_debug.log", { "Registering", cId, ValType(oItem) } )
     s_hRegistry[ cId ] := oItem
    
+return nil
+
+// -------------------------------------------------------------------------------- //
+
+function SwiftUnregisterItem( cId )
+
+    if s_hRegistry == nil ; return nil ; endif
+
+    if !Empty( cId ) .and. ValType( cId ) == "C"
+       cId = AllTrim( cId )
+       if hb_HHasKey( s_hRegistry, cId )
+          hb_HDel( s_hRegistry, cId )
+       endif
+    endif
+
 return nil
 
 // -------------------------------------------------------------------------------- //

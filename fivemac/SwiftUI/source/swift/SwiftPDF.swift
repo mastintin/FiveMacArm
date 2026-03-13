@@ -1,13 +1,19 @@
 import Foundation
 import SwiftUI
 import AppKit
+import HarbourMacro
 
 
 @objc(SwiftPDF)
 public class SwiftPDF: NSObject {
     
+    @objc(saveViewWithIndex:to:)
+    public static func saveView(index: Int, path: String) {
+        saveView(id: String(index), path: path)
+    }
+
     @objc(saveView:to:)
-    public static func saveView(id: Int, path: String) {
+    public static func saveView(id: String, path: String) {
         
         DispatchQueue.main.async {
             // 1. Try generic NSView retrieval (Previous logical path)
@@ -70,4 +76,8 @@ public class SwiftPDF: NSObject {
             }
         }
     }
+}
+@HarbourDirect
+public func swift_pdf_save(id: String, path: String) {
+    SwiftPDF.saveView(id: id, path: path)
 }

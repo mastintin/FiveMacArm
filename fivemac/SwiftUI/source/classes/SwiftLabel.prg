@@ -5,8 +5,6 @@ static aSwiftLabels := {}
 
 CLASS TSwiftLabel FROM TControl
 
-    DATA nIndex
-    DATA nLbIndex
     DATA cID
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd )
@@ -24,15 +22,13 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwif
 
     ::oWnd    = oWnd
     // ::nId     = ::GetCtrlIndex()
-    ::cID      = SWIFT_UUID()
+    ::cID      = hb_UUID()
 
     AAdd( aSwiftLabels, Self )
-    ::nLbIndex = Len( aSwiftLabels )
     
 
-    // Pass ::nIndex (Param 7)
-    //::hWnd = SWIFTLABELCREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nLbIndex )
-    ::hWnd = SD_SWIFT_LABEL_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nLbIndex, ::cID )
+    // Pass ::cID (Param 7)
+    ::hWnd = SD_SWIFT_LABEL_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cID )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -85,11 +81,12 @@ METHOD SetAlignment( nAlign ) CLASS TSwiftLabel
 return self
 
 METHOD End() CLASS TSwiftLabel
+    local nPos 
     if !Empty( ::hWnd )
-        // Llamamos al macro de Swift
-        SD_LBL_DESTROY( ::cId, ::nLbIndex, ::hWnd )
-        if ::nLbIndex > 0 .and. ::nLbIndex <= Len( aSwiftLabels )
-            aSwiftLabels[ ::nLbIndex ] := nil
+        SD_LBL_DESTROY( ::cId, ::hWnd )
+        nPos := AScan( aSwiftLabels, { |o| o != nil .and. o:cID == ::cID } )
+        if nPos > 0
+            aSwiftLabels[ nPos ] := nil
         endif
         ::hWnd := 0
         ::cID := ""

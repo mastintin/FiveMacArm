@@ -72,11 +72,16 @@ public struct ObservationTestView: View {
 public class SwiftObservationLoader: NSObject {
     @objc(makeObservationTest:)
     public static func makeObservationTest(index: Int) -> NSView {
-        let view = ObservationTestView()
-        ViewRegistry.register(view, for: index)
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.translatesAutoresizingMaskIntoConstraints = false
-        return hostingView
+        return makeObservationTest(id: String(index))
+    }
+
+    public static func makeObservationTest(id: String) -> NSView {
+         let view = ObservationTestView()
+         ViewRegistry.register(view, for: id)
+         let hostingView = NSHostingView(rootView: view)
+         hostingView.sizingOptions = []
+         hostingView.translatesAutoresizingMaskIntoConstraints = false
+         return hostingView
     }
     
     @objc(setActionCallback:)
@@ -87,29 +92,99 @@ public class SwiftObservationLoader: NSObject {
 
 // Harbour Macros
 
-@HarbourBridge
-public func obs_set_count(nombre: String) {
-    if let n = Int(nombre) {
-        CounterModel.shared.count = n
-    }
+@HarbourDirect
+public func obs_set_count(val: Int) {
+    CounterModel.shared.count = val
 }
 
-@HarbourBridge
-public func obs_set_msg(nombre: String) {
-    CounterModel.shared.message = nombre
+@HarbourDirect
+public func obs_set_msg(msg: String) {
+    CounterModel.shared.message = msg
 }
 
-@_cdecl("sw_obs_get_count")
-public func sw_obs_get_count() -> Int {
+@HarbourDirect
+public func obs_get_count() -> Int {
     return CounterModel.shared.count
 }
 
-@_cdecl("sw_obs_get_level")
-public func sw_obs_get_level() -> Double {
+@HarbourDirect
+public func obs_get_level() -> Double {
     return CounterModel.shared.level
 }
 
-@_cdecl("sw_obs_get_enabled")
-public func sw_obs_get_enabled() -> Bool {
+@HarbourDirect
+public func obs_get_enabled() -> Bool {
     return CounterModel.shared.isEnabled
+}
+
+@HarbourDirect
+public func obs_destroy(id: String, viewPtr: Int64) {
+    ViewRegistry.clean(id: id)
+    if viewPtr != 0 {
+        if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+            _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
+        }
+    }
+}
+
+@HarbourDirect
+public func swift_observation_create(
+    top: Double, 
+    left: Double, 
+    width: Double, 
+    height: Double,
+    parentPtr: Int64,
+    id: String
+) -> Int64 {
+    
+    func executeCreation() -> Int64 {
+        var viewAddress: Int64 = 0
+        
+        let obsView = SwiftObservationLoader.makeObservationTest(id: id)
+        
+        let callback: (String) -> Void = { action in
+             let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTOBSERONACTION") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushString(id)
+                    hb_vmPushString(action)
+                    hb_vmDo(2)
+                }
+            }
+            if Thread.isMainThread {
+                sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
+            }
+        }
+        
+        SwiftObservationLoader.setActionCallback(callback: callback)
+        
+        if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
+            let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
+            
+            applySwiftViewLayout(
+                swiftView: obsView, 
+                parent: parentObj, 
+                top: top, 
+                left: left, 
+                w: width, 
+                h: height
+            )
+            
+            let viewPtr = Unmanaged.passRetained(obsView).toOpaque()
+            viewAddress = Int64(Int(bitPattern: viewPtr))
+        }
+        
+        return viewAddress
+    }
+
+    if Thread.isMainThread {
+        return executeCreation()
+    } else {
+        return DispatchQueue.main.sync {
+            return executeCreation()
+        }
+    }
 }

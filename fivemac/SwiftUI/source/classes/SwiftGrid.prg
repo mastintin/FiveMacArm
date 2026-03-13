@@ -17,12 +17,9 @@ METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd, nAutoResize ) CLASS TSw
     DEFAULT aColumns := {}, nAutoResize := 0
 
     ::oWnd = oWnd
+    ::cId = hb_UUID()
     
-    ::nId = Len( aGrids ) + 1
-    ::nIndex = ::nId
     AAdd( aGrids, Self )
-    
-    ::cId = "" 
     
     for n := 1 to Len( aColumns )
     if n > 1
@@ -45,7 +42,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd, nAutoResize ) CLASS TSw
     next
     cJson += "]"
 
-    ::hWnd = SWIFTGRIDCREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight, cJson )
+    ::hWnd = SD_SWIFT_GRID_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId, cJson )
 
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -57,44 +54,41 @@ return Self
 
 //----------------------------------------------------------------//
 
-function SwiftGridOnClick( nGridIndex, nItemIndex )
+function SwiftGridOnClick( cGridId, nItemIndex )
+    local nPos := AScan( aGrids, { |o| o != nil .and. o:cId == cGridId } )
     local oGrid
 
-    if nGridIndex > 0 .and. nGridIndex <= Len( aGrids )
-    oGrid = aGrids[ nGridIndex ]
-    if oGrid:bAction != nil
-    Eval( oGrid:bAction, nItemIndex )
-    endif
+    if nPos > 0
+        oGrid = aGrids[ nPos ]
+        if oGrid:bAction != nil
+            Eval( oGrid:bAction, nItemIndex )
+        endif
     endif
 
-    return nil
 return nil
 
-function SwiftGridOnAction( nGridIndex, cId )
+function SwiftGridOnAction( cGridId, cId )
+    local nPos := AScan( aGrids, { |o| o != nil .and. o:cId == cGridId } )
     local oGrid
     local uVal
 
-    if nGridIndex > 0 .and. nGridIndex <= Len( aGrids )
-    oGrid = aGrids[ nGridIndex ]
-       
-    // Try to resolve ID via Hash
-    if __ObjHasMsg( oGrid, "GETITEM" )
-    uVal := oGrid:GetItem( cId )
-    endif
-       
-    if valtype( uVal ) == "N" // Found Index!
-    if oGrid:bAction != nil
-    Eval( oGrid:bAction, uVal )
-    endif
-    elseif valtype( uVal ) == "O" // Found Object!
-    if __ObjHasMsg( uVal, "BACTION" ) .and. uVal:bAction != nil
-    Eval( uVal:bAction, uVal )
-    endif
-    else
-    // Fallback or Direct ID?
-    // For now, if no mapping found, do nothing or log?
-    // Alert( "Unknown ID: " + cId )
-    endif
+    if nPos > 0
+        oGrid = aGrids[ nPos ]
+           
+        // Try to resolve ID via Hash
+        if __ObjHasMsg( oGrid, "GETITEM" )
+            uVal := oGrid:GetItem( cId )
+        endif
+           
+        if valtype( uVal ) == "N" // Found Index!
+            if oGrid:bAction != nil
+                Eval( oGrid:bAction, uVal )
+            endif
+        elseif valtype( uVal ) == "O" // Found Object!
+            if __ObjHasMsg( uVal, "BACTION" ) .and. uVal:bAction != nil
+                Eval( uVal:bAction, uVal )
+            endif
+        endif
     endif
 
 return nil

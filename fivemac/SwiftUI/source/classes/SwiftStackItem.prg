@@ -43,6 +43,7 @@ CLASS TSwiftStackItem
     METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha )
     METHOD SetRadius( nRadius )
+    METHOD End()
 
 ENDCLASS
 
@@ -52,6 +53,11 @@ METHOD New( cId, oOwner ) CLASS TSwiftStackItem
     ::aBatch := {}
     SwiftRegisterItem( ::cId, Self )
 return Self
+
+METHOD End() CLASS TSwiftStackItem
+    SwiftUnregisterItem( ::cId )
+    ::cId := ""
+return nil
 
 METHOD Root() CLASS TSwiftStackItem
     local oParent := ::oOwner
@@ -77,9 +83,9 @@ METHOD AddHStack() CLASS TSwiftStackItem
     local cId, oItem
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_HSTACK( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_VSTK_ADD_HSTACK( oRoot:cId, ::cId )
     else
-    cId := ZSTK_ADD_HSTACK( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_ZSTK_ADD_HSTACK( oRoot:cId, ::cId )
     endif
     oItem := TSwiftStackItem():New( cId, Self )
 return oItem
@@ -88,9 +94,9 @@ METHOD AddVStack() CLASS TSwiftStackItem
     local cId, oItem
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_VSTACK( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_VSTK_ADD_VSTACK( oRoot:cId, ::cId )
     else
-    cId := ZSTK_ADD_VSTACK( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_ZSTK_ADD_VSTACK( oRoot:cId, ::cId )
     endif
     oItem := TSwiftStackItem():New( cId, Self )
 return oItem
@@ -102,9 +108,9 @@ METHOD AddText( cText, bAction ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_TEXT_TO( hb_ntos( oRoot:nIndex ), cText, ::cId )
+    cId := SD_VSTK_ADD_TEXT_TO( oRoot:cId, cText, ::cId )
     else
-    cId := ZSTK_ADD_TEXT_TO( hb_ntos( oRoot:nIndex ), cText, ::cId )
+    cId := SD_ZSTK_ADD_TEXT_TO( oRoot:cId, cText, ::cId )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -117,9 +123,9 @@ METHOD AddSystemImage( cName ) CLASS TSwiftStackItem
     local cId
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_SYSTEM_IMAGE_TO( hb_ntos( oRoot:nIndex ), cName, ::cId )
+    cId := SD_VSTK_ADD_SYSTEM_IMAGE_TO( oRoot:cId, cName, ::cId )
     else
-    cId := ZSTK_ADD_SYSTEM_IMAGE_TO( hb_ntos( oRoot:nIndex ), cName, ::cId )
+    cId := SD_ZSTK_ADD_SYSTEM_IMAGE_TO( oRoot:cId, cName, ::cId )
     endif
 return TSwiftStackItem():New( cId, Self )
 
@@ -127,9 +133,9 @@ METHOD AddButton( cText, bAction ) CLASS TSwiftStackItem
     local cId, oItem
     local oRoot := ::Root()
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_BUTTON_ITEM( hb_ntos( oRoot:nIndex ), cText, ::cId )
+    cId := SD_VSTK_ADD_BUTTON_ITEM( oRoot:cId, cText, ::cId )
     else
-    cId := ZSTK_ADD_BUTTON_TO( hb_ntos( oRoot:nIndex ), cText, ::cId )
+    cId := SD_ZSTK_ADD_BUTTON_TO( oRoot:cId, cText, ::cId )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -142,9 +148,9 @@ METHOD AddSpacer() CLASS TSwiftStackItem
     local oRoot := ::Root()
     local cId
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_SPACER_TO( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_VSTK_ADD_SPACER_TO( oRoot:cId, ::cId )
     else 
-    cId := ZSTK_ADD_SPACER( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_ZSTK_ADD_SPACER( oRoot:cId, ::cId )
     endif
 return TSwiftStackItem():New( cId, Self )
 
@@ -152,9 +158,9 @@ METHOD AddDivider() CLASS TSwiftStackItem
     local oRoot := ::Root()
     local cId
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_DIVIDER_TO( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_VSTK_ADD_DIVIDER_TO( oRoot:cId, ::cId )
     else 
-    cId := ZSTK_ADD_DIVIDER( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_ZSTK_ADD_DIVIDER( oRoot:cId, ::cId )
     endif
 return TSwiftStackItem():New( cId, Self )
 
@@ -187,9 +193,9 @@ METHOD AddGrid( aColumns ) CLASS TSwiftStackItem
     cJson += "]"
     
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_LAZYVGRID( hb_ntos( oRoot:nIndex ), ::cId, cJson )
+    cId := SD_VSTK_ADD_LAZYVGRID( oRoot:cId, ::cId, cJson )
     else
-    cId := ZSTK_ADD_LAZYVGRID( hb_ntos( oRoot:nIndex ), ::cId, cJson )
+    cId := SD_ZSTK_ADD_LAZYVGRID( oRoot:cId, ::cId, cJson )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -200,9 +206,9 @@ METHOD AddList() CLASS TSwiftStackItem
     local oRoot := ::Root()
     
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := VSTK_ADD_LIST( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_VSTK_ADD_LIST( oRoot:cId, ::cId )
     else
-    cId := ZSTK_ADD_LIST( hb_ntos( oRoot:nIndex ), ::cId )
+    cId := SD_ZSTK_ADD_LIST( oRoot:cId, ::cId )
     endif
     
     oItem := TSwiftStackItem():New( cId, Self )
@@ -248,9 +254,9 @@ METHOD AddBatch( aItems ) CLASS TSwiftStackItem
    
     cJson := hb_jsonEncode( aJsonData )
     if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cJsonIds := VSTK_ADD_BATCH( hb_ntos( oRoot:nIndex ), cJson, ::cId ) 
+    cJsonIds := SD_VSTK_ADD_BATCH( oRoot:cId, cJson, ::cId ) 
     else
-    cJsonIds := ZSTK_ADD_BATCH( hb_ntos( oRoot:nIndex ), cJson, ::cId ) 
+    cJsonIds := SD_ZSTK_ADD_BATCH( oRoot:cId, cJson, ::cId ) 
     endif
    
     aIds := hb_jsonDecode( cJsonIds )
@@ -272,31 +278,47 @@ return aIds
 METHOD SetSize( nWidth, nHeight ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nWidth := 0, nHeight := 0
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    VSTK_SET_ITEM_LAYOUT( hb_ntos( oRoot:nIndex ), ::cId, hb_ntos( nWidth ), hb_ntos( nHeight ), "-1" )
+    if oRoot:IsKindOf( "TSWIFTLIST" )
+        SD_LST_SET_ITEM_LAYOUT( oRoot:cId, ::cId, hb_ntos( nWidth ), hb_ntos( nHeight ), "-1" )
+    elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
+        SD_ZSTK_SET_ITEM_LAYOUT( oRoot:cId, ::cId, hb_ntos( nWidth ), hb_ntos( nHeight ), "-1" )
+    else
+        SD_VSTK_SET_ITEM_LAYOUT( oRoot:cId, ::cId, hb_ntos( nWidth ), hb_ntos( nHeight ), "-1" )
     endif
 return nil
 
 METHOD SetSpacing( nSpacing ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nSpacing := 8
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    VSTK_SET_ITEM_LAYOUT( hb_ntos( oRoot:nIndex ), ::cId, "0", "0", hb_ntos( nSpacing ) )
+    if oRoot:IsKindOf( "TSWIFTLIST" )
+        SD_LST_SET_ITEM_LAYOUT( oRoot:cId, ::cId, "0", "0", hb_ntos( nSpacing ) )
+    elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
+        SD_ZSTK_SET_ITEM_LAYOUT( oRoot:cId, ::cId, "0", "0", hb_ntos( nSpacing ) )
+    else
+        SD_VSTK_SET_ITEM_LAYOUT( oRoot:cId, ::cId, "0", "0", hb_ntos( nSpacing ) )
     endif
 return nil
 
 METHOD SetText( cText ) CLASS TSwiftStackItem
     local oRoot := ::Root()
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    VSTK_SET_ITEM_TEXT( hb_ntos( oRoot:nIndex ), ::cId, cText )
+    if oRoot:IsKindOf( "TSWIFTLIST" )
+        SD_LST_SET_ITEM_TEXT( oRoot:cId, ::cId, cText )
+    elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
+        SD_ZSTK_SET_ITEM_TEXT( oRoot:cId, ::cId, cText )
+    else
+        SD_VSTK_SET_ITEM_TEXT( oRoot:cId, ::cId, cText )
     endif
 return nil
 
 METHOD SetFont( nSize, lBold ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nSize := 0, lBold := .F.
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    VSTK_SET_ITEM_FONT( hb_ntos( oRoot:nIndex ), ::cId, hb_ntos( nSize ), If( lBold, "1", "0" ) )
+    if oRoot:IsKindOf( "TSWIFTLIST" )
+        SD_LST_SET_ITEM_FONT( oRoot:cId, ::cId, hb_ntos( nSize ), lBold )
+    elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
+        SD_ZSTK_SET_ITEM_FONT( oRoot:cId, ::cId, hb_ntos( nSize ), If( lBold, "1", "0" ) )
+    else
+        SD_VSTK_SET_ITEM_FONT( oRoot:cId, ::cId, hb_ntos( nSize ), If( lBold, "1", "0" ) )
     endif
 return nil
 
@@ -306,14 +328,29 @@ METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftStackI
     DEFAULT nAlphaFore := 1.0
     DEFAULT nAlphaBack := 1.0
 
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    if nClrFore != nil
-    VSTK_SET_ITEM_COLOR_HEX( hb_ntos( oRoot:nIndex ), ::cId, clrToHex( nClrFore, nAlphaFore ) )
-    endif
-        
-    if nClrBack != nil
-    VSTK_SET_ITEM_BGCOLOR_HEX( hb_ntos( oRoot:nIndex ), ::cId, clrToHex( nClrBack, nAlphaBack ) )
-    endif
+    if oRoot:IsKindOf( "TSWIFTLIST" )
+        if nClrFore != nil
+            SD_LST_SET_ITEM_COLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
+        endif
+        if nClrBack != nil
+            SD_LST_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
+        endif
+    elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
+        if nClrFore != nil
+        SD_ZSTK_SET_ITEM_COLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
+        endif
+            
+        if nClrBack != nil
+        SD_ZSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
+        endif
+    else
+        if nClrFore != nil
+        SD_VSTK_SET_ITEM_COLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
+        endif
+            
+        if nClrBack != nil
+        SD_VSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
+        endif
     endif
 
 return nil
@@ -329,15 +366,23 @@ METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftStackItem
     nClr := nRGB( nRed, nGreen, nBlue )
     endif
 
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    VSTK_SET_ITEM_BGCOLOR_HEX( hb_ntos( oRoot:nIndex ), ::cId, clrToHex( nClr, nAlpha ) )
+    if oRoot:IsKindOf( "TSWIFTLIST" )
+        SD_LST_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClr, nAlpha ) )
+    elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
+        SD_ZSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClr, nAlpha ) )
+    else
+        SD_VSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClr, nAlpha ) )
     endif
 return nil
 
 METHOD SetRadius( nRadius ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     DEFAULT nRadius := 0
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    VSTK_SET_ITEM_RADIUS( hb_ntos( oRoot:nIndex ), ::cId, nRadius )
+    if oRoot:IsKindOf( "TSWIFTLIST" )
+        SD_LST_SET_ITEM_RADIUS( oRoot:cId, ::cId, nRadius )
+    elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
+        SD_ZSTK_SET_ITEM_RADIUS( oRoot:cId, ::cId, nRadius )
+    else
+        SD_VSTK_SET_ITEM_RADIUS( oRoot:cId, ::cId, nRadius )
     endif
 return nil

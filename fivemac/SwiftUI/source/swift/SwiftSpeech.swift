@@ -3,11 +3,10 @@ import Speech
 import AVFoundation
 import HarbourMacro
 
-@HarbourBridge
-@objc(SwiftSpeechManager)
+@HarbourDirect
 public class SwiftSpeechManager: NSObject {
     
-    @objc public static let shared = SwiftSpeechManager()
+    public static let shared = SwiftSpeechManager()
     
     private var speechRecognizer: SFSpeechRecognizer?
     private var localeIdentifier: String?
@@ -16,12 +15,60 @@ public class SwiftSpeechManager: NSObject {
     private var audioRecorder: AVAudioRecorder?
     private let audioEngine = AVAudioEngine()
     
-    // Callbacks to Harbour/ObjC
-    @objc public var onTranscription: ((String, Bool) -> Void)?
-    @objc public var onVocalMetrics: ((Double, Double, Double) -> Void)?
-    @objc public var onError: ((String) -> Void)?
+    // Callbacks to Harbour
+    public var onTranscription: ((String, Bool) -> Void)?
+    public var onVocalMetrics: ((Double, Double, Double) -> Void)?
+    public var onError: ((String) -> Void)?
     
-    @objc(start)
+    public override init() {
+        super.init()
+        setupDefaultCallbacks()
+    }
+    
+    private func setupDefaultCallbacks() {
+        onTranscription = { text, isFinal in
+            let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTSPEECHONTRANSCRIPTION") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushString(text)
+                    hb_vmPushLogical(HarbourBridgeSupport.toC(isFinal))
+                    hb_vmDo(2)
+                }
+            }
+            if Thread.isMainThread { sendToHarbour() } 
+            else { DispatchQueue.main.async { sendToHarbour() } }
+        }
+        
+        onVocalMetrics = { pitch, jitter, shimmer in
+            let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTSPEECHONMETRICS") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushDouble(pitch, 4)
+                    hb_vmPushDouble(jitter, 4)
+                    hb_vmPushDouble(shimmer, 4)
+                    hb_vmDo(3)
+                }
+            }
+            if Thread.isMainThread { sendToHarbour() } 
+            else { DispatchQueue.main.async { sendToHarbour() } }
+        }
+        
+        onError = { msg in
+            let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTSPEECHONERROR") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushString(msg)
+                    hb_vmDo(1)
+                }
+            }
+            if Thread.isMainThread { sendToHarbour() } 
+            else { DispatchQueue.main.async { sendToHarbour() } }
+        }
+    }
+    
     public func start() {
         if recognitionTask != nil {
             stop()
@@ -92,7 +139,6 @@ public class SwiftSpeechManager: NSObject {
         }
     }
     
-    @objc(recordToFile:)
     public func recordToFile(_ path: String) {
         let url = URL(fileURLWithPath: path)
         let settings: [String: Any] = [
@@ -107,18 +153,16 @@ public class SwiftSpeechManager: NSObject {
             audioRecorder?.record()
             print("Recording started to: \(path)")
         } catch {
-            self.onError?("Record to file error: \(error.localizedDescription)")
+            self.onError?(error.localizedDescription)
         }
     }
 
-    @objc(stopRecording)
     public func stopRecording() {
         audioRecorder?.stop()
         audioRecorder = nil
         print("Recording stopped.")
     }
 
-    @objc(transcribeFile:)
     public func transcribeFile(_ path: String) {
         let url = URL(fileURLWithPath: path)
         let targetLocale = resolveLocale()
@@ -152,7 +196,6 @@ public class SwiftSpeechManager: NSObject {
         }
     }
 
-    @objc(stop)
     public func stop() {
         if audioEngine.isRunning {
              audioEngine.stop()
@@ -176,9 +219,40 @@ public class SwiftSpeechManager: NSObject {
         return values.reduce(0, +) / Double(values.count)
     }
 
-    @objc(setLocale:)
     public func setLocale(_ identifier: String) {
         self.localeIdentifier = identifier
         self.speechRecognizer = nil 
     }
+}
+
+// --- HARBOUR DIRECT BRIDGES ---
+
+@HarbourDirect
+public func speech_start() {
+    SwiftSpeechManager.shared.start()
+}
+
+@HarbourDirect
+public func speech_stop() {
+    SwiftSpeechManager.shared.stop()
+}
+
+@HarbourDirect
+public func speech_set_locale(localeId: String) {
+    SwiftSpeechManager.shared.setLocale(localeId)
+}
+
+@HarbourDirect
+public func speech_record_file(path: String) {
+    SwiftSpeechManager.shared.recordToFile(path)
+}
+
+@HarbourDirect
+public func speech_stop_recording() {
+    SwiftSpeechManager.shared.stopRecording()
+}
+
+@HarbourDirect
+public func speech_transcribe_file(path: String) {
+    SwiftSpeechManager.shared.transcribeFile(path)
 }

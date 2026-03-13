@@ -69,14 +69,14 @@ public class SwiftTextFieldLoader: NSObject {
     
     public static var states: [String: TextFieldState] = [:]
 
-    public static func makeTextField(text: String, placeholder: String, id: String, index: Int, callback: @escaping (String) -> Void) -> NSView {
+    public static func makeTextField(text: String, placeholder: String, id: String, callback: @escaping (String) -> Void) -> NSView {
         let state = TextFieldState(text: text, placeholder: placeholder, id: id)
         state.onAction = callback
         
         states[id] = state 
         
         let view = SwiftTextFieldView(state: state)
-        ViewRegistry.register(view, for: index)
+        ViewRegistry.register(view, for: id)
         
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
@@ -84,12 +84,12 @@ public class SwiftTextFieldLoader: NSObject {
         return hostingView
     }
 
-    public static func makeTextEditor(text: String, id: String, index: Int) -> NSView {
+    public static func makeTextEditor(text: String, id: String) -> NSView {
         let state = TextFieldState(text: text, id: id)
         states[id] = state
         
         let view = SwiftTextEditorView(state: state)
-        ViewRegistry.register(view, for: index)
+        ViewRegistry.register(view, for: id)
 
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
@@ -97,13 +97,13 @@ public class SwiftTextFieldLoader: NSObject {
         return hostingView
     }
 
-    public static func destroyTextField(id: String, index: Int, viewPtr: Int64) {
+    public static func destroyTextField(id: String, viewPtr: Int64) {
         states.removeValue(forKey: id)
-        ViewRegistry.clean(index:index) 
+        ViewRegistry.clean(id: id) 
         
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
     }
@@ -145,8 +145,8 @@ public func tf_set_font_size(id: String, size: Double) {
 }
 
 @HarbourDirect
-public func tf_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftTextFieldLoader.destroyTextField(id: id, index: index, viewPtr: viewPtr)
+public func tf_destroy(id: String, viewPtr: Int64) {
+    SwiftTextFieldLoader.destroyTextField(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -158,7 +158,6 @@ public func swift_textfield_create(
     text: String, 
     placeholder: String,
     parentPtr: Int64,
-    index: Int,
     id: String
     ) -> Int64 {
     
@@ -170,7 +169,7 @@ public func swift_textfield_create(
                 if let pDynSym = hb_dynsymFindName("SWIFTTEXTFIELDONCHANGE") {
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
-                    hb_vmPushNumber(Double(index), 0) 
+                    hb_vmPushString(id) 
                     hb_vmPushString(newText)
                     hb_vmDo(2)
                 }
@@ -187,7 +186,6 @@ public func swift_textfield_create(
             text: text, 
             placeholder: placeholder,
             id: id,
-            index: index, 
             callback: callback
         )
         
@@ -227,7 +225,6 @@ public func swift_texteditor_create(
     height: Double,
     text: String, 
     parentPtr: Int64,
-    index: Int,
     id: String
     ) -> Int64 {
     
@@ -236,8 +233,7 @@ public func swift_texteditor_create(
         
         let fieldView = SwiftTextFieldLoader.makeTextEditor(
             text: text, 
-            id: id,
-            index: index
+            id: id
         )
         
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {

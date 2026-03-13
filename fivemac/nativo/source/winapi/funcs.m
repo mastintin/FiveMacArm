@@ -85,7 +85,7 @@ HB_FUNC(SDKVERSION) {
   [version_raw release];
   [task release];
 }
-
+/*
 void generate_uuid_bytes(unsigned char *uuid) {
   for (int i = 0; i < 16; i++) {
     uuid[i] = rand() % 256;
@@ -118,6 +118,7 @@ HB_FUNC(HB_UUID) {
 
   hb_retc(szUUID);
 }
+*/
 
 HB_FUNC(VALIDEMAIL) {
   NSString *string = hb_NSSTRING_par(1);

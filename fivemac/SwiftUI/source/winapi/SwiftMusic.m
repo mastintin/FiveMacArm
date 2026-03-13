@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 HB_FUNC(SWIFTMUSICPLAY) { [SwiftMusicLoader play]; }
 
 HB_FUNC(SWIFTMUSICPAUSE) { [SwiftMusicLoader pause]; }
@@ -51,3 +51,4 @@ HB_FUNC(SWIFTMUSICPLAYPLAYLIST) {
 }
 
 HB_FUNC(SWIFTMUSICPLAYFIRST) { [SwiftMusicLoader playFirstAvailablePlaylist]; }
+*/

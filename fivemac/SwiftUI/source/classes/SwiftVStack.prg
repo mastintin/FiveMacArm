@@ -15,7 +15,7 @@
 
 CLASS TSwiftVStack FROM TControl
 
-    DATA nIndex
+    DATA cId
     DATA bAction // Codeblock {|nItemIndex| ... }
     DATA aBatch INIT {}
 
@@ -44,14 +44,18 @@ CLASS TSwiftVStack FROM TControl
     METHOD AddDivider()
     
     METHOD SetLastItemId( cId )
-    METHOD GetLastItemId() INLINE VSTK_GET_LAST_ITEM_ID( hb_ntos( ::nIndex ) )
+    METHOD GetLastItemId() INLINE SD_VSTK_GET_LAST_ITEM_ID( ::cId )
     METHOD SetItemColor( cId, nRed, nGreen, nBlue, nAlpha ) 
-    METHOD SetItemText( cId, cText ) INLINE VSTK_SET_ITEM_TEXT( hb_ntos( ::nIndex ), cId, cText )
+    METHOD SetItemText( cId, cText ) INLINE SD_VSTK_SET_ITEM_TEXT( ::cId, cId, cText )
     METHOD AddSystemImage( cName ) INLINE ::AddImage( cName )
     METHOD SetRadius( nRadius )
     METHOD RemoveAll()
 
     METHOD RegItem( cId, oItem ) INLINE SwiftRegisterItem( cId, oItem )
+
+    METHOD SetLastItemId( cId )
+    METHOD GetLastItemId() INLINE SD_VSTK_GET_LAST_ITEM_ID( ::cId )
+    METHOD End()
 
 ENDCLASS
 
@@ -60,10 +64,10 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftVStack
     DEFAULT nWidth := 200, nHeight := 300
     DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
-    ::nIndex = SwiftRegisterControl( Self )
+    ::cId := hb_UUID()
     ::aBatch := {}
 
-    ::hWnd = VSTK_CREATE( oWnd:hWnd, ::nIndex, nRow, nCol, nWidth, nHeight )
+    ::hWnd = SD_SWIFT_VSTACK_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId )
    
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -110,7 +114,7 @@ METHOD AddBatch( aItems ) CLASS TSwiftVStack
    
     cJson := hb_jsonEncode( aJsonData )
     // Pass ::nIndex as rootID
-    cJsonIds := VSTK_ADD_BATCH( hb_ntos( ::nIndex ), cJson, nil ) 
+    cJsonIds := SD_VSTK_ADD_BATCH( ::cId, cJson, nil ) 
    
     aIds := hb_jsonDecode( cJsonIds )
    
@@ -131,18 +135,18 @@ METHOD AddBatch( aItems ) CLASS TSwiftVStack
 return aIds
 
 METHOD AddText( cText, bAction ) CLASS TSwiftVStack
-    local cId := VSTK_ADD_TEXT_TO( hb_ntos( ::nIndex ), cText, nil )
+    local cId := SD_VSTK_ADD_TEXT_TO( ::cId, cText, nil )
     local oItem := TSwiftStackItem():New( cId, Self )
     if bAction != nil ; oItem:bAction := bAction ; endif
 return oItem
 
 METHOD AddImage( cName ) CLASS TSwiftVStack
-    local cId := VSTK_ADD_SYSTEM_IMAGE_TO( hb_ntos( ::nIndex ), cName, nil )
+    local cId := SD_VSTK_ADD_SYSTEM_IMAGE_TO( ::cId, cName, nil )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftVStack
     local cId, oItem
-    cId := VSTK_ADD_BUTTON_ITEM( hb_ntos( ::nIndex ), cText, nil )
+    cId := SD_VSTK_ADD_BUTTON_ITEM( ::cId, cText, nil )
     oItem := TSwiftStackItem():New( cId, Self )
     if bAction != nil .and. !Empty( cId )
     oItem:bAction := bAction
@@ -152,7 +156,7 @@ return oItem
 METHOD AddList( oParent ) CLASS TSwiftVStack
     local cId, oItem
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := VSTK_ADD_LIST( hb_ntos( ::nIndex ), cParentId )
+    cId := SD_VSTK_ADD_LIST( ::cId, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD AddRow( cText, bAction ) CLASS TSwiftVStack
@@ -169,12 +173,12 @@ return oItem
 METHOD AddHStack( oParent ) CLASS TSwiftVStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := VSTK_ADD_HSTACK( hb_ntos( ::nIndex ), cParentId )
+    cId := SD_VSTK_ADD_HSTACK( ::cId, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD SetScroll( lScroll ) CLASS TSwiftVStack
     DEFAULT lScroll := .T.
-    VSTK_SET_SCROLL( hb_ntos( ::nIndex ), lScroll )
+    SD_VSTK_SET_SCROLL( ::cId, lScroll )
 return nil
 
 METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
@@ -187,12 +191,12 @@ METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
     nClr := nRGB( nRed, nGreen, nBlue )
     endif
 
-    VSTK_SET_BGCOLOR_HEX( hb_ntos( ::nIndex ), clrToHex( nClr, nAlpha ) )
+    SD_VSTK_SET_BGCOLOR_HEX( ::cId, clrToHex( nClr, nAlpha ) )
 return nil
 
 METHOD SetInvertedColor( lInvert ) CLASS TSwiftVStack
     DEFAULT lInvert := .T.
-    VSTK_SET_INVERTED_COLOR( hb_ntos( ::nIndex ), lInvert )
+    SD_VSTK_SET_INVERTED_COLOR( ::cId, lInvert )
 return nil
 
 function SwiftVStackGetControl( nIndex )
@@ -208,54 +212,61 @@ METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
     nClr := nRGB( nRed, nGreen, nBlue )
     endif
 
-    VSTK_SET_FGCOLOR_HEX( hb_ntos( ::nIndex ), clrToHex( nClr, nAlpha ) )
+    SD_VSTK_SET_FGCOLOR_HEX( ::cId, clrToHex( nClr, nAlpha ) )
 return nil
 
 METHOD SetSpacing( nSpacing ) CLASS TSwiftVStack
-    VSTK_SET_SPACING( hb_ntos( ::nIndex ), hb_ntos( nSpacing ) )
+    SD_VSTK_SET_SPACING( ::cId, nSpacing )
 return nil
 
 
 METHOD SetAlignment( nAlign ) CLASS TSwiftVStack
-    VSTK_SET_ALIGNMENT( hb_ntos( ::nIndex ), hb_ntos( nAlign ) )
+    SD_VSTK_SET_ALIGNMENT( ::cId, nAlign )
 return nil
 
 METHOD AddSpacer( oParent ) CLASS TSwiftVStack
     local cParentId := If( oParent != nil, oParent:cId, nil )
-return VSTK_ADD_SPACER_TO( hb_ntos( ::nIndex ), cParentId )
+return SD_VSTK_ADD_SPACER_TO( ::cId, cParentId )
 
 METHOD AddDivider( oParent ) CLASS TSwiftVStack
     local cParentId := If( oParent != nil, oParent:cId, nil )
-return VSTK_ADD_DIVIDER_TO( hb_ntos( ::nIndex ), cParentId )
+return SD_VSTK_ADD_DIVIDER_TO( ::cId, cParentId )
 
 METHOD SetItemColor( cId, nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftVStack
     DEFAULT nRed := 0, nGreen := 0, nBlue := 0
     DEFAULT nAlpha := 1.0
-    VSTK_SET_ITEM_COLOR_HEX( hb_ntos( ::nIndex ), cId, clrToHex( nRGB( nRed, nGreen, nBlue ), nAlpha ) )
+    SD_VSTK_SET_ITEM_COLOR_HEX( ::cId, cId, clrToHex( nRGB( nRed, nGreen, nBlue ), nAlpha ) )
 return nil
 
 METHOD SetRadius( nRadius ) CLASS TSwiftVStack
-    VSTK_SET_ITEM_RADIUS( hb_ntos( ::nIndex ), "-1", nRadius )
+    SD_VSTK_SET_ITEM_RADIUS( ::cId, "-1", nRadius )
 return nil
 
 METHOD RemoveAll() CLASS TSwiftVStack
-    VSTK_REMOVE_ALL_ITEMS( hb_ntos( ::nIndex ) )
+    SD_VSTK_REMOVE_ALL_ITEMS( ::cId )
 return nil
 
 METHOD SetScrollable( lScroll ) CLASS TSwiftVStack
     ::lScrollable := lScroll
-    VSTK_SET_SCROLL( hb_ntos( ::nIndex ), If( lScroll, "1", "0" ) )
+    SD_VSTK_SET_SCROLL( ::cId, lScroll )
 return nil
 
 METHOD SetBgColorHex( cHex ) CLASS TSwiftVStack
     ::cBgColorHex := cHex
-    VSTK_SET_BGCOLOR_HEX( hb_ntos( ::nIndex ), cHex )
+    SD_VSTK_SET_BGCOLOR_HEX( ::cId, cHex )
 return nil
 
 METHOD SetFgColorHex( cHex ) CLASS TSwiftVStack
     ::cFgColorHex := cHex
-    VSTK_SET_FGCOLOR_HEX( hb_ntos( ::nIndex ), cHex )
+    SD_VSTK_SET_FGCOLOR_HEX( ::cId, cHex )
 return nil
 
 METHOD SetLastItemId( cId ) CLASS TSwiftVStack
+    SD_VSTK_SET_LAST_ITEM_ID( ::cId, cId )
+return nil
+
+METHOD End() CLASS TSwiftVStack
+   SD_VSTK_DESTROY( ::cId, ::hWnd )
+   ::hWnd = nil
+   ::cId  = ""
 return nil
