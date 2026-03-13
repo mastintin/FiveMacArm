@@ -70,12 +70,12 @@ public class SwiftImageLoader: NSObject {
     
     public static var states: [String: SwiftImageState] = [:]
 
-    public static func makeImage(systemName: String, name: String, filePath: String, id: String, index: Int, callback: (() -> Void)?) -> NSView {
+    public static func makeImage(systemName: String, name: String, filePath: String, id: String, callback: (() -> Void)?) -> NSView {
          let state = SwiftImageState(systemName: systemName, name: name, filePath: filePath)
          states[id] = state
          
          let view = SwiftImageView(state: state, callback: callback)
-         ViewRegistry.register(view, for: index)
+         ViewRegistry.register(view, for: id)
 
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
@@ -83,13 +83,13 @@ public class SwiftImageLoader: NSObject {
          return hostingView
     }
 
-    public static func destroyImage(id: String, index: Int, viewPtr: Int64) {
+    public static func destroyImage(id: String, viewPtr: Int64) {
         states.removeValue(forKey: id)
-        ViewRegistry.clean(index: index)
+        ViewRegistry.clean(id: id)
         
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
     }
@@ -165,8 +165,8 @@ public func img_set_aspect_ratio(id: String, mode: Int) {
 }
 
 @HarbourDirect
-public func img_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftImageLoader.destroyImage(id: id, index: index, viewPtr: viewPtr)
+public func img_destroy(id: String, viewPtr: Int64) {
+    SwiftImageLoader.destroyImage(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -177,7 +177,6 @@ public func swift_image_create(
     height: Double,
     name: String,
     parentPtr: Int64,
-    index: Int,
     id: String
 ) -> Int64 {
     
@@ -189,7 +188,7 @@ public func swift_image_create(
                 if let pDynSym = hb_dynsymFindName("SWIFTIMAGEONCLICK") {
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
-                    hb_vmPushNumber(Double(index), 0)
+                    hb_vmPushString(id)
                     hb_vmDo(1)
                 }
             }
@@ -208,7 +207,6 @@ public func swift_image_create(
             name: "", 
             filePath: "", 
             id: id, 
-            index: index, 
             callback: callback
         )
         

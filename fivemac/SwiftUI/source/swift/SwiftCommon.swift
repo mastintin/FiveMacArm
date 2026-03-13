@@ -63,8 +63,7 @@ extension View {
 }
 
 extension Color {
-    // 1. Para Hex Strings (Útil para temas o bases de datos)
-    init(hex: String) {
+    static func parseHexRGBA(_ hex: String) -> (r: Double, g: Double, b: Double, a: Double)? {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)
@@ -74,9 +73,18 @@ extension Color {
         case 4: (r, g, b, a) = ((int >> 12) * 17, (int >> 8 & 0xF) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
         case 6: (r, g, b, a) = (int >> 16, int >> 8 & 0xFF, int & 0xFF, 255)
         case 8: (r, g, b, a) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default: (r, g, b, a) = (0, 0, 0, 255)
+        default: return nil
         }
-        self.init(.sRGB, red: Double(r)/255, green: Double(g)/255, blue: Double(b)/255, opacity: Double(a)/255)
+        return (Double(r)/255, Double(g)/255, Double(b)/255, Double(a)/255)
+    }
+
+    // 1. Para Hex Strings (Útil para temas o bases de datos)
+    init(hex: String) {
+        if let comps = Color.parseHexRGBA(hex) {
+            self.init(.sRGB, red: comps.r, green: comps.g, blue: comps.b, opacity: comps.a)
+        } else {
+            self.init(.sRGB, red: 0, green: 0, blue: 0, opacity: 1)
+        }
     }
 
     // 2. Para Integers de 32 bits (Formato RRGGBBAA)
@@ -118,4 +126,55 @@ func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Double, left
     // 4. Configuración de Auto-Resize (Clave para que no desaparezca)
     swiftView.translatesAutoresizingMaskIntoConstraints = true
     swiftView.autoresizingMask = [.maxXMargin, .minYMargin]
+}
+
+import SwiftUI
+import AppKit
+
+@objc(ViewRegistry)
+public class ViewRegistry: NSObject {
+    
+    // Usamos String para que el cId (UUID) de Harbour sea la clave única
+    private static var views: [String: AnyView] = [:]
+    private static var objects: [String: Any] = [:]
+
+    // --- MÉTODOS PARA HARBOUR (Compatibles con Objective-C) ---
+
+    @objc(registerObject:forId:)
+    public static func registerObject(_ object: Any, for id: String) {
+        objects[id] = object
+    }
+
+    @objc(getObject:)
+    public static func getObject(for id: String) -> Any? {
+        return objects[id]
+    }
+
+    @objc(clean:)
+    public static func clean(id: String) {
+        views.removeValue(forKey: id)
+        objects.removeValue(forKey: id)
+    }
+
+    @objc(registerNSView:forId:)
+    public static func registerNSView(_ view: NSView, for id: String) {
+        // Asegúrate de tener definido GenericNSViewWrapper en tu proyecto
+        let wrapper = GenericNSViewWrapper(view: view)
+        views[id] = AnyView(wrapper)
+    }
+
+    @objc(registerNSView:forIndex:)
+    public static func registerNSView(_ view: NSView, for index: Int) {
+        registerNSView(view, for: String(index))
+    }
+
+    // --- MÉTODOS PARA SWIFT (Sin @objc por el AnyView) ---
+
+    public static func register<T: View>(_ view: T, for id: String) {
+        views[id] = AnyView(view)
+    }
+
+    public static func getView(for id: String) -> AnyView? {
+        return views[id]
+    }
 }

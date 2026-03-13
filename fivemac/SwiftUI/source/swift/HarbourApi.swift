@@ -70,9 +70,16 @@ public let HB_IT_HASH:     Int32 = 0x00001000
 
 
 public struct Harbour {
-    // Para devolver Strings
     public static func ret(_ value: String) {
         hb_retc((value as NSString).utf8String)
+    }
+
+    public static func ret(_ value: String?) {
+        if let v = value {
+            hb_retc((v as NSString).utf8String)
+        } else {
+             hb_retc(nil)
+        }
     }
     
     // Para devolver Int64 (Punteros)
@@ -97,7 +104,7 @@ public struct Harbour {
 
     // Caso de seguridad: Si no es nada de lo anterior, no hacemos nada
     public static func ret(_ value: Any) {
-        print("Aviso: Tipo de retorno no soportado por Harbour")
+        print("Aviso: Tipo de retorno no soportado por Harbour: \(type(of: value))")
     }
 }
 

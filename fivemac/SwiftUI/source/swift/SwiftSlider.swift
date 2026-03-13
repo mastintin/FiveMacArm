@@ -91,13 +91,12 @@ public class SwiftSliderLoader: NSObject {
     
     public static var states: [String: SliderState] = [:]
     
-    public static func makeSlider(value: Double, id: String, showValue: Bool, isGlass: Bool, index: Int, callback: @escaping ((Double) -> Void)) -> NSView {
+    public static func makeSlider(value: Double, id: String, showValue: Bool, isGlass: Bool, callback: @escaping ((Double) -> Void)) -> NSView {
         let state = SliderState(value: value, showValue: showValue, isGlass: isGlass, callback: callback)
-        let key = id.isEmpty ? String(index) : id
-        states[key] = state
+        states[id] = state
         
         let view = SwiftSliderView(state: state)
-        ViewRegistry.register(view, for: index)
+        ViewRegistry.register(view, for: id)
         
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
@@ -108,14 +107,13 @@ public class SwiftSliderLoader: NSObject {
         return hostingView
     }
 
-    public static func destroySlider(id: String, index: Int, viewPtr: Int64) {
-        let key = id.isEmpty ? String(index) : id
-        states.removeValue(forKey: key)
-        ViewRegistry.clean(index:index) 
+    public static func destroySlider(id: String, viewPtr: Int64) {
+        states.removeValue(forKey: id)
+        ViewRegistry.clean(id: id) 
         
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
     }
@@ -157,8 +155,8 @@ public func sld_set_colors(id: String, fgHex: String, bgHex: String) {
 }
 
 @HarbourDirect
-public func sld_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftSliderLoader.destroySlider(id: id, index: index, viewPtr: viewPtr)
+public func sld_destroy(id: String, viewPtr: Int64) {
+    SwiftSliderLoader.destroySlider(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -169,7 +167,6 @@ public func swift_slider_create(
     height: Double,
     value: Double, 
     parentPtr: Int64,
-    index: Int,
     id: String,
     showValue: Bool,
     isGlass: Bool
@@ -183,7 +180,7 @@ public func swift_slider_create(
                 if let pDynSym = hb_dynsymFindName("SWIFTSLIDERONCHANGE") {
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
-                    hb_vmPushNumber(Double(index), 0) 
+                    hb_vmPushString(id) 
                     hb_vmPushDouble(newValue, 0)
                     hb_vmDo(2)
                 }
@@ -201,7 +198,6 @@ public func swift_slider_create(
             id: id,
             showValue: showValue,
             isGlass: isGlass,
-            index: index, 
             callback: callback
         )
         

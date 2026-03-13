@@ -6,7 +6,6 @@ CLASS TSwiftTextField FROM TControl
 
     DATA bOnChange
     DATA cId
-    DATA nIndex
     DATA cText, cPlaceholder
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, oBatch )
@@ -31,10 +30,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
     ::cText      = cText
     ::cPlaceholder = cPlaceholder
     
-    ::cId        = SWIFT_UUID()
+    ::cId        = hb_UUID()
    
     AAdd( aSwiftTextFields, Self )
-    ::nIndex     = Len( aSwiftTextFields )
     
     if oBatch == nil .and. oWnd != nil 
         oBatch := oWnd:oSwiftBatch
@@ -43,7 +41,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
     if oBatch != nil
         oBatch:Add( Self )
     else
-        ::hWnd = SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::nIndex, ::cId )
+        ::hWnd = SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::cId )
     endif
 
     if nAutoResize != 0
@@ -86,10 +84,12 @@ METHOD SetFontSize( nSize ) CLASS TSwiftTextField
 return nil
 
 METHOD End() CLASS TSwiftTextField
+    local nPos 
     if !Empty( ::hWnd )
-        SD_TF_DESTROY( ::cId, ::nIndex, ::hWnd )
-        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftTextFields )
-            aSwiftTextFields[ ::nIndex ] := nil
+        SD_TF_DESTROY( ::cId, ::hWnd )
+        nPos := AScan( aSwiftTextFields, { |o| o != nil .and. o:cId == ::cId } )
+        if nPos > 0
+            aSwiftTextFields[ nPos ] := nil
         endif
         ::hWnd := 0
         ::cId := ""
@@ -102,15 +102,14 @@ METHOD OnChange( cNewText ) CLASS TSwiftTextField
     endif
 return nil
 
-// Callback from C using nIndex
-function SWIFTTEXTFIELDONCHANGE( nIndex, cNewText )
+// Callback from C using cId
+function SWIFTTEXTFIELDONCHANGE( cId, cNewText )
+    local nPos := AScan( aSwiftTextFields, { |o| o != nil .and. o:cId == cId } )
     local oTxf
     
-    if nIndex > 0 .and. nIndex <= Len( aSwiftTextFields )
-        oTxf := aSwiftTextFields[ nIndex ]
-        if oTxf != nil
-            oTxf:OnChange( cNewText )
-        endif
+    if nPos > 0
+        oTxf := aSwiftTextFields[ nPos ]
+        oTxf:OnChange( cNewText )
     endif
 return nil
 
@@ -125,12 +124,11 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftTextEditor
     ::oWnd      = oWnd
     ::cText     = cText
     
-    ::cId       = SWIFT_UUID()
+    ::cId       = hb_UUID()
     
     AAdd( aSwiftTextFields, Self )
-    ::nIndex     = Len( aSwiftTextFields )
     
-    ::hWnd = SD_SWIFT_TEXTEDITOR_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::nIndex, ::cId )
+    ::hWnd = SD_SWIFT_TEXTEDITOR_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cId )
 
     oWnd:AddControl( Self )
 

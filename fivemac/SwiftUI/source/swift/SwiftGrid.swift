@@ -32,12 +32,11 @@ struct SwiftGridView: View {
     }
 }
 
-@HarbourBridge
 @objc(SwiftGridLoader)
 public class SwiftGridLoader: NSObject {
     
     @objc(makeGridWithIndex:columnsJson:)
-    public static func makeGrid(index: String, columnsJson: String) -> NSView {
+    public static func makeGrid(id: String, columnsJson: String) -> NSView {
          let state = SwiftVStackState()
          
          // Decode Columns
@@ -49,15 +48,14 @@ public class SwiftGridLoader: NSObject {
          SwiftVStackLoader.lastCreatedState = state 
          
          // Register state for addItem/addBatch lookups
-         SwiftVStackLoader.states[index] = state
+         SwiftVStackLoader.states[id] = state
          
          let view = SwiftGridView(state: state)
-         
-         if let intIndex = Int(index) {
-             ViewRegistry.register(view, for: intIndex)
-         }
+         ViewRegistry.register(view, for: id)
 
          let hostingView = NSHostingView(rootView: view)
+         hostingView.sizingOptions = []
+         hostingView.translatesAutoresizingMaskIntoConstraints = false
          return hostingView
     }
 
@@ -65,6 +63,71 @@ public class SwiftGridLoader: NSObject {
     public static func setActionCallback(rootId: String, callback: @escaping (String) -> Void) {
         if let state = SwiftVStackLoader.states[rootId] as? SwiftVStackState {
             state.onAction = callback
+        }
+    }
+}
+
+// --- HARBOUR DIRECT BRIDGES ---
+
+@HarbourDirect
+public func swift_grid_create(
+    top: Double, 
+    left: Double, 
+    width: Double, 
+    height: Double,
+    parentPtr: Int64,
+    id: String,
+    columnsJson: String
+) -> Int64 {
+    
+    func executeCreation() -> Int64 {
+        var viewAddress: Int64 = 0
+        
+        let gridView = SwiftGridLoader.makeGrid(id: id, columnsJson: columnsJson)
+        
+        let callback: (String) -> Void = { itemId in
+             let sendToHarbour = {
+                if let pDynSym = hb_dynsymFindName("SWIFTGRIDONACTION") {
+                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                    hb_vmPushNil()
+                    hb_vmPushString(id)
+                    hb_vmPushString(itemId)
+                    hb_vmDo(2)
+                }
+            }
+            if Thread.isMainThread {
+                sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
+            }
+        }
+        
+        SwiftGridLoader.setActionCallback(rootId: id, callback: callback)
+        
+        if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
+            let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
+            
+            applySwiftViewLayout(
+                swiftView: gridView, 
+                parent: parentObj, 
+                top: top, 
+                left: left, 
+                w: width, 
+                h: height
+            )
+            
+            let viewPtr = Unmanaged.passRetained(gridView).toOpaque()
+            viewAddress = Int64(Int(bitPattern: viewPtr))
+        }
+        
+        return viewAddress
+    }
+
+    if Thread.isMainThread {
+        return executeCreation()
+    } else {
+        return DispatchQueue.main.sync {
+            return executeCreation()
         }
     }
 }

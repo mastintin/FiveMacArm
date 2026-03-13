@@ -24,9 +24,9 @@ function Main()
     }
 
     for i := 1 to 10
-        oRow := oList1:AddHStack()
+        oRow := oList1:AddListRow()
         AAdd( aIds1, oRow:cId ) // Store the UUID returned by Swift
-        oRow:AddSystemImage( "person.fill" )
+        oRow:AddIcon( "person.fill" )
         oRow:AddText( "Employee " + AllTrim( Str( i ) ) )
         oRow:AddSpacer()
     next

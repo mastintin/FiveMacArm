@@ -97,8 +97,16 @@ const int8_t *SW_ZSTK_ADD_LIST(const int8_t *rootId, const int8_t *parentId);
 const int8_t *SW_ZSTK_ADD_LAZYVGRID(const int8_t *rootId,
                                     const int8_t *parentId,
                                     const int8_t *columnsJson);
+void SW_ZSTK_SET_ITEM_LAYOUT(const int8_t *rootId, const int8_t *id,
+                             const int8_t *w, const int8_t *h, const int8_t *s);
+void SW_ZSTK_SET_ITEM_FONT(const int8_t *rootId, const int8_t *id,
+                           const int8_t *size, const int8_t *isBold);
+void SW_ZSTK_SET_ITEM_RADIUS(const int8_t *rootId, const int8_t *id,
+                             const int8_t *radius);
+void SW_ZSTK_SET_ITEM_TEXT(const int8_t *rootId, const int8_t *id,
+                           const int8_t *text);
+void SW_ZSTK_SET_LAST_ITEM_ID(const int8_t *rootId, const int8_t *id);
+const int8_t *SW_ZSTK_GET_LAST_ITEM_ID(const int8_t *rootId);
 
 // List
-void SW_LST_SET_SELECTION(const int8_t *rootId, const int8_t *indexStr);
-void SW_LST_SET_BGCOLOR(const int8_t *rootId, const int8_t *r, const int8_t *g,
-                        const int8_t *b, const int8_t *a);
+// Moved to SwiftList.swift as @HarbourDirect

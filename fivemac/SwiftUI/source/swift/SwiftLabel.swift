@@ -68,33 +68,29 @@ public class SwiftLabelLoader: NSObject {
     // Store states by Index (String for Hybrid Support)
     public static var states: [String: LabelState] = [:]
 
-    public static func makeLabel(text: String,  id: String, index: Int) -> NSView {
+    public static func makeLabel(text: String,  id: String) -> NSView {
          // Default state
         let state = LabelState(text: text, fontSize: 24.0, fontStyle: "", textColor: .black)
-        let key = id.isEmpty ? String(index) : id
-        states[key] = state
+        states[id] = state
         
         let view = SwiftLabelView(state: state)
-        ViewRegistry.register(view, for: index)
+        ViewRegistry.register(view, for: id)
         
         let hostingView = NSHostingView(rootView: view)
-       // hostingView.translatesAutoresizingMaskIntoConstraints = false
         return hostingView
     }
     
-    public static func destroyLabel(id: String, index: Int, viewPtr: Int64) {
+    public static func destroyLabel(id: String, viewPtr: Int64) {
         // 1. Limpiar el estado para que el objeto @Observable muera
-        let key = id.isEmpty ? String(index) : id
-        states.removeValue(forKey: key)
+        states.removeValue(forKey: id)
         
-        // 2. Limpiar el registro global de FiveMac (según tu .h)
-        ViewRegistry.clean(index:index) 
+        // 2. Limpiar el registro global de FiveMac
+        ViewRegistry.clean(id: id) 
         
         // 3. Liberar la retención manual del NSHostingView
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                // .takeRetainedValue() "consume" el contador de referencia que iniciamos en la creación
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
     }
@@ -196,8 +192,8 @@ public func lbl_set_colors_hex(id: String, text: String,alpha: Int) {
     SwiftLabelLoader.setColors(id: id, textHex: text, alpha: alpha)
 }
 @HarbourDirect
-public func lbl_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftLabelLoader.destroyLabel(id: id, index: index, viewPtr: viewPtr)
+public func lbl_destroy(id: String, viewPtr: Int64) {
+    SwiftLabelLoader.destroyLabel(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -208,7 +204,6 @@ public func swift_label_create(
     height: Double,
     text: String, 
     parentPtr: Int64,
-    index: Int,
     id: String
      ) -> Int64 {
     
@@ -219,8 +214,7 @@ public func swift_label_create(
         // Crear la vista usando el Factory
         let labelView = SwiftLabelLoader.makeLabel(
             text: text, 
-            id: id,
-            index: index
+            id: id
         )
         
         // Buscar el contenedor del padre (hWnd de Harbour)

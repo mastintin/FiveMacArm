@@ -145,12 +145,12 @@ public class SwiftPickerLoader: NSObject {
     
     public static var states: [String: PickerState] = [:]
 
-    public static func makePicker(title: String, items: [String], id: String, index: Int, callback: ((String) -> Void)?) -> NSView {
+    public static func makePicker(title: String, items: [String], id: String, callback: ((String) -> Void)?) -> NSView {
          let state = PickerState(items: items, selection: items.first ?? "", title: title)
          states[id] = state
          
          let view = SwiftPickerView(state: state, callback: callback)
-         ViewRegistry.register(view, for: index)
+         ViewRegistry.register(view, for: id)
          
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
@@ -158,13 +158,13 @@ public class SwiftPickerLoader: NSObject {
          return hostingView
     }
 
-    public static func destroyPicker(id: String, index: Int, viewPtr: Int64) {
+    public static func destroyPicker(id: String, viewPtr: Int64) {
         states.removeValue(forKey: id)
-        ViewRegistry.clean(index: index)
+        ViewRegistry.clean(id: id)
         
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
     }
@@ -255,8 +255,8 @@ public func pkr_set_items(id: String, arrayPtr: Int64) {
 
 
 @HarbourDirect
-public func pkr_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftPickerLoader.destroyPicker(id: id, index: index, viewPtr: viewPtr)
+public func pkr_destroy(id: String, viewPtr: Int64) {
+    SwiftPickerLoader.destroyPicker(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -267,7 +267,6 @@ public func swift_picker_create(
     height: Double,
     itemsJson: String,
     parentPtr: Int64,
-    index: Int,
     title: String,
     id: String
 ) -> Int64 {
@@ -285,7 +284,7 @@ public func swift_picker_create(
                 if let pDynSym = hb_dynsymFindName("SWIFTPICKERONCHANGE") {
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
-                    hb_vmPushNumber(Double(index), 0)
+                    hb_vmPushString(id)
                     hb_vmPushString(newValue)
                     hb_vmDo(2)
                 }
@@ -302,7 +301,6 @@ public func swift_picker_create(
             title: title,
             items: items,
             id: id,
-            index: index,
             callback: callback
         )
         

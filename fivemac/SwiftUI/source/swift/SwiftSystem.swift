@@ -132,53 +132,53 @@ public struct SystemUtils {
 
 // MARK: - Capa de Automatización con Macros (Solo funciones de String)
 
-@HarbourBridge
-public func swift_get_file(title: String?, types: String?, prompt: String?) -> String? {
+@HarbourDirect
+public func sw_get_file(title: String?, types: String?, prompt: String?) -> String? {
     return SystemUtils.getFile(title: title, types: types, prompt: prompt)
 }
 
-@HarbourBridge
-public func swift_get_dir(title: String?, prompt: String?) -> String? {
+@HarbourDirect
+public func sw_get_dir(title: String?, prompt: String?) -> String? {
     return SystemUtils.getDir(title: title, prompt: prompt)
 }
 
-@HarbourBridge
-public func swift_get_image(title: String?, prompt: String?) -> String? {
+@HarbourDirect
+public func sw_get_image(title: String?, prompt: String?) -> String? {
     return SystemUtils.getImageFile(title: title, prompt: prompt)
 }
 
-@HarbourBridge
-public func swift_get_path() -> String {
+@HarbourDirect
+public func sw_get_path() -> String {
     return SystemUtils.path
 }
 
-@HarbourBridge
-public func swift_get_app_path() -> String {
+@HarbourDirect
+public func sw_get_app_path() -> String {
     return SystemUtils.appPath
 }
 
-@HarbourBridge
-public func swift_get_res_path() -> String {
+@HarbourDirect
+public func sw_get_res_path() -> String {
     return SystemUtils.resPath
 }
 
 // MARK: - Capa de puente manual (Funciones con tipos Int, Bool, etc.)
 
-@_cdecl("swift_alert")
-public func swift_alert(msg: UnsafePointer<Int8>?, title: UnsafePointer<Int8>?, type: Int) {
-    let m = msg != nil ? String(cString: msg!) : ""
-    let t = title != nil ? String(cString: title!) : "Attention"
+@HarbourDirect
+public func sw_alert(msg: String?, title: String?, type: Int) {
+    let m = msg ?? ""
+    let t = title ?? "Attention"
     SystemUtils.alert(msg: m, title: t, type: type)
 }
 
-@_cdecl("swift_msg_yes_no")
-public func swift_msg_yes_no(msg: UnsafePointer<Int8>?, title: UnsafePointer<Int8>?) -> Bool {
-    let m = msg != nil ? String(cString: msg!) : ""
-    let t = title != nil ? String(cString: title!) : "Select"
+@HarbourDirect
+public func sw_msg_yes_no(msg: String?, title: String?) -> Bool {
+    let m = msg ?? ""
+    let t = title ?? "Select"
     return SystemUtils.msgYesNo(msg: m, title: t)
 }
 
-@_cdecl("swift_get_color")
-public func swift_get_color() -> Int {
+@HarbourDirect
+public func sw_get_color() -> Int {
     return SystemUtils.getColor()
 }

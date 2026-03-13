@@ -6,7 +6,6 @@ static aSwiftImages := {}
 CLASS TSwiftImage FROM TControl
 
     DATA bAction
-    DATA nIndex
     DATA cId
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable )
@@ -32,12 +31,11 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable, nAut
     ::oWnd    = oWnd
     ::bAction = bAction
     
-    ::cId     = SWIFT_UUID()
+    ::cId     = hb_UUID()
     
     AAdd( aSwiftImages, Self )
-    ::nIndex  = Len( aSwiftImages )
     
-    ::hWnd = SD_SWIFT_IMAGE_CREATE( nTop, nLeft, nWidth, nHeight, cName, oWnd:hWnd, ::nIndex, ::cId )
+    ::hWnd = SD_SWIFT_IMAGE_CREATE( nTop, nLeft, nWidth, nHeight, cName, oWnd:hWnd, ::cId )
     
     if !lResizable
         ::SetResizable( .F. )
@@ -89,10 +87,12 @@ METHOD SetImage( pImage ) CLASS TSwiftImage
 return nil
 
 METHOD End() CLASS TSwiftImage
+    local nPos 
     if !Empty( ::hWnd )
-        SD_IMG_DESTROY( ::cId, ::nIndex, ::hWnd )
-        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftImages )
-            aSwiftImages[ ::nIndex ] := nil
+        SD_IMG_DESTROY( ::cId, ::hWnd )
+        nPos := AScan( aSwiftImages, { |o| o != nil .and. o:cId == ::cId } )
+        if nPos > 0
+            aSwiftImages[ nPos ] := nil
         endif
         ::hWnd := 0
         ::cId := ""
@@ -100,10 +100,9 @@ METHOD End() CLASS TSwiftImage
 return ::Super:End()
 
 // Called from C callback
-function SwiftImageOnClick( nIndex )
-   
-    if nIndex > 0 .and. nIndex <= Len( aSwiftImages )
-        aSwiftImages[ nIndex ]:Click()
+function SwiftImageOnClick( cId )
+    local nPos := AScan( aSwiftImages, { |o| o != nil .and. o:cId == cId } )
+    if nPos > 0
+        aSwiftImages[ nPos ]:Click()
     endif
-   
 return nil

@@ -10,7 +10,6 @@ CLASS TSwiftPicker FROM TControl
     DATA   bSetGet
     DATA   aItems
     DATA   cVarName
-    DATA   nIndex
     DATA   cID
 
     METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarName, cTextLabel, nAutoResize )
@@ -47,10 +46,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarNa
     ::cVarName = cVarName
 
     AAdd( aSwiftPickers, Self )
-    ::nIndex = Len( aSwiftPickers )
-    ::cID = AllTrim( SWIFT_UUID() )
+    ::cID = hb_UUID()
 
-    ::hWnd = SD_SWIFT_PICKER_CREATE( nTop, nLeft, nWidth, nHeight, hb_jsonEncode( aItems ), oWnd:hWnd, ::nIndex, cTextLabel, ::cID )
+    ::hWnd = SD_SWIFT_PICKER_CREATE( nTop, nLeft, nWidth, nHeight, hb_jsonEncode( aItems ), oWnd:hWnd, cTextLabel, ::cID )
     
     oWnd:AddControl( Self )
 
@@ -74,7 +72,6 @@ METHOD Redefine( nId, oWnd, aItems, bChange, bSetGet, cVarName ) CLASS TSwiftPic
     ::cVarName = cVarName
 
     AAdd( aSwiftPickers, Self )
-    ::nIndex = Len( aSwiftPickers )
    
     oWnd:DefControl( Self )
 
@@ -104,10 +101,12 @@ METHOD SetColor( nAccent, nText ) CLASS TSwiftPicker
 return nil
 
 METHOD End() CLASS TSwiftPicker
+    local nPos 
     if !Empty( ::hWnd )
-        SD_PKR_DESTROY( ::cId, ::nIndex, ::hWnd )
-        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftPickers )
-            aSwiftPickers[ ::nIndex ] := nil
+        SD_PKR_DESTROY( ::cId, ::hWnd )
+        nPos := AScan( aSwiftPickers, { |o| o != nil .and. o:cID == ::cID } )
+        if nPos > 0
+            aSwiftPickers[ nPos ] := nil
         endif
         ::hWnd := 0
         ::cId  := ""
@@ -116,11 +115,10 @@ return ::Super:End()
 
 //----------------------------------------------------------------------------//
 
-function SwiftPickerOnChange( nIndex, cValue )
-    if nIndex > 0 .and. nIndex <= Len( aSwiftPickers )
-        if aSwiftPickers[ nIndex ] != nil
-            aSwiftPickers[ nIndex ]:OnChange( cValue )
-        endif
+function SwiftPickerOnChange( cId, cValue )
+    local nPos := AScan( aSwiftPickers, { |o| o != nil .and. o:cID == cId } )
+    if nPos > 0
+        aSwiftPickers[ nPos ]:OnChange( cValue )
     endif
 return nil
 

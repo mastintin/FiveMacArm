@@ -15,7 +15,7 @@ function Main()
     Local lResize := .f.
 
     DEFINE WINDOW oWnd TITLE "SwiftUI in FiveMac" ;
-        FROM 200, 250 TO 800, 950 FLIPPED
+        FROM 200, 250 TO 900, 950 FLIPPED
    
     // --- Left Column: Native Controls ---
 

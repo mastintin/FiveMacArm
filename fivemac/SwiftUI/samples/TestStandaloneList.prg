@@ -1,6 +1,17 @@
 #include "FiveMac.ch"
 #include "SwiftControls.ch"
 
+#define TYPE_TEXT            0
+#define TYPE_SYSTEMIMAGE     1
+#define TYPE_HSTACK          2
+#define TYPE_IMAGEFILE       3
+#define TYPE_VSTACK          4
+#define TYPE_HSTACKCONTAINER 5
+#define TYPE_SPACER          6
+#define TYPE_LAZYVGRID       7
+#define TYPE_LIST            8
+#define TYPE_BUTTON          9
+#define TYPE_DIVIDER         10
 
 function Main()
 
@@ -46,8 +57,9 @@ function Main()
     oMainList:bAction := { |cId| 
     local nIdx := AScan( aEmailIds, cId )
     if nIdx > 0
-    MsgInfo( "Opening Email #" + AllTrim(Str(nIdx)) ) 
+        MsgInfo( "Opening Email #" + AllTrim(Str(nIdx)) ) 
     endif
+    return nil
     }
    
     @ nWinHeight - 50, 20 SWIFTLABEL "SwiftList Standalone Demo" OF oWnd ;
@@ -61,33 +73,62 @@ function Main()
 return nil
 
 // Helper to add stylized sidebar rows
+
 function AddSidebarItem( oList, cIcon, cText )
-    local oRow := oList:AddHStack()
+   
+    local oRow := oList:AddListRow()
     local oIcon
-    oRow:SetSize( 0, 36 ) // A bit more height for sidebar rows
-    oIcon := oRow:AddSystemImage( cIcon )
-    oIcon:SetSize( 22, 22 ) // Slightly larger icon
+    MsgInfo( "HStack ID: [" + oRow:cId + "]" )
+    oRow:SetSize( 0, 80 ) // A bit more height for sidebar rows
+    oIcon := oRow:AddIcon( cIcon )
+    //oIcon:SetSize( 22, 22 ) // Slightly larger icon
+    oRow:AddSpacing(50)
     oRow:AddText( cText )
     oRow:AddSpacer()
+   
 return oRow:cId
 
+
+
+/*
+
+function AddSidebarItem( oList, cIcon, cText )
+    // 1. CREAR EL CONTENEDOR (Fila única en la List)
+    // Esto llama a SwiftListLoader.addListRow(rootId) -> Devuelve un ID (ej: "UUID-HSTACK")
+    local oRow := oList:AddListRow() 
+    msginfo( oRow:cId)
+    msginfo( "ID Creado: [" + oRow:cId + "]" ) 
+    // 2. AÑADIR HIJOS AL CONTENEDOR (No a la lista directamente)
+    // Estos DEBEN llamar a lst_add_item pasándole el cRowId como parentId
+    SD_lst_add_item( oList:cId, TYPE_SYSTEMIMAGE, cIcon, "", oRow:cId ) 
+    SD_lst_add_item( oList:cId, TYPE_TEXT,        cText, "", oRow:cId )
+
+    SD_lst_add_item( oList:cId, TYPE_SPACER,      "",    "", oRow:cId )
+
+return oRow:cId
+*/
+
+
+
 function HandleSidebarSelection( cId, oMainList, aSidebarIds )
+   
     local nPos := AScan( aSidebarIds, { |a| a[2] == cId } )
     local cType := ""
     
     if nPos > 0
-    cType := aSidebarIds[nPos][1]
-    do case
-    case cType == "inbox" 
-    MsgInfo( "Switched to Inbox" )
-    case cType == "sent"
-    MsgInfo( "Switched to Sent" )
-    case cType == "drafts"
-    MsgInfo( "Switched to Drafts" )
-    case cType == "trash"
-    MsgInfo( "Switched to Trash" )
-    endcase
+        cType := aSidebarIds[nPos][1]
+        do case
+            case cType == "inbox" 
+                MsgInfo( "Switched to Inbox" )
+            case cType == "sent"
+                MsgInfo( "Switched to Sent" )
+            case cType == "drafts"
+                MsgInfo( "Switched to Drafts" )
+            case cType == "trash"
+                MsgInfo( "Switched to Trash" )
+        endcase
     endif
+    
 return nil
 
 function LoadInbox( oList, aEmailIds )
@@ -100,18 +141,18 @@ function LoadInbox( oList, aEmailIds )
         }
    
     for i := 1 to Len( aEmails )
-    AAdd( aEmailIds, AddEmailRow( oList, aEmails[i][1], aEmails[i][2], aEmails[i][3] ) )
+        AAdd( aEmailIds, AddEmailRow( oList, aEmails[i][1], aEmails[i][2], aEmails[i][3] , i ) )
     next
 return nil
 
-function AddEmailRow( oList, cIcon, cSubject, cPreview )
-    local oRow := oList:AddHStack()
+function AddEmailRow( oList, cIcon, cSubject, cPreview, nRow)
+    local oRow := oList:AddListRow()
     local oIcon
-    oRow:SetSize( 0, 48 )
-    oRow:SetSpacing( 20 ) // More gap between icon and text
-    oIcon := oRow:AddSystemImage( cIcon )
-    oIcon:SetSize( 28, 28 )
+    oRow:SetSize( 0, 164 )
+    oRow:SetSpacing( 15 ) 
+    oIcon := oRow:AddIcon( cIcon )
+    oIcon:SetSize( 32, 32 )
     oRow:AddText( cSubject + " - " + cPreview )
     oRow:AddSpacer()
-    oRow:AddSystemImage("chevron.right")
+    oRow:AddButton("chevron.right", {|| MsgInfo("Button in row " + AllTrim(Str(nRow)) + " clicked!") })
 return oRow:cId

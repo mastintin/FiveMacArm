@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 static PHB_ITEM pOnTranscription = NULL;
 static PHB_ITEM pOnMetrics = NULL;
 static PHB_ITEM pOnError = NULL;
@@ -100,3 +100,4 @@ HB_FUNC(SWIFTSPEECHTRANSCRIBEFILE) {
   NSString *path = hb_NSSTRING_par(1);
   [[SwiftSpeechManager shared] transcribeFile:path];
 }
+*/

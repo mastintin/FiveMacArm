@@ -1,5 +1,5 @@
 #import "SwiftCommon.h"
-
+/*
 HB_FUNC(SWIFTTABCLEAR) { [SwiftTabViewLoader clearTabs]; }
 
 HB_FUNC(SWIFTTABADD) {
@@ -32,3 +32,4 @@ HB_FUNC(SWIFTREGISTERVIEW) { // ( hWnd, nIndex )
 
   [ViewRegistry registerNSView:view forIndex:nIndex];
 }
+*/

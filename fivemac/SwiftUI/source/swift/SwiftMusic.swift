@@ -1,8 +1,7 @@
 import Foundation
 import HarbourMacro
 
-@HarbourBridge
-@objc(SwiftMusicLoader)
+@HarbourDirect
 public class SwiftMusicLoader: NSObject {
     
     // MARK: - Helpers
@@ -35,7 +34,6 @@ public class SwiftMusicLoader: NSObject {
     
     // MARK: - Auth
     
-    @objc(requestAuth)
     public static func requestAuth() {
         print("[SwiftMusic] Requesting Auth via AppleScript...")
         let scriptSource = "tell application \"Music\" to get player state"
@@ -47,34 +45,28 @@ public class SwiftMusicLoader: NSObject {
     
     // MARK: - Playback
     
-    @objc(play)
     public static func play() {
         _ = runAppleScript("play")
     }
     
-    @objc(pause)
     public static func pause() {
         _ = runAppleScript("pause")
     }
     
-    @objc(next)
     public static func next() {
         _ = runAppleScript("next track")
     }
     
-    @objc(previous)
     public static func previous() {
         _ = runAppleScript("previous track")
     }
     
-    @objc(stop)
     public static func stop() {
         _ = runAppleScript("stop")
     }
     
     // MARK: - State/Metadata
     
-    @objc(getState)
     public static func getState() -> Int {
         let res = runAppleScript("get player state").lowercased()
         if res == "playing" { return 1 }
@@ -82,7 +74,6 @@ public class SwiftMusicLoader: NSObject {
         return 0 // stopped
     }
     
-    @objc(getCurrentTrack)
     public static func getCurrentTrack() -> String {
         let script = """
         try
@@ -99,7 +90,6 @@ public class SwiftMusicLoader: NSObject {
         return res.isEmpty ? "{}" : res
     }
     
-    @objc(getArtworkPath)
     public static func getArtworkPath() -> String {
         let path = "/tmp/fivemac_cover.jpg"
         let script = """
@@ -124,37 +114,31 @@ public class SwiftMusicLoader: NSObject {
         return runAppleScript(script)
     }
     
-    @objc(getDuration)
     public static func getDuration() -> Double {
         let res = runAppleScript("get duration of current track")
         return Double(res) ?? 0.0
     }
     
-    @objc(getPosition)
     public static func getPosition() -> Double {
         let res = runAppleScript("get player position")
         return Double(res) ?? 0.0
     }
     
-    @objc(setPositionWithSeconds:)
     public static func setPosition(seconds: Double) {
         _ = runAppleScript("set player position to \(seconds)")
     }
     
-    @objc(getVolume)
     public static func getVolume() -> Int {
         let res = runAppleScript("get sound volume")
         return Int(res) ?? 50
     }
     
-    @objc(setVolumeWithVol:)
     public static func setVolume(vol: Int) {
         _ = runAppleScript("set sound volume to \(vol)")
     }
     
     // MARK: - Playlists
     
-    @objc(getPlaylists)
     public static func getPlaylists() -> String {
         // We use a custom delimiter to avoid issues with commas in playlist names
         let script = """
@@ -174,12 +158,10 @@ public class SwiftMusicLoader: NSObject {
         return "[]"
     }
     
-    @objc(playPlaylistWithName:)
     public static func playPlaylist(name: String) {
         _ = runAppleScript("play playlist \"\(name)\"")
     }
 
-    @objc(playFirstAvailablePlaylist)
     public static func playFirstAvailablePlaylist() {
         let script = """
         repeat with p in playlists
@@ -192,4 +174,91 @@ public class SwiftMusicLoader: NSObject {
         """
         _ = runAppleScript(script)
     }
+}
+
+// --- HARBOUR DIRECT BRIDGES ---
+
+@HarbourDirect
+public func music_play() {
+    SwiftMusicLoader.play()
+}
+
+@HarbourDirect
+public func music_pause() {
+    SwiftMusicLoader.pause()
+}
+
+@HarbourDirect
+public func music_next() {
+    SwiftMusicLoader.next()
+}
+
+@HarbourDirect
+public func music_prev() {
+    SwiftMusicLoader.previous()
+}
+
+@HarbourDirect
+public func music_stop() {
+    SwiftMusicLoader.stop()
+}
+
+@HarbourDirect
+public func music_auth() {
+    SwiftMusicLoader.requestAuth()
+}
+
+@HarbourDirect
+public func music_state() -> Int {
+    return SwiftMusicLoader.getState()
+}
+
+@HarbourDirect
+public func music_metadata() -> String {
+    return SwiftMusicLoader.getCurrentTrack()
+}
+
+@HarbourDirect
+public func music_get_artwork() -> String {
+    return SwiftMusicLoader.getArtworkPath()
+}
+
+@HarbourDirect
+public func music_get_duration() -> Double {
+    return SwiftMusicLoader.getDuration()
+}
+
+@HarbourDirect
+public func music_get_position() -> Double {
+    return SwiftMusicLoader.getPosition()
+}
+
+@HarbourDirect
+public func music_set_position(seconds: Double) {
+    SwiftMusicLoader.setPosition(seconds: seconds)
+}
+
+@HarbourDirect
+public func music_get_volume() -> Int {
+    return SwiftMusicLoader.getVolume()
+}
+
+@HarbourDirect
+public func music_set_volume(vol: Int) {
+    SwiftMusicLoader.setVolume(vol: vol)
+}
+
+@HarbourDirect
+public func music_get_playlists() -> String {
+    return SwiftMusicLoader.getPlaylists()
+}
+
+@HarbourDirect
+public func music_play_playlist(name: String) {
+    SwiftMusicLoader.playPlaylist(name: name)
+}
+
+@HarbourDirect
+public func music_play_first() {
+    SwiftMusicLoader.playFirstAvailablePlaylist()
 }

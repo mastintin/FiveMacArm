@@ -11,15 +11,20 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD SaveView( oView, cPath ) CLASS TSwiftPDF
+    local cId := ""
 
     if ValType( oView ) == "O"
-    if __ObjHasMsg( oView, "nIndex" )
-    SWIFTPDFSAVE( oView:nIndex, cPath )
-    else
-    SWIFTPDFSAVE( oView:nId, cPath )
+        if __ObjHasData( oView, "cId" )
+            cId := oView:cId
+        elseif __ObjHasData( oView, "cID" )
+            cId := oView:cID
+        endif
+    elseif ValType( oView ) == "C"
+        cId := oView
     endif
-    else
-    SWIFTPDFSAVE( oView, cPath ) // Assume ID passed directly
+
+    if !Empty( cId )
+        SD_SWIFT_PDF_SAVE( cId, cPath )
     endif
 
 return nil

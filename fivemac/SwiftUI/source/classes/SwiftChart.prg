@@ -9,20 +9,21 @@ CLASS TSwiftChart FROM TControl
 
     DATA hData       INIT {=>}
     DATA cChartType  INIT "bar"
-    DATA nIndex
     DATA cID
 
     METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, hData, cType )
     METHOD SetData( hData )
     METHOD SetType( cType )
+    METHOD SetTitles( cTitle, cSubtitle )
     METHOD SaveToImage( cPath )
+    METHOD End()
 
 ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, hData, cType ) CLASS TSwiftChart
 
+    oWnd := if( oWnd == nil, GetWndDefault(), oWnd )
     ::oWnd    = oWnd
-    ::nId     = ::GetCtrlIndex()
     ::hData   = hData
     ::cChartType = cType
    
@@ -32,16 +33,14 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, hData, cType ) CLASS TSwiftChart
     DEFAULT cType   := "bar"
    
     AAdd( aSwiftCharts, Self )
-    ::nIndex = Len( aSwiftCharts )
-    ::cID = AllTrim( SWIFT_UUID() )
+    ::cID = hb_UUID()
 
     // Serialize initial data
-    // If it is already a string (JSON), do not re-encode
-    if ValType( ::hData ) == "C"
-    ::hWnd = SWIFTCHARTCREATE( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, ::nIndex, ::cID, ::hData, ::cChartType )
-    else
-    ::hWnd = SWIFTCHARTCREATE( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, ::nIndex, ::cID, hb_jsonEncode( ::hData ), ::cChartType )
+    if ValType( ::hData ) != "C"
+        ::hData = hb_jsonEncode( ::hData )
     endif
+
+    ::hWnd = SD_SWIFT_CHART_CREATE( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, ::cID, ::hData, ::cChartType )
    
     oWnd:AddControl( Self )
 
@@ -50,16 +49,34 @@ return Self
 METHOD SetData( hData ) CLASS TSwiftChart
     local cJson 
     ::hData := hData
-    cJson := hb_jsonEncode( ::hData )
-    SWIFTCHARTSETDATA( cJson, ::cID )
+    cJson := if( ValType( hData ) == "C", hData, hb_jsonEncode( hData ) )
+    SD_CHART_SET_DATA( ::cID, cJson )
 return nil
 
 METHOD SetType( cType ) CLASS TSwiftChart
     ::cChartType := cType
-    SWIFTCHARTSETTYPE( cType, ::cID )
+    SD_CHART_SET_TYPE( ::cID, cType )
+return nil
+
+METHOD SetTitles( cTitle, cSubtitle ) CLASS TSwiftChart
+    DEFAULT cTitle := "", cSubtitle := ""
+    SD_CHART_SET_TITLES( ::cID, cTitle, cSubtitle )
 return nil
 
 METHOD SaveToImage( cPath ) CLASS TSwiftChart
     DEFAULT cPath := GetEnv( "TMPDIR" ) + "/chart_" + ::cID + ".png"
-    SWIFTCHARTMAKESNAPSHOT( ::cID, cPath )
+    SD_CHART_MAKE_SNAPSHOT( ::cID, cPath )
 return cPath 
+
+METHOD End() CLASS TSwiftChart
+    local nPos 
+    if !Empty( ::hWnd )
+        SD_CHART_DESTROY( ::cID, ::hWnd )
+        nPos := AScan( aSwiftCharts, { |o| o != nil .and. o:cID == ::cID } )
+        if nPos > 0
+            aSwiftCharts[ nPos ] := nil
+        endif
+        ::hWnd := 0
+        ::cID := ""
+    endif
+return ::Super:End()

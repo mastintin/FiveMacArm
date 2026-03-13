@@ -221,3 +221,5 @@ NSString *GetRootIdFromParam(int paramIndex) {
     return hb_NSSTRING_par(paramIndex);
   }
 }
+
+// List functions moved to SwiftList.swift as @HarbourDirect

@@ -8,7 +8,6 @@ CLASS TSwiftDatePicker FROM TControl
 
     DATA   bChange
     DATA   dDate
-    DATA   nIndex
     DATA   cID
 
     METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, dDate, bChange, cTitle )
@@ -38,10 +37,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, dDate, bChange, cTitle ) CLASS T
     ::bChange = bChange
 
     AAdd( aSwiftDatePickers, Self )
-    ::nIndex = Len( aSwiftDatePickers )
-    ::cID = AllTrim( SWIFT_UUID() )
+    ::cID = hb_UUID()
 
-    ::hWnd = SD_SWIFT_DATEPICKER_CREATE( nTop, nLeft, nWidth, nHeight, DToS( dDate ), oWnd:hWnd, ::nIndex, cTitle, ::cID )
+    ::hWnd = SD_SWIFT_DATEPICKER_CREATE( nTop, nLeft, nWidth, nHeight, DToS( dDate ), oWnd:hWnd, cTitle, ::cID )
     
     oWnd:AddControl( Self )
 
@@ -79,10 +77,12 @@ return nil
 //----------------------------------------------------------------------------//
 
 METHOD End() CLASS TSwiftDatePicker
+    local nPos 
     if !Empty( ::hWnd )
-        SD_DTP_DESTROY( ::cId, ::nIndex, ::hWnd )
-        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftDatePickers )
-            aSwiftDatePickers[ ::nIndex ] := nil
+        SD_DTP_DESTROY( ::cID, ::hWnd )
+        nPos := AScan( aSwiftDatePickers, { |o| o != nil .and. o:cID == ::cID } )
+        if nPos > 0
+            aSwiftDatePickers[ nPos ] := nil
         endif
         ::hWnd := 0
         ::cId  := ""
@@ -91,10 +91,9 @@ return ::Super:End()
 
 //----------------------------------------------------------------------------//
 
-function SwiftDatePickerOnChange( nIndex, cDateStr )
-    if nIndex > 0 .and. nIndex <= Len( aSwiftDatePickers )
-        if aSwiftDatePickers[ nIndex ] != nil
-            aSwiftDatePickers[ nIndex ]:OnChange( cDateStr )
-        endif
+function SwiftDatePickerOnChange( cId, cDateStr )
+    local nPos := AScan( aSwiftDatePickers, { |o| o != nil .and. o:cID == cId } )
+    if nPos > 0
+        aSwiftDatePickers[ nPos ]:OnChange( cDateStr )
     endif
 return nil

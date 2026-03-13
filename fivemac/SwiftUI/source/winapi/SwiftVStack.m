@@ -1,39 +1,5 @@
+/*
 #import "SwiftCommon.h"
-
-HB_FUNC(VSTK_CREATE) {
-  id parent = (id)hb_parnll(1);
-  NSString *cId = GetRootIdFromParam(2);
-  NSInteger nIndex = HB_ISNUM(2) ? hb_parni(2) : [cId intValue];
-
-  // Direct call to Swift Factory (This one stays direct as it's the
-  // constructor)
-  NSView *view = [SwiftVStackLoader makeVStackWithIndex:cId];
-
-  if (view) {
-    // Setup Action Callback
-    void (^actionCallbackBlock)(NSString *) = ^(NSString *itemId) {
-      if (!itemId)
-        return;
-      PHB_DYNS pSym = hb_dynsymFindName("SWIFTONACTION");
-      if (pSym) {
-        hb_vmPushSymbol(hb_dynsymSymbol(pSym));
-        hb_vmPushNil();
-        hb_vmPushNLL(nIndex);
-        hb_vmPushString([itemId UTF8String], [itemId length]);
-        hb_vmDo(2);
-      }
-    };
-
-    [SwiftVStackLoader setActionCallbackWithRootId:cId
-                                          callback:actionCallbackBlock];
-
-    setupSwiftView(view, parent, hb_parnl(3), hb_parnl(4), hb_parnl(5),
-                   hb_parnl(6));
-    hb_retnll((HB_LONGLONG)view);
-  } else {
-    hb_retnll(0);
-  }
-}
 
 HB_FUNC(VSTK_ADD_ITEM) {
   hb_retc((const char *)SW_VSTK_ADD_ITEM(
@@ -182,3 +148,9 @@ HB_FUNC(VSTK_GET_LAST_ITEM_ID) {
       (const int8_t *)[GetRootIdFromParam(1) UTF8String]);
   hb_retc(res ? res : "");
 }
+
+HB_FUNC(VSTK_SET_LAST_ITEM_ID) {
+  SW_VSTK_SET_LAST_ITEM_ID((const int8_t *)[GetRootIdFromParam(1) UTF8String],
+                           (const int8_t *)[hb_NSSTRING_par(2) UTF8String]);
+}
+*/

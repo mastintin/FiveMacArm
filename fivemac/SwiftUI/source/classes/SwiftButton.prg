@@ -12,7 +12,6 @@ static aSwiftButtons := {}
 CLASS TSwiftButton FROM TControl
 
     DATA bAction
-    DATA nIndex
     DATA cID
     DATA lGlass
 
@@ -35,15 +34,14 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
 
     ::bAction = bAction
     ::oWnd    = oWnd
-    ::cID     = SWIFT_UUID()
+    ::cID     = hb_UUID()
    
     AAdd( aSwiftButtons, Self )
-    ::nIndex  = Len( aSwiftButtons )
 
-    ::hWnd = SD_SWIFT_BUTTON_CREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::nIndex, ::cID )
+    ::hWnd = SD_SWIFT_BUTTON_CREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::cID )
 
     if nAutoResize != 0
-    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -53,17 +51,17 @@ return Self
 METHOD Click() CLASS TSwiftButton
    
     if ::bAction != nil
-    Eval( ::bAction, Self )
+        Eval( ::bAction, Self )
     endif
 
 return nil
 
 METHOD SetColor( nFgColor, nBgColor ) CLASS TSwiftButton
     if nBgColor != nil
-    SD_BTN_SET_BG( ::cID, clrToHex( nBgColor ) )
+        SD_BTN_SET_BG( ::cID, clrToHex( nBgColor ) )
     endif
     if nFgColor != nil
-    SD_BTN_SET_FG( ::cID, clrToHex( nFgColor ) )
+        SD_BTN_SET_FG( ::cID, clrToHex( nFgColor ) )
     endif
 return nil
 
@@ -83,15 +81,17 @@ return nil
 
 METHOD SetImage( cImage ) CLASS TSwiftButton
     if cImage != nil
-    SD_BTN_SET_IMAGE( ::cID, cImage )
+        SD_BTN_SET_IMAGE( ::cID, cImage )
     endif
 return nil
 
 METHOD End() CLASS TSwiftButton
+    local nPos 
     if !Empty( ::hWnd )
-        SD_BTN_DESTROY( ::cID, ::nIndex, ::hWnd )
-        if ::nIndex > 0 .and. ::nIndex <= Len( aSwiftButtons )
-            aSwiftButtons[ ::nIndex ] := nil
+        SD_BTN_DESTROY( ::cID, ::hWnd )
+        nPos := AScan( aSwiftButtons, { |o| o != nil .and. o:cID == ::cID } )
+        if nPos > 0
+            aSwiftButtons[ nPos ] := nil
         endif
         ::hWnd := 0
         ::cID := ""
@@ -99,10 +99,11 @@ METHOD End() CLASS TSwiftButton
 return ::Super:End()
 
 // Called from C callback
-function SwiftBtnOnClick( nIndex )
+function SwiftBtnOnClick( cId )
    
-    if nIndex > 0 .and. nIndex <= Len( aSwiftButtons )
-    aSwiftButtons[ nIndex ]:Click()
+    local nPos := AScan( aSwiftButtons, { |o| o:cId == cId } )
+    if nPos > 0
+        aSwiftButtons[ nPos ]:Click()
     endif
    
 return nil

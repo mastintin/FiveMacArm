@@ -58,13 +58,14 @@ struct SwiftToggleView: View {
 public class SwiftToggleLoader: NSObject {
     public static var states: [String: ToggleState] = [:]
     
-    public static func makeToggle(caption: String, isOn: Bool, id: String, isSwitch: Bool, index: Int, callback: @escaping ((Bool) -> Void)) -> NSView {
+    public static func makeToggle(caption: String, isOn: Bool, id: String, isSwitch: Bool, callback: @escaping ((Bool) -> Void)) -> NSView {
         let state = ToggleState(isOn: isOn, caption: caption, isSwitch: isSwitch, callback: callback)
-        let key = id.isEmpty ? String(index) : id
-        states[key] = state
+        states[id] = state
         
         let view = SwiftToggleView(state: state)
-        ViewRegistry.register(view, for: index)
+        let idString: String = id 
+        ViewRegistry.register(view, for: idString)
+       
         
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = [] 
@@ -72,22 +73,22 @@ public class SwiftToggleLoader: NSObject {
         return hostingView
     }
 
-    public static func destroyToggle(id: String, index: Int, viewPtr: Int64) {
-        // 1. Limpiar el estado para que el objeto @Observable muera
-        let key = id.isEmpty ? String(index) : id
-        states.removeValue(forKey: key)
-        
-        // 2. Limpiar el registro global de FiveMac (según tu .h)
-        ViewRegistry.clean(index:index) 
-        
-        // 3. Liberar la retención manual del NSHostingView
+
+    public static func destroyToggle(id: String, viewPtr: Int64) {
+        // 1. Limpiar el estado (asumiendo que 'states' también usa el ID)
+        states.removeValue(forKey: id)
+    
+        // 2. Limpiar el registro global de vistas usando el UUID
+        ViewRegistry.clean(id: id) 
+    
+        // 3. Liberar la memoria física (el puntero)
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                // .takeRetainedValue() "consume" el contador de referencia que iniciamos en la creación
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                // "Consume" el contador de referencia para que el objeto muera
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
-    }
+}
 
     // Métodos de actualización rápida (UI Thread)
     public static func setValue(id: String, isOn: Bool) {
@@ -143,8 +144,8 @@ public func tgl_set_colors_hex(id: String, accent: String, text: String) {
 }
 
 @HarbourDirect
-public func tgl_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftToggleLoader.destroyToggle(id: id, index: index, viewPtr: viewPtr)
+public func tgl_destroy(id: String, viewPtr: Int64) {
+    SwiftToggleLoader.destroyToggle(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -164,7 +165,6 @@ public func swift_toggle_create(
     caption: String, 
     isOn: Bool, 
     parentPtr: Int64,
-    index: Int,
     id: String, 
     isSwitch: Bool
     ) -> Int64 {
@@ -179,7 +179,7 @@ public func swift_toggle_create(
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
                     // Usamos PushNumber o el equivalente que prefieras
-                    hb_vmPushNumber(Double(index), 0) 
+                    hb_vmPushString( id ) 
                     hb_vmPushLogical(newValue ? 1 : 0)
                     hb_vmDo(2)
                 }
@@ -198,7 +198,6 @@ public func swift_toggle_create(
             isOn: isOn, 
             id: id,
             isSwitch: isSwitch, 
-            index: index, 
             callback: callback
         )
         

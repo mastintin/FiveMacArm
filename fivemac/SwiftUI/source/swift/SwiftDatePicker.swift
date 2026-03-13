@@ -50,12 +50,12 @@ public class SwiftDatePickerLoader: NSObject {
     
     public static var states: [String: DatePickerState] = [:]
 
-    public static func makeDatePicker(date: Date, title: String, id: String, index: Int, callback: ((Date) -> Void)?) -> NSView {
+    public static func makeDatePicker(date: Date, title: String, id: String, callback: ((Date) -> Void)?) -> NSView {
          let state = DatePickerState(date: date, title: title)
          states[id] = state
          
          let view = SwiftDatePickerView(state: state, callback: callback)
-         ViewRegistry.register(view, for: index)
+         ViewRegistry.register(view, for: id)
          
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
@@ -63,13 +63,13 @@ public class SwiftDatePickerLoader: NSObject {
          return hostingView
     }
 
-    public static func destroyDatePicker(id: String, index: Int, viewPtr: Int64) {
+    public static func destroyDatePicker(id: String, viewPtr: Int64) {
         states.removeValue(forKey: id)
-        ViewRegistry.clean(index: index)
+        ViewRegistry.clean(id: id)
         
         if viewPtr != 0 {
-            if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
-                let _ = Unmanaged<NSView>.fromOpaque(rawPtr).takeRetainedValue()
+            if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
+                _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
     }
@@ -128,8 +128,8 @@ public func dtp_set_enabled(id: String, enabled: Bool) {
 }
 
 @HarbourDirect
-public func dtp_destroy(id: String, index: Int, viewPtr: Int64) {
-    SwiftDatePickerLoader.destroyDatePicker(id: id, index: index, viewPtr: viewPtr)
+public func dtp_destroy(id: String, viewPtr: Int64) {
+    SwiftDatePickerLoader.destroyDatePicker(id: id, viewPtr: viewPtr)
 }
 
 @HarbourDirect
@@ -140,7 +140,6 @@ public func swift_datepicker_create(
     height: Double,
     dateStr: String,
     parentPtr: Int64,
-    index: Int,
     title: String,
     id: String
 ) -> Int64 {
@@ -156,7 +155,7 @@ public func swift_datepicker_create(
                 if let pDynSym = hb_dynsymFindName("SWIFTDATEPICKERONCHANGE") {
                     hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
                     hb_vmPushNil()
-                    hb_vmPushNumber(Double(index), 0)
+                    hb_vmPushString(id)
                     hb_vmPushString(dateStr)
                     hb_vmDo(2)
                 }
@@ -173,7 +172,6 @@ public func swift_datepicker_create(
             date: initialDate,
             title: title,
             id: id,
-            index: index,
             callback: callback
         )
         

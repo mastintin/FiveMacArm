@@ -125,6 +125,7 @@ PRG_OBJS = \
 C_OBJS = ./objc/browses.o	\
 	./objc/Areas.o \
 	./objc/aesthetics.o \
+	./objc/auxiliares.o \
 	./objc/brushes.o	\
 	./objc/buttons.o	\
    ./objc/checkboxes.o \

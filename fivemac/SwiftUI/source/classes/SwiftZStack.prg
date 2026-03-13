@@ -23,7 +23,7 @@ return
 
 CLASS TSwiftZStack FROM TControl
 
-    DATA nIndex
+    DATA cID
     DATA bAction
     DATA hItems INIT {=>}
     DATA aBatch INIT {}
@@ -49,8 +49,11 @@ CLASS TSwiftZStack FROM TControl
     METHOD AddGrid( aColumns ) // Returns Item
     METHOD AddList( oParent )  // Returns Item
 
-    METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD AddBatch( aItems )
+    METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
+    METHOD SetLastItemId( cId )
+    METHOD GetLastItemId() INLINE SD_ZSTK_GET_LAST_ITEM_ID( ::cId )
+    METHOD End()
 
 ENDCLASS
 
@@ -61,12 +64,11 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftZStack
     DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
     ::oWnd = oWnd
-    
-    ::nIndex = SwiftRegisterControl( Self )
+    ::cId = hb_UUID()
     ::hItems := {=>}
     ::aBatch := {}
 
-    ::hWnd = ZSTK_CREATE( oWnd:hWnd, hb_ntos( ::nIndex ), nRow, nCol, nWidth, nHeight )
+    ::hWnd = SD_SWIFT_ZSTACK_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId )
 
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -78,22 +80,22 @@ return Self
 
 METHOD AddText( cText ) CLASS TSwiftZStack
     local cId
-    cId := ZSTK_ADD_ITEM( hb_ntos( ::nIndex ), cText )
+    cId := SD_ZSTK_ADD_ITEM( ::cId, cText )
 return cId
 
 METHOD AddImage( cSystemName ) CLASS TSwiftZStack
     local cId
-    cId := ZSTK_ADD_IMAGE( hb_ntos( ::nIndex ), cSystemName )
+    cId := SD_ZSTK_ADD_IMAGE( ::cId, cSystemName )
 return cId
 
 METHOD AddImageFile( cFile ) CLASS TSwiftZStack
     local cId
-    cId := ZSTK_ADD_FILE_IMAGE( hb_ntos( ::nIndex ), cFile )
+    cId := SD_ZSTK_ADD_FILE_IMAGE( ::cId, cFile )
 return cId
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftZStack
     local cId, oItem
-    cId := ZSTK_ADD_BUTTON_TO( hb_ntos( ::nIndex ), cText, nil )
+    cId := SD_ZSTK_ADD_BUTTON_TO( ::cId, cText, nil )
     if bAction != nil .and. !Empty( cId )
     oItem := TSwiftStackItem():New( cId, Self )
     oItem:bAction := bAction
@@ -104,21 +106,21 @@ return cId
 METHOD AddVStack( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := ZSTK_ADD_VSTACK( hb_ntos( ::nIndex ), cParentId )
+    cId := SD_ZSTK_ADD_VSTACK( ::cId, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD Reset() CLASS TSwiftZStack
-    ZSTK_REMOVE_ALL_ITEMS( hb_ntos( ::nIndex ) )
+    SD_ZSTK_REMOVE_ALL_ITEMS( ::cId )
 return nil
 
 METHOD AddHStack( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := ZSTK_ADD_HSTACK( hb_ntos( ::nIndex ), cParentId )
+    cId := SD_ZSTK_ADD_HSTACK( ::cId, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD SetAlignment( nAlign ) CLASS TSwiftZStack
-    ZSTK_SET_ALIGNMENT( hb_ntos( ::nIndex ), hb_ntos( nAlign ) )
+    SD_ZSTK_SET_ALIGNMENT( ::cId, nAlign )
 return nil
 
 METHOD AddGrid( aColumns ) CLASS TSwiftZStack
@@ -128,13 +130,13 @@ METHOD AddGrid( aColumns ) CLASS TSwiftZStack
     DEFAULT aColumns := {}
     cJsonColumns := hb_jsonEncode( aColumns )
     
-    cId := ZSTK_ADD_LAZYVGRID( hb_ntos( ::nIndex ), nil, cJsonColumns )
+    cId := SD_ZSTK_ADD_LAZYVGRID( ::cId, nil, cJsonColumns )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD AddList( oParent ) CLASS TSwiftZStack
     local cId
     local cParentId := If( oParent != nil, oParent:cId, nil )
-    cId := ZSTK_ADD_LIST( hb_ntos( ::nIndex ), cParentId )
+    cId := SD_ZSTK_ADD_LIST( ::cId, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
 METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
@@ -147,7 +149,7 @@ METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
     nClr := nRGB( nRed, nGreen, nBlue )
     endif
 
-    ZSTK_SET_FGCOLOR_HEX( hb_ntos( ::nIndex ), clrToHex( nClr, nAlpha ) )
+    SD_ZSTK_SET_FGCOLOR_HEX( ::cId, clrToHex( nClr, nAlpha ) )
 return nil
 
 METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
@@ -160,7 +162,7 @@ METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
     nClr := nRGB( nRed, nGreen, nBlue )
     endif
 
-    ZSTK_SET_BGCOLOR_HEX( hb_ntos( ::nIndex ), clrToHex( nClr, nAlpha ) )
+    SD_ZSTK_SET_BGCOLOR_HEX( ::cId, clrToHex( nClr, nAlpha ) )
 return nil
 
 METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftZStack
@@ -191,7 +193,7 @@ METHOD AddBatch( aItems ) CLASS TSwiftZStack
     next
    
     cJson := hb_jsonEncode( aJsonData )
-    cJsonIds := ZSTK_ADD_BATCH( hb_ntos( ::nIndex ), cJson, nil ) // nil parent for root
+    cJsonIds := SD_ZSTK_ADD_BATCH( ::cId, cJson, nil ) // nil parent for root
    
     aIds := hb_jsonDecode( cJsonIds )
     if ValType( aIds ) == "A"
@@ -208,6 +210,16 @@ METHOD AddBatch( aItems ) CLASS TSwiftZStack
     ::aBatch := {} // Reset after flush
     endif
 return aIds
+
+METHOD SetLastItemId( cId ) CLASS TSwiftZStack
+    SD_ZSTK_SET_LAST_ITEM_ID( ::cId, cId )
+return nil
+
+METHOD End() CLASS TSwiftZStack
+   SD_ZSTK_DESTROY( ::cId, ::hWnd )
+   ::hWnd = nil
+   ::cId  = ""
+return nil
 
 
 //---------------------------------------------------------//
