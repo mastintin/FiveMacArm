@@ -79,9 +79,11 @@ HB_FUNC(VIEWEND) {
       view = [view enclosingScrollView];
 
     [view removeFromSuperview];
+    [view release];
     [pool release];
   }
 }
+
 
 
 HB_FUNC(OSCONTROLGETSIZE) {
@@ -137,9 +139,11 @@ HB_FUNC(VIEWCLEAN) {
       }
 
       [targetView removeFromSuperview];
+      [targetView release];
     }
     [subviews release];
   }
+
 
   [pool release];
   hb_ret();
