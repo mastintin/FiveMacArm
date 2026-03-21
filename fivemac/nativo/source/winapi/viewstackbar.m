@@ -155,7 +155,7 @@ HB_FUNC(VIEWSTACKBARADDBUTTON) {
       img = [NSImage imageNamed:imgName];
     }
     if (!img) {
-      img = [[NSImage alloc] initWithContentsOfFile:imgName];
+      img = [[[NSImage alloc] initWithContentsOfFile:imgName] autorelease];
     }
 
     if (img) {

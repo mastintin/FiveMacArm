@@ -98,23 +98,39 @@ public struct SystemUtils {
         return (b << 16) | (g << 8) | r
     }
 
-    public static func getImageFile(title: String? = nil, prompt: String? = nil) -> String? {
+
+   
+    public static func getImageFile(
+        title: String? = nil, 
+        prompt: String? = nil, 
+        allowMultiple: Bool = false
+    ) -> String? {
         let panel = NSOpenPanel()
+        
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = allowMultiple
+        panel.allowedContentTypes = [.image]
         
         if let title = title {
-            panel.message = title
             panel.title = title
+            panel.message = title
         }
-        
         if let prompt = prompt {
             panel.prompt = prompt
         }
-
-        panel.allowedContentTypes = [.image]
-
-        return panel.runModal() == .OK ? panel.url?.path : nil
+        
+        NSApp.activate(ignoringOtherApps: true)
+        
+        if panel.runModal() == .OK {
+            // Obtenemos las rutas limpias de macOS 15
+            let paths = panel.urls.map { $0.path(percentEncoded: false) }
+            
+            // Si hay 1, devuelve el String directo. Si hay más, los une con |.
+            return paths.isEmpty ? nil : paths.joined(separator: "|")
+        }
+        
+        return nil
     }
 
     public static var appPath: String {

@@ -104,7 +104,15 @@ HB_FUNC(TXTSETATTRIBUTEDSTRING) {
   TextView *memo = (TextView *)hb_parnll(1);
   NSAttributedString *string = hb_NSASTRING_par(2);
 
-  [[memo textStorage] setAttributedString:string];
+  if (memo && string) {
+    // Es buena práctica avisar al textStorage que vas a cambiarlo
+    [[memo textStorage] beginEditing];
+    [[memo textStorage] setAttributedString:string];
+    [[memo textStorage] endEditing];
+
+    // Opcional: forzar que se vea el cambio si el control no se refresca solo
+    [memo setNeedsDisplay:YES];
+  }
 }
 
 HB_FUNC(TXTGETRTF) {

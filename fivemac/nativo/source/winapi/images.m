@@ -87,7 +87,7 @@ HB_FUNC(IMGSETFILE) {
   NSImageView *image = (NSImageView *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
-  [image setImage:[[NSImage alloc] initWithContentsOfFile:string]];
+  [image setImage:[[[NSImage alloc] initWithContentsOfFile:string] autorelease]];
 
   ImgResize([image image], (int)hb_parnll(3), (int)hb_parnll(4));
 
@@ -113,7 +113,7 @@ HB_FUNC(NSIMAGEFROMNAME) {
   NSFileManager *filemgr = [NSFileManager defaultManager];
 
   if ([filemgr fileExistsAtPath:string])
-    image = [[NSImage alloc] initWithContentsOfFile:string];
+    image = [[[NSImage alloc] initWithContentsOfFile:string] autorelease];
   else {
     if (@available(macOS 11.0, *))
       image = [NSImage imageWithSystemSymbolName:string
@@ -283,7 +283,7 @@ HB_FUNC(IMGSETRESFILE) // Read image from the app resources folder
   NSString *myImagePath =
       [[[NSBundle mainBundle] resourcePath] stringByAppendingString:string];
 
-  [image setImage:[[NSImage alloc] initWithContentsOfFile:myImagePath]];
+  [image setImage:[[[NSImage alloc] initWithContentsOfFile:myImagePath] autorelease]];
 }
 
 HB_FUNC(CHOOSESHEETIMAGE) {
@@ -299,9 +299,9 @@ HB_FUNC(CHOOSESHEETIMAGE) {
                if (result == NSModalResponseOK) {
                  [vista setHidden:NO];
                  [vista
-                     setImage:[[NSImage alloc]
+                     setImage:[[[NSImage alloc]
                                   initWithContentsOfURL:[[panel URLs]
-                                                            objectAtIndex:0]]];
+                                                            objectAtIndex:0]] autorelease]];
                  NSString *source = [[[[panel URLs] objectAtIndex:0] path]
                      stringByRemovingPercentEncoding];
                  [[vista image] setName:source];
@@ -327,7 +327,7 @@ HB_FUNC(NEWRESIZEIMAGE) {
     NSLog(@"Invalid Image");
   } else {
 
-    NSImage *smallImage = [[NSImage alloc] initWithSize:newSize];
+    NSImage *smallImage = [[[NSImage alloc] initWithSize:newSize] autorelease];
     [smallImage lockFocus];
     [sourceImage setSize:newSize];
     [[NSGraphicsContext currentContext]
@@ -405,7 +405,7 @@ HB_FUNC(NSIMAGEFROMIMAGEVIEW) {
 
 HB_FUNC(NSIMGFROMFILE) {
   NSString *fileName = hb_NSSTRING_par(1);
-  NSImage *image = [[NSImage alloc] initWithContentsOfFile:fileName];
+  NSImage *image = [[[NSImage alloc] initWithContentsOfFile:fileName] autorelease];
   hb_retnll((HB_LONGLONG)image);
 }
 
@@ -434,7 +434,7 @@ HB_FUNC(SAVETEXTINIMAGE) // fileini,filefin,ctexto, fuente, ntop, nleft
   NSString *extension =
       [[fileFin substringFromIndex:[fileFin length] - 3] uppercaseString];
 
-  NSImage *iniImage = [[NSImage alloc] initWithContentsOfFile:fileIni];
+  NSImage *iniImage = [[[NSImage alloc] initWithContentsOfFile:fileIni] autorelease];
 
   NSImage *finImage = [NSImage
        imageWithSize:iniImage.size
@@ -452,10 +452,10 @@ HB_FUNC(SAVETEXTINIMAGE) // fileini,filefin,ctexto, fuente, ntop, nleft
         return YES;
       }];
 
-  NSBitmapImageRep *imageRep = [[NSBitmapImageRep alloc]
+  NSBitmapImageRep *imageRep = [[[NSBitmapImageRep alloc]
       initWithCGImage:[finImage CGImageForProposedRect:NULL
                                                context:nil
-                                                 hints:nil]];
+                                                 hints:nil]] autorelease];
   NSDictionary *imageProps =
       [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0]
                                   forKey:NSImageCompressionFactor];
@@ -630,7 +630,7 @@ HB_FUNC(SAVEIMAGEFROMIMAGE) {
 
   NSString *extension =
       [[fileFin substringFromIndex:[fileFin length] - 3] uppercaseString];
-  NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile:fileIni];
+  NSImage *sourceImage = [[[NSImage alloc] initWithContentsOfFile:fileIni] autorelease];
 
   NSSize newSize;
   newSize.width = hb_parnl(3);
@@ -640,7 +640,7 @@ HB_FUNC(SAVEIMAGEFROMIMAGE) {
     NSLog(@"Invalid Image");
   } else {
 
-    NSImage *smallImage = [[NSImage alloc] initWithSize:newSize];
+    NSImage *smallImage = [[[NSImage alloc] initWithSize:newSize] autorelease];
     [smallImage lockFocus];
     [sourceImage setSize:newSize];
     [[NSGraphicsContext currentContext]

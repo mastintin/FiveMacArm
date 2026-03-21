@@ -1,80 +1,60 @@
 #include <hbapi.h>
 #include <hbapicls.h>
 #include <hbapiitm.h>
-#include <hbdate.h>
-#include <hbset.h>
 #include <hbvm.h>
+#include <stdio.h>
+#include <string.h>
+
+// Necesario para NSString
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#endif
 
 //----------------------------------------------------------------------------//
 
-void ValToChar( PHB_ITEM item )
-{
-  switch( hb_itemType( item ) )
-  {
-     case HB_IT_NIL:
-          hb_retc( "nil" );
-          break;
+const char *ValToChar(PHB_ITEM item) {
+  static char szBuffer[1024];
+  szBuffer[0] = '\0';
 
-     case HB_IT_STRING:
-     case HB_IT_MEMO:
-          hb_retc( hb_itemGetC( item ) );
-          break;
-	  
-     case HB_IT_INTEGER:
-          {
-             char lng[ 15 ];
-             sprintf( lng, "%d", hb_itemGetNI( item ) );
-             hb_retc( lng );
-          }
-          break;
+  if (item) {
+    // Invocamos a CVALTOCHAR de Harbour para que haga la conversion pesada
+    PHB_ITEM pRes = hb_itemDoC("CVALTOCHAR", 1, item);
 
-     case HB_IT_LONG:
-          {
-             char dbl[ HB_MAX_DOUBLE_LENGTH ];
-             sprintf( dbl, "%f", ( double ) hb_itemGetND( item ) );
-             * strchr( dbl, '.' ) = 0;
-             hb_retc( dbl );
-          }
-          break;
+    if (pRes) {
+      // Extraemos el puntero de cadena C
+      const char *szText = hb_itemGetCPtr(pRes);
+      if (szText) {
+        // COPIAMOS el texto a nuestro buffer estatico antes de liberar el item
+        strncpy(szBuffer, szText, 1023);
+        szBuffer[1023] = '\0';
+      }
+      // LIBERAMOS el item temporal para evitar el leak de 16-32 bytes
+      hb_itemRelease(pRes);
+    }
+  }
 
-     case HB_IT_DOUBLE:
-          {
-             char dbl[ HB_MAX_DOUBLE_LENGTH ];
-             sprintf( dbl, "%f", hb_itemGetND( item ) );
-             hb_retc( dbl );
-          }
-          break;
-
-     case HB_IT_DATE:
-          {
-             hb_vmPushSymbol( hb_dynsymSymbol( hb_dynsymFindName( "DTOC" ) ) );
-             hb_vmPushNil();
-             hb_vmPush( item );
-             hb_vmDo( 1 );
-          }
-          break;
-
-     case HB_IT_LOGICAL:
-          hb_retc( hb_itemGetL( item ) ? ".T." : ".F." );
-          break;
-
-     case HB_IT_ARRAY:
-          if( hb_objGetClass( item ) == 0 )
-             hb_retc( "Array" );
-          else
-             hb_retc( "Object" );
-          break;
-
-     default:
-          hb_retc( "ValtoChar not suported type yet" );
- }
+  return szBuffer;
 }
 
 //----------------------------------------------------------------------------//
 
-HB_FUNC( CVALTOCHAR ) // ( uVal ) --> cVal
-{
-   ValToChar( hb_param( 1, HB_IT_ANY ) );
+#ifdef __OBJC__
+// Prototipo necesario para evitar declaraciones implicitas
+NSString *HB_To_NSString(PHB_ITEM pItem);
+
+// Funcion puente definitiva: accede al parametro, convierte el tipo y libera items temporales
+NSString *hb_NSSTRING_VAL_par(int iParam) {
+  return HB_To_NSString(hb_param(iParam, HB_IT_ANY));
 }
+
+// Funcion puente ultra-segura (autorelease)
+NSString *HB_To_NSString(PHB_ITEM pItem) {
+  if (!pItem)
+    return @"";
+  return [NSString stringWithUTF8String:ValToChar(pItem)];
+}
+#endif
+
+//----------------------------------------------------------------------------//
 
 //----------------------------------------------------------------------------//

@@ -131,6 +131,7 @@ C_OBJS = ./objc/browses.o	\
    ./objc/checkboxes.o \
    ./objc/choosecolor.o \
    ./objc/choosefont.o \
+   ./objc/clipboards.o \
     ./objc/cifilters.o \
     ./objc/colors.o \
   	./objc/colorton.o	\
