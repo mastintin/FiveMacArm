@@ -74,15 +74,16 @@ HB_FUNC(VIEWEND) {
   NSView *view = (NSView *)hb_parnll(1);
 
   if (view) {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     if ([view isKindOfClass:[NSTableView class]])
       view = [view enclosingScrollView];
 
-    [view removeFromSuperview];
-    [view release];
-    [pool release];
+    if (view) {
+       [view removeFromSuperview];
+       [view autorelease];
+    }
   }
 }
+
 
 
 
@@ -139,8 +140,9 @@ HB_FUNC(VIEWCLEAN) {
       }
 
       [targetView removeFromSuperview];
-      [targetView release];
+      [targetView autorelease];
     }
+
     [subviews release];
   }
 
