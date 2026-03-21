@@ -12,24 +12,33 @@ void CocoaInit(void) {
     pool = [[NSAutoreleasePool alloc] init];
     NSApp = [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+
     [NSApp activateIgnoringOtherApps:YES];
     bInit = TRUE;
   }
 }
 
-HB_FUNC(COCOAINIT) { CocoaInit(); }
-
 void CocoaExit(void) {
   static BOOL bExit = FALSE;
 
   if (!bExit) {
-    [NSApp release];
-    [pool release];
+    // 1. NUNCA liberes NSApp. El sistema lo hace al cerrar el proceso.
+
+    // 2. Liberamos el pool global (esto sí es correcto)
+    if (pool) {
+      [pool release];
+      pool = nil; // Buena práctica: dejarlo a nil tras liberar
+    }
+
     bExit = TRUE;
   }
 }
 
+HB_FUNC(COCOAINIT) { CocoaInit(); }
+HB_FUNC(COCOAEXIT) { CocoaExit(); }
+
 void MsgAlert(NSString *detailedInformation, NSString *messageText) {
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
   NSAlert *alert = [[NSAlert alloc] init];
 
   alert.messageText = messageText;
@@ -37,209 +46,237 @@ void MsgAlert(NSString *detailedInformation, NSString *messageText) {
   alert.alertStyle = NSAlertStyleWarning;
 
   [alert addButtonWithTitle:@"OK"];
+
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   [alert runModal];
+
+  [alert release];
+  [localPool release];
 }
 
-HB_FUNC(COCOAEXIT) { CocoaExit(); }
-
-HB_FUNC(MSGBADGE) {
-  ValToChar(hb_param(1, HB_IT_ANY));
-
-  [[NSApp dockTile] setBadgeLabel:hb_NSSTRING_par(-1)];
+HB_FUNC(DOCKSETBADGE) {
+  [[NSApp dockTile] setBadgeLabel:hb_NSSTRING_VAL_par(1)];
 }
 
-HB_FUNC(MSGINFO) {
-  NSString *msg, *title;
+HB_FUNC(MSGINFONATIVE) {
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
 
-  CocoaInit();
+  // ¡Mucho mas limpio y seguro!
+  NSString *msg = (hb_pcount() >= 1) ? hb_NSSTRING_par(1) : @"Mensaje";
+  NSString *title = (hb_pcount() >= 2) ? hb_NSSTRING_par(2) : @"Atención";
 
-  ValToChar(hb_param(1, HB_IT_ANY));
-  msg = hb_NSSTRING_par(-1);
   if ([msg length] == 0)
     msg = @" ";
-
-  if (hb_pcount() > 1) {
-    ValToChar(hb_param(2, HB_IT_ANY));
-    title = hb_NSSTRING_par(-1);
-    if ([title length] == 0)
-      title = @"Attention";
-  } else
-    title = @"Attention";
 
   NSAlert *alert = [[NSAlert alloc] init];
+  [alert setMessageText:title];
+  [alert setInformativeText:msg];
+  [alert setAlertStyle:NSAlertStyleInformational];
+  [alert addButtonWithTitle:@"Aceptar"];
 
-  alert.alertStyle = NSAlertStyleInformational;
-  alert.informativeText = msg;
-  alert.messageText = title;
-
-  [alert addButtonWithTitle:@"OK"];
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   [alert runModal];
+
+  [[alert window] close];
   [alert release];
+  // No hacemos release de msg/title porque HB_To_NSString devuelve autorelease
+  [localPool release];
 
-  hb_ret();
+  hb_retl(YES);
 }
-@interface Alert : NSAlert {
-}
-- (void)killWindow:(NSAlert *)alert;
-@end
-
-@implementation Alert
-
-- (void)killWindow:(NSAlert *)alert;
-{ [NSApp abortModal]; }
-
-@end
 
 HB_FUNC(MSGWAIT) {
-  NSString *msg, *title;
-  NSTimer *myTimer;
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-  CocoaInit();
+  // 1. Extraccion segura
+  NSString *msg = hb_NSSTRING_VAL_par(1);
+  NSString *title = hb_NSSTRING_VAL_par(2);
+  double seconds = (hb_pcount() >= 3) ? hb_parnd(3) : 2.0;
 
-  ValToChar(hb_param(1, HB_IT_ANY));
-  msg = hb_NSSTRING_par(-1);
-  if ([msg length] == 0)
-    msg = @" ";
+  // 2. NSAlert
+  NSAlert *alert = [[NSAlert alloc] init];
+  [alert setAlertStyle:NSAlertStyleInformational];
+  [alert setMessageText:title];
+  [alert setInformativeText:msg];
 
-  if (hb_pcount() > 1) {
-    ValToChar(hb_param(2, HB_IT_ANY));
-    title = hb_NSSTRING_par(-1);
-    if ([title length] == 0)
-      title = @"Attention";
-  } else
-    title = @"Attention";
+  for (NSButton *btn in [alert buttons]) {
+    [btn setHidden:YES];
+  }
 
-  Alert *alert = [[Alert alloc] init];
+  // 3. Configuración de Ventana
+  NSWindow *window = [alert window];
+  [window setStyleMask:NSWindowStyleMaskBorderless];
+  [window setBackgroundColor:[NSColor clearColor]];
+  [window setOpaque:NO];
+  [window setHasShadow:YES];
+  [window setLevel:NSStatusWindowLevel];
 
-  alert.alertStyle = NSAlertStyleInformational;
-  alert.informativeText = msg;
-  alert.messageText = title;
+  // 4. Vibrancia (Requiere release al final)
+  NSVisualEffectView *vibrant =
+      [[NSVisualEffectView alloc] initWithFrame:[[window contentView] bounds]];
+  [vibrant setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+  [vibrant setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+  [vibrant setMaterial:NSVisualEffectMaterialHUDWindow];
+  [vibrant setState:NSVisualEffectStateActive];
+  [vibrant setWantsLayer:YES];
+  [[vibrant layer] setCornerRadius:12.0];
 
-  myTimer = [NSTimer timerWithTimeInterval:hb_parnl(3)
-                                    target:alert
-                                  selector:@selector(killWindow:)
-                                  userInfo:nil
-                                   repeats:NO];
+  [[window contentView] addSubview:vibrant
+                        positioned:NSWindowBelow
+                        relativeTo:nil];
 
-  [[NSRunLoop currentRunLoop] addTimer:myTimer forMode:NSModalPanelRunLoopMode];
+  // 5. Auto-cierre (En No-ARC no usamos @(), usamos [NSNumber numberWith...])
+  NSNumber *response = [NSNumber numberWithInteger:NSModalResponseOK];
+  [NSApp performSelector:@selector(stopModalWithCode:)
+              withObject:response
+              afterDelay:seconds];
 
-  [alert addButtonWithTitle:@""];
+  // 6. Ejecución
   [alert runModal];
-  [alert release];
+
+  // 7. LIMPIEZA MANUAL (Crítico en No-ARC)
+  [vibrant release]; // Lo creamos con alloc
+  [alert release];   // Lo creamos con alloc
+  [pool release];    // Libera el NSNumber y los NSStrings
 
   hb_ret();
 }
-HB_FUNC(MSGSTOP) {
-  CocoaInit();
 
+HB_FUNC(MSGSTOP) {
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
   NSAlert *dlg = [[NSAlert alloc] init];
 
-  ValToChar(hb_param(1, HB_IT_ANY));
-  dlg.informativeText = hb_NSSTRING_par(-1);
-  dlg.messageText = @"Stop";
-  dlg.alertStyle = NSAlertStyleWarning;
+  dlg.informativeText = hb_NSSTRING_VAL_par(1);
+  dlg.messageText = (hb_pcount() >= 2) ? hb_NSSTRING_VAL_par(2) : @"Stop";
+  dlg.alertStyle = NSAlertStyleCritical;
 
   [dlg addButtonWithTitle:@"OK"];
+
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   [dlg runModal];
 
+  [dlg release];
+  [localPool release];
   hb_ret();
 }
 
 HB_FUNC(MSGALERT) {
-  CocoaInit();
-
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
   NSAlert *dlg = [[NSAlert alloc] init];
 
-  ValToChar(hb_param(1, HB_IT_ANY));
-  dlg.informativeText = hb_NSSTRING_par(-1);
-  dlg.messageText = @"Alert";
+  dlg.informativeText = hb_NSSTRING_VAL_par(1);
+  dlg.messageText = (hb_pcount() >= 2) ? hb_NSSTRING_VAL_par(2) : @"Alert";
   dlg.alertStyle = NSAlertStyleWarning;
 
   [dlg addButtonWithTitle:@"OK"];
+
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   [dlg runModal];
 
+  [dlg release];
+  [localPool release];
   hb_ret();
 }
 
 HB_FUNC(MSGALERTSHEET) {
-
-  //  CocoaInit();
-
-  ValToChar(hb_param(1, HB_IT_ANY));
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
   NSAlert *alert = [[NSAlert alloc] init];
-  alert.messageText = @"Alert";
-  alert.informativeText = hb_NSSTRING_par(-1);
+
+  alert.messageText = (hb_pcount() >= 2) ? hb_NSSTRING_VAL_par(2) : @"Alert";
+  alert.informativeText = hb_NSSTRING_VAL_par(1);
 
   [alert addButtonWithTitle:@"OK"];
 
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   [alert runModal];
 
-  // hb_ret();
+  [alert release];
+  [localPool release];
+  hb_ret();
 }
 
-HB_FUNC(MSGYESNO) // cMsg --> lYesNo
-{
-  NSString *text;
+HB_FUNC(MSGYESNO) {
+  // 1. Creamos el pool manual
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+  // 2. Usamos tu función hb_NSSTRING_par (que ya devuelve autorelease)
+  NSString *msg =
+      (hb_pcount() >= 1) ? hb_NSSTRING_par(1) : @"¿Desea continuar?";
+  NSString *title = (hb_pcount() >= 2) ? hb_NSSTRING_par(2) : @"Confirmación";
+
+  // 3. NSAlert se crea con alloc, por lo que SOMOS responsables de liberarlo
   NSAlert *alert = [[NSAlert alloc] init];
-
-  CocoaInit();
-
-  ValToChar(hb_param(2, HB_IT_ANY));
-  text = hb_NSSTRING_par(-1);
-  if ([text isEqualToString:@""])
-    text = @"Please select";
-
-  alert.messageText = text;
-
-  ValToChar(hb_param(1, HB_IT_ANY));
-  text = hb_NSSTRING_par(-1);
-  if ([text isEqualToString:@""])
-    text = @"make a choice";
-
-  alert.informativeText = text;
-
-  [alert addButtonWithTitle:@"Yes"];
+  [alert setMessageText:title];
+  [alert setInformativeText:msg];
+  [alert addButtonWithTitle:@"Sí"];
   [alert addButtonWithTitle:@"No"];
 
-  hb_retl([alert runModal] == NSAlertFirstButtonReturn);
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 
-  [alert release];
+  NSInteger res = [alert runModal];
+  hb_retl(res == NSAlertFirstButtonReturn);
+
+  // 4. LIMPIEZA OBLIGATORIA EN NO-ARC
+  [alert release]; // Liberamos el objeto que creamos con 'alloc'
+  [pool release];  // Liberamos el pool (y con él los NSStrings temporales)
 }
 
 HB_FUNC(MSGNOYES) // cMsg --> lYesNo
 {
-  NSString *text;
-  NSAlert *alert = [[NSAlert alloc] init];
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
 
   CocoaInit();
 
-  ValToChar(hb_param(2, HB_IT_ANY));
-  text = hb_NSSTRING_par(-1);
-  if ([text isEqualToString:@""])
-    text = @"Please select";
+  NSAlert *alert = [[NSAlert alloc] init];
 
-  alert.messageText = text;
+  NSString *text1 = hb_NSSTRING_VAL_par(2);
+  if ([text1 length] == 0)
+    text1 = @"Please select";
 
-  ValToChar(hb_param(1, HB_IT_ANY));
-  text = hb_NSSTRING_par(-1);
-  if ([text isEqualToString:@""])
-    text = @"make a choice";
+  alert.messageText = text1;
 
-  alert.informativeText = text;
+  NSString *text2 = hb_NSSTRING_VAL_par(1);
+  if ([text2 length] == 0)
+    text2 = @"make a choice";
+
+  alert.informativeText = text2;
 
   [alert addButtonWithTitle:@"No"];
   [alert addButtonWithTitle:@"Yes"];
 
-  hb_retl([alert runModal] != NSAlertFirstButtonReturn);
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+  NSInteger res = [alert runModal];
+
+  hb_retl(res != NSAlertFirstButtonReturn);
 
   [alert release];
+  [localPool release];
+}
+
+HB_FUNC(MSGDEBUG) {
+  CocoaInit();
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
+  NSAlert *dlg = [[NSAlert alloc] init];
+
+  dlg.informativeText = hb_NSSTRING_VAL_par(1);
+  dlg.messageText = @"Debug Info";
+  dlg.alertStyle = NSAlertStyleInformational;
+
+  [dlg addButtonWithTitle:@"Aceptar"];
+
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+  [dlg runModal];
+
+  [dlg release];
+  [localPool release];
+  hb_ret();
 }
 
 HB_FUNC(MSGBEEP) { NSBeep(); }
 
 HB_FUNC(CHOOSETEXT) {
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
   NSString *string = hb_NSSTRING_par(1);
   NSOpenPanel *panel = [NSOpenPanel openPanel];
 
@@ -249,6 +286,8 @@ HB_FUNC(CHOOSETEXT) {
 
   panel.canChooseDirectories = YES;
   panel.message = @"Please select ";
+
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   if (panel.runModal == NSModalResponseOK) {
     NSString *source =
         [[[[panel URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
@@ -256,6 +295,8 @@ HB_FUNC(CHOOSETEXT) {
     hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
+
+  [localPool release];
 #endif
 }
 
@@ -318,8 +359,9 @@ HB_FUNC(CHOOSEFILEURL) {
 }
 
 HB_FUNC(CHOOSEFOLDER) {
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
   NSString *types = hb_NSSTRING_par(2);
-  NSOpenPanel *op = [NSOpenPanel openPanel]; //[ [ NSOpenPanel alloc ] init ];
+  NSOpenPanel *op = [NSOpenPanel openPanel];
 
   [op setCanChooseFiles:NO];
   [op setCanChooseDirectories:YES];
@@ -354,6 +396,7 @@ HB_FUNC(CHOOSEFOLDER) {
     }
   }
 
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   if ([op runModal] == NSModalResponseOK) {
     NSString *source =
         [[[[op URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
@@ -361,9 +404,12 @@ HB_FUNC(CHOOSEFOLDER) {
     hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
+
+  [localPool release];
 }
 
 HB_FUNC(SAVEFILE) {
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
   NSSavePanel *op = [[NSSavePanel alloc] init];
 
   [op setPrompt:@"Ok"];
@@ -378,29 +424,49 @@ HB_FUNC(SAVEFILE) {
     [op setNameFieldStringValue:hb_NSSTRING_par(2)];
 #endif
 
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   if ([op runModal] == NSModalResponseOK) {
 
     NSString *source = [[[op URL] path] stringByRemovingPercentEncoding];
     hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
+
+  [op release];
+  [localPool release];
 }
 
 HB_FUNC(CHOOSEIMAGEFILE) {
+  // 1. Pool local para limpiar los objetos temporales (URLs, Arrays, Strings)
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+  // 2. NSOpenPanel creado con alloc: SOMOS responsables de liberarlo
   NSOpenPanel *op = [[NSOpenPanel alloc] init];
+
+  // imageTypes es un método de clase (ya es autoreleased)
   NSArray *imageTypes = [NSImage imageTypes];
 
   [op setPrompt:@"Ok"];
   [op setMessage:@"Please select a file"];
+
+  // Nota: setAllowedContentTypes requiere macOS 11.0+.
+  // Para versiones antiguas se usaba setAllowedFileTypes:
   [op setAllowedContentTypes:imageTypes];
 
   if ([op runModal] == NSModalResponseOK) {
+    // Obtenemos la ruta. Todos estos métodos devuelven objetos autoreleased.
     NSString *source =
         [[[[op URLs] objectAtIndex:0] path] stringByRemovingPercentEncoding];
 
+    // Devolvemos el string a Harbour ANTES de liberar el pool
     hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
-  } else
+  } else {
     hb_retc("");
+  }
+
+  // 3. LIMPIEZA MANUAL (Crítico en No-ARC)
+  [op release];   // Liberamos el panel (alloc)
+  [pool release]; // Liberamos los arrays y strings temporales
 }
 
 HB_FUNC(CHOOSESHEETTXTIMG) {
@@ -452,172 +518,4 @@ HB_FUNC(CHOOSESHEETTEXT) {
   } else
     hb_retc("");
 #endif
-}
-
-//----------------------------------------------------------------------------//
-
-HB_FUNC(CLIPBOARDNEW) {
-  NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-  hb_retnll((HB_LONGLONG)pasteBoard);
-}
-
-HB_FUNC(SETCLIPBOARDDATA) {
-  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
-  int iType = hb_parnl(2);
-
-  [pasteBoard clearContents];
-
-  switch (iType) {
-  case 1:
-    [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString]
-                       owner:nil];
-    break;
-
-  case 2:
-    [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypePNG]
-                       owner:nil];
-    break;
-
-  case 12:
-    [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeSound]
-                       owner:nil];
-    break;
-
-  default:
-    [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString]
-                       owner:nil];
-    break;
-  }
-}
-
-HB_FUNC(CLIPBOARDCOPYPNG) {
-  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
-  NSImage *image = (NSImage *)hb_parnll(2);
-  CGImageRef CGImage = [image CGImageForProposedRect:nil context:nil hints:nil];
-  NSBitmapImageRep *rep =
-      [[[NSBitmapImageRep alloc] initWithCGImage:CGImage] autorelease];
-  NSDictionary *dict =
-      [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:0.5]
-                                  forKey:NSImageCompressionFactor];
-  NSData *data = [rep representationUsingType:NSBitmapImageFileTypePNG
-                                   properties:dict];
-  bool lResult = [pasteBoard setData:data forType:NSPasteboardTypePNG];
-
-  hb_retl(lResult);
-}
-
-HB_FUNC(CLIPBOARDCOPYSTRING) {
-  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
-  NSString *string = hb_NSSTRING_par(2);
-
-  [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString]
-                     owner:nil];
-  bool lResult = [pasteBoard setString:string forType:NSPasteboardTypeString];
-  hb_retl(lResult);
-}
-
-HB_FUNC(CLIPBOARDPASTESTRING) {
-  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
-  NSString *string;
-
-  string = [pasteBoard stringForType:NSPasteboardTypeString];
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
-}
-
-HB_FUNC(CLIPBOARDCLEAR) {
-  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
-  [pasteBoard clearContents];
-}
-
-HB_FUNC(CLIPBOARDGETNAME) {
-  NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
-  NSString *string = pasteBoard.name;
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
-}
-
-//----------------------------------------------------------------------------//
-
-HB_FUNC(COPYPASTEBOARDSTRING) {
-  NSString *string = hb_NSSTRING_par(1);
-  NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-
-  [pasteBoard declareTypes:[NSArray arrayWithObject:NSPasteboardTypeString]
-                     owner:nil];
-  [pasteBoard setString:string forType:NSPasteboardTypeString];
-}
-
-HB_FUNC(PASTEPASTEBOARDSTRING) {
-  NSPasteboard *pasteBoard = [NSPasteboard generalPasteboard];
-  NSString *string;
-
-  [pasteBoard
-      declareTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, nil]
-             owner:nil];
-  string = [pasteBoard stringForType:NSPasteboardTypeString];
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
-}
-
-HB_FUNC(SCREENTOPASTEBOARD) {
-  if (@available(macOS 14.0, *)) {
-    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
-    __block CGImageRef capturedImage = NULL;
-
-    [SCShareableContent getShareableContentWithCompletionHandler:^(
-                            SCShareableContent *content, NSError *error) {
-      if (error) {
-        // NSLog(@"SCShareableContent error: %@", error);
-        dispatch_semaphore_signal(sema);
-        return;
-      }
-
-      SCDisplay *display = [content.displays firstObject];
-      if (!display) {
-        dispatch_semaphore_signal(sema);
-        return;
-      }
-
-      SCContentFilter *filter = [[SCContentFilter alloc] initWithDisplay:display
-                                                        excludingWindows:@[]];
-      SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
-      config.width = display.width;
-      config.height = display.height;
-      config.showsCursor = NO;
-
-      [SCScreenshotManager
-          captureImageWithFilter:filter
-                   configuration:config
-               completionHandler:^(CGImageRef image, NSError *error) {
-                 if (image) {
-                   capturedImage = CGImageRetain(image);
-                 } else {
-                   // NSLog(@"Capture failed: %@", error);
-                 }
-                 dispatch_semaphore_signal(sema);
-               }];
-    }];
-
-    // Wait for async capture (timeout 5s)
-    dispatch_semaphore_wait(
-        sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
-
-    if (capturedImage) {
-      NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
-      NSBitmapImageRep *rep = [[[NSBitmapImageRep alloc]
-          initWithCGImage:capturedImage] autorelease];
-      NSDictionary *dict =
-          [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:0.5]
-                                      forKey:NSImageCompressionFactor];
-      NSData *data = [rep representationUsingType:NSBitmapImageFileTypePNG
-                                       properties:dict];
-      BOOL success = [pasteBoard setData:data forType:NSPasteboardTypePNG];
-
-      CGImageRelease(capturedImage);
-      hb_retl(success);
-    } else {
-      hb_retl(FALSE);
-    }
-  } else {
-    // Fallback for older macOS (or return false if obsolete)
-    hb_retl(FALSE);
-  }
 }

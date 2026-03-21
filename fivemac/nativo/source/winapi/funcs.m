@@ -1,24 +1,41 @@
+#include "fivemac.h"
+
 #import <AVFoundation/AVFoundation.h>
+#import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 #include <IOKit/IOKitLib.h>
-#include <fivemac.h>
+#include <mach/mach.h>
+#include <stdlib.h>
+#include <sys/sysctl.h>
+#include <sys/types.h>
+#include <time.h>
 
 #include "hbapi.h"
 
 // Prototipo interno para generar números aleatorios si no están en tu core
 // Si hb_rand_fill falla al compilar, puedes usar rand() estándar de C
-#include <stdlib.h>
-#include <time.h>
 
 #define CGAutorelease(x) (__typeof(x))[NSMakeCollectable(x) autorelease]
 #define DURATION_ANIMATION 3.0
 
-/*
-@interface NSApplication()
-- (void) speakString: (NSString *) string;
-// NSApp speaks!
+@interface HBVoiceDelegate : NSObject <AVSpeechSynthesizerDelegate>
+@property(nonatomic, assign)
+    PHB_ITEM pCodeBlock; // Referencia al bloque de Harbour
 @end
-*/
+
+@implementation HBVoiceDelegate
+- (void)speechSynthesizer:(AVSpeechSynthesizer *)synthesizer
+    didFinishSpeechUtterance:(AVSpeechUtterance *)utterance {
+  if (self.pCodeBlock) {
+    // Volvemos al hilo principal para ejecutar Harbour de forma segura
+    dispatch_async(dispatch_get_main_queue(), ^{
+      hb_vmEvalBlock(self.pCodeBlock);
+    });
+  }
+}
+@end
+
+static __attribute__((unused)) HBVoiceDelegate *voiceDelegate = nil;
 
 NSString *NumToStr(NSInteger myInteger) {
   int myInt = myInteger;
@@ -27,38 +44,160 @@ NSString *NumToStr(NSInteger myInteger) {
   return intString;
 }
 
-NSString *hb_NSSTRING_par(int iParam) // NSUTF8StringEncoding
-{
-  return [[[NSString alloc]
-      initWithCString:HB_ISCHAR(iParam) ? hb_parc(iParam) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+NSString *hb_NSSTRING_par(int iParam) {
+  // 1. Validación rigurosa del tipo de parámetro
+  if (!HB_ISCHAR(iParam)) {
+    return @"";
+  }
+
+  const char *szText = hb_parc(iParam);
+
+  // 2. Si el puntero es nulo, evitar el crash de Cocoa
+  if (szText == NULL) {
+    return @"";
+  }
+
+  // 3. Intento de conversión rápida (incluye alloc/init/autorelease interno)
+  NSString *nsText = [NSString stringWithUTF8String:szText];
+
+  // 4. FALLBACK: Si nsText es nil (p.e. por acentos en formato Windows/ISO)
+  // intentamos con Latin1 para no perder el dato y evitar el crash posterior.
+  if (nsText == nil) {
+    nsText = [NSString stringWithCString:szText
+                                encoding:NSISOLatin1StringEncoding];
+  }
+
+  return (nsText != nil) ? nsText : @"";
 }
 
 id hb_NSObjPar(int iParam) { return (id)hb_parnll(iParam); }
 
 NSAttributedString *hb_NSASTRING_par(int iParam) {
-  NSString *string = [[[NSString alloc]
-      initWithCString:HB_ISCHAR(iParam) ? hb_parc(iParam) : ""
-             encoding:NSUTF8StringEncoding] autorelease];
+  // 1. Obtenemos el NSString usando tu función segura ya corregida
+  NSString *string = hb_NSSTRING_par(iParam);
 
-  NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+  // 2. Validación de seguridad
+  if (!string || [string length] == 0) {
+    return nil;
+  }
 
-  return [[[NSAttributedString alloc] initWithRTF:data
-                               documentAttributes:NULL] autorelease];
+  // 3. CASO RTF: Detección y conversión segura
+  if ([string hasPrefix:@"{\\rtf"]) {
+    // Usamos ISOLatin1 como fallback si UTF8 falla para no perder el RTF
+    NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    if (!data) {
+      data = [string dataUsingEncoding:NSISOLatin1StringEncoding];
+    }
 
-  //    return  [ [ NSAttributedString alloc ] initWithString: string ] ;
+    if (data) {
+      return [[[NSAttributedString alloc] initWithRTF:data
+                                   documentAttributes:NULL] autorelease];
+    }
+  }
+
+  // 4. CASO TEXTO PLANO: Inicializador moderno (Equivalente al
+  // alloc/init/autorelease) Nota: Si usas FiveMac antiguo, mantén el alloc/init
+  // para máxima compatibilidad
+  return [[[NSAttributedString alloc] initWithString:string] autorelease];
 }
 
 HB_FUNC(RANDOMMINMAX) {
   hb_retni((arc4random() % (hb_parni(2) - hb_parni(1) + 1)) + hb_parni(1));
 }
 
-HB_FUNC(OSVERSION) {
+HB_FUNC(GET_CPU_ARCHITECTURE) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
+  int cpu_type;
+  size_t size = sizeof(cpu_type);
+  NSString *archName = @"Desconocido";
+
+  // Consultamos al kernel de macOS por el tipo de CPU
+  if (sysctlbyname("hw.cputype", &cpu_type, &size, NULL, 0) == 0) {
+    // CPU_TYPE_ARM64 = 0x0100000c (Apple Silicon)
+    // CPU_TYPE_X86_64 = 0x01000007 (Intel)
+    if (cpu_type == 0x0100000c) {
+      archName = @"Apple Silicon";
+    } else if (cpu_type == 0x01000007) {
+      archName = @"Intel";
+    }
+  }
+
+  hb_retc([archName UTF8String]);
+  [pool release];
+}
+
+HB_FUNC(GET_MEMORY_USAGE) {
+  struct mach_task_basic_info info;
+  mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
+
+  // Consultamos las estadísticas de la tarea actual al kernel
+  if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info,
+                &count) == KERN_SUCCESS) {
+    // resident_size es la RAM física usada en bytes
+    hb_retnll((HB_LONGLONG)info.resident_size);
+  } else {
+    hb_retnll(0);
+  }
+}
+
+HB_FUNC(OSVERSION) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+  // Obtenemos la versión (ej: "Version 14.4 (Build 23E214)")
   NSString *version =
       [[NSProcessInfo processInfo] operatingSystemVersionString];
 
-  hb_retc([version cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (version) {
+    hb_retc([version UTF8String]);
+  } else {
+    hb_retc("");
+  }
+
+  [pool release];
+}
+
+HB_FUNC(OSVERSION_NUMERIC) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+  // Obtenemos la estructura de versión del sistema
+  NSOperatingSystemVersion osVersion =
+      [[NSProcessInfo processInfo] operatingSystemVersion];
+
+  PHB_ITEM pArray = hb_itemArrayNew(3);
+  hb_arraySet(pArray, 1, hb_itemPutNL(NULL, osVersion.majorVersion));
+  hb_arraySet(pArray, 2, hb_itemPutNL(NULL, osVersion.minorVersion));
+  hb_arraySet(pArray, 3, hb_itemPutNL(NULL, osVersion.patchVersion));
+
+  hb_itemReturnForward(pArray);
+  hb_itemRelease(pArray);
+  [pool release];
+}
+
+HB_FUNC(OSVERSION_NAME) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  NSInteger major =
+      [[NSProcessInfo processInfo] operatingSystemVersion].majorVersion;
+  NSString *name = @"Desconocido";
+
+  // Mapeo de versiones modernas
+  if (major == 26)
+    name = @"Tahoe"; // Lanzado en 2025
+  else if (major == 15)
+    name = @"Sequoia"; // Lanzado en 2024
+  else if (major == 14)
+    name = @"Sonoma";
+  else if (major == 13)
+    name = @"Ventura";
+  else if (major == 12)
+    name = @"Monterey";
+  else if (major == 11)
+    name = @"Big Sur";
+  else if (major >= 10)
+    name = @"Mac OS X / OS X";
+
+  hb_retc([name UTF8String]);
+  [pool release];
 }
 
 HB_FUNC(SDKVERSION) {
@@ -85,6 +224,7 @@ HB_FUNC(SDKVERSION) {
   [version_raw release];
   [task release];
 }
+
 /*
 void generate_uuid_bytes(unsigned char *uuid) {
   for (int i = 0; i < 16; i++) {
@@ -129,69 +269,253 @@ HB_FUNC(VALIDEMAIL) {
   hb_retl([emailTest evaluateWithObject:string]);
 }
 
-HB_FUNC(SPEAK) {
-  static AVSpeechSynthesizer *synth = nil;
+// Declaración global al archivo (fuera de las funciones)
+static AVSpeechSynthesizer *g_synth = nil;
+static HBVoiceDelegate *g_voiceDelegate = nil;
 
-  if (synth == nil) {
-    synth = [[AVSpeechSynthesizer alloc] init];
+HB_FUNC(SPEAK) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+  // Usamos la variable global del archivo
+  if (g_synth == nil) {
+    g_synth = [[AVSpeechSynthesizer alloc] init];
   }
 
   NSString *string = hb_NSSTRING_par(1);
-  float rate = hb_parnd(2);
+  float rate = (float)hb_parnd(2);
+  NSString *langCode = (hb_pcount() >= 3) ? hb_NSSTRING_par(3) : @"es-ES";
 
-  if (rate == 0) {
-    rate = 0.5; // Default for AVSpeechUtterance (0.0 to 1.0)
+  if (rate <= 0)
+    rate = AVSpeechUtteranceDefaultSpeechRate;
+  if (rate > 1.0)
+    rate = rate / 400.0f;
+
+  if (string && [string length] > 0) {
+    AVSpeechUtterance *utterance =
+        [AVSpeechUtterance speechUtteranceWithString:string];
+    AVSpeechSynthesisVoice *voice =
+        [AVSpeechSynthesisVoice voiceWithLanguage:langCode];
+
+    if (!voice) {
+      voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"es-ES"];
+    }
+
+    [utterance setVoice:voice];
+    [utterance setRate:rate];
+
+    [g_synth speakUtterance:utterance]; // Usamos g_synth
+    hb_retl(YES);
+  } else {
+    hb_retl(NO);
   }
 
-  // AVSpeechUtterance rate is between 0.0 and 1.0
-  // If user passes values like 200 (from previous motor), scale it down
-  if (rate > 1.0) {
-    rate = rate / 400.0; // Scaled to reasonable range
-  }
-
-  AVSpeechUtterance *utterance =
-      [AVSpeechUtterance speechUtteranceWithString:string];
-  utterance.voice = [AVSpeechSynthesisVoice voiceWithLanguage:@"es-ES"];
-  utterance.rate = rate;
-
-  [synth speakUtterance:utterance];
+  [pool release];
 }
 
-HB_FUNC(SLEEP) { [NSThread sleepForTimeInterval:hb_parnl(1) / 1.0]; }
+HB_FUNC(SPEAK_STOP) {
+  // Ahora esta función SI ve a g_synth y el error desaparece
+  if (g_synth && [g_synth isSpeaking]) {
+    [g_synth stopSpeakingAtBoundary:AVSpeechBoundaryImmediate];
+    hb_retl(YES);
+  } else {
+    hb_retl(NO);
+  }
+}
+
+HB_FUNC(SPEAK_CALLBACK) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+  // Inicialización única del singleton manual
+  if (g_synth == nil) {
+    g_synth = [[AVSpeechSynthesizer alloc] init];
+    g_voiceDelegate = [[HBVoiceDelegate alloc] init];
+    [g_synth setDelegate:g_voiceDelegate];
+  }
+
+  NSString *string = hb_NSSTRING_par(1);
+  PHB_ITEM pBlock = hb_param(2, HB_IT_BLOCK);
+
+  if (pBlock) {
+    if (g_voiceDelegate.pCodeBlock)
+      hb_itemRelease(g_voiceDelegate.pCodeBlock);
+    g_voiceDelegate.pCodeBlock = hb_itemPutPtr(NULL, pBlock);
+  }
+
+  if (string && [string length] > 0) {
+    AVSpeechUtterance *utterance =
+        [AVSpeechUtterance speechUtteranceWithString:string];
+    [utterance setVoice:[AVSpeechSynthesisVoice voiceWithLanguage:@"es-ES"]];
+    [g_synth speakUtterance:utterance];
+  }
+
+  [pool release];
+}
+
+HB_FUNC(SPEAK_GETVOICES) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+  // Obtener todas las voces instaladas
+  NSArray *voices = [AVSpeechSynthesisVoice speechVoices];
+  PHB_ITEM pMainArray = hb_itemArrayNew(0);
+
+  for (AVSpeechSynthesisVoice *voice in voices) {
+    PHB_ITEM pSubArray = hb_itemArrayNew(3);
+
+    hb_arraySet(pSubArray, 1, hb_itemPutC(NULL, [[voice name] UTF8String]));
+    hb_arraySet(pSubArray, 2, hb_itemPutC(NULL, [[voice language] UTF8String]));
+    hb_arraySet(pSubArray, 3,
+                hb_itemPutC(NULL, [[voice identifier] UTF8String]));
+
+    hb_arrayAddForward(pMainArray, pSubArray);
+    hb_itemRelease(pSubArray);
+  }
+
+  hb_itemReturnForward(pMainArray);
+  hb_itemRelease(pMainArray);
+  [pool release];
+}
+
+HB_FUNC(SLEEP) {
+  // Convertimos milisegundos de Harbour a segundos de macOS
+  [NSThread sleepForTimeInterval:(double)hb_parnd(1) / 1000.0];
+}
+
+HB_FUNC(SLEEP_WITH_PROGRESS) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  double milliseconds = hb_parnd(1);
+  if (milliseconds <= 0) {
+    [pool release];
+    return;
+  }
+
+  // 1. Crear ventana flotante (Panel)
+  NSRect frame = NSMakeRect(0, 0, 200, 80);
+  NSWindow *window =
+      [[NSWindow alloc] initWithContentRect:frame
+                                  styleMask:NSWindowStyleMaskTitled
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+  [window center];
+  [window setTitle:@"Espere... (ESC para cancelar)"];
+
+  // 2. Añadir el Indicador de Progreso (Spinner)
+  NSProgressIndicator *spinner =
+      [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(85, 20, 32, 32)];
+  [spinner setStyle:NSProgressIndicatorStyleSpinning];
+  [spinner setIndeterminate:YES];
+  [spinner setDisplayedWhenStopped:NO];
+  [spinner startAnimation:nil];
+
+  [[window contentView] addSubview:spinner];
+  [window makeKeyAndOrderFront:nil];
+
+  // 3. Bucle de espera con detección de ESC
+  NSDate *limitDate =
+      [NSDate dateWithTimeIntervalSinceNow:(milliseconds / 1000.0)];
+  NSRunLoop *currentLoop = [NSRunLoop currentRunLoop];
+  BOOL cancelled = NO;
+
+  while ([limitDate timeIntervalSinceNow] > 0 && !cancelled) {
+    NSAutoreleasePool *innerPool = [[NSAutoreleasePool alloc] init];
+
+    // Procesar eventos
+    [currentLoop runMode:NSDefaultRunLoopMode
+              beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+
+    // Chequear si se pulsó ESC (Key code 53)
+    // kCGEventSourceStateCombinedSessionState detecta la pulsación actual
+    if (CGEventSourceKeyState(kCGEventSourceStateCombinedSessionState, 53)) {
+      cancelled = YES;
+    }
+
+    [innerPool release];
+  }
+
+  // 4. Limpieza Manual (Reglas No-ARC)
+  [spinner stopAnimation:nil];
+  [spinner release];
+  [window orderOut:nil];
+  [window release];
+
+  hb_retl(
+      !cancelled); // Devolvemos .T. si terminó por tiempo, .F. si se canceló
+  [pool release];
+}
 
 HB_FUNC(NSSTRINGTOSTRING) {
   NSString *string = (NSString *)hb_parnll(1);
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
+
+  // Verificamos que el objeto exista antes de pedirle el texto
+  if (string) {
+    hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
+  } else {
+    hb_retc(""); // Devolvemos cadena vacía si el puntero es nulo
+  }
 }
 
 HB_FUNC(STRINGTONSTRING) {
+  // Sin autorelease: el objeto se queda en memoria con un contador de 1
   NSString *string =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-                                encoding:hb_parnl(2)] autorelease];
+      [[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
+                               encoding:hb_parnl(2)];
+
   hb_retnll((HB_LONGLONG)string);
+}
+
+// Y necesitarás esta para cuando termines de usarlo en Harbour:
+HB_FUNC(RELEASE_NSTRING) {
+  NSString *string = (NSString *)hb_parnll(1);
+  if (string) {
+    [string release];
+  }
 }
 
 HB_FUNC(NSSTRINGCANCONVERENCODE) {
   NSString *string = (NSString *)hb_parnll(1);
-  hb_retl([string canBeConvertedToEncoding:hb_parnl(2)]);
+
+  // Verificamos que el puntero no sea NULL antes de llamar al método
+  if (string) {
+    hb_retl([string canBeConvertedToEncoding:(NSStringEncoding)hb_parnl(2)]);
+  } else {
+    hb_retl(NO);
+  }
 }
 
 HB_FUNC(GETSERIALNUMBER) {
-  NSString *serial = nil;
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  const char *cSerial = ""; // Valor por defecto
+
+  // kIOMainPortDefault es el estándar desde macOS 12
   io_service_t platformExpert = IOServiceGetMatchingService(
       kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+
   if (platformExpert) {
-    CFTypeRef serialNumberAsCFString = IORegistryEntryCreateCFProperty(
+    CFTypeRef serialNumber = IORegistryEntryCreateCFProperty(
         platformExpert, CFSTR(kIOPlatformSerialNumberKey), kCFAllocatorDefault,
         0);
-    if (serialNumberAsCFString) {
-      serial = CFBridgingRelease(serialNumberAsCFString);
+
+    if (serialNumber) {
+      // Convertimos a C string antes de liberar el objeto de Apple
+      cSerial = [((NSString *)serialNumber) UTF8String];
+
+      // Harbour copia el string inmediatamente con hb_retc
+      hb_retc(cSerial);
+
+      // REGLA NO-ARC: Liberamos lo que creamos con 'Create'
+      CFRelease(serialNumber);
+    } else {
+      hb_retc("");
     }
 
     IOObjectRelease(platformExpert);
+  } else {
+    hb_retc("");
   }
-  hb_retc(serial ? [serial cStringUsingEncoding:NSUTF8StringEncoding] : "");
+
+  [pool release];
 }
+
+//----------------------------------------------------------//
 
 HB_FUNC(NSLOG) { NSLog(@"%@", hb_NSSTRING_par(1)); }
 
@@ -204,86 +528,42 @@ HB_FUNC(ISCAPSLOCKDOWN) {
 }
 
 HB_FUNC(FMSAVESCREEN) {
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  NSString *path = hb_NSSTRING_par(1);
+  BOOL success = NO;
 
-  NSString *cCapName = hb_NSSTRING_par(1);
+  if (path && [path length] > 0) {
+    // 1. Configurar captura interactiva (-i) y con cursor (-m)
+    NSArray *args = [NSArray arrayWithObjects:@"-i", @"-m", path, nil];
+    NSTask *task = [[NSTask alloc] init];
+    [task setLaunchPath:@"/usr/sbin/screencapture"];
+    [task setArguments:args];
 
-  NSArray *aArguments = [NSArray arrayWithObjects:@"-m", @"-P", cCapName, nil];
-  NSTask *captura = [[NSTask alloc] init];
+    [task launch];
+    [task waitUntilExit];
 
-  [captura setLaunchPath:@"/usr/sbin/screencapture"];
-  [captura setArguments:aArguments];
+    // 2. Si el proceso terminó correctamente (el usuario no canceló con ESC)
+    if ([task terminationStatus] == 0) {
+      success = YES;
 
-  NSPipe *pipe = [NSPipe pipe];
-  [captura setStandardOutput:pipe];
-  [captura setStandardError:pipe];
+      // Sonido de confirmación
+      [[NSSound soundNamed:@"Hero"] play];
 
-  [captura launch];
-  [captura release];
+      // 3. REVELAR EN EL FINDER (Método moderno)
+      // activateFileViewerSelectingURLs requiere un NSArray de URLs
+      NSURL *fileURL = [NSURL fileURLWithPath:path];
+      [[NSWorkspace sharedWorkspace]
+          activateFileViewerSelectingURLs:[NSArray arrayWithObject:fileURL]];
+    }
 
-  /*
-   static func capture(completionHandler: @escaping ([String]) -> Void) {
-       let outputPaths = paths
-       let process = Process()
-       process.launchPath = "/usr/sbin/screencapture"
-       process.arguments = ["-x"] + outputPaths
-       process.standardOutput = Pipe()
-       process.terminationHandler = { task in
-           guard task.terminationStatus == 0 else {
-               return
-           }
+    [task release];
+    hb_retl(success);
+  } else {
+    hb_retl(NO);
+  }
 
-           completionHandler(outputPaths)
-       }
-       process.launch()
-   }
-   */
+  [pool release];
 }
-
-/*
-HB_FUNC( SAVESCREEN )
-{
-
-    // Creamos la captura de pantalla...
-    CGImageRef image = CGAutorelease(CGWindowListCreateImage(CGRectInfinite,
-                                                               kCGWindowListOptionOnScreenOnly,
-                                                               kCGNullWindowID,
-                                                               kCGWindowImageDefault));
-
-    //...y la guardamos.
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    // guardaremos la captura en formato .tiff
-    NSString *extCapture = @".tiff";
-    NSString *numCapture = [[NSString alloc] init];
-    // Guardaremos la captura en el escritorio.
-     NSString *pathCapture = [NSHomeDirectory() stringByAppendingPathComponent:
-@"Desktop"]; BOOL saved = NO; int n = 0;
-
-        while (!saved) {
-            numCapture = [[[NSNumber alloc] initWithInt: n] stringValue];
-            // El nombre por defecto de la captura + un nââ«mero de
-captura + su extensiââ¥n. NSString* nameCapture = [[@"CapturaPantalla"
-stringByAppendingString: numCapture] stringByAppendingString: extCapture];
-
-            // Comprobamos si ya existe una captura con un determinado
-nââ«mero de captura en el
-            // escritorio. Si no existe la guardamos, si existe aumentamos el
-nââ«mero de captura
-            // y comprobamos de nuevo.
-            if ([fileManager fileExistsAtPath: [pathCapture
-stringByAppendingPathComponent: nameCapture]]) n++; else { NSBitmapImageRep
-*capture = [[NSBitmapImageRep alloc] initWithCGImage: image]; NSData *dataImage
-= [capture TIFFRepresentation];
-
-                saved = [dataImage writeToFile: [pathCapture
-stringByAppendingPathComponent: nameCapture] atomically: YES];
-            }
-        }
-
-     hb_retl( saved );
- }
-
-*/
 
 HB_FUNC(ANIMASHAKE) {}
 

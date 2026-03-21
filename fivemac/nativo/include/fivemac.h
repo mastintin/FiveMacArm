@@ -33,7 +33,10 @@ NSString *NumToStr(NSInteger myInt);
 
 NSView *GetView(NSWindow *window);
 
-void ValToChar(PHB_ITEM item);
+const char *ValToChar(PHB_ITEM item);
+
+NSString *hb_NSSTRING_VAL_par(int iParam);
+
 void ImgResize(NSImage *image, int nWidth, int nHeight);
 
 NSImage *ImgTemplate(NSString *);

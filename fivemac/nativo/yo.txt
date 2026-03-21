@@ -1,0 +1,29 @@
+Process:         test_nest [1568]
+Path:            /Users/USER/*/test_nest.app/Contents/MacOS/test_nest
+Load Address:    0x102834000
+Identifier:      com.fivetech.test_nest
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  launchd [1]
+Target Type:     live task
+
+Date/Time:       2026-03-20 09:39:41.998 +0100
+Launch Time:     2026-03-20 08:50:05.409 +0100
+OS Version:      macOS 26.3.1 (25D2128)
+Report Version:  7
+Analysis Tool:   /usr/bin/leaks
+
+Physical footprint:         23.9M
+Physical footprint (peak):  26.5M
+Idle exit:                  untracked
+----
+
+leaks Report Version: 4.0
+Process 1568: 69377 nodes malloced for 9416 KB
+Process 1568: 2 leaks for 64 total leaked bytes.
+
+    2 (64 bytes) << TOTAL >>
+      1 (32 bytes) ROOT LEAK: 0xb25401180 [32]
+      1 (32 bytes) ROOT LEAK: 0xb25735de0 [32]
+

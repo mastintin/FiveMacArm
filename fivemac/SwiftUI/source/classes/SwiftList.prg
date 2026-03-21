@@ -161,6 +161,7 @@ CREATE CLASS TSwiftRow
     METHOD SetFont( nSize, lBold )
     METHOD SetSpacing( nSpacing )
     METHOD AddSpacing( nSpacing ) INLINE ::SetSpacing( nSpacing )
+    METHOD End() INLINE ::oList
 ENDCLASS
 
 METHOD New( oList, cId ) CLASS TSwiftRow
@@ -170,7 +171,7 @@ return Self
 
 METHOD AddIcon( cIcon ) CLASS TSwiftRow
     local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_SYSTEMIMAGE, cIcon, "", ::cId )
-    ::oLastIcon := TSwiftStackItem():New( cId, ::oList )
+    ::oLastIcon := TSwiftListItem():New( cId, ::oList )
 return ::oLastIcon
 
 METHOD SetIconSize( nW, nH ) CLASS TSwiftRow
@@ -181,22 +182,22 @@ return nil
 
 METHOD AddText( cText ) CLASS TSwiftRow
     local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_TEXT, cText, "", ::cId )
-return TSwiftStackItem():New( cId, ::oList )
+return TSwiftListItem():New( cId, ::oList )
 
 METHOD AddSpacer() CLASS TSwiftRow
     local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_SPACER, "", "", ::cId )
-return TSwiftStackItem():New( cId, ::oList )
+return TSwiftListItem():New( cId, ::oList )
 
 METHOD AddButton( cContent, bAction ) CLASS TSwiftRow
     local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_BUTTON, cContent, "", ::cId )
-    local oItem := TSwiftStackItem():New( cId, ::oList )
+    local oItem := TSwiftListItem():New( cId, ::oList )
     if bAction != nil ; oItem:bAction := bAction ; endif
 return oItem
 
 METHOD SetSize( nW, nH ) CLASS TSwiftRow
     DEFAULT nW := 0, nH := 0
     SD_LST_SET_ITEM_LAYOUT( ::oList:cId, ::cId, hb_ntos( nW ), hb_ntos( nH ), "-1" )
-return nil
+return Self
 
 METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftRow
     DEFAULT nAlphaFore := 1.0, nAlphaBack := 1.0
@@ -206,14 +207,56 @@ METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftRow
     if nClrBack != nil
         SD_LST_SET_ITEM_BGCOLOR_HEX( ::oList:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
     endif
-return nil
+return Self
 
 METHOD SetFont( nSize, lBold ) CLASS TSwiftRow
     DEFAULT nSize := 0, lBold := .F.
     SD_LST_SET_ITEM_FONT( ::oList:cId, ::cId, hb_ntos( nSize ), lBold )
-return nil
+return Self
 
 METHOD SetSpacing( nSpacing ) CLASS TSwiftRow
     DEFAULT nSpacing := 8
     SD_LST_SET_ITEM_LAYOUT( ::oList:cId, ::cId, "0", "0", hb_ntos( nSpacing ) )
-return nil
+return Self
+
+// ---------------------------------------------------------
+// Clase aislada para elementos individuales dentro de una fila de lista
+// ---------------------------------------------------------
+
+CLASS TSwiftListItem
+    DATA oList
+    DATA cId
+    DATA bAction
+
+    METHOD New( cId, oList )
+    METHOD SetSize( nW, nH )
+    METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack )
+    METHOD SetFont( nSize, lBold )
+    METHOD End() INLINE ::oList
+ENDCLASS
+
+METHOD New( cId, oList ) CLASS TSwiftListItem
+    ::cId   := cId
+    ::oList := oList
+    SwiftRegisterItem( ::cId, Self )
+return Self
+
+METHOD SetSize( nW, nH ) CLASS TSwiftListItem
+    DEFAULT nW := 0, nH := 0
+    SD_LST_SET_ITEM_LAYOUT( ::oList:cId, ::cId, hb_ntos( nW ), hb_ntos( nH ), "-1" )
+return Self
+
+METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftListItem
+    DEFAULT nAlphaFore := 1.0, nAlphaBack := 1.0
+    if nClrFore != nil
+        SD_LST_SET_ITEM_COLOR_HEX( ::oList:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
+    endif
+    if nClrBack != nil
+        SD_LST_SET_ITEM_BGCOLOR_HEX( ::oList:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
+    endif
+return Self
+
+METHOD SetFont( nSize, lBold ) CLASS TSwiftListItem
+    DEFAULT nSize := 0, lBold := .F.
+    SD_LST_SET_ITEM_FONT( ::oList:cId, ::cId, hb_ntos( nSize ), lBold )
+return Self

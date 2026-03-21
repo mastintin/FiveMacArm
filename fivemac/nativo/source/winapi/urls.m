@@ -22,12 +22,10 @@ HB_FUNC(URLPATH) {
 }
 
 HB_FUNC(URLPATHEXTENSION) {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   NSURL *name = (NSURL *)hb_parnll(1);
   NSString *source = [name pathExtension];
 
   hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
-#endif
 }
 
 HB_FUNC(URLLOAD) {
