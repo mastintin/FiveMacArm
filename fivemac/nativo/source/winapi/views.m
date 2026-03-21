@@ -21,10 +21,28 @@ HB_FUNC(VIEWAUTORESIZE) {
 }
 
 HB_FUNC(VIEWSETBACKCOLOR) {
+  // 1. Pool local para los objetos temporales (NSColor -> CGColor)
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
   NSView *view = (NSView *)hb_parnll(1);
   NSColor *color = (NSColor *)hb_parnll(2);
-  view.layer.backgroundColor = color.CGColor;
-  //   [  view setBackgroundColor: color ];
+
+  if (view && [view isKindOfClass:[NSView class]]) {
+    // 2. ACTIVAR CAPA: Imprescindible para que funcione el color de fondo
+    [view setWantsLayer:YES];
+
+    if (color && [color isKindOfClass:[NSColor class]]) {
+      // 3. Sintaxis de corchetes segura para No-ARC
+      CALayer *layer = [view layer];
+      if (layer) {
+        // CGColor es una propiedad de NSColor que no requiere release manual
+        [layer setBackgroundColor:[color CGColor]];
+      }
+    }
+  }
+
+  [pool release];
+  hb_ret();
 }
 
 HB_FUNC(VIEWSETSIZE) {
@@ -55,43 +73,102 @@ HB_FUNC(VIEWSETTOOLTIP) {
 HB_FUNC(VIEWEND) {
   NSView *view = (NSView *)hb_parnll(1);
 
-  if ([[view class] isSubclassOfClass:[NSTableView class]])
-    view = [view enclosingScrollView];
+  if (view) {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    if ([view isKindOfClass:[NSTableView class]])
+      view = [view enclosingScrollView];
 
-  [view removeFromSuperview];
+    [view removeFromSuperview];
+    [pool release];
+  }
 }
 
+
 HB_FUNC(OSCONTROLGETSIZE) {
+  // 1. Usamos un pool local por si el acceso a la vista genera objetos
+  // temporales internos
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
   NSView *object = (NSView *)hb_parnll(1);
   CGFloat width = 0.0, height = 0.0;
 
   if (object) {
+    // 2. Extraemos el tamaño (NSSize es una estructura, no un objeto)
     NSSize size = [object frame].size;
     width = size.width;
     height = size.height;
   }
 
-  hb_reta(2);
-  hb_itemPutND(hb_arrayGetItemPtr(hb_param(-1, HB_IT_ANY), 1), (double)width);
-  hb_itemPutND(hb_arrayGetItemPtr(hb_param(-1, HB_IT_ANY), 2), (double)height);
+  // 3. Retorno de Array a Harbour (Forma estándar y limpia)
+  PHB_ITEM pArray = hb_itemArrayNew(2);
+  hb_arraySet(pArray, 1, hb_itemPutND(NULL, (double)width));
+  hb_arraySet(pArray, 2, hb_itemPutND(NULL, (double)height));
+
+  hb_itemReturnForward(pArray);
+  hb_itemRelease(pArray);
+
+  [pool release];
 }
 
 // --- New Functions from Main.prg ---
 
 HB_FUNC(VIEWCLEAN) {
-  NSView *view = (NSView *)hb_parnll(1);
-  NSArray *subviews = [[view subviews] copy];
-  [subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
-  [subviews release];
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  NSView *parentView = (NSView *)hb_parnll(1);
+
+  if (parentView && [parentView isKindOfClass:[NSView class]]) {
+    NSArray *subviews = [[parentView subviews] copy];
+
+    for (NSView *view in subviews) {
+      NSView *targetView = view;
+      
+      // If it's a table/browse, we must clean its delegate to stop calls
+      if ([view isKindOfClass:[NSTableView class]]) {
+         NSTableView *tv = (NSTableView *)view;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+         // If it's a Wbrowse, it might need extra cleanup
+         if ([tv respondsToSelector:@selector(setDataSource:)]) {
+            [tv setDataSource:nil];
+            [tv setDelegate:nil];
+         }
+#pragma clang diagnostic pop
+         targetView = [view enclosingScrollView];
+      }
+
+      [targetView removeFromSuperview];
+    }
+    [subviews release];
+  }
+
+  [pool release];
+  hb_ret();
 }
 
 HB_FUNC(VIEWSETCORNERRADIUS) {
+
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
   NSView *view = (NSView *)hb_parnll(1);
   CGFloat radius = (CGFloat)hb_parnd(2);
 
-  [view setWantsLayer:YES];
-  view.layer.cornerRadius = radius;
-  view.layer.masksToBounds = YES;
+  if (view) {
+    // 2. Activar la capa de CoreAnimation (necesario para el radio)
+    [view setWantsLayer:YES];
+
+    // 3. Sintaxis de corchetes estándar para No-ARC
+    CALayer *layer = [view layer];
+    if (layer) {
+      [layer setCornerRadius:radius];
+      [layer setMasksToBounds:YES];
+
+      // Mejora: Suavizado de bordes (Antialiasing)
+      [layer setEdgeAntialiasingMask:kCALayerLeftEdge | kCALayerRightEdge |
+                                     kCALayerTopEdge | kCALayerBottomEdge];
+    }
+  }
+
+  [pool release];
 }
 
 HB_FUNC(VIEWSETGRADIENTCOLOR) {
@@ -147,25 +224,36 @@ HB_FUNC(VIEWSETGRADIENTCOLOR) {
 }
 
 HB_FUNC(VIEWSETPOS) {
+  // 1. Usamos CGFloat para evitar problemas de precisión en procesadores
+  // M1/M2/M3
   NSView *view = (NSView *)hb_parnll(1);
-  // macOS coordinates: (x, y).
-  // Standard Cocoa uses Bottom-Left origin, but FiveMac often simulates
-  // Top-Left or uses Flipped Views. setFrameOrigin sets the origin relative to
-  // superview.
+  CGFloat x = (CGFloat)hb_parnd(3); // Usamos hb_parnd para admitir decimales
+  CGFloat y = (CGFloat)hb_parnd(2);
 
-  [view setFrameOrigin:NSMakePoint(hb_parnl(3), hb_parnl(2))];
+  if (view) {
+    // 2. Aplicamos la posición
+    [view setFrameOrigin:NSMakePoint(x, y)];
+
+    // 3. Opcional: Forzar redibujado si la vista se mueve
+    [view setNeedsDisplay:YES];
+  }
 }
 
 HB_FUNC(VIEWGETLAYER) {
-  // Recuperamos el puntero de la vista (NSView *)
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
   NSView *view = (NSView *)hb_parnll(1);
+  CALayer *layer = NULL;
 
   if (view) {
-    // Retornamos el puntero del layer a Harbour
-    hb_retnll((HB_LONGLONG)[view layer]);
-  } else {
-    hb_retnll((HB_LONGLONG)NULL);
+    // Si la vista no tiene capa, la activamos para evitar devolver NULL
+    if (![view wantsLayer]) {
+      [view setWantsLayer:YES];
+    }
+    layer = [view layer];
   }
+
+  hb_retnll((HB_LONGLONG)layer);
+  [pool release];
 }
 
 HB_FUNC(VIEWSETWANTSLAYER) {

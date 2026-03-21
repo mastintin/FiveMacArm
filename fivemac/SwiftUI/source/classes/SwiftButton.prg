@@ -100,8 +100,7 @@ return ::Super:End()
 
 // Called from C callback
 function SwiftBtnOnClick( cId )
-   
-    local nPos := AScan( aSwiftButtons, { |o| o:cId == cId } )
+    local nPos := AScan( aSwiftButtons, { |o| o != nil .and. o:cId == cId } )
     if nPos > 0
         aSwiftButtons[ nPos ]:Click()
     endif

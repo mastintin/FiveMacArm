@@ -21,6 +21,7 @@ CLASS TPanel FROM TControl
 
     METHOD SetGradientColor(nR1, nG1,nB1,nAlpha1, nR2, nG2,nB2,nAlpha2) 
     METHOD SetCornerRadius( nRadius )    
+    METHOD End()
 
 ENDCLASS
 
@@ -36,11 +37,11 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, nAutoResize ) CLASS TPanel
     ::oWnd = oWnd
     
     if nAutoResize != nil
-    ::nAutoResize = nAutoResize
+        ::nAutoResize = nAutoResize
     endif
     
     if __ObjHasData( oWnd, "lVibrancy" ) .and. oWnd:lVibrancy
-    ::SetVibrancy( .T. )
+        ::SetVibrancy( .T. )
     endif
 
     ::aControls = {}
@@ -71,16 +72,30 @@ return Self
 METHOD SetColor( nClrText, nClrBack ) CLASS TPanel
 
     if ! Empty( nClrBack )
-    if nClrBack > 16777215
-    PanelSetColor( ::hWnd, GetRedFromRgba( nClrBack ), GetGreenFromRgba( nClrBack ),;
-        GetBlueFromRgba( nClrBack ), (GetAlphaFromRgba( nClrBack )*100/255) )
-    else
-    PanelSetColor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
-        nRgbBlue( nClrBack ), 100 )
-    endif
+        if nClrBack > 16777215
+            PanelSetColor( ::hWnd, GetRedFromRgba( nClrBack ), GetGreenFromRgba( nClrBack ),;
+                GetBlueFromRgba( nClrBack ), (GetAlphaFromRgba( nClrBack )*100/255) )
+        else
+            PanelSetColor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
+                nRgbBlue( nClrBack ), 100 )
+        endif
     endif
 
 return nil
+
+//----------------------------------------------------------------------------//
+METHOD End() CLASS TPanel
+
+    local nAt
+
+    if ! Empty( ::aControls )
+        for nAt = Len( ::aControls ) to 1 step -1
+            ::aControls[ nAt ]:End()
+        next
+    endif
+    ::aControls = {}
+
+return ::Super:End()
 
 //----------------------------------------------------------------------------//
 
@@ -134,8 +149,8 @@ METHOD New( nWidth, oWnd ) CLASS TSidebar
     ::SetColor( CLR_BLACK, ARGB( 255, 240, 240, 240 ) ) 
 
     if oWnd:lGlass
-    ::SetLiquidGlass( .T. )
-    ::SetColor( CLR_BLACK, ARGB( 0, 0, 0, 0 ) ) // Transparent background for Glass             
+        ::SetLiquidGlass( .T. )
+        ::SetColor( CLR_BLACK, ARGB( 0, 0, 0, 0 ) ) // Transparent background for Glass             
     endif
 
 return Self
