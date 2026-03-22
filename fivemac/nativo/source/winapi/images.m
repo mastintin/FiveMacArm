@@ -153,7 +153,21 @@ HB_FUNC(IMGSETNSIMAGE) {
   [image setImage:hImg];
 }
 
+HB_FUNC(IMGSETBORDERCOLOR) {
+  NSImageView *imageView = (NSImageView *)hb_parnll(1);
+
+  if (imageView) {
+    [imageView setWantsLayer:YES];
+    imageView.layer.borderColor =
+        [[NSColor colorWithCalibratedRed:(CGFloat)hb_parnd(2) / 255.0
+                                   green:(CGFloat)hb_parnd(3) / 255.0
+                                    blue:(CGFloat)hb_parnd(4) / 255.0
+                                   alpha:(CGFloat)hb_parnd(5) / 100.0] CGColor];
+  }
+}
+
 //--------------------------------------------------------------------------------//
+
 
 HB_FUNC(IMGGETNSIMAGE) {
   NSImageView *imageView = (NSImageView *)hb_parnll(1);
