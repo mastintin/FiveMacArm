@@ -42,7 +42,6 @@ HB_FUNC(DATEPICKGETTEXT) {
   // Usamos el formateador sobre la fecha, no sobre el control
   NSString *string = [formatter stringFromDate:[datePicker dateValue]];
 
-
   if (string) {
     hb_retc([string UTF8String]);
   } else {

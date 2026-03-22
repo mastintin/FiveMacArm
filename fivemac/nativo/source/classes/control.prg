@@ -101,13 +101,18 @@ return nil
 
 METHOD End() CLASS TControl
 
-   local aControls := ::oWnd:aControls
-   local nAt := AScan( aControls, { | o | o:hWnd == ::hWnd } )
-   
-   if nAt != 0
-   ADel( aControls, nAt )
-   ASize( aControls, Len( aControls ) - 1 )
-   ::oWnd:aControls = aControls
+   local aControls
+   local nAt
+
+   if ::oWnd != nil
+      aControls := ::oWnd:aControls
+      nAt := AScan( aControls, { | o | o:hWnd == ::hWnd } )
+      
+      if nAt != 0
+         ADel( aControls, nAt )
+         ASize( aControls, Len( aControls ) - 1 )
+         ::oWnd:aControls = aControls
+      endif
    endif
    
    ViewEnd( ::hWnd )
