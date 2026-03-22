@@ -12,9 +12,8 @@ CLASS TDatePicker FROM TControl
    
    METHOD GetDate() INLINE  ctod(DatePickGetText( ::hWnd ))
    
-   METHOD SetMaxDate( cDate ) INLINE DatePickSetMaxDate( ::hWnd , cDate )
-   
-   METHOD SetMinDate( cDate ) INLINE DatePickSetMinDate( ::hWnd , cDate )
+   METHOD SetMaxDate( cDate ) INLINE DatePickSetMaxDate( ::hWnd , cDate ) // if nil -> sin limite
+   METHOD SetMinDate( cDate ) INLINE DatePickSetMinDate( ::hWnd , cDate ) // if nil -> sin limite
    
    METHOD SetBezeled( lBezeled ) INLINE DatePickSetBezeled( ::hWnd , lBezeled )   
    
@@ -29,9 +28,10 @@ CLASS TDatePicker FROM TControl
    METHOD SetClrBack(nRed,nGreen,nBlue,nAlfa) INLINE ( ::SetDrawBack( .t. ) ,DatePickSetBackColor(::hWnd,nRed,nGreen,nBlue,nAlfa) )
    
    METHOD SetClrText(nRed,nGreen,nBlue,nAlfa) INLINE DatePickSetTextColor(::hWnd,nRed,nGreen,nBlue,nAlfa)
-   
+   METHOD End()
 
-ENDCLASS   
+ENDCLASS
+   
 
 //----------------------------------------------------------------------------//
 
@@ -52,12 +52,20 @@ METHOD SetColor( nClrFore, nClrBack ) CLASS TDatePicker
      
    if ! Empty( nClrFore ) 
       ::SetClrText( nRgbRed( nClrFore ), nRgbGreen( nClrFore ),;
-                    nRgbBlue( nClrFore ),100 )
+         nRgbBlue( nClrFore ),100 )
    endif
        
    if ! Empty( nClrBack ) 
       ::SetClrBack(  nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
-                  nRgbBlue( nClrBack ), 100 )
+         nRgbBlue( nClrBack ), 100 )
    endif    
        
 return nil 
+
+//----------------------------------------------------------------------------//
+
+METHOD End() CLASS TDatePicker
+    if ! Empty( ::hWnd )
+       DatePickRelease( ::hWnd )
+    endif
+return ::Super:End()

@@ -32,15 +32,16 @@ CLASS TToolBarBtn FROM TControl
    METHOD Selectable() INLINE TbrItemSelectable(::oToolbar:hWnd,::hWnd)  
    
    METHOD SetSize( nWidth ) INLINE TbrItemSetSize( ::hWnd, nWidth ) 
+   METHOD End()
    
 ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( cPrompt, cToolTip, bAction, cImage, oToolBar,lSelectable ) CLASS TToolBarBtn
+METHOD New( cPrompt, cToolTip, bAction, cImage, oToolBar, lSelectable ) CLASS TToolBarBtn
 local aSize
 
-   DEFAULT lSelectable:= .f.
+   DEFAULT lSelectable := .f.
 
    //---- no hace nada ya que los botones autoajustan su tamaño
    //---- se coloca por si se mete en el codigo medidas acepte el archivo igual
@@ -52,8 +53,6 @@ local aSize
    ::cImage   = cImage
    ::oToolBar = oToolBar
 
-
-
    ::hWnd     = TbrAddItem( oToolBar:hWnd, cPrompt, Len( oToolBar:aButtons ), cToolTip, cImage )
    if lSelectable
       ::Selectable()
@@ -61,7 +60,6 @@ local aSize
    
 return Self 
         
-//----------------------------------------------------------------------------//
 //----------------------------------------------------------------------------//
 
 METHOD Separator( oToolBar ) CLASS TToolBarBtn
@@ -110,29 +108,28 @@ return Self
    ::hWnd = TbrAddSearch( oToolBar:hWnd, cPrompt, Len( oToolBar:aButtons ), cToolTip, ::oSearch:hWnd )
        			
 return Self	
+
 //----------------------------------------------------------------------------//
 
- METHOD BtnSegments( cPrompt, cToolTip, oSegments, oToolBar , nLen ) CLASS TToolBarBtn
+ METHOD BtnSegments( cPrompt, cToolTip, oSegments, oToolBar, nLen ) CLASS TToolBarBtn
      
    ::oToolBar = oToolBar
-   ::hWnd = TbrAddSegmentedBtn( oToolBar:hWnd, cPrompt, Len( oToolBar:aButtons ), cToolTip, oSegments:hWnd ,nLen )
+   ::hWnd = TbrAddSegmentedBtn( oToolBar:hWnd, cPrompt, Len( oToolBar:aButtons ), cToolTip, oSegments:hWnd, nLen )
        			
 return Self	
-
 
 //----------------------------------------------------------------------------//
 
 METHOD ChangeLabel( cPrompt ) CLASS TToolBarBtn
     ::cPrompt :=  cPrompt
-    TbrChangeItemLabel(::hWnd,cPrompt )
+    TbrChangeItemLabel(::hWnd, cPrompt )
 return nil
-
 
 //----------------------------------------------------------------------------//
 
 METHOD ChangeTooltip( cTooltip ) CLASS TToolBarBtn
     ::cTooltip :=  cToolTip
-    TbrChangeItemTooltip(::hWnd,cTooltip )
+    TbrChangeItemTooltip(::hWnd, cTooltip )
 return nil
 
 //----------------------------------------------------------------------------//
@@ -140,7 +137,19 @@ return nil
 METHOD ChangeAction( bAction ) CLASS TToolBarBtn
   ::bAction :=  bAction
   if ::oSearch != nil
-     ::oSearch:bChanged:= bAction
+     ::oSearch:bChanged := bAction
    endif  
 return nil
 
+//----------------------------------------------------------------------------//
+
+METHOD End() CLASS TToolBarBtn
+   ::bAction := nil
+   if ::oSearch != nil
+      ::oSearch:End()
+      ::oSearch := nil
+   endif
+   ::oToolBar := nil
+return ::Super:End()
+
+//----------------------------------------------------------------------------//

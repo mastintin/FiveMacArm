@@ -105,6 +105,15 @@ RETURN NIL
   - **Native AppleScript Integration**: Direct control of macOS Music app without deprecated ScriptingBridge.
   - **Artwork Support**: `GetTrackArtwork()` now retrieves high-resolution album art from the current track.
   - **Metadata**: Reliable retrieval of song title, artist, duration, and player state.
+- **Memory Management Overhaul**:
+  - **Proactive Cleanup**: Implemented `End()` methods across all core classes (`TMultiView`, `TToolBar`, `TToolBarBtn`, `TGroup`, `TDatePicker`, `TImage`) to ensure immediate resource release.
+  - **Native Release Patterns**: Integrated `autorelease` and `removeFromSuperview` patterns in Objective-C wrappers, aligning with modern Cocoa memory management standards.
+  - **SwiftUI Leak Fixes**: Resolved critical memory leaks in `TSwiftVStack`, `TSwiftList`, and `TSwiftButton` by ensuring correct de-registration from global internal registries.
+  - **Advanced Image Handling**: New `Retain()` and `Release()` methods in `TImage` for manual control of native `NSImage` handles, plus automatic cleanup on control destruction.
+- **Enhanced Robustness**:
+  - Improved data validation and null-pointer checks in Objective-C wrappers to prevent `EXC_BAD_ACCESS` crashes.
+  - Optimized Harbour Garbage Collector integration with manual `hb_gcAll(.T.)` calls during complex view transitions.
+
 ## 🖥️ IDE: Fivedit
 
 FiveMac includes `fivedit`, a fully functional IDE written in FiveMac itself (`fivemac/nativo/Fivedit`).

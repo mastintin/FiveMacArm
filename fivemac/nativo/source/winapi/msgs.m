@@ -80,7 +80,7 @@ HB_FUNC(MSGINFONATIVE) {
   [[alert window] close];
   [alert release];
   // No hacemos release de msg/title porque HB_To_NSString devuelve autorelease
-  [localPool release];
+  [localPool drain];
 
   hb_retl(YES);
 }
@@ -156,7 +156,7 @@ HB_FUNC(MSGSTOP) {
   [dlg runModal];
 
   [dlg release];
-  [localPool release];
+  [localPool drain];
   hb_ret();
 }
 
@@ -174,7 +174,7 @@ HB_FUNC(MSGALERT) {
   [dlg runModal];
 
   [dlg release];
-  [localPool release];
+  [localPool drain];
   hb_ret();
 }
 
@@ -191,7 +191,7 @@ HB_FUNC(MSGALERTSHEET) {
   [alert runModal];
 
   [alert release];
-  [localPool release];
+  [localPool drain];
   hb_ret();
 }
 

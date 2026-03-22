@@ -50,6 +50,7 @@ CLASS TGroup FROM TControl
    METHOD isTrasparent()             INLINE BoxIsTrasparent( ::hWnd )
 
    METHOD SetVibrancy( lOnOff ) INLINE BoxAllowVibrancy( ::hWnd, lOnOff )
+   METHOD End()
 
 ENDCLASS
 
@@ -137,5 +138,13 @@ METHOD LineV( nTop, nLeft, nWidth, oWnd , nAutoResize) CLASS TGroup
    oWnd:AddControl( Self )
 
 return Self
+
+//----------------------------------------------------------------------------//
+
+METHOD End() CLASS TGroup
+    if ! Empty( ::hWnd )
+       BoxRelease( ::hWnd )
+    endif
+return ::Super:End()
 
 //----------------------------------------------------------------------------//

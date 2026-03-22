@@ -68,82 +68,125 @@ extern PHB_ITEM hb_itemNew(PHB_ITEM pNull);
 }
 @end
 
+//-------------------------------------------------------------------------------//
+
 HB_FUNC(WEBVIEWCREATE) {
+  // 1. ScrollView (lo devolvemos a Harbour, así que NO lo liberamos aquí)
   NSScrollView *sv =
       [[NSScrollView alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
                                                      hb_parnl(3), hb_parnl(4))];
 
+  // 2. Configuración y Controller
   WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
   WKUserContentController *userContentController =
       [[WKUserContentController alloc] init];
 
-  // Store Harbour Object (Self)
+  // 3. Script Handler y Harbour Item
   PHB_ITEM pSelf = hb_itemNew(hb_param(5, HB_IT_OBJECT));
-
   FMVScriptHandler *scriptHandler = [[FMVScriptHandler alloc] init];
   scriptHandler.phbWebview = pSelf;
 
   [userContentController addScriptMessageHandler:scriptHandler name:@"fivemac"];
   config.userContentController = userContentController;
 
-  WKWebView *Wview;
-  NSWindow *window = (NSWindow *)hb_parnll(6); // Now param 6 is Window
-
+  // 4. WebView
+  NSWindow *window = (NSWindow *)hb_parnll(6);
   [sv setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   [sv setHasVerticalScroller:YES];
   [sv setHasHorizontalScroller:YES];
   [sv setBorderType:NSBezelBorder];
 
-  Wview = [[WKWebView alloc] initWithFrame:[[sv contentView] frame]
-                             configuration:config];
+  WKWebView *Wview = [[WKWebView alloc] initWithFrame:[[sv contentView] frame]
+                                        configuration:config];
   [Wview setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
-  // Create and set Navigation Delegate to allow all requests
+  // 5. Navigation Delegate
   FMVNavigationHandler *navHandler = [[FMVNavigationHandler alloc] init];
   [Wview setNavigationDelegate:navHandler];
   objc_setAssociatedObject(Wview, "navHandler", navHandler,
                            OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
+  // --- LIBERACIONES NECESARIAS (Memory Management) ---
+  [navHandler release];            // El AssociatedObject ya hizo retain
+  [scriptHandler release];         // El userContentController ya hizo retain
+  [userContentController release]; // El config ya hizo retain
+  [config release];                // El Wview ya hizo retain
+  [Wview release]; // El ScrollView (documentView) ya hizo retain
+
   [sv setDocumentView:Wview];
-  [[window contentView] addSubview:sv]; // Keep fix
+  [[window contentView] addSubview:sv];
 
   hb_retnll((HB_LONGLONG)sv);
 }
 
+//-------------------------------------------------------------------------------//
+
 HB_FUNC(WEBVIEWLOADREQUEST) {
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
-  WKWebView *Wview = (WKWebView *)[sv documentView];
 
-  NSString *string = hb_NSSTRING_par(2);
-  NSURL *url = [NSURL URLWithString:string];
-  NSURLRequest *request = [NSURLRequest requestWithURL:url];
-  [Wview loadRequest:request];
+  if (sv) {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    WKWebView *Wview = (WKWebView *)[sv documentView];
+    NSString *string = hb_NSSTRING_par(2);
+
+    if (string && [Wview isKindOfClass:[WKWebView class]]) {
+      NSURL *url = [NSURL URLWithString:string];
+      if (url) {
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        [Wview loadRequest:request];
+      }
+    }
+
+    [pool drain]; // Libera el string, la url y la request de inmediato
+  }
 }
+
+//-------------------------------------------------------------------------------//
 
 HB_FUNC(WEBVIEWLOADHTML) {
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
-  WKWebView *Wview = (WKWebView *)[sv documentView];
 
-  NSString *string = hb_NSSTRING_par(2);
-  NSString *base = hb_NSSTRING_par(3);
-  NSURL *baseUrl = nil;
+  if (sv) {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-  if (base) {
-    if ([base hasPrefix:@"http"] || [base hasPrefix:@"file://"]) {
-      baseUrl = [NSURL URLWithString:base];
-    } else {
-      baseUrl = [NSURL fileURLWithPath:base];
+    WKWebView *Wview = (WKWebView *)[sv documentView];
+    NSString *string = hb_NSSTRING_par(2); // El HTML puede ser pesado
+    NSString *base = hb_NSSTRING_par(3);
+    NSURL *baseUrl = nil;
+
+    if (base && [base length] > 0) {
+      if ([base hasPrefix:@"http"] || [base hasPrefix:@"file://"]) {
+        baseUrl = [NSURL URLWithString:base];
+      } else {
+        baseUrl = [NSURL fileURLWithPath:base];
+      }
     }
-  }
 
-  [Wview loadHTMLString:string baseURL:baseUrl];
+    if (Wview && string) {
+      [Wview loadHTMLString:string baseURL:baseUrl];
+    }
+
+    [pool drain]; // Libera el string HTML y la URL base de inmediato
+  }
 }
 
 HB_FUNC(WEBVIEWGOBACK) {
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
-  WKWebView *Wview = (WKWebView *)[sv documentView];
 
-  [Wview goBack];
+  if (sv) {
+    // Obtenemos el documentView
+    id view = [sv documentView];
+
+    // Verificamos que realmente sea un WKWebView antes de llamar a goBack
+    if ([view isKindOfClass:[WKWebView class]]) {
+      WKWebView *Wview = (WKWebView *)view;
+      if ([Wview canGoBack]) { // Opcional: solo si quieres evitar llamadas
+                               // innecesarias
+        [Wview goBack];
+      }
+    }
+  }
 }
 
 HB_FUNC(WEBVIEWGOFORWARD) {
@@ -202,46 +245,84 @@ HB_FUNC(JUMPTOANCHOR) {
   [Wview evaluateJavaScript:js completionHandler:nil];
 }
 
+//-------------------------------------------------------------------------------//
+
 HB_FUNC(WEBSCRIPCALLMETHOD) {
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
-  WKWebView *Wview = (WKWebView *)[sv documentView];
 
-  NSString *string = hb_NSSTRING_par(2);
-  [Wview evaluateJavaScript:string completionHandler:nil];
+  if (sv) {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    id view = [sv documentView];
+    NSString *script = hb_NSSTRING_par(2);
+
+    if ([view isKindOfClass:[WKWebView class]] && script) {
+      // evaluateJavaScript es asíncrono, pero el string se puede liberar
+      // después de llamar al método porque el WebView hace su propia copia
+      // interna.
+      [(WKWebView *)view evaluateJavaScript:script completionHandler:nil];
+    }
+
+    [pool drain];
+  }
 }
+
+//-------------------------------------------------------------------------------//
 
 HB_FUNC(WEBSCRIPCALLMETHODARG) {
-  // Simpler version: assumes string is a function name and arg is a string
-  // argument
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
-  WKWebView *Wview = (WKWebView *)[sv documentView];
 
-  NSString *func = hb_NSSTRING_par(2);
-  NSString *arg = hb_NSSTRING_par(3);
-  // Basic escaping (imperfect but functional for simple cases)
-  NSString *js = [NSString stringWithFormat:@"%@('%@')", func, arg];
-  [Wview evaluateJavaScript:js completionHandler:nil];
+  if (sv) {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+    id view = [sv documentView];
+    NSString *func = hb_NSSTRING_par(2);
+    NSString *arg = hb_NSSTRING_par(3);
+
+    if ([view isKindOfClass:[WKWebView class]] && func && arg) {
+      // Escapamos comillas simples en el argumento para evitar que el JS rompa
+      NSString *safeArg = [arg stringByReplacingOccurrencesOfString:@"'"
+                                                         withString:@"\\'"];
+
+      // Creamos el comando JS (esto genera un nuevo objeto autoreleased)
+      NSString *js = [NSString stringWithFormat:@"%@('%@')", func, safeArg];
+
+      [(WKWebView *)view evaluateJavaScript:js completionHandler:nil];
+    }
+
+    [pool drain]; // Limpia func, arg, safeArg y js de un plumazo
+  }
 }
+
+//-------------------------------------------------------------------------------//
 
 HB_FUNC(WEBVIEWSTARTSPEAKING) {
   // Not supported directly in WKWebView
 }
+
+//-------------------------------------------------------------------------------//
 
 HB_FUNC(WEBVIEWSAVETOPDF) {
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
   WKWebView *Wview = (WKWebView *)[sv documentView];
   NSString *path = hb_NSSTRING_par(2);
 
-  if (@available(macOS 11.0, *)) {
-    // Use NSPrintOperation to respect CSS Pagination
-    NSPrintInfo *printInfo = [NSPrintInfo sharedPrintInfo];
+  if (Wview && path) {
+    // Usamos un pool local para los objetos temporales (URL, diccionarios,
+    // etc.)
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-    // Configure for PDF Output
+    // sharedPrintInfo devuelve un objeto que no debemos liberar,
+    // pero vamos a crear una copia para no alterar la configuración global de
+    // impresión
+    NSPrintInfo *printInfo = [[[NSPrintInfo sharedPrintInfo] copy] autorelease];
+
     [printInfo setJobDisposition:NSPrintSaveJob];
-    [printInfo.dictionary setObject:[NSURL fileURLWithPath:path]
-                             forKey:NSPrintJobSavingURL];
 
-    // Explicitly set A4 Paper (595x842 pts) and Zero Margins
+    // Creamos la URL del archivo
+    NSURL *fileURL = [NSURL fileURLWithPath:path];
+    [printInfo.dictionary setObject:fileURL forKey:NSPrintJobSavingURL];
+
     [printInfo setPaperSize:NSMakeSize(595, 842)];
     [printInfo setTopMargin:0.0];
     [printInfo setBottomMargin:0.0];
@@ -251,31 +332,23 @@ HB_FUNC(WEBVIEWSAVETOPDF) {
     [printInfo setVerticallyCentered:NO];
     [printInfo setScalingFactor:1.0];
 
-    // Retrieve Print Operation from WKWebView
+    // WKWebView genera la operación de impresión (objeto autoreleased)
     NSPrintOperation *printOp = [Wview printOperationWithPrintInfo:printInfo];
 
     [printOp setShowsPrintPanel:NO];
     [printOp setShowsProgressPanel:NO];
 
-    // Run Modally for Window (Async/Sheet) to avoid blocking main thread
-    // completely We use the window of the webview
     NSWindow *win = [Wview window];
     if (win) {
       [printOp runOperationModalForWindow:win
                                  delegate:nil
                            didRunSelector:nil
                               contextInfo:nil];
-      NSLog(@"WebView PDF: Print Operation started (Sheet)");
     } else {
-      // Fallback if no window (headless logic might fail here if not attached?)
-      if ([printOp runOperation]) {
-        NSLog(@"WebView PDF: Saved (Blocking) to: %@", path);
-      }
+      [printOp runOperation];
     }
 
-  } else {
-    // Fallback? Or just log.
-    NSLog(@"WebView PDF requires macOS 11.0+");
+    [pool drain]; // Liberamos la copia de printInfo y la fileURL
   }
 }
 
@@ -283,25 +356,32 @@ HB_FUNC(WEBVIEWSTOPSPEAKING) {
   // Not supported directly in WKWebView
 }
 
+//-------------------------------------------------------------------------------//
+
 HB_FUNC(WEBVIEWLOADFILE) {
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
-  WKWebView *Wview = (WKWebView *)[sv documentView];
   NSString *cPath = hb_NSSTRING_par(2);
 
-  NSLog(@"WebView LoadFile: Attempting to load path: %@", cPath);
+  if (sv && cPath && [cPath length] > 0) {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
-  if (cPath && [Wview isKindOfClass:[WKWebView class]]) {
-    NSURL *fileURL = [NSURL fileURLWithPath:cPath];
-    NSLog(@"WebView LoadFile: Loading URL: %@", fileURL);
-    [Wview loadFileURL:fileURL
-        allowingReadAccessToURL:[fileURL URLByDeletingLastPathComponent]];
-  } else {
-    NSLog(
-        @"WebView LoadFile Error: Invalid path or WebView object. Wview type: "
-        @"%@",
-        NSStringFromClass([Wview class]));
+    WKWebView *Wview = (WKWebView *)[sv documentView];
+
+    if ([Wview isKindOfClass:[WKWebView class]]) {
+      NSURL *fileURL = [NSURL fileURLWithPath:cPath];
+      // Permitimos acceso a toda la carpeta que contiene el archivo
+      NSURL *folderURL = [fileURL URLByDeletingLastPathComponent];
+
+      [Wview loadFileURL:fileURL allowingReadAccessToURL:folderURL];
+    } else {
+      NSLog(@"WebView LoadFile Error: DocumentView is %@", [Wview class]);
+    }
+
+    [pool drain]; // Libera fileURL y folderURL de inmediato
   }
 }
+
+//-------------------------------------------------------------------------------//
 
 HB_FUNC(WEBVIEWSETZOOM) {
   NSScrollView *sv = (NSScrollView *)hb_parnll(1);
