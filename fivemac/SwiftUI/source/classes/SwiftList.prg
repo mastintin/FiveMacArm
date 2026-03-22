@@ -132,13 +132,14 @@ return SD_LST_GET_LAST_ITEM_ID( ::cId )
 METHOD End() CLASS TSwiftList
     if !Empty( ::hWnd )
         SD_LST_DESTROY( ::cId, ::hWnd )
-        ::hWnd := 0
-        ::cId := ""
         if ::nListIndex > 0 .and. ::nListIndex <= Len( aSwiftLists )
             aSwiftLists[ ::nListIndex ] := nil
         endif
+        ::hWnd := 0
+        ::cId := ""
     endif
 return ::Super:End()
+
 
 //--------------------------------------------------------------------
 
@@ -161,8 +162,10 @@ CREATE CLASS TSwiftRow
     METHOD SetFont( nSize, lBold )
     METHOD SetSpacing( nSpacing )
     METHOD AddSpacing( nSpacing ) INLINE ::SetSpacing( nSpacing )
-    METHOD End() INLINE ::oList
+    METHOD End() 
+
 ENDCLASS
+
 
 METHOD New( oList, cId ) CLASS TSwiftRow
     ::oList := oList
@@ -232,8 +235,21 @@ CLASS TSwiftListItem
     METHOD SetSize( nW, nH )
     METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD SetFont( nSize, lBold )
-    METHOD End() INLINE ::oList
+    METHOD End()
 ENDCLASS
+
+METHOD End() CLASS TSwiftRow
+    ::bAction := nil
+    ::oLastIcon := nil
+    ::oList := nil
+return nil
+
+METHOD End() CLASS TSwiftListItem
+    SwiftUnregisterItem( ::cId )
+    ::bAction := nil
+    ::oList := nil
+return nil
+
 
 METHOD New( cId, oList ) CLASS TSwiftListItem
     ::cId   := cId

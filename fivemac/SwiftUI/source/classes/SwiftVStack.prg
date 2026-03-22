@@ -18,6 +18,7 @@ CLASS TSwiftVStack FROM TControl
     DATA cId
     DATA bAction // Codeblock {|nItemIndex| ... }
     DATA aBatch INIT {}
+    DATA aIds   INIT {}
 
     METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
     METHOD AddItem( nType, cContent, bAction, cSecondary )
@@ -66,6 +67,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftVStack
 
     ::cId := hb_UUID()
     ::aBatch := {}
+    ::aIds   := {}
 
     ::hWnd = SD_SWIFT_VSTACK_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId )
    
@@ -120,7 +122,9 @@ METHOD AddBatch( aItems ) CLASS TSwiftVStack
    
     if ValType( aIds ) == "A"
     for n := 1 to Len( aIds )
+    AAdd( ::aIds, aIds[n] )
     if n <= Len( aItems ) .and. hb_HHasKey( aItems[n], "action" ) .and. !Empty( aItems[n]["action"] )
+
     oTempItem := TSwiftStackItem():New( aIds[n], Self )
     oTempItem:bAction := aItems[n]["action"]
     SwiftRegisterItem( aIds[n], oTempItem )
@@ -266,7 +270,13 @@ METHOD SetLastItemId( cId ) CLASS TSwiftVStack
 return nil
 
 METHOD End() CLASS TSwiftVStack
-   SD_VSTK_DESTROY( ::cId, ::hWnd )
-   ::hWnd = nil
-   ::cId  = ""
-return nil
+    if !Empty( ::hWnd )
+       SD_VSTK_DESTROY( ::cId, ::hWnd )
+       // Unregister all items from global registry
+       Aeval( ::aIds, { | cId | SwiftUnregisterItem( cId ) } )
+       ::aIds := {}
+       ::hWnd := nil
+       ::cId  := ""
+    endif
+return ::Super:End()
+

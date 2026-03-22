@@ -89,6 +89,7 @@ METHOD End() CLASS TSwiftButton
     local nPos 
     if !Empty( ::hWnd )
         SD_BTN_DESTROY( ::cID, ::hWnd )
+        ::bAction := nil
         nPos := AScan( aSwiftButtons, { |o| o != nil .and. o:cID == ::cID } )
         if nPos > 0
             aSwiftButtons[ nPos ] := nil
@@ -97,6 +98,8 @@ METHOD End() CLASS TSwiftButton
         ::cID := ""
     endif
 return ::Super:End()
+
+
 
 // Called from C callback
 function SwiftBtnOnClick( cId )

@@ -37,7 +37,11 @@ CLASS TImage FROM TControl
    
    METHOD setImage( hImage ) INLINE ImgSetNSImage( ::hwnd, hImage )
 
-   METHOD GetImage() INLINE ImgGetNSImage( ::hWnd )
+   METHOD GetImage() INLINE ImgGetNSImage( ::hWnd ) // IMPORTANTE: incrementa el retain nativo (+1)
+
+   METHOD Retain( hImage ) INLINE ImgRetain( hImage )   // Incrementa retain manualmente
+   
+   METHOD Release( hImage ) INLINE ImgRelease( hImage ) // Libera el ticket manualmente
 
    METHOD SetQr(cTexto, nScale ) INLINE ImgSetNSImage( ::hwnd, SIMAGEGENQR( cTexto, nScale ) )
 
@@ -50,8 +54,9 @@ CLASS TImage FROM TControl
 
    METHOD Save( cFile, nWidth, nHeight ) INLINE NEWRESIZEIMAGE( ::hWnd, cFile ,nWidth, nHeight )
 
-
-
+   METHOD SetBorderColor( nRed, nGreen, nBlue, nAlpha ) INLINE ImgSetBorderColor( ::hwnd, nRed, nGreen, nBlue, nAlpha )
+   
+   METHOD End()
 
 ENDCLASS   
 
@@ -70,22 +75,22 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cFileName, cResName, cToolTip,;
    aSize := ParseSize( @cFilename, aSize )
 
    if ! Empty( cFileName ) .and. File( cFileName )
-   ::cFileName = cFileName
-   if empty( aSize)
-   ImgSetFile( ::hWnd, cFileName )
-   else
-   ImgSetFile( ::hWnd, cFileName, asize[1], asize[2] )
-   endif
+      ::cFileName = cFileName
+      if empty( aSize)
+         ImgSetFile( ::hWnd, cFileName )
+      else
+         ImgSetFile( ::hWnd, cFileName, asize[1], asize[2] )
+      endif
 
    endif
 
    if ! Empty( cResName ) .and. File( ResPath() + "/" + cResName )
-   ::cResname := cResName
-   ::SetResFile( cResName )
+      ::cResname := cResName
+      ::SetResFile( cResName )
    endif  
     
    if !Empty( cToolTip )
-   ::SetToolTip( cToolTip )
+      ::SetToolTip( cToolTip )
    endif
 
    oWnd:AddControl( Self )
@@ -120,19 +125,19 @@ METHOD Initiate() CLASS TImage
    ? ::cFilename+ "ini"
 
    if hWnd != 0
-   ::hWnd = hWnd
+      ::hWnd = hWnd
    else
-   MsgAlert( "Non defined TImage ID" + ;
-      AllTrim( Str( ::nId ) ) + ;
-      " in resource " + ::oWnd:cNibName )
+      MsgAlert( "Non defined TImage ID" + ;
+         AllTrim( Str( ::nId ) ) + ;
+         " in resource " + ::oWnd:cNibName )
    endif
 
    if ! Empty( ::cFileName ) .and. File( ::cFileName )
-   ::SetFile( ::cFileName )
+      ::SetFile( ::cFileName )
    endif   
 
    if ! Empty( ::cResName ) .and. File( ResPath() + "/" + ::cResName )
-   ::SetResFile( ::cResName )
+      ::SetResFile( ::cResName )
    endif  
 
 return nil
@@ -150,10 +155,23 @@ METHOD cGenPrg() CLASS TImage
       "      SIZE " + AllTrim( Str( ::nWidth ) ) + ", " + ;
       AllTrim( Str( ::nHeight ) )
    if ::nAutoResize != 0                  
-   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
+      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
    endif   
    					                    
-return cCode                                
+ return cCode                                
+
+//----------------------------------------------------------------------------//
+
+METHOD End() CLASS TImage
+    if ! Empty( ::hWnd )
+       IMAGEVIEWRELEASE( ::hWnd )
+    endif
+return ::Super:End()
+
+//----------------------------------------------------------------------------//
+
+function NSImageRelease( hImage )
+return ImgRelease( hImage )
 
 //----------------------------------------------------------------------------//
 
@@ -162,16 +180,17 @@ static function ParseSize( cName, aSize )
    local w,h,cSize,nAt
 
    if Right( cName, 1 ) == ")" .and. ( nAt := At( "(", cName ) ) > 0
-   cSize    := Lower( SubStr( cName, nAt + 1 ) )
-   cName    := Trim( Left( cName, nAt - 1 ) )
-   w        := Val( cSize )
-   if ( nAt := At( "x", cSize ) ) > 0
-   h     := Val( SubStr( cSize, nAt + 1 ) )
-   else
-   h     := w
-   endif
-   aSize     := { w, h }
+      cSize    := Lower( SubStr( cName, nAt + 1 ) )
+      cName    := Trim( Left( cName, nAt - 1 ) )
+      w        := Val( cSize )
+      if ( nAt := At( "x", cSize ) ) > 0
+         h     := Val( SubStr( cSize, nAt + 1 ) )
+      else
+         h     := w
+      endif
+      aSize     := { w, h }
    endif
 
 return aSize
 
+//----------------------------------------------------------------------------//

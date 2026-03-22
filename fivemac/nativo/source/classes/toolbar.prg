@@ -32,7 +32,6 @@ CLASS TToolBar FROM TControl
    METHOD AddGet( cPrompt, cToolTip, bAction )
    
    METHOD AddSegmentedBtn( cPrompt, cToolTip, oSegments )   
-      
          
    METHOD GetItem(nAt) INLINE ::aButtons[nAt]
    METHOD SetStyle( cStyle )
@@ -46,12 +45,13 @@ CLASS TToolBar FROM TControl
    METHOD ChangebAction( nAt, bNewAction ) INLINE  ::aButtons[ nAt ]:ChangeAction( bNewAction )
   
    METHOD nHeight() INLINE TbrHeight( ::oWnd:hWnd ) 
+   METHOD End()
        
 ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( oWnd, cStyle , lSmall ) CLASS TToolBar
+METHOD New( oWnd, cStyle, lSmall ) CLASS TToolBar
 
    DEFAULT ::nBar := 1, cStyle := "DEFAULT"
    DEFAULT lSmall := .f.
@@ -67,7 +67,7 @@ return Self
  
 //----------------------------------------------------------------------------//
 
-METHOD Redefine( oWnd ,cStyle ) CLASS TToolBar
+METHOD Redefine( oWnd, cStyle ) CLASS TToolBar
 
    DEFAULT oWnd := GetWndDefault(), cStyle := "DEFAULT", ::nBar := 1
      
@@ -77,7 +77,7 @@ METHOD Redefine( oWnd ,cStyle ) CLASS TToolBar
    ::aButtons = {}
    ::aRbuttons= {} 
    
-    oWnd:DefControl( Self )   
+   oWnd:DefControl( Self )   
         
 return Self
 
@@ -86,8 +86,7 @@ return Self
 METHOD Initiate() CLASS TToolBar
 
    local i, nIndex
-   local hWnd:= TbrFromWnd(::oWnd:hWnd)
-   local baction
+   local hWnd := TbrFromWnd(::oWnd:hWnd)
    
    if hWnd != 0 
       ::hWnd = hWnd
@@ -116,11 +115,11 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-METHOD AddButton( cPrompt, cToolTip, bAction, cImage ,lSelectable ) CLASS TToolBar
+METHOD AddButton( cPrompt, cToolTip, bAction, cImage, lSelectable ) CLASS TToolBar
 
    local oBtn
 
-   AAdd( ::aButtons, oBtn := TToolBarBtn():New( cPrompt, cToolTip, bAction, cImage, Self,lSelectable ) )
+   AAdd( ::aButtons, oBtn := TToolBarBtn():New( cPrompt, cToolTip, bAction, cImage, Self, lSelectable ) )
    
 return oBtn
    
@@ -141,14 +140,14 @@ METHOD AddGet( cPrompt, cToolTip, bAction ) CLASS TToolBar
    AAdd( ::aButtons, oBtn := TToolBarBtn():Search( cPrompt, cToolTip, bAction, Self ) )
 
 return oBtn 
+
 //----------------------------------------------------------------------------//
 
-METHOD AddSegmentedBtn( cPrompt, cToolTip, oSegments ,nLen ) CLASS TToolBar
+METHOD AddSegmentedBtn( cPrompt, cToolTip, oSegments, nLen ) CLASS TToolBar
 
-   AAdd( ::aButtons, TToolBarBtn():BtnSegments( cPrompt, cToolTip, oSegments, Self ,nLen  ) )
+   AAdd( ::aButtons, TToolBarBtn():BtnSegments( cPrompt, cToolTip, oSegments, Self, nLen ) )
  
 return nil    
-   
    
 //----------------------------------------------------------------------------//
 
@@ -183,5 +182,17 @@ METHOD SetStyle( cStyle ) CLASS TToolBar
    endif
 
 return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD End() CLASS TToolBar
+   if ! Empty( ::aButtons )
+      Aeval( ::aButtons, { | o | If( o != nil, o:End(), ) } )
+      ::aButtons := {}
+   endif
+   if ::oWnd != nil .and. ::oWnd:oBar != nil .and. ::oWnd:oBar:hWnd == ::hWnd
+      ::oWnd:oBar := nil
+   endif
+return ::Super:End()
 
 //----------------------------------------------------------------------------//

@@ -113,6 +113,7 @@ METHOD End() CLASS TSwiftPicker
     endif
 return ::Super:End()
 
+
 //----------------------------------------------------------------------------//
 
 function SwiftPickerOnChange( cId, cValue )

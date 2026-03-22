@@ -16,8 +16,17 @@ CLASS TViewStackBar FROM TControl
     
     METHOD AddControl( oControl ) INLINE AAdd( ::aControls, oControl ), oControl:oWnd := Self
     METHOD FindControl( hWnd )
+    METHOD End()
 
 ENDCLASS
+
+METHOD End() CLASS TViewStackBar
+    if ! Empty( ::aItems )
+       Aeval( ::aItems, { | o | If( o != nil, o:End(), ) } )
+       ::aItems := {}
+    endif
+return ::Super:End()
+
 
 //----------------------------------------------------------------------------//
 

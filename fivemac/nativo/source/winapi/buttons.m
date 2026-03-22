@@ -96,37 +96,58 @@ HB_FUNC(BTNSETTEXT) {
   [button setTitle:hb_NSSTRING_par(2)];
 }
 
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(BTNGETTEXT) // hButton --> cText
 {
   NSButton *button = (NSButton *)hb_parnll(1);
-  NSString *string = [button title];
 
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (button) {
+    NSString *string = [button title];
+    if (string) {
+      hb_retc([string UTF8String]);
+      return;
+    }
+  }
+
+  hb_retc(""); // Retorno vacío si el botón es nulo o no tiene título
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(BTNBMPFILE) {
   NSButton *button = (NSButton *)hb_parnll(1);
 
-  if (HB_ISNUM(2)) {
-    [button setImage:(NSImage *)hb_parnll(2)];
-  } else {
-    NSString *string = hb_NSSTRING_par(2);
-    NSFileManager *filemgr = [NSFileManager defaultManager];
+  if (button) {
+    if (HB_ISNUM(2)) {
+      [button setImage:(NSImage *)hb_parnll(2)];
+    } else {
+      NSString *string = hb_NSSTRING_par(2);
+      NSFileManager *filemgr = [NSFileManager defaultManager];
 
-    if ([filemgr fileExistsAtPath:string])
-      [button setImage:[[[NSImage alloc] initWithContentsOfFile:string]
-                           autorelease]];
-    else
-      [button setImage:ImgTemplate(string)];
+      if ([filemgr fileExistsAtPath:string]) {
+        // autorelease es la clave aquí para No-ARC
+        [button setImage:[[[NSImage alloc] initWithContentsOfFile:string]
+                             autorelease]];
+      } else {
+        [button setImage:ImgTemplate(string)];
+      }
+    }
   }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(BTNSETIMAGE) {
   NSButton *button = (NSButton *)hb_parnll(1);
   NSImage *image = (NSImage *)hb_parnll(2);
 
-  [button setImage:image];
+  if (button) {
+    [button setImage:image];
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(BTNSETIMAGENPOSITION) {
   NSButton *button = (NSButton *)hb_parnll(1);
@@ -178,45 +199,44 @@ HB_FUNC(BTNAUTOAJUST) {
   [button setAutoresizingMask:hb_parnl(2)];
 }
 
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(BTNSETTOOLTIP) {
   NSButton *button = (NSButton *)hb_parnll(1);
   NSString *string = hb_NSSTRING_par(2);
 
-  [button setToolTip:string];
+  if (button) {
+    [button setToolTip:string];
+  }
 }
 
-HB_FUNC(BTNSETGLASS) {
+//--------------------------------------------------------------------------------//
+
+HHB_FUNC(BTNSETGLASS) {
   NSButton *button = (NSButton *)hb_parnll(1);
+
   if (button) {
-
-    button.bezelStyle = NSBezelStyleGlass;
-    button.bezelColor = [NSColor systemBlueColor];
-
+    [button setBezelStyle:NSBezelStyleGlass];
+    [button setBezelColor:[NSColor systemBlueColor]];
     [button setBordered:NO];
 
-    NSVisualEffectView *vView =
-        [[NSVisualEffectView alloc] initWithFrame:[button bounds]];
+    // CRÍTICO: Añadimos autorelease al crear la vista de efecto
+    NSVisualEffectView *vView = [[[NSVisualEffectView alloc]
+        initWithFrame:[button bounds]] autorelease];
 
     [vView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [vView setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
 
-    if (@available(macOS 10.14, *)) {
-      [vView setMaterial:NSVisualEffectMaterialHUDWindow];
-    } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-      [vView setMaterial:NSVisualEffectMaterialLight];
-#pragma clang diagnostic pop
-    }
-
+    // Simplificado para 10.15+
+    [vView setMaterial:NSVisualEffectMaterialHUDWindow];
     [vView setState:NSVisualEffectStateActive];
-    [vView setBlendingMode:NSVisualEffectBlendingModeWithinWindow];
 
     [vView setWantsLayer:YES];
-    vView.layer.cornerRadius = 5.0; // Standard rounded corner
+    vView.layer.cornerRadius = 5.0;
     vView.layer.masksToBounds = YES;
 
-    // Border for Glass
+    // Los colores de sistema y colorWithAlphaComponent devuelven objetos
+    // autorelease, no requieren gestión manual.
     vView.layer.borderColor =
         [[NSColor whiteColor] colorWithAlphaComponent:0.6].CGColor;
     vView.layer.borderWidth = 1.0;
@@ -225,18 +245,21 @@ HB_FUNC(BTNSETGLASS) {
   }
 }
 
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(BTNSETBEZELCOLOR) {
   NSButton *button = (NSButton *)hb_parnll(1);
   if (button) {
-    if (@available(macOS 10.12.2, *)) {
-      NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
-                                                 green:hb_parnd(3) / 255.0
-                                                  blue:hb_parnd(4) / 255.0
-                                                 alpha:hb_parnd(5)];
-      [button setBezelColor:color];
-    }
+    NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
+                                               green:hb_parnd(3) / 255.0
+                                                blue:hb_parnd(4) / 255.0
+                                               alpha:hb_parnd(5)];
+    [button setBezelColor:color];
   }
 }
+
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(BTNSETCAPSULE) {
   NSButton *button = (NSButton *)hb_parnll(1);
   long nColor = hb_parnl(2);
@@ -244,48 +267,54 @@ HB_FUNC(BTNSETCAPSULE) {
   if (button) {
     [button setWantsLayer:YES];
     [button setBordered:NO];
-    button.layer.masksToBounds = NO;
 
-    // Color (Tint)
+    // No-ARC: Usamos métodos set explicitos para mayor claridad
+    [[button layer] setMasksToBounds:NO];
+
+    // Color (Tint) - Los NSColor de conveniencia ya son autorelease
     int r = nColor & 0xFF;
     int g = (nColor >> 8) & 0xFF;
     int b = (nColor >> 16) & 0xFF;
-    float alpha = 1.0;
 
     NSColor *col = [NSColor colorWithCalibratedRed:r / 255.0
                                              green:g / 255.0
                                               blue:b / 255.0
-                                             alpha:alpha];
+                                             alpha:1.0];
 
-    button.layer.backgroundColor = col.CGColor;
-    button.layer.cornerRadius = button.frame.size.height / 2.0;
+    [[button layer] setBackgroundColor:col.CGColor];
+    [[button layer] setCornerRadius:[button frame].size.height / 2.0];
 
-    // Border
-    button.layer.borderColor =
-        [[NSColor whiteColor] colorWithAlphaComponent:0.6].CGColor;
-    button.layer.borderWidth = 1.5;
-
-    // Shadow
-    button.layer.shadowColor = [NSColor blackColor].CGColor;
-    button.layer.shadowOpacity = 0.3;
-    button.layer.shadowOffset = CGSizeMake(0, -2);
-    button.layer.shadowRadius = 4;
+    // Border & Shadow - Los CGColor no requieren release aquí
+    [[button layer]
+        setBorderColor:[[NSColor whiteColor] colorWithAlphaComponent:0.6]
+                           .CGColor];
+    [[button layer] setBorderWidth:1.5];
+    [[button layer] setShadowColor:[NSColor blackColor].CGColor];
+    [[button layer] setShadowOpacity:0.3];
+    [[button layer] setShadowOffset:CGSizeMake(0, -2)];
+    [[button layer] setShadowRadius:4];
 
     // Text Color White
-    if ([button title]) {
+    NSString *title = [button title];
+    if (title && [title length] > 0) {
       NSMutableAttributedString *attrTitle =
-          [[NSMutableAttributedString alloc] initWithString:[button title]];
+          [[NSMutableAttributedString alloc] initWithString:title];
+
       [attrTitle addAttribute:NSForegroundColorAttributeName
                         value:[NSColor whiteColor]
                         range:NSMakeRange(0, [attrTitle length])];
+
       // Center alignment
       NSMutableParagraphStyle *style = [[NSMutableParagraphStyle alloc] init];
       [style setAlignment:NSTextAlignmentCenter];
+
       [attrTitle addAttribute:NSParagraphStyleAttributeName
                         value:style
                         range:NSMakeRange(0, [attrTitle length])];
 
       [button setAttributedTitle:attrTitle];
+
+      // Liberación manual (Obligatorio en No-ARC)
       [attrTitle release];
       [style release];
     }

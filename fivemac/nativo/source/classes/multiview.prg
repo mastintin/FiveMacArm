@@ -2,20 +2,18 @@
 
 //----------------------------------------------------------------------------//
 
-CLASS TMultiview FROM TControl
+CLASS TMultiView FROM TControl
 
    DATA   aViews
    DATA   oToolbar
-   DATA   lwndresize
-   DATA   nHeight,nWidth
+   DATA   lWndResize
+   DATA   nHeight, nWidth
    DATA   bChange
 
-   METHOD New(  oWnd, lWndResize,  lToolBar )
-   METHOD AddView(  nTop, nLeft, nWidth, nHeight, cTitle, cPrompt, cToolTip,cImage )
-   
+   METHOD New( oWnd, lWndResize, lToolBar )
    METHOD AddView( nTop, nLeft, nWidth, nHeight, cTitle, cPrompt, cToolTip, cImage )
-   
    METHOD SetView( nButton ) 
+   METHOD End()
       
 ENDCLASS
 
@@ -24,79 +22,92 @@ ENDCLASS
 METHOD New( oWnd, lWndResize, lToolBar ) CLASS TMultiView
    
    local n
-   DEFAULT lToolBar:= .t.
-   DEFAULT lwndresize:= .t.
+   DEFAULT lToolBar := .t.
+   DEFAULT lWndResize := .t.
    DEFAULT oWnd := GetWndDefault()
    
-   ::oWnd:= oWnd
+   ::oWnd := oWnd
   
    ::nHeight := ::oWnd:nHeight()
-   ::nWidth:= ::oWnd:nWidth()
+   ::nWidth := ::oWnd:nWidth()
    ::lWndResize := lWndResize  
    if lToolBar
-    ::oToolbar:= TToolBar():New( ::oWnd )
+      ::oToolbar := TToolBar():New( ::oWnd )
    endif
-   ::aViews:= {}
+   ::aViews := {}
    oWnd:AddControl( Self )
    
 return Self   
 
 //----------------------------------------------------------------------------//
 
-METHOD AddView(  nTop, nLeft, nWidth, nHeight, cTitle, cPrompt, cToolTip, cImage) CLASS TMultiView
+METHOD AddView( nTop, nLeft, nWidth, nHeight, cTitle, cPrompt, cToolTip, cImage ) CLASS TMultiView
 
-   local oView := TView():New( nTop, nLeft, nWidth, nHeight, ::oWnd ,cTitle )
-   local nView, bAction
+   local oView := TView():New( nTop, nLeft, nWidth, nHeight, ::oWnd, cTitle )
+   local nView, bAction, oBtn
 
-  aAdd(::aViews, oView )
-  nView:=len(::aViews)
-  if !Empty(::oToolBar)
-   bAction = {|| self:SetView( nView ) }
-   oBtn = ::oToolbar:AddButton( cPrompt, cToolTip, bAction,cImage,.t. ) 
-  endif
-       
+   aAdd( ::aViews, oView )
+   nView := len( ::aViews )
+
+   if ! Empty( ::oToolBar )
+      bAction := {|| ::SetView( nView ) }
+      oBtn := ::oToolbar:AddButton( cPrompt, cToolTip, bAction, cImage, .t. ) 
+   endif
+        
 return oView
 
 //----------------------------------------------------------------------------//
 
 METHOD SetView( nButton ) CLASS TMultiView
 
-   local i
-   local view
-   local nWndHeight
+   local i, view, nWndHeight
 
-   if Len( ::aviews ) > 0
-        if !empty( ::bChange)
-            eval( ::bChange ,nButton )
-        endif
-	    for i = 1 to Len( ::aViews )
-		     if i == nButton
-            view = ::aViews[ i ]
-            ::oWnd:SetTitle( ::aViews[i]:cTitle )  
-            ::aViews[ i ]:show()
+   if Len( ::aViews ) > 0
+      if ! Empty( ::bChange )
+         eval( ::bChange, nButton )
+      endif
+
+      for i := 1 to Len( ::aViews )
+         if i == nButton
+            view := ::aViews[ i ]
+            ::oWnd:SetTitle( view:cTitle )  
+            view:Show()
          else
-            ::aViews[ i ]:hide()
+            ::aViews[ i ]:Hide()
          endif
-	   next
+      next
 	   
-	   if ! Empty( ::oToolBar )
-		    if ::lWndResize
-	  		   nWndHeight = view:nHeight() + 78
-    		   ::oWnd:SetSize( view:nWidth(), nWndHeight )
-		    endif	
-     endif
-     
-  endif   
+      if ! Empty( ::oToolBar )
+         if ::lWndResize
+            nWndHeight := view:nHeight() + 78
+            ::oWnd:SetSize( view:nWidth(), nWndHeight )
+         endif	
+      endif
+   endif   
   
 return nil
 
 //----------------------------------------------------------------------------//
 
+METHOD End() CLASS TMultiView
+   if ! Empty( ::aViews )
+      Aeval( ::aViews, { | o | If( o != nil, o:End(), ) } )
+      ::aViews := {}
+   endif
+   if ::oToolbar != nil
+      ::oToolbar:End()
+      ::oToolbar := nil
+   endif
+   ::bChange := nil
+return ::Super:End()
+
+//----------------------------------------------------------------------------//
+
 function MultiAddview( oMulti, nTop, nLeft, nWidth, nHeight, cTitle, cPrompt,;
-                       cToolTip, cImage )
+      cToolTip, cImage )
 
    local oView := oMulti:AddView( nTop, nLeft, nWidth, nHeight, cTitle, cPrompt,;
-                                  cToolTip, cImage ) 
+      cToolTip, cImage ) 
 
 return oView
 

@@ -84,18 +84,31 @@ METHOD SetColor( nClrText, nClrBack ) CLASS TPanel
 return nil
 
 //----------------------------------------------------------------------------//
+
 METHOD End() CLASS TPanel
 
     local nAt
 
     if ! Empty( ::aControls )
+        // Recorremos en orden inverso para evitar problemas de índice al destruir
         for nAt = Len( ::aControls ) to 1 step -1
-            ::aControls[ nAt ]:End()
+            if ! Empty( ::aControls[ nAt ] )
+                ::aControls[ nAt ]:End()
+            endif
         next
     endif
+    
     ::aControls = {}
 
+    // Importante: Si TPanel tiene un handle de NSView (::hWnd)
+    // llamamos a la función de C para desvincularlo de la supervista
+    if ! Empty( ::hWnd )
+        PANELDESTROY( ::hWnd )
+        ::hWnd = 0
+    endif
+
 return ::Super:End()
+
 
 //----------------------------------------------------------------------------//
 

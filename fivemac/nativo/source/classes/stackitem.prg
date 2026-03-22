@@ -18,7 +18,8 @@ CLASS TStackItem FROM TControl
     METHOD Initiate() INLINE nil
     METHOD GenLocals() INLINE ""
     METHOD cGenPrg() INLINE ""
-    METHOD End() INLINE nil
+    METHOD End()
+
    
 ENDCLASS
 
@@ -33,4 +34,7 @@ METHOD New( hWnd, oWnd, bAction ) CLASS TStackItem
    
 return Self
 
-//----------------------------------------------------------------------------//
+METHOD End() CLASS TStackItem
+    ::bAction := nil
+return ::Super:End()
+
