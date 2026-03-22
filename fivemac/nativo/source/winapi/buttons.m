@@ -212,7 +212,7 @@ HB_FUNC(BTNSETTOOLTIP) {
 
 //--------------------------------------------------------------------------------//
 
-HHB_FUNC(BTNSETGLASS) {
+HB_FUNC(BTNSETGLASS) {
   NSButton *button = (NSButton *)hb_parnll(1);
 
   if (button) {
