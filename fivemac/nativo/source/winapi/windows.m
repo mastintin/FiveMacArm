@@ -452,37 +452,123 @@ HB_FUNC(WNDRUN) {
     [NSApp run];
 }
 
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(WNDSAY) {
+  // Obtenemos el string (Harbour suele devolverlo como autorelease)
   NSString *string = hb_NSSTRING_par(3);
-  NSMutableDictionary *attr = [[NSMutableDictionary alloc] init];
 
-  [attr setObject:[NSFont boldSystemFontOfSize:14] forKey:NSFontAttributeName];
-  [attr setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+  if (string) {
+    // Creamos el diccionario con alloc/init
+    NSMutableDictionary *attr = [[NSMutableDictionary alloc] init];
 
-  [string drawAtPoint:NSMakePoint(hb_parnl(1), hb_parnl(2))
-       withAttributes:attr];
+    [attr setObject:[NSFont boldSystemFontOfSize:14]
+             forKey:NSFontAttributeName];
+    [attr setObject:[NSColor blackColor] forKey:NSForegroundColorAttributeName];
+
+    // Dibujamos el texto
+    [string drawAtPoint:NSMakePoint(hb_parnl(1), hb_parnl(2))
+         withAttributes:attr];
+
+    // LIBERACIÓN MANUAL: Crucial para no agotar la RAM (No ARC)
+    [attr release];
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDSETFOCUS) {
+  // 1. Recuperamos el puntero de la ventana
   NSWindow *window = (NSWindow *)hb_parnll(1);
 
-  [window makeKeyAndOrderFront:nil];
+  // 2. Verificamos que la ventana exista para evitar un crash
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+
+    // 3. Traemos la aplicación al frente (opcional pero recomendado)
+    [NSApp activateIgnoringOtherApps:YES];
+
+    // 4. Hacemos que la ventana sea la principal y se muestre
+    [window makeKeyAndOrderFront:nil];
+  }
 }
 
-HB_FUNC(GETFOCUS) { hb_retnll((HB_LONGLONG)[NSView focusView]); }
+//--------------------------------------------------------------------------------//
+
+HB_FUNC(GETFOCUS) {
+  // 1. Obtenemos la ventana que está en primer plano
+  NSWindow *window = [NSApp keyWindow];
+
+  if (window) {
+    // 2. El 'firstResponder' es el objeto que tiene el foco de entrada
+    id responder = [window firstResponder];
+
+    // 3. Retornamos el puntero a Harbour
+    hb_retnll((HB_LONGLONG)responder);
+  } else {
+    hb_retnll(0);
+  }
+}
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDSETFONT) {
+  // 1. Usamos NSControl o NSView (NSControl tiene setFont)
   NSControl *view = (NSControl *)hb_parnll(1);
   NSString *name = hb_NSSTRING_par(2);
+  CGFloat size = (CGFloat)hb_parnl(3);
 
-  [view setFont:[[NSFont fontWithName:name size:hb_parnl(3)] autorelease]];
+  if (view && [view respondsToSelector:@selector(setFont:)]) {
+    // 2. fontWithName ya devuelve un objeto "autoreleased".
+    // NO añadas [autorelease] aquí.
+    NSFont *font = [NSFont fontWithName:name size:size];
+
+    if (font) {
+      [view setFont:font];
+    } else {
+      // Opcional: Si la fuente no existe, poner la del sistema
+      [view setFont:[NSFont systemFontOfSize:size]];
+    }
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDCLOSE) {
+  // 1. Obtenemos el puntero
   NSWindow *window = (NSWindow *)hb_parnll(1);
 
-  [window performClose:nil];
+  // 2. Validamos que sea realmente una ventana antes de enviar el mensaje
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+
+    // performClose simula el clic en el botón rojo de cerrar.
+    // Esto disparará las validaciones de guardado si la ventana tiene un
+    // delegate.
+    [window performClose:nil];
+  }
 }
+
+//--------------------------------------------------------------------------------//
+
+HB_FUNC(WNDCLEAN) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+    NSView *contentView = [window contentView];
+
+    // 1. Creamos una copia de la lista de subvistas.
+    // arrayWithArray devuelve un objeto 'autorelease', perfecto para No ARC.
+    NSArray *subviews = [NSArray arrayWithArray:[contentView subviews]];
+
+    // 2. Usamos un bucle for tradicional o rápido sobre la copia
+    for (NSView *view in subviews) {
+      // 3. Al quitarla de la supervista, Cocoa le envía un 'release'
+      // automáticamente.
+      [view removeFromSuperview];
+    }
+  }
+}
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDDESIGN) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
@@ -572,11 +658,22 @@ HB_FUNC(WNDHITTEST) {
   view->bDesign = bDesign;
 }
 
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(WNDICONIZE) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
 
-  [window performMiniaturize:nil];
+  // Validamos que el objeto sea una ventana antes de actuar
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+
+    // Solo intentamos minimizar si la ventana no está ya minimizada
+    if (![window isMiniaturized]) {
+      [window performMiniaturize:nil];
+    }
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDMAXIMIZE) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
@@ -616,6 +713,7 @@ HB_FUNC(WNDGETTEXT) {
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
+/*
 HB_FUNC(WNDTOP) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
   NSRect frame = [window frame];
@@ -638,6 +736,46 @@ HB_FUNC(WNDTOP) {
   }
 
   hb_retnl(frame.origin.y);
+}
+*/
+
+HB_FUNC(WNDTOP) {
+  // 1. Identificamos qué objeto hemos recibido (puede ser Window o View)
+  id object = (id)hb_parnll(1);
+  NSRect frame;
+
+  if (!object) {
+    hb_retnl(0);
+    return;
+  }
+
+  // 2. Lógica para obtener el Frame
+  if ([object isKindOfClass:[NSWindow class]]) {
+    frame = [object frame];
+  } else if ([object isKindOfClass:[NSView class]]) {
+    // Si es un TableView, a veces queremos mover su ScrollView contenedor
+    if ([object isKindOfClass:[NSTableView class]]) {
+      object = [object enclosingScrollView];
+    }
+    frame = [object frame];
+  }
+
+  // 3. Si se pasa el segundo parámetro, asignamos la nueva posición Y
+  if (hb_pcount() >= 2) {
+    frame.origin.y = (CGFloat)hb_parnd(2);
+
+    if ([object isKindOfClass:[NSWindow class]]) {
+      // Para ventanas, movemos con setFrame
+      [object setFrame:frame display:YES animate:NO];
+    } else {
+      // Para vistas (controles), movemos dentro de su superview
+      [object setFrame:frame];
+      [[object superview] setNeedsDisplay:YES];
+    }
+  }
+
+  // 4. Retornamos la posición actual
+  hb_retnl((long)frame.origin.y);
 }
 
 HB_FUNC(WNDLEFT) {
@@ -810,62 +948,112 @@ HB_FUNC(WNDSETGLASS) {
   }
 }
 
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(WNDSETBKGCOLOR) // hWnd, r, g, b, alpha
 {
   NSWindow *window = (NSWindow *)hb_parnll(1);
 
-  if (window) {
-    NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
-                                               green:hb_parnd(3) / 255.0
-                                                blue:hb_parnd(4) / 255.0
-                                               alpha:hb_parnd(5) / 255.0];
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+    // 1. Usamos sRGB para colores más fieles en monitores modernos
+    // 2. Dividimos alpha por 100.0 si en Harbour pasas 0-100 (típico en
+    // Harbour)
+    //    o por 255.0 si pasas 0-255. Aquí mantengo 255.0 según tu código.
+    NSColor *color = [NSColor colorWithSRGBRed:(CGFloat)hb_parnd(2) / 255.0
+                                         green:(CGFloat)hb_parnd(3) / 255.0
+                                          blue:(CGFloat)hb_parnd(4) / 255.0
+                                         alpha:(CGFloat)hb_parnd(5) / 255.0];
+
+    // Aplicar al contenedor de la ventana
     [window setBackgroundColor:color];
-    [[window contentView] setWantsLayer:YES];
-    [[window contentView] layer].backgroundColor = [color CGColor];
+
+    // Forzar que el contentView use capas para que el fondo sea sólido y nítido
+    NSView *contentView = [window contentView];
+    [contentView setWantsLayer:YES];
+    [contentView layer].backgroundColor = [color CGColor];
+
+    // 3. Forzamos el redibujado inmediato
+    [window display];
   }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDSETGRADIENTCOLOR) // hWnd, r1, g1, b1, r2, g2, b2, angle
 {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  NSColor *color1 = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
-                                              green:hb_parnd(3) / 255.0
-                                               blue:hb_parnd(4) / 255.0
-                                              alpha:1.0];
-  NSColor *color2 = [NSColor colorWithCalibratedRed:hb_parnd(5) / 255.0
-                                              green:hb_parnd(6) / 255.0
-                                               blue:hb_parnd(7) / 255.0
-                                              alpha:1.0];
+  if (!window || ![window isKindOfClass:[NSWindow class]])
+    return;
+
+  // 1. Colores (son autorelease, no necesitan release manual)
+  NSColor *color1 = [NSColor colorWithSRGBRed:hb_parnd(2) / 255.0
+                                        green:hb_parnd(3) / 255.0
+                                         blue:hb_parnd(4) / 255.0
+                                        alpha:1.0];
+  NSColor *color2 = [NSColor colorWithSRGBRed:hb_parnd(5) / 255.0
+                                        green:hb_parnd(6) / 255.0
+                                         blue:hb_parnd(7) / 255.0
+                                        alpha:1.0];
+
+  // 2. Gradiente con alloc (REQUIERE RELEASE)
   NSGradient *gradient = [[NSGradient alloc] initWithStartingColor:color1
                                                        endingColor:color2];
 
-  NSRect frame = [window frame];
+  NSRect frame = [[window contentView] bounds];
+  // 3. Imagen con alloc (REQUIERE RELEASE)
   NSImage *image = [[NSImage alloc] initWithSize:frame.size];
 
   [image lockFocus];
-  [gradient drawInRect:NSMakeRect(0, 0, frame.size.width, frame.size.height)
-                 angle:hb_parnl(8)];
+  [gradient drawInRect:frame angle:(CGFloat)hb_parnd(8)];
   [image unlockFocus];
 
-  NSColor *color = [NSColor colorWithPatternImage:image];
+  // 4. Color de patrón (es autorelease)
+  NSColor *patternColor = [NSColor colorWithPatternImage:image];
 
-  if (window) {
-    [window setBackgroundColor:color];
-    [[window contentView] setWantsLayer:YES];
-    [[window contentView] layer].backgroundColor = [color CGColor];
-  }
+  [window setBackgroundColor:patternColor];
+
+  NSView *cv = [window contentView];
+  [cv setWantsLayer:YES];
+  [cv layer].backgroundColor = [patternColor CGColor];
+
+  // 5. LIMPIEZA OBLIGATORIA PARA NO ARC
+  [gradient release];
+  [image release];
+
+  [window display];
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDSETSHADOW) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  window.hasShadow = hb_parl(2);
+
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+    // Usamos la sintaxis de setter clásica para máxima compatibilidad
+    [window setHasShadow:hb_parl(2)];
+
+    // Opcional: Forzar el refresco de la sombra
+    [window invalidateShadow];
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDDESTROY) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
 
-  [window close];
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+    // 1. Quitamos los delegados para evitar callbacks a objetos que ya no
+    // existen
+    [window setDelegate:nil];
+
+    // 2. Cerramos la ventana.
+    // Si 'releasedWhenClosed' es YES (por defecto), se liberará sola de la RAM.
+    [window close];
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDFADEOUT) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
@@ -1052,83 +1240,143 @@ HB_FUNC(WINSETSIZE) {
   [window setFrame:frame display:YES animate:YES];
 }
 
-HB_FUNC(WINSETSIZECHANGE) // HControl ,nHeight,nWidth
-{
-  NSWindow *window = (NSWindow *)hb_parnll(1);
+//--------------------------------------------------------------------------------//
 
-  if ([window respondsToSelector:@selector(enclosingScrollView)]) {
-    NSScrollView *sv = [(NSView *)window enclosingScrollView];
-    if (sv)
-      window = (NSWindow *)sv;
+HB_FUNC(WINSETSIZECHANGE) // HControl, nHeight, nWidth
+{
+  // 1. Usamos 'id' para manejar tanto Window como View de forma dinámica
+  id target = (id)hb_parnll(1);
+  if (!target)
+    return;
+
+  // 2. Si es una vista (como un Browse), buscamos su ScrollView contenedor
+  if ([target isKindOfClass:[NSView class]]) {
+    NSScrollView *sv = [target enclosingScrollView];
+    if (sv) {
+      target = sv;
+    }
   }
 
-  NSRect frame = [window frame];
+  // 3. Obtenemos el frame actual (funciona tanto para NSWindow como NSView)
+  NSRect frame = [target frame];
+  CGFloat newHeight = (CGFloat)hb_parnd(2);
+  CGFloat newWidth = (CGFloat)hb_parnd(3);
 
-  CGFloat sizeyChange = hb_parnl(2);
-  CGFloat sizexChange = hb_parnl(3);
+  // 4. Lógica de coordenadas para que la ventana crezca hacia abajo (estilo
+  // Clipper) Ajustamos el origen Y restando la diferencia de altura
+  frame.origin.y -= (newHeight - frame.size.height);
 
-  frame.origin.y -= sizeyChange - frame.size.height;
+  frame.size.height = newHeight;
+  frame.size.width = newWidth;
 
-  // Move the origin.
-
-  frame.size.height = sizeyChange;
-  frame.size.width = sizexChange;
-
-  [window setFrame:frame display:YES animate:YES];
+  // 5. Aplicamos el cambio según el tipo de objeto
+  if ([target isKindOfClass:[NSWindow class]]) {
+    [target setFrame:frame display:YES animate:YES];
+  } else {
+    [target setFrame:frame];
+    [[target superview] setNeedsDisplay:YES];
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WINHEIGHTCHANGE) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  NSRect frame = [window frame];
 
-  // The extra +14 accounts for the space between the box and its neighboring
-  // views
-  CGFloat sizeChange = hb_parnl(2);
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+    NSRect frame = [window frame];
 
-  // Make the window bigger.
-  frame.size.height += sizeChange;
-  // Move the origin.
-  frame.origin.y -= sizeChange;
+    // Usamos CGFloat para precisión en pantallas Retina
+    CGFloat sizeChange = (CGFloat)hb_parnd(2);
 
-  [window setFrame:frame display:YES animate:YES];
+    // 1. Aumentamos la altura
+    frame.size.height += sizeChange;
+
+    // 2. Bajamos el origen Y para que el "techo" de la ventana no se mueva
+    frame.origin.y -= sizeChange;
+
+    // 3. Aplicamos el cambio con animación nativa
+    [window setFrame:frame display:YES animate:YES];
+  }
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WINWIDTHCHANGE) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  NSRect frame = [window frame];
 
-  // The extra +14 accounts for the space between the box and its neighboring
-  // views
-  CGFloat sizeChange = hb_parnl(2);
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+    NSRect frame = [window frame];
 
-  // Make the window bigger.
-  frame.size.width += sizeChange;
-  // Move the origin.
-  // frame.origin.x += sizeChange;
+    // Usamos CGFloat para precisión en pantallas Retina
+    CGFloat sizeChange = (CGFloat)hb_parnd(2);
 
-  [window setFrame:frame display:YES animate:YES];
-}
+    // Aplicamos el cambio al ancho
+    frame.size.width += sizeChange;
 
-HB_FUNC(CONTROLSETFOCUS) {
-  NSControl *control = (NSControl *)hb_parnll(1);
-  [[control window] makeKeyAndOrderFront:nil];
-  [[control window] makeFirstResponder:control];
-}
+    // Si descomentas la siguiente línea, la ventana se expande hacia la
+    // IZQUIERDA frame.origin.x -= sizeChange;
 
-HB_FUNC(GOTONEXTCONTROL) {
-  NSControl *control = (NSControl *)hb_parnll(1);
-
-  if ([[control window] firstResponder] == control) {
-    [[control window] selectNextKeyView:control];
+    // animate:YES hace que el cambio sea suave visualmente
+    [window setFrame:frame display:YES animate:YES];
   }
 }
+
+//--------------------------------------------------------------------------------//
+
+HB_FUNC(CONTROLSETFOCUS) {
+  NSView *control = (NSView *)hb_parnll(1);
+
+  if (control && [control isKindOfClass:[NSView class]]) {
+    NSWindow *window = [control window];
+
+    if (window) {
+      // 1. Traemos la aplicación al frente (si estaba en segundo plano)
+      [NSApp activateIgnoringOtherApps:YES];
+
+      // 2. Aseguramos que la ventana sea la principal
+      [window makeKeyAndOrderFront:nil];
+
+      // 3. Asignamos el foco al control específico
+      [window makeFirstResponder:control];
+    }
+  }
+}
+
+//--------------------------------------------------------------------------------//
+
+HB_FUNC(GOTONEXTCONTROL) {
+  NSView *control = (NSView *)hb_parnll(1);
+
+  if (control && [control isKindOfClass:[NSView class]]) {
+    NSWindow *window = [control window];
+
+    if (window) {
+      // 1. Intentamos mover el foco al siguiente control en la cadena (Tab
+      // Order)
+      [window selectNextKeyView:nil];
+
+      // 2. Opcional: Si quieres forzar que sea el siguiente relativo A UN
+      // control:
+      [window selectNextKeyView:control];
+    }
+  }
+}
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(SETAUTORESIZESSUBVIEWS) {
   NSView *view = (NSView *)hb_parnll(1);
 
-  [view setAutoresizesSubviews:hb_parl(2)];
+  // Validamos que sea una vista antes de actuar
+  if (view && [view isKindOfClass:[NSView class]]) {
+    [view setAutoresizesSubviews:hb_parl(2)];
+  }
 }
 
+//--------------------------------------------------------------------------------//
+
+/*
 HB_FUNC(WNDSETSUBVIEW) {
   NSWindow *window = (NSWindow *)hb_parnll(5);
   NSView *view =
@@ -1139,17 +1387,79 @@ HB_FUNC(WNDSETSUBVIEW) {
 
   hb_retnll((HB_LONGLONG)view);
 }
+*/
+
+HB_FUNC(WNDSETSUBVIEW) {
+  NSWindow *window = (NSWindow *)hb_parnll(5);
+
+  // 1. Creamos la vista con alloc (Ref Count = 1)
+  NSView *view = [[NSView alloc]
+      initWithFrame:NSMakeRect((CGFloat)hb_parnd(2), (CGFloat)hb_parnd(1),
+                               (CGFloat)hb_parnd(3), (CGFloat)hb_parnd(4))];
+
+  if (window && view) {
+    // 2. Obtenemos el contenedor (suponiendo que GetView es tu macro/función
+    // auxiliar)
+    NSView *parentView = GetView(window);
+
+    if (parentView) {
+      // 3. addSubview incrementa el Ref Count a 2
+      [parentView addSubview:view];
+
+      // 4. LIBERACIÓN CRUCIAL: Bajamos el Ref Count a 1.
+      // Ahora la ventana es la única "dueña". Cuando la ventana muera,
+      // la vista morirá con ella.
+      [view release];
+    }
+  }
+
+  // 5. Devolvemos el puntero a Harbour (sigue siendo válido porque parentView
+  // lo retiene)
+  hb_retnll((HB_LONGLONG)view);
+}
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WINDOWISFLIPPED) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
 
-  hb_retl([[window contentView] isFlipped]);
+  // 1. Verificamos que el objeto sea una ventana válida
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+
+    // 2. Obtenemos la vista de contenido
+    NSView *contentView = [window contentView];
+
+    if (contentView) {
+      // 3. Retornamos si la vista tiene las coordenadas invertidas (Y=0 arriba)
+      hb_retl([contentView isFlipped]);
+      return;
+    }
+  }
+
+  // Si algo falla, devolvemos falso por defecto
+  hb_retl(NO);
 }
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(WINDOWPRINT) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
-  [[window contentView] print:window];
+
+  // 1. Validamos que el objeto sea una ventana
+  if (window && [window isKindOfClass:[NSWindow class]]) {
+    NSView *contentView = [window contentView];
+
+    if (contentView) {
+      // 2. Ejecuta el diálogo de impresión estándar de macOS
+      // En No ARC, Cocoa gestiona internamente la memoria del panel de
+      // impresión
+      [contentView print:nil];
+    }
+  }
 }
+
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(WM_GETTITLEHEIGHT) {
   NSWindow *window = (NSWindow *)hb_parnl(1);
   NSRect frame = [window frame];

@@ -55,6 +55,7 @@ return Self
 METHOD AddControl( oCtrl ) CLASS TPanel
 
     AAdd( ::aControls, oCtrl )
+    ::oWnd:AddControl( oCtrl )
 
 return nil
 

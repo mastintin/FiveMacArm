@@ -11,19 +11,23 @@ CLASS TSay FROM TControl
    DATA cPicture
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, lRaised, nAlign,;
-               nAutoAjust, cToolTip, cVarName, lUtf, cUrl, cPicture )
+      nAutoAjust, cToolTip, cVarName, lUtf, cUrl, cPicture )
 
    METHOD SetText( cText )
 
    METHOD GetText() INLINE GetGetText( ::hWnd )
 
-   METHOD SetRaised() INLINE SaySetRaised( ::hWnd )
-   
+   METHOD SetRaised() INLINE SaySetShadow( ::hWnd )  // SaySetRaised( ::hWnd ) no soportado en macOS
+   METHOD SetShadowed() INLINE SaySetShadow( ::hWnd )   
+
+   METHOD SetVibrant() INLINE SaySetVibrant( ::hWnd )   
+
+
    METHOD SetTextColor( nRed, nGreen, nBlue, nAlfa ) INLINE ;
-                           SetTextcolor( ::hWnd, nRed, nGreen, nBlue, nAlfa )
+      SetTextcolor( ::hWnd, nRed, nGreen, nBlue, nAlfa )
 
    METHOD SetBkcolor( nRed, nGreen, nBlue, nAlfa ) INLINE ;
-                           SetBkcolor( ::hWnd, nRed, nGreen, nBlue, nAlfa )
+      SetBkcolor( ::hWnd, nRed, nGreen, nBlue, nAlfa )
      
    METHOD SetColor( nClrFore, nClrBack ) 
    
@@ -35,34 +39,38 @@ CLASS TSay FROM TControl
    
    METHOD Redefine( nId, oWnd )
    
-   METHOD Enabled() INLINE TxtSetEnabled( ::hWnd )  
+   METHOD Enabled() INLINE TxtSetEnabled( ::hWnd , .T. )  
 
    METHOD Disabled() INLINE TxtSetDisabled( ::hWnd ) 
    
    METHOD SetFont( cFontName, nSize ) INLINE SaySetFont( ::hWnd, cFontName, nSize )
          
-   METHOD cGenPrg()      
+   METHOD cGenPrg()     
+      
+   METHOD End() 
+
+
          
 ENDCLASS   
 
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, lRaised, cAlign,;
-            nAutoAjust, cToolTip, cVarName ,lutf ,cUrl, cPicture ) CLASS TSay
+      nAutoAjust, cToolTip, cVarName ,lutf ,cUrl, cPicture ) CLASS TSay
    
    local nAlign
 
    DEFAULT nWidth := 90, nHeight := 20, oWnd := GetWndDefault(),;
-           cPrompt := "Say", lRaised := .F., cAlign := "TEXTLEFT",;
-           nAutoAjust := 0       
+      cPrompt := "Say", lRaised := .F., cAlign := "TEXTLEFT",;
+      nAutoAjust := 0       
 
    ::cPicture = cPicture
 
    if !Empty(cUrl)
-        ::hWnd = SayHiperlinkCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, cPrompt, cUrl )
+      ::hWnd = SayHiperlinkCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, cPrompt, cUrl )
    else
-        ::hWnd = SayCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, cPrompt )
-        ::SetText( cPrompt )      
+      ::hWnd = SayCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, cPrompt )
+      ::SetText( cPrompt )      
    endif
    
       
@@ -118,12 +126,12 @@ return Self
 METHOD cGenPrg() CLASS TSay
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " SAY " + ::cVarName + ;
-                  ' PROMPT "' + ::GetText() + '" OF ' + ::oWnd:cVarName + ;
-                  " ;" + CRLF + "      SIZE " + ;
-                  AllTrim( Str( ::nWidth ) ) + ", " + ;
-                  AllTrim( Str( ::nHeight ) )
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " SAY " + ::cVarName + ;
+      ' PROMPT "' + ::GetText() + '" OF ' + ::oWnd:cVarName + ;
+      " ;" + CRLF + "      SIZE " + ;
+      AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) )
                      
    if ::nAutoResize != 0
       cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
@@ -137,12 +145,12 @@ METHOD SetColor( nClrFore, nClrBack ) CLASS TSay
      
    if ! Empty( nClrFore ) 
       SetTextcolor( ::hWnd, nRgbRed( nClrFore ), nRgbGreen( nClrFore ),;
-                    nRgbBlue( nClrFore ), 100 )
+         nRgbBlue( nClrFore ), 100 )
    endif
        
    if ! Empty( nClrBack ) 
       SetBkcolor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
-                  nRgbBlue( nClrBack ), 100 )
+         nRgbBlue( nClrBack ), 100 )
    endif    
        
 return nil 
@@ -162,3 +170,11 @@ METHOD SetText( cText ) CLASS TSay
 return nil
 
 //----------------------------------------------------------------------------//      
+
+METHOD End() CLASS TSay
+
+   SayRelease( ::hWnd )
+   ::hWnd = nil
+   
+return ::Super:End()
+
