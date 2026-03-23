@@ -88,11 +88,11 @@ METHOD Initiate() CLASS TControl
    local hWnd := WndGetControl( ::oWnd:hWnd, ::nId )
    
    if hWnd != 0
-   ::hWnd = hWnd
+      ::hWnd = hWnd
    else
-   MsgAlert( "Non defined ID " + ;
-      AllTrim( Str( ::nId ) ) + ;
-      " in resource " + ::oWnd:cNibName )
+      MsgAlert( "Non defined ID " + ;
+         AllTrim( Str( ::nId ) ) + ;
+         " in resource " + ::oWnd:cNibName )
    endif
    
 return nil                   
@@ -100,24 +100,19 @@ return nil
 //----------------------------------------------------------------------------//
 
 METHOD End() CLASS TControl
-
    local aControls
    local nAt
-
    if ::oWnd != nil
       aControls := ::oWnd:aControls
       nAt := AScan( aControls, { | o | o:hWnd == ::hWnd } )
-      
       if nAt != 0
          ADel( aControls, nAt )
          ASize( aControls, Len( aControls ) - 1 )
          ::oWnd:aControls = aControls
       endif
    endif
-   
    ViewEnd( ::hWnd )
    ::hWnd = nil
-   
 return nil      
 
 //----------------------------------------------------------------------------//
@@ -127,7 +122,7 @@ METHOD GenLocals() CLASS TControl
    local cLocals := ", " + ::cVarName, n
    
    for n = 1 to Len( ::aControls )
-   cLocals += ::aControls[ n ]:GenLocals()
+      cLocals += ::aControls[ n ]:GenLocals()
    next
    
 return cLocals   
@@ -139,9 +134,9 @@ METHOD GetCtrlIndex() CLASS TControl
    local n, nIndex := 0
    
    for n = 1 to Len( ::oWnd:aControls )
-   if ::oWnd:aControls[ n ]:ClassName() == ::ClassName()
-   nIndex++
-   endif
+      if ::oWnd:aControls[ n ]:ClassName() == ::ClassName()
+         nIndex++
+      endif
    next
    
 return AllTrim( Str( nIndex ) )         
@@ -151,9 +146,9 @@ return AllTrim( Str( nIndex ) )
 METHOD LostFocus() CLASS TControl
 
    if ::bValid != nil
-   if ! Eval( ::bValid, Self )
-   ::SetFocus()
-   endif
+      if ! Eval( ::bValid, Self )
+         ::SetFocus()
+      endif
    endif
 
    ::oWnd:AEvalWhen()
@@ -165,13 +160,13 @@ return nil
 METHOD SetColor( nClrText, nClrBack ) CLASS TControl
 
    if ! Empty( nClrText ) 
-   SetTextcolor( ::hWnd, nRgbRed( nClrText ), nRgbGreen( nClrText ),;
-      nRgbBlue( nClrText ), 100 )
+      SetTextcolor( ::hWnd, nRgbRed( nClrText ), nRgbGreen( nClrText ),;
+         nRgbBlue( nClrText ), 100 )
    endif
        
    if ! Empty( nClrBack ) 
-   SetBkcolor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
-      nRgbBlue( nClrBack ), 100 )
+      SetBkcolor( ::hWnd, nRgbRed( nClrBack ), nRgbGreen( nClrBack ),;
+         nRgbBlue( nClrBack ), 100 )
    endif    
        
 return nil

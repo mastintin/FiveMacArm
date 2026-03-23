@@ -89,6 +89,8 @@ HB_FUNC(IMGCREATE) // hWnd
   hb_retnll((HB_LONGLONG)image);
 }
 
+//--------------------------------------------------------------------------------//
+
 HB_FUNC(IMAGEVIEWRELEASE) {
   NSImageView *imageView = (NSImageView *)hb_parnll(1);
 
@@ -99,6 +101,26 @@ HB_FUNC(IMAGEVIEWRELEASE) {
 
 //--------------------------------------------------------------------------------//
 
+HB_FUNC(IMGSETBORDERCOLOR) {
+  NSImageView *imageView = (NSImageView *)hb_parnll(1);
+
+  if (imageView) {
+    [imageView setWantsLayer:YES];
+
+    // Usamos colorWithSRGBRed para mayor precisión de color
+    NSColor *color = [NSColor colorWithSRGBRed:(CGFloat)hb_parnd(2) / 255.0
+                                         green:(CGFloat)hb_parnd(3) / 255.0
+                                          blue:(CGFloat)hb_parnd(4) / 255.0
+                                         alpha:(CGFloat)hb_parnd(5) / 100.0];
+
+    // En No ARC, los métodos de conveniencia como colorWithSRGBRed
+    // devuelven objetos 'autorelease', por lo que no necesitas hacer release
+    // manual de 'color'.
+    imageView.layer.borderColor = [color CGColor];
+  }
+}
+
+//--------------------------------------------------------------------------------//
 
 HB_FUNC(IMGRETAIN) {
   NSImage *image = (NSImage *)hb_parnll(1);
@@ -916,22 +938,4 @@ HB_FUNC(IMGSAVETOFILE) {
   }
 
   [pool drain]; // Limpia toda la memoria temporal (TIFFs y buffers)
-}
-
-//---------------------------------------------------------------//
-
-HB_FUNC(IMGSETBORDERCOLOR) {
-  NSImageView *imageView = (NSImageView *)hb_parnll(1);
-  NSColor *color = [NSColor
-      colorWithCalibratedRed:(CGFloat)hb_parnd(2) / 255.0
-                       green:(CGFloat)hb_parnd(3) / 255.0
-                        blue:(CGFloat)hb_parnd(4) / 255.0
-                       alpha:(CGFloat)hb_parnd(5) / 255.0];
-  CGFloat width = (hb_pcount() >= 6) ? (CGFloat)hb_parnd(6) : 1.0;
-
-  if (imageView) {
-    [imageView setWantsLayer:YES];
-    [[imageView layer] setBorderWidth:width];
-    [[imageView layer] setBorderColor:[color CGColor]];
-  }
 }
