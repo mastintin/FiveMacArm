@@ -1,3 +1,7 @@
+#import <IOKit/IOKitLib.h>
+#import <IOKit/network/IOEthernetController.h>
+#import <IOKit/network/IOEthernetInterface.h>
+#import <IOKit/network/IONetworkInterface.h>
 #import <QuartzCore/QuartzCore.h>
 #import <UserNotifications/UserNotifications.h>
 #include <fivemac.h>
@@ -8,249 +12,297 @@ void MsgAlert(NSString *, NSString *messageText);
 //-------------------------------------------------------
 
 HB_FUNC(APPNAME) {
-  NSString *path = [[NSBundle mainBundle] bundlePath];
+  // En No-ARC, mainBundle y bundlePath devuelven objetos autorelease
+  NSBundle *bundle = [NSBundle mainBundle];
 
-  hb_retc([path cStringUsingEncoding:NSUTF8StringEncoding]);
-}
+  if (bundle != nil) {
+    NSString *path = [bundle bundlePath];
 
-HB_FUNC(APPPATH) {
-  NSString *path = [[NSBundle mainBundle] bundlePath];
-
-  hb_retc([path cStringUsingEncoding:NSUTF8StringEncoding]);
-}
-
-HB_FUNC(RESPATH) {
-  NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
-
-  if (hb_pcount() > 0) {
-    NSString *fileName = hb_NSSTRING_par(1);
-    NSString *fullPath = [bundlePath stringByExpandingTildeInPath];
-    NSString *testPath = [fullPath stringByAppendingPathComponent:fileName];
-
-    if ([[NSFileManager defaultManager] fileExistsAtPath:testPath]) {
-      hb_retc([testPath cStringUsingEncoding:NSUTF8StringEncoding]);
+    if (path != nil) {
+      hb_retc([path UTF8String]);
     } else {
-      // Try in bitmaps/ subfolder common in FiveMac
-      testPath = [bundlePath stringByAppendingPathComponent:@"bitmaps"];
-      testPath = [testPath stringByAppendingPathComponent:fileName];
-      hb_retc([testPath cStringUsingEncoding:NSUTF8StringEncoding]);
+      hb_retc("");
     }
   } else {
-    hb_retc([bundlePath cStringUsingEncoding:NSUTF8StringEncoding]);
+    hb_retc("");
   }
 }
 
-HB_FUNC(CURRENTPATH) {
-  NSString *currentpath = [[NSFileManager defaultManager] currentDirectoryPath];
+//----------------------------------------------------------------------------//
 
-  hb_retc([currentpath cStringUsingEncoding:NSUTF8StringEncoding]);
+HB_FUNC(APPPATH) {
+  // En No-ARC, mainBundle y bundlePath devuelven objetos autorelease
+  NSBundle *bundle = [NSBundle mainBundle];
+
+  if (bundle != nil) {
+    NSString *path = [bundle bundlePath];
+
+    if (path != nil) {
+      hb_retc([path UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
+}
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(RESPATH) {
+  // En No-ARC, resourcePath es un objeto autorelease
+  NSString *bundlePath = [[NSBundle mainBundle] resourcePath];
+
+  if (hb_pcount() > 0 && bundlePath != nil) {
+    NSString *fileName = hb_NSSTRING_par(1);
+
+    // Creamos la ruta base expandiendo tildes (autorelease)
+    NSString *fullPath = [bundlePath stringByExpandingTildeInPath];
+
+    // Combinamos el nombre del archivo (autorelease)
+    NSString *testPath = [fullPath stringByAppendingPathComponent:fileName];
+
+    // Verificamos si el archivo existe directamente en Resources
+    if ([[NSFileManager defaultManager] fileExistsAtPath:testPath]) {
+      hb_retc([testPath UTF8String]);
+    } else {
+      // Si no existe, buscamos en la subcarpeta 'bitmaps' (estándar FiveMac)
+      NSString *bitmapsPath =
+          [bundlePath stringByAppendingPathComponent:@"bitmaps"];
+      testPath = [bitmapsPath stringByAppendingPathComponent:fileName];
+
+      hb_retc([testPath UTF8String]);
+    }
+  } else if (bundlePath != nil) {
+    hb_retc([bundlePath UTF8String]);
+  } else {
+    hb_retc("");
+  }
+}
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(CURRENTPATH) {
+  // En No-ARC, defaultManager y currentDirectoryPath devuelven objetos
+  // autorelease
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+
+  if (fileManager != nil) {
+    NSString *currentPath = [fileManager currentDirectoryPath];
+
+    if (currentPath != nil) {
+      hb_retc([currentPath UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
 
 HB_FUNC(SETCURRENTPATH) {
-  [[NSFileManager defaultManager]
-      changeCurrentDirectoryPath:hb_NSSTRING_par(1)];
+  // Obtenemos el string desde Harbour (asumiendo que hb_NSSTRING_par maneja el
+  // autorelease)
+  NSString *path = hb_NSSTRING_par(1);
+
+  if (path != nil) {
+    // En No-ARC, defaultManager es un objeto compartido que no requiere release
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    // Cambiamos el directorio de trabajo actual del proceso
+    [fileManager changeCurrentDirectoryPath:path];
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(PATH) {
-  NSString *buPath = [[NSBundle mainBundle] bundlePath];
-  NSString *secondParentPath = [buPath stringByDeletingLastPathComponent];
+  // mainBundle y bundlePath devuelven objetos en el autoreleasepool
+  NSBundle *bundle = [NSBundle mainBundle];
 
-  hb_retc([secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (bundle != nil) {
+    NSString *buPath = [bundle bundlePath];
+
+    // stringByDeletingLastPathComponent también devuelve un objeto autorelease
+    NSString *parentPath = [buPath stringByDeletingLastPathComponent];
+
+    if (parentPath != nil) {
+      hb_retc([parentPath UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(HOMETPATH) {
-  NSURL *homepath =
-      [[NSFileManager defaultManager] homeDirectoryForCurrentUser];
-  NSString *string = homepath.absoluteString;
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
+  // NSFileManager defaultManager y homeDirectoryForCurrentUser
+  // devuelven objetos autorelease. No requieren release manual.
+  NSURL *homeURL = [[NSFileManager defaultManager] homeDirectoryForCurrentUser];
+
+  if (homeURL != nil) {
+    // .path devuelve la ruta local (ej: /Users/tu_usuario)
+    // .absoluteString devolvería la URL (ej: file:///Users/tu_usuario)
+    NSString *path = [homeURL path];
+
+    if (path != nil) {
+      hb_retc([path UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(PARENTPATH) {
-  NSString *string =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-                                encoding:NSUTF8StringEncoding] autorelease];
-  NSString *secondParentPath = [string stringByDeletingLastPathComponent];
+  // Obtenemos el path desde Harbour de forma segura
+  NSString *path = hb_NSSTRING_par(1);
 
-  hb_retc([secondParentPath cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (path != nil) {
+    // stringByDeletingLastPathComponent devuelve un objeto autorelease
+    NSString *parent = [path stringByDeletingLastPathComponent];
+
+    if (parent != nil) {
+      hb_retc([parent UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(FILENOPATH) {
-  NSString *string =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-                                encoding:NSUTF8StringEncoding] autorelease];
-  NSString *file = [string lastPathComponent];
+  // Usamos stringWithUTF8String que devuelve un objeto autorelease directamente
+  NSString *path = hb_NSSTRING_par(1);
 
-  hb_retc([file cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (path != nil) {
+    // lastPathComponent devuelve un objeto autorelease
+    NSString *fileName = [path lastPathComponent];
+
+    if (fileName != nil) {
+      hb_retc([fileName UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(LIBRARYPATH) {
-  NSString *Userpath = [@"~/Library" stringByExpandingTildeInPath];
+  // En No-ARC, los literales de string y stringByExpandingTildeInPath
+  // devuelven objetos en el autoreleasepool.
+  NSString *userPath = [@"~/Library" stringByExpandingTildeInPath];
 
-  hb_retc([Userpath cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (userPath != nil) {
+    // Usamos UTF8String para pasar el puntero char* a Harbour
+    hb_retc([userPath UTF8String]);
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(USERPATH) {
-  NSString *Userpath = [@"~" stringByExpandingTildeInPath];
-  hb_retc([Userpath cStringUsingEncoding:NSUTF8StringEncoding]);
+  // En No-ARC, los literales y métodos de conveniencia son autorelease
+  NSString *userPath = [@"~" stringByExpandingTildeInPath];
+
+  if (userPath != nil) {
+    // Usamos UTF8String para un retorno limpio a Harbour
+    hb_retc([userPath UTF8String]);
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(ISFILE) {
-  NSString *string =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-                                encoding:NSUTF8StringEncoding] autorelease];
-  NSFileManager *filemgr = [NSFileManager defaultManager];
+  // Obtenemos el string de Harbour (autorelease)
+  NSString *path = hb_NSSTRING_par(1);
 
-  hb_retl(([filemgr fileExistsAtPath:string] == YES));
+  if (path != nil) {
+    // En No-ARC, defaultManager es un objeto compartido (no requiere release)
+    NSFileManager *filemgr = [NSFileManager defaultManager];
+
+    // fileExistsAtPath devuelve un BOOL directo
+    hb_retl([filemgr fileExistsAtPath:path]);
+  } else {
+    hb_retl(NO);
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(COPYFILETO) {
-  NSString *fileini =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-                                encoding:NSUTF8StringEncoding] autorelease];
-  NSString *filefin =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(2) ? hb_parc(2) : ""
-                                encoding:NSUTF8StringEncoding] autorelease];
-  NSFileManager *filemgr = [NSFileManager defaultManager];
+  // Usamos tu función puente que ya devuelve objetos 'autorelease'
+  NSString *fileIni = hb_NSSTRING_par(1);
+  NSString *fileFin = hb_NSSTRING_par(2);
 
-  hb_retl(([filemgr copyItemAtPath:fileini toPath:filefin error:NULL] == YES));
+  // Verificamos que no recibamos strings vacíos (que hb_NSSTRING_par devuelve
+  // por defecto)
+  if ([fileIni length] > 0 && [fileFin length] > 0) {
+
+    // En No-ARC, defaultManager es un objeto compartido (no requiere release)
+    NSFileManager *filemgr = [NSFileManager defaultManager];
+
+    // Ejecutamos la copia.
+    // Nota: Fallará si el archivo de destino ya existe.
+    BOOL success = [filemgr copyItemAtPath:fileIni toPath:fileFin error:NULL];
+
+    hb_retl(success);
+  } else {
+    hb_retl(NO);
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(DELETEFILE) {
   bool lresult = false;
 
-  NSString *string =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-                                encoding:NSUTF8StringEncoding] autorelease];
+  NSString *string = hb_NSSTRING_par(1);
 
-  NSFileManager *filemgr = NSFileManager.defaultManager;
+  if (string != nil) {
+    // En No-ARC, defaultManager es compartido
+    NSFileManager *filemgr = [NSFileManager defaultManager];
 
-  if ([filemgr isDeletableFileAtPath:string])
-    lresult = [filemgr removeItemAtPath:string error:nil];
+    // Verificamos si es borrable (opcional pero buena práctica)
+    if ([filemgr isDeletableFileAtPath:string]) {
+      // removeItemAtPath devuelve BOOL. Usamos NULL para el error.
+      lresult = [filemgr removeItemAtPath:string error:NULL];
+    }
+  }
 
   hb_retl(lresult);
 }
 
+//----------------------------------------------------------------------------//
+
 HB_FUNC(DELETEDIR) {
-  NSString *string =
-      [[[NSString alloc] initWithCString:HB_ISCHAR(1) ? hb_parc(1) : ""
-                                encoding:NSUTF8StringEncoding] autorelease];
-  NSFileManager *fManager = NSFileManager.defaultManager;
-  BOOL isDir;
-  NSString *strfile = [string stringByAppendingString:@"/"];
+  // Usamos tu función puente (devuelve un objeto autorelease)
+  NSString *path = hb_NSSTRING_par(1);
 
-  if ([fManager fileExistsAtPath:strfile isDirectory:&isDir]) {
-    [fManager removeItemAtPath:strfile error:NULL];
-    //  NSLog(@"removed: %@",strfile);
-  }
-}
+  if ([path length] > 0) {
+    NSFileManager *fManager = [NSFileManager defaultManager];
+    BOOL isDir = NO;
 
-HB_FUNC(CREATEDIR) {
-  NSString *cDirName = hb_NSSTRING_par(1);
-  NSFileManager *fileManager = NSFileManager.defaultManager;
-  BOOL isDir;
-
-  if (![fileManager fileExistsAtPath:cDirName isDirectory:&isDir])
-    if (![fileManager createDirectoryAtPath:cDirName
-                withIntermediateDirectories:YES
-                                 attributes:nil
-                                      error:NULL])
-      NSLog(@"Error: Create folder failed %@", cDirName);
-}
-
-NSURL *AppURLFromAppName(NSString *appName) {
-  NSURL *appURL = nil;
-
-  if ([appName isAbsolutePath]) {
-    appURL = [NSURL fileURLWithPath:appName];
-  } else {
-    // First try as Bundle Identifier
-    appURL = [[NSWorkspace sharedWorkspace]
-        URLForApplicationWithBundleIdentifier:appName];
-
-    if (!appURL) {
-      // Try searching in standard locations
-      NSArray *paths = @[
-        @"/Applications", @"/System/Applications",
-        [@"~/Applications" stringByExpandingTildeInPath]
-      ];
-      for (NSString *searchPath in paths) {
-        NSString *fullPath =
-            [searchPath stringByAppendingPathComponent:appName];
-        if (![fullPath hasSuffix:@".app"]) {
-          fullPath = [fullPath stringByAppendingPathExtension:@"app"];
-        }
-        if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath]) {
-          appURL = [NSURL fileURLWithPath:fullPath];
-          break;
-        }
-      }
-    }
-  }
-  return appURL;
-}
-
-HB_FUNC(MACEXEC) {
-  if (hb_pcount() >= 1) {
-    NSString *appName = hb_NSSTRING_par(1);
-    NSURL *appURL = AppURLFromAppName(appName);
-
-    if (appURL) {
-      NSWorkspaceOpenConfiguration *config =
-          [NSWorkspaceOpenConfiguration configuration];
-      if (hb_pcount() >= 2) {
-        config.arguments = @[ hb_NSSTRING_par(2) ];
-      }
-
-      __block BOOL success = NO;
-      dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-
-      [[NSWorkspace sharedWorkspace]
-          openApplicationAtURL:appURL
-                 configuration:config
-             completionHandler:^(NSRunningApplication *_Nullable app,
-                                 NSError *_Nullable error) {
-               success = (error == nil);
-               dispatch_semaphore_signal(semaphore);
-             }];
-
-      // Wait up to 5 seconds for launch to complete
-      dispatch_semaphore_wait(
-          semaphore,
-          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
-      hb_retl(success);
-    } else {
-      hb_retl(NO);
-    }
-  }
-}
-
-HB_FUNC(OPENFILEWITHAPP) {
-  if (hb_pcount() == 2) {
-    NSString *filePath = hb_NSSTRING_par(1);
-    NSString *appName = hb_NSSTRING_par(2);
-
-    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-    NSURL *appURL = AppURLFromAppName(appName);
-
-    if (fileURL && appURL) {
-      NSWorkspaceOpenConfiguration *config =
-          [NSWorkspaceOpenConfiguration configuration];
-      __block BOOL success = NO;
-      dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-
-      [[NSWorkspace sharedWorkspace]
-                      openURLs:@[ fileURL ]
-          withApplicationAtURL:appURL
-                 configuration:config
-             completionHandler:^(NSRunningApplication *_Nullable app,
-                                 NSError *_Nullable error) {
-               success = (error == nil);
-               dispatch_semaphore_signal(semaphore);
-             }];
-
-      dispatch_semaphore_wait(
-          semaphore,
-          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+    // Verificamos si existe y si es un directorio
+    if ([fManager fileExistsAtPath:path isDirectory:&isDir]) {
+      // removeItemAtPath elimina el directorio y todo su contenido
+      BOOL success = [fManager removeItemAtPath:path error:NULL];
       hb_retl(success);
     } else {
       hb_retl(NO);
@@ -260,114 +312,453 @@ HB_FUNC(OPENFILEWITHAPP) {
   }
 }
 
-HB_FUNC(SCREENWIDTH) {
-  NSScreen *screen = [NSScreen mainScreen];
-  NSRect rect = [screen frame];
+//----------------------------------------------------------------------------//
 
-  hb_retnl(rect.size.width);
+HB_FUNC(CREATEDIR) {
+  NSString *cDirName = hb_NSSTRING_par(1);
+
+  if ([cDirName length] > 0) {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    BOOL isDir = NO;
+    BOOL exists = [fileManager fileExistsAtPath:cDirName isDirectory:&isDir];
+
+    if (!exists) {
+      // withIntermediateDirectories:YES crea toda la ruta (como mkdir -p)
+      BOOL success = [fileManager createDirectoryAtPath:cDirName
+                            withIntermediateDirectories:YES
+                                             attributes:nil
+                                                  error:NULL];
+      if (!success) {
+        NSLog(@"Error: Create folder failed %@", cDirName);
+      }
+      hb_retl(success);
+    } else {
+      hb_retl(isDir); // Ya existe y es un directorio
+    }
+  } else {
+    hb_retl(NO);
+  }
 }
+
+//----------------------------------------------------------------------------//
+
+NSURL *AppURLFromAppName(NSString *appName) {
+  NSURL *appURL = nil;
+
+  if ([appName isAbsolutePath]) {
+    appURL = [NSURL fileURLWithPath:appName];
+  } else {
+    // Buscamos por Bundle Identifier (ej: com.apple.Safari)
+    appURL = [[NSWorkspace sharedWorkspace]
+        URLForApplicationWithBundleIdentifier:appName];
+
+    if (appURL == nil) {
+      // Creamos el array de rutas (es un objeto autorelease)
+      NSArray *paths = [NSArray
+          arrayWithObjects:@"/Applications", @"/System/Applications",
+                           [@"~/Applications" stringByExpandingTildeInPath],
+                           nil];
+
+      for (NSString *searchPath in paths) {
+        NSString *fullPath =
+            [searchPath stringByAppendingPathComponent:appName];
+
+        if (![fullPath hasSuffix:@".app"]) {
+          fullPath = [fullPath stringByAppendingPathExtension:@"app"];
+        }
+
+        if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath]) {
+          appURL = [NSURL fileURLWithPath:fullPath];
+          break;
+        }
+      }
+    }
+  }
+  // El objeto NSURL devuelto es autorelease, la función que lo llame
+  // deberá hacer [appURL retain] si necesita guardarlo fuera del ciclo.
+  return appURL;
+}
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(MACEXEC) {
+  if (hb_pcount() >= 1) {
+    NSString *appName = hb_NSSTRING_par(1);
+    NSURL *appURL = AppURLFromAppName(appName);
+
+    if (appURL != nil) {
+      // configuration es un método de clase (autorelease)
+      NSWorkspaceOpenConfiguration *config =
+          [NSWorkspaceOpenConfiguration configuration];
+
+      if (hb_pcount() >= 2) {
+        // Creamos el array de argumentos (autorelease)
+        [config setArguments:[NSArray arrayWithObject:hb_NSSTRING_par(2)]];
+      }
+
+      // Variable compartida con el bloque
+      __block BOOL success = NO;
+
+      // Los semáforos se crean con un retain count de 1 (deben liberarse)
+      dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+
+      [[NSWorkspace sharedWorkspace]
+          openApplicationAtURL:appURL
+                 configuration:config
+             completionHandler:^(NSRunningApplication *_Nullable app,
+                                 NSError *_Nullable error) {
+               success = (error == nil);
+               // Despertamos al hilo principal
+               dispatch_semaphore_signal(semaphore);
+             }];
+
+      // Esperamos hasta 5 segundos
+      dispatch_semaphore_wait(
+          semaphore,
+          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+
+      // IMPORTANTE en No ARC: Liberar el semáforo manualmente
+      dispatch_release(semaphore);
+
+      hb_retl(success);
+    } else {
+      hb_retl(NO);
+    }
+  } else {
+    hb_retl(NO);
+  }
+}
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(OPENFILEWITHAPP) {
+  if (hb_pcount() == 2) {
+    NSString *filePath = hb_NSSTRING_par(1);
+    NSString *appName = hb_NSSTRING_par(2);
+
+    // NSURL fileURLWithPath y AppURLFromAppName devuelven objetos autorelease
+    NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+    NSURL *appURL = AppURLFromAppName(appName);
+
+    if (fileURL != nil && appURL != nil) {
+      // configuration es un método de clase (autorelease)
+      NSWorkspaceOpenConfiguration *config =
+          [NSWorkspaceOpenConfiguration configuration];
+
+      __block BOOL success = NO;
+
+      // En No-ARC, los semáforos deben ser liberados manualmente
+      dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+
+      // Creamos el array de URLs (autorelease)
+      NSArray *urls = [NSArray arrayWithObject:fileURL];
+
+      [[NSWorkspace sharedWorkspace]
+                      openURLs:urls
+          withApplicationAtURL:appURL
+                 configuration:config
+             completionHandler:^(NSRunningApplication *_Nullable app,
+                                 NSError *_Nullable error) {
+               success = (error == nil);
+               dispatch_semaphore_signal(semaphore);
+             }];
+
+      // Esperamos hasta 5 segundos para que Harbour reciba el resultado
+      dispatch_semaphore_wait(
+          semaphore,
+          dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+
+      // LIBERACIÓN MANUAL del semáforo (Crucial en No-ARC)
+      dispatch_release(semaphore);
+
+      hb_retl(success);
+    } else {
+      hb_retl(NO);
+    }
+  } else {
+    hb_retl(NO);
+  }
+}
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(SCREENWIDTH) {
+  // mainScreen es un objeto compartido (no requiere release)
+  NSScreen *screen = [NSScreen mainScreen];
+
+  if (screen != nil) {
+    // frame devuelve una estructura NSRect (no es un objeto, no requiere
+    // memoria dinámica)
+    NSRect rect = [screen frame];
+
+    // Retornamos el ancho como un entero largo (long)
+    hb_retnl((long)rect.size.width);
+  } else {
+    hb_retnl(0);
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(SCREENVISIBLEWIDTH) {
+  // mainScreen es un objeto compartido (no requiere release)
   NSScreen *screen = [NSScreen mainScreen];
-  NSRect rect = [screen visibleFrame];
-  hb_retnl(rect.size.width);
+
+  if (screen != nil) {
+    // visibleFrame devuelve una estructura NSRect (no es un objeto)
+    NSRect rect = [screen visibleFrame];
+
+    // Retornamos el ancho visible
+    hb_retnl((long)rect.size.width);
+  } else {
+    hb_retnl(0);
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(STATUSBARHEIGHT) {
+  // systemStatusBar es un objeto compartido (no requiere release)
   NSStatusBar *bar = [NSStatusBar systemStatusBar];
-  CGFloat thickness = bar.thickness;
-  hb_retnl(thickness);
+
+  if (bar != nil) {
+    // Obtenemos el grosor de la barra de estado (normalmente 22 puntos)
+    CGFloat thickness = [bar thickness];
+
+    // Retornamos el valor como un entero largo (long)
+    hb_retnl((long)thickness);
+  } else {
+    hb_retnl(0);
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(SCREENHEIGHT) {
+  // mainScreen es un objeto compartido (no requiere release)
   NSScreen *screen = [NSScreen mainScreen];
-  NSRect rect = [screen frame];
 
-  hb_retnl(rect.size.height);
+  if (screen != nil) {
+    // frame devuelve una estructura NSRect (no es un objeto, no requiere
+    // memoria dinámica)
+    NSRect rect = [screen frame];
+
+    // Retornamos la altura como un entero largo (long)
+    hb_retnl((long)rect.size.height);
+  } else {
+    hb_retnl(0);
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(SCREENVISIBLEHEIGHT) {
+  // mainScreen es un objeto compartido (no requiere release)
   NSScreen *screen = [NSScreen mainScreen];
-  NSRect rect = [screen visibleFrame];
 
-  hb_retnl(rect.size.height);
+  if (screen != nil) {
+    // visibleFrame devuelve una estructura NSRect (no es un objeto)
+    NSRect rect = [screen visibleFrame];
+
+    // Retornamos la altura visible
+    hb_retnl((long)rect.size.height);
+  } else {
+    hb_retnl(0);
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(GETDOCKPOSITION) {
+  // Objeto compartido (no requiere release)
   NSScreen *screen = [NSScreen mainScreen];
-  NSRect rect = [screen visibleFrame];
-  if (rect.origin.y == 0) {
-    if (rect.origin.x == 0)
-      hb_retc("right");
-    else
-      hb_retc("left");
-  } else
-    hb_retc("bottom");
+
+  if (screen != nil) {
+    // Estructura en la pila (no requiere memoria dinámica)
+    NSRect rect = [screen visibleFrame];
+
+    if (rect.origin.y == 0) {
+      if (rect.origin.x == 0) {
+        hb_retc("right");
+      } else {
+        hb_retc("left");
+      }
+    } else {
+      hb_retc("bottom");
+    }
+  } else {
+    hb_retc("unknown");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 CGFloat GetDockSize(void) {
   CGFloat nSize = 0;
+  // mainScreen es un objeto compartido (no requiere release)
   NSScreen *screen = [NSScreen mainScreen];
-  NSRect rectvisible = [screen visibleFrame];
-  NSRect rect = [screen frame];
 
-  if (rectvisible.origin.y == 0) {
-    if (rectvisible.origin.x == 0)
-      nSize = rect.size.width - rectvisible.size.width;
-    else
-      nSize = rectvisible.origin.x;
-  } else
-    nSize = rectvisible.origin.y;
+  if (screen != nil) {
+    // visibleFrame excluye el Dock y la barra de menús
+    NSRect rectvisible = [screen visibleFrame];
+    // frame es el tamaño total del monitor
+    NSRect rect = [screen frame];
+
+    if (rectvisible.origin.y == 0) {
+      if (rectvisible.origin.x == 0) {
+        // El Dock está a la derecha
+        nSize = rect.size.width - rectvisible.size.width;
+      } else {
+        // El Dock está a la izquierda
+        nSize = rectvisible.origin.x;
+      }
+    } else {
+      // El Dock está en la parte inferior
+      nSize = rectvisible.origin.y;
+    }
+  }
   return nSize;
 }
 
-HB_FUNC(GETDOCKSIZE) { hb_retnl(GetDockSize()); }
+HB_FUNC(GETDOCKSIZE) {
+  // Convertimos el CGFloat a long para Harbour
+  hb_retnl((long)GetDockSize());
+}
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(ISDOCKHIDDEN) {
+  // Llamamos a la función auxiliar que ya definimos antes
   CGFloat nSize = GetDockSize();
-  if (nSize < 25)
-    hb_retl(TRUE);
-  else
-    hb_retl(FALSE);
+
+  // Si el tamaño detectado es muy pequeño (típicamente < 25),
+  // significa que el Dock está oculto automáticamente.
+  if (nSize < 25.0f) {
+    hb_retl(YES);
+  } else {
+    hb_retl(NO);
+  }
 }
 
-HB_FUNC(GETCLASSNAME) // hCtrl
-{
+//----------------------------------------------------------------------------//
+
+HB_FUNC(GETMACMODEL) {
+  char model[64] = {0};
+  // Buscamos el servicio "model" en el registro del sistema
+  io_service_t service = IOServiceGetMatchingService(
+      kIOMainPortDefault, IOServiceMatching("defaults"));
+
+  if (service) {
+    // Obtenemos la propiedad del modelo
+    CFDataRef data = (CFDataRef)IORegistryEntryCreateCFProperty(
+        service, CFSTR("model"), kCFAllocatorDefault, 0);
+
+    if (data != NULL) {
+      CFIndex len = CFDataGetLength(data);
+      if (len > 0 && len < sizeof(model)) {
+        CFDataGetBytes(data, CFRangeMake(0, len), (UInt8 *)model);
+      }
+      // LIBERACIÓN MANUAL (Crucial en No-ARC/CoreFoundation)
+      CFRelease(data);
+    }
+    // LIBERACIÓN MANUAL del servicio IOKit
+    IOObjectRelease(service);
+  }
+
+  if (model[0] != '\0') {
+    hb_retc(model);
+  } else {
+    hb_retc("Unknown Mac");
+  }
+}
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(GETCLASSNAME) {
+  // Recuperamos el objeto desde el puntero de Harbour
   NSObject *control = (NSObject *)hb_parnll(1);
 
-  hb_retc([[control className] cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (control != nil) {
+    // En No-ARC, className devuelve un objeto autorelease
+    NSString *className = [control className];
+
+    if (className != nil) {
+      hb_retc([className UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(APPTOFROM) {
-  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+  // sharedApplication es un objeto gestionado por el sistema (no requiere
+  // release)
+  NSApplication *app = [NSApplication sharedApplication];
+
+  if (app != nil) {
+    // En No-ARC usamos la sintaxis de mensajes clásica
+    // YES fuerza que la app pase al frente incluso si otra tiene el foco
+    [app activateIgnoringOtherApps:YES];
+  }
 }
 
+//----------------------------------------------------------------------------//
 HB_FUNC(HIDEAPPS) {
-  NSWorkspace *theProcess = [[[NSWorkspace alloc] init] autorelease];
+  // sharedWorkspace es un objeto gestionado por el sistema (autorelease)
+  // No uses alloc/init aquí para evitar sobrecarga innecesaria
+  NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
 
-  [theProcess hideOtherApplications];
+  if (workspace != nil) {
+    // Oculta todas las aplicaciones excepto la actual
+    [workspace hideOtherApplications];
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(MSGABOUT) {
+  // hb_NSSTRING_par ya devuelve objetos autorelease
   NSString *cVersion = hb_NSSTRING_par(1);
   NSString *cAppName = hb_NSSTRING_par(2);
   NSString *cCopyright = hb_NSSTRING_par(3);
+
+  // dictionaryWithObjectsAndKeys: devuelve un objeto del autoreleasepool
+  // Ojo: el orden es Objeto, Clave, Objeto, Clave... terminado en nil
   NSDictionary *options =
       [NSDictionary dictionaryWithObjectsAndKeys:cVersion, @"Version", cAppName,
                                                  @"ApplicationName", cCopyright,
                                                  @"Copyright", nil];
+
+  // sharedApplication es un objeto gestionado por el sistema
   [[NSApplication sharedApplication]
       orderFrontStandardAboutPanelWithOptions:options];
 }
 
-HB_FUNC(SPOTLITE) {
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-  NSString *string = hb_NSSTRING_par(1);
-  NSWorkspace *theProcess = [[[NSWorkspace alloc] init] autorelease];
+//----------------------------------------------------------------------------//
 
-  hb_retl([theProcess showSearchResultsForQueryString:string]);
-#endif
+HB_FUNC(SPOTLITE) {
+  // hb_NSSTRING_par devuelve un objeto autorelease
+  NSString *query = hb_NSSTRING_par(1);
+
+  if ([query length] > 0) {
+    // sharedWorkspace es un objeto gestionado por el sistema (no requiere
+    // release)
+    NSWorkspace *workspace = [NSWorkspace sharedWorkspace];
+
+    // Ejecuta la búsqueda en Spotlight y abre la ventana de resultados
+    BOOL success = [workspace showSearchResultsForQueryString:query];
+
+    hb_retl(success);
+  } else {
+    hb_retl(NO);
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(SYSTEM) { hb_retnl(system(hb_parc(1))); }
 
@@ -660,12 +1051,33 @@ HB_FUNC(RUNSCRIPTSFROMFILE) {
   [theScript executeAndReturnError:nil];
 }
 
+//----------------------------------------------------------------------------//
+
 HB_FUNC(GETCURRENTLANGUAGE) {
   NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+  // En No-ARC, 'languages' es un objeto autorelease
   NSArray *languages = [defaults objectForKey:@"AppleLanguages"];
-  NSString *currentLanguage = [languages objectAtIndex:0];
-  hb_retc([currentLanguage cStringUsingEncoding:NSUTF8StringEncoding]);
+
+  // Verificamos que el array exista y tenga al menos un elemento
+  if (languages != nil && [languages count] > 0) {
+
+    // objectAtIndex:0 devuelve el objeto sin incrementar el contador (no
+    // requiere release)
+    NSString *currentLanguage = [languages objectAtIndex:0];
+
+    if (currentLanguage != nil) {
+      hb_retc([currentLanguage UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    // Valor por defecto si no hay configuración
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(GETAPPICON) {
   NSImage *image = [NSApp applicationIconImage];
@@ -698,23 +1110,35 @@ HB_FUNC(DOCKSETIMAGE) {
   [docTile setContentView:iv];
 }
 
+//-------------------------------------------------------------//
+
 HB_FUNC(DOCKADDPROGRESS) {
   NSDockTile *docTile = [NSApp dockTile];
   NSImageView *iv = (NSImageView *)[docTile contentView];
-  NSProgressIndicator *progressIndicator = [[NSProgressIndicator alloc]
-      initWithFrame:NSMakeRect(0.0f, 0.0f, docTile.size.width, 10.)];
+
+  // Usamos alloc/init pero añadimos autorelease al final
+  NSProgressIndicator *progressIndicator = [[[NSProgressIndicator alloc]
+      initWithFrame:NSMakeRect(0.0f, 0.0f, docTile.size.width, 10.0f)]
+      autorelease];
 
   [progressIndicator setStyle:NSProgressIndicatorStyleBar];
   [progressIndicator setIndeterminate:NO];
+
+  // Al hacer addSubview, 'iv' hace un retain interno del progressIndicator
   [iv addSubview:progressIndicator];
 
   [progressIndicator setWantsLayer:YES];
-  progressIndicator.layer.borderWidth = 1.0;
-  progressIndicator.layer.borderColor = [[NSColor lightGrayColor] CGColor];
+  // En No ARC, mejor usar la sintaxis de corchetes para propiedades de layer
+  [[progressIndicator layer] setBorderWidth:1.0];
+  [[progressIndicator layer] setBorderColor:[[NSColor lightGrayColor] CGColor]];
 
   [docTile display];
+
+  // Devolvemos el puntero a Harbour
   hb_retnll((HB_LONGLONG)progressIndicator);
 }
+
+//-------------------------------------------------------------//
 
 @interface FNotifyDelegate : NSObject <UNUserNotificationCenterDelegate>
 @end
@@ -778,6 +1202,67 @@ HB_FUNC(USERNOTIFICATION) {
                     }];
 }
 
+//-------------------------------------------------------------//
+
+HB_FUNC(GETMACADDRESS) {
+  kern_return_t kernResult = KERN_FAILURE;
+  CFMutableDictionaryRef matchingDict;
+  io_iterator_t intfIterator;
+  unsigned char macAddress[kIOEthernetAddressSize];
+  char macAddressString[18] = {0};
+
+  // Buscamos interfaces de red tipo Ethernet/Wi-Fi
+  matchingDict = IOServiceMatching(kIOEthernetInterfaceClass);
+
+  if (matchingDict != NULL) {
+    CFMutableDictionaryRef propertyMatchDict = CFDictionaryCreateMutable(
+        kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+        &kCFTypeDictionaryValueCallBacks);
+
+    // Buscamos específicamente la interfaz primaria (en0 normalmente)
+    CFDictionarySetValue(propertyMatchDict, CFSTR(kIOPrimaryInterface),
+                         kCFBooleanTrue);
+    CFDictionarySetValue(matchingDict, CFSTR(kIOPropertyMatchKey),
+                         propertyMatchDict);
+    CFRelease(
+        propertyMatchDict); // En No ARC/CoreFoundation liberamos lo creado
+
+    kernResult = IOServiceGetMatchingServices(kIOMainPortDefault, matchingDict,
+                                              &intfIterator);
+  }
+
+  if (kernResult == KERN_SUCCESS) {
+    io_object_t intfService;
+    while ((intfService = IOIteratorNext(intfIterator))) {
+      io_object_t controllerService;
+      // Obtenemos el controlador de la interfaz
+      kernResult = IORegistryEntryGetParentEntry(intfService, kIOServicePlane,
+                                                 &controllerService);
+
+      if (kernResult == KERN_SUCCESS) {
+        // Extraemos la dirección MAC física
+        CFDataRef data = (CFDataRef)IORegistryEntryCreateCFProperty(
+            controllerService, CFSTR(kIOMACAddress), kCFAllocatorDefault, 0);
+        if (data != NULL) {
+          CFDataGetBytes(data, CFRangeMake(0, kIOEthernetAddressSize),
+                         macAddress);
+          snprintf(macAddressString, sizeof(macAddressString),
+                   "%02x:%02x:%02x:%02x:%02x:%02x", macAddress[0],
+                   macAddress[1], macAddress[2], macAddress[3], macAddress[4],
+                   macAddress[5]);
+          CFRelease(data); // Limpieza CoreFoundation
+        }
+        IOObjectRelease(controllerService);
+      }
+      IOObjectRelease(intfService);
+    }
+    IOObjectRelease(intfIterator);
+  }
+
+  hb_retc(macAddressString);
+}
+
+/*
 HB_FUNC(GETMACADDRESS) {
   NSPipe *outPipe = [NSPipe pipe];
   NSTask *theTask = [[NSTask alloc] init];
@@ -809,6 +1294,10 @@ HB_FUNC(GETMACADDRESS) {
 
   hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
 }
+
+*/
+
+//-------------------------------------------------------------//
 
 HB_FUNC(CREATE_UUID) {
   NSString *uuid = [[NSUUID UUID] UUIDString];

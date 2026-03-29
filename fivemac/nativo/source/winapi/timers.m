@@ -5,7 +5,7 @@
 HB_FUNC(TIMERCREATE) // hTimer
 {
   NSTimer *timer =
-      [[NSTimer scheduledTimerWithTimeInterval:hb_parnl(1)
+      [[NSTimer scheduledTimerWithTimeInterval:hb_parnd(1)
                                         target:GetView((NSWindow *)hb_parnll(2))
                                       selector:@selector(OnTimerEvent:)
                                       userInfo:NULL
@@ -14,18 +14,29 @@ HB_FUNC(TIMERCREATE) // hTimer
   hb_retnll((HB_LONGLONG)timer);
 }
 
+//----------------------------------------------------------------------------//
+
 HB_FUNC(TIMEREND) {
   NSTimer *timer = (NSTimer *)hb_parnll(1);
 
-  [timer invalidate];
-  [timer release];
+  if (timer && [timer isValid]) {
+    [timer invalidate];
+    [timer release];
+    timer = nil;
+    // Es buena práctica limpiar el puntero en Harbour tras esto si es posible
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(TIMERFIRE) {
   NSTimer *timer = (NSTimer *)hb_parnll(1);
-
-  [timer fire];
+  if (timer && [timer isValid]) {
+    [timer fire];
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(TIMERISVALID) {
   NSTimer *timer = (NSTimer *)hb_parnll(1);

@@ -3,12 +3,17 @@
 function Main()
 
    local oDlg
+   local oLocale
+   local cLanguage
 
-LOCALESETLANGUAGE( "ru" )
+   LOCALESETLANGUAGE( "ru" )
 
 
-msginfo( LOCALEGETLANGUAGE( LOCALECURRENT() ) )
-
+   oLocale := TLocale():New()
+   cLanguage := oLocale:GetLanguage()
+   oLocale:End()
+   
+   msginfo( cLanguage )
 
    DEFINE DIALOG oDlg TITLE "Dialog"
    
@@ -23,14 +28,14 @@ return nil
 function SaveForm( oDlg )
 
 
-local cFileName
+   local cFileName
 
 
-cFileName := SaveFile( "Grabar archivo", "hola.txt" )
+   cFileName := SaveFile( "Grabar archivo", "hola.txt" )
 
 
-if ! Empty( cFileName )
-MemoWrit( cFileName, "Hola" )
-endif
+   if ! Empty( cFileName )
+      MemoWrit( cFileName, "Hola" )
+   endif
 
 return nil

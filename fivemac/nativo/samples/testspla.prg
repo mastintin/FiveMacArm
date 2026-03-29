@@ -3,20 +3,28 @@
 
 #include "FiveMac.ch"
 
+
 function Main()
 
-   local oWnd, oSplash 
+   local oWnd
        
    DEFINE WINDOW oWnd TITLE "" ;
       FROM 20, 300 TO 600,400 
          
    oWnd:Center()   
-    
-   oSplash := TSplash():New( 100, 10, 400, 500, oWnd, UserPath() + "/five/Fivemac/fivemac/bitmaps/test.png" )
-   
-     oSplash:center()
+   Splash(oWnd)
+
+   ACTIVATE WINDOW oWnd  ;
+      ON INIT WNDFORCEHIDE(oWnd:hwnd)
+      
+RETURN NIL      
+
+Function Splash(oWnd)
+   local oSplash 
+   oSplash := TSplash():New( 100, 10, 400, 500)   
+   oSplash:SetImage( UserPath() + "/Fivemac/bitmaps/test.png" )
+   oSplash:center()
+   oSplash:bOnClose := { |o| WNDFORCESHOW(oWnd:hwnd) }
    oSplash:run()
-     
-   ACTIVATE WINDOW oWnd 
      
 return nil
