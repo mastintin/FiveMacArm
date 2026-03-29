@@ -340,8 +340,9 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **SwiftPicker Refinements**:
     - **Placeholder Restoration**: Re-implemented support for placeholders ("Seleccionar...").
     - **Title & Selection Visibility**: Fixed layout logic to ensure the selected item name is always visible alongside the label, providing immediate visual feedback.
-- **Direct Bridge Architecture (`@HarbourDirect`)**:
-    - **Streamlined Integration**: Continued the migration towards the `@HarbourDirect` macro system. This allows Swift code to be exposed directly as Harbour-callable C functions, bypassing the traditional Objective-C wrapper boilerplate for improved performance and easier maintenance.
+- **Direct Bridge Architecture (@HarbourDirect)**:
+    - **Native Swift-Harbour Bridge**: Significant architectural milestone. SwiftUI controls and Swift logic now communicate **directly** with the Harbour C-API, bypassing the need for Objective-C (`.m`) wrapper files as intermediaries. This results in a cleaner codebase, improved performance, and a seamless bidirectional relationship between the modern Swift ecosystem and the xBase layer.
+    - **Streamlined Integration**: This allows Swift code to be exposed directly as Harbour-callable C functions, simplifying development and maintenance of modern UI components.
 - **HBMISC Library Support**:
     - **System-Wide Linking**: Updated build scripts for native samples, SwiftUI samples, and the Fivedit editor to automatically link against the **`hbmisc`** Harbour library. This enables the use of miscellaneous Harbour utility functions across the entire ecosystem.
 
