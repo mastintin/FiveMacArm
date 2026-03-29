@@ -18,6 +18,8 @@
 
 // #define hb_vmPushNLL(n) hb_xvmPushLongLong((HB_LONGLONG)n)
 
+void hb_retstr_NS(NSString *string);
+
 NSString *hb_NSSTRING_par(int iParam);
 id hb_NSObjPar(int iParam);
 

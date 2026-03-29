@@ -345,6 +345,18 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **HBMISC Library Support**:
     - **System-Wide Linking**: Updated build scripts for native samples, SwiftUI samples, and the Fivedit editor to automatically link against the **`hbmisc`** Harbour library. This enables the use of miscellaneous Harbour utility functions across the entire ecosystem.
 
+### Memory Optimization & Plist Enhancements (March 2026 - Part 28)
+- **Memory Leak Resolution (Browse)**: Identified and fixed a critical memory leak in `browses.m`. `NSTableColumn` objects were being allocated without `autorelease`, causing a cumulative leak as columns were added to the browse.
+- **Enhanced Plist Engine (`TPlist`)**:
+    - **Stability**: Refined the `TPlist` class to ensure reliable file-based configuration management.
+    - **Memory Safety**: Renamed `Destroy()` to `End()` for consistency with FiveMac standards and ensured native `DictRelease()` is called to prevent CoreFoundation object accumulation.
+    - **Binary Writing**: Added `DICTWRITETOFILE` to the native layer, allowing for atomic, binary-safe writing of `.plist` files.
+- **TArray Class Refinements**:
+    - **Native Bridge**: Added `TARRAY_SET`, `TARRAY_DEL`, and `TARRAY_DELALL` to the Objective-C layer (`tarrays.m`) for high-performance array manipulation.
+    - **Type Detection**: Implemented automatic Harbour-to-Cocoa type detection (String, Number, Logical) for native `Set()` operations.
+- **Control Lifecycle**: Updated `TControl:End()` to guarantee `ViewEnd()` is called, ensuring native views are cleanly removed from the window hierarchy even if the parent window is `nil`.
+- **Panel Stability**: Reinstated control registration logic in `TPanel:AddControl()` to ensure proper rendering of complex components like Browses.
+
 ## Building
 
 To build the library and samples:
