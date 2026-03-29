@@ -37,6 +37,8 @@
 
 static __attribute__((unused)) HBVoiceDelegate *voiceDelegate = nil;
 
+//----------------------------------------------------------------------//
+
 NSString *NumToStr(NSInteger myInteger) {
   int myInt = myInteger;
   NSString *intString = [NSString stringWithFormat:@"%d", myInt];
@@ -44,31 +46,45 @@ NSString *NumToStr(NSInteger myInteger) {
   return intString;
 }
 
+//----------------------------------------------------------------------//
+
+void hb_retstr_NS(NSString *string) {
+  if (string != nil) {
+    // Convertimos el NSString (UTF16) a una C-String en UTF8
+    // [string UTF8String] devuelve un puntero temporal (const char *)
+    hb_retc([string UTF8String]);
+  } else {
+    // Si el objeto es nil, devolvemos una cadena vacía a Harbour
+    hb_retc("");
+  }
+}
+
+//----------------------------------------------------------------------//
+
 NSString *hb_NSSTRING_par(int iParam) {
   // 1. Validación rigurosa del tipo de parámetro
   if (!HB_ISCHAR(iParam)) {
     return @"";
   }
-
   const char *szText = hb_parc(iParam);
-
   // 2. Si el puntero es nulo, evitar el crash de Cocoa
   if (szText == NULL) {
     return @"";
   }
-
   // 3. Intento de conversión rápida (incluye alloc/init/autorelease interno)
   NSString *nsText = [NSString stringWithUTF8String:szText];
 
   // 4. FALLBACK: Si nsText es nil (p.e. por acentos en formato Windows/ISO)
   // intentamos con Latin1 para no perder el dato y evitar el crash posterior.
+
   if (nsText == nil) {
     nsText = [NSString stringWithCString:szText
                                 encoding:NSISOLatin1StringEncoding];
   }
-
   return (nsText != nil) ? nsText : @"";
 }
+
+//----------------------------------------------------------------------//
 
 id hb_NSObjPar(int iParam) { return (id)hb_parnll(iParam); }
 
@@ -570,4 +586,31 @@ HB_FUNC(ANIMASHAKE) {}
 HB_FUNC(APPTERMINATE) {
   // [ NSApp terminate : nil ];
   exit(0);
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(NSRELEASE) {
+  id obj = (id)hb_parnll(1);
+  if (obj != nil) {
+    [obj release];
+  }
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(NSAUTORELEASEPOOL_BEGIN) {
+  // Creamos un nuevo pool y lo devolvemos como puntero (HB_LONG)
+  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  hb_retnll((HB_LONG)pool);
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(NSAUTORELEASEPOOL_END) {
+  // Recuperamos el puntero del pool y lo liberamos
+  NSAutoreleasePool *pool = (NSAutoreleasePool *)hb_parnll(1);
+  if (pool != nil) {
+    [pool release];
+  }
 }
