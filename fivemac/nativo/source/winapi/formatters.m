@@ -377,54 +377,222 @@ HB_FUNC(FORMATTERSETCURRENCY) {
   [formatter setNumberStyle:NSNumberFormatterCurrencyStyle];
 }
 
-HB_FUNC(LOCALECREATEFROMID) {
+//----------------------------------------------------------------------------//
+
+HB_FUNC(LOCALECREATEFROMID) // ojo tiene retain que se debe liberar
+{
   NSString *string = hb_NSSTRING_par(1);
-  NSLocale *locale = [NSLocale localeWithLocaleIdentifier:string];
-  hb_retnll((HB_LONGLONG)locale);
+
+  if (string != nil) {
+    // En No-ARC, este método devuelve un objeto autoreleased
+    NSLocale *locale = [NSLocale localeWithLocaleIdentifier:string];
+
+    if (locale != nil) {
+      // INCREMENTAMOS el contador para que viva en la memoria de Harbour
+      [locale retain];
+      hb_retnll((HB_LONGLONG)locale);
+    } else {
+      hb_retnll(0);
+    }
+  } else {
+    hb_retnll(0);
+  }
 }
 
-HB_FUNC(LOCALECURRENT) {
+HB_FUNC(LOCALECURRENT) // ojo tiene retain que se debe liberar
+{
+  // Obtenemos el locale (objeto autorelease)
   NSLocale *locale = [NSLocale currentLocale];
-  hb_retnll((HB_LONGLONG)locale);
+
+  if (locale != nil) {
+    // IMPORTANTE en No ARC: Incrementamos el contador de referencias
+    // para que no desaparezca al salir de esta función.
+    [locale retain];
+
+    hb_retnll((HB_LONGLONG)locale);
+  } else {
+    hb_retnll(0);
+  }
 }
+
+HB_FUNC(LOCALE_RELEASE) {
+  NSLocale *locale = (NSLocale *)hb_parnll(1);
+  if (locale != nil) {
+    [locale release]; // Liberamos la memoria manualmente
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(LOCALEGETNAME) {
   NSLocale *locale = (NSLocale *)hb_parnll(1);
-  NSString *language = [[NSLocale preferredLanguages] objectAtIndex:0];
-  NSString *displayNameString = [locale displayNameForKey:NSLocaleIdentifier
-                                                    value:language];
-  hb_retc([displayNameString cStringUsingEncoding:NSUTF8StringEncoding]);
+  NSArray *languages = [NSLocale preferredLanguages];
+
+  // Verificamos que el objeto locale y el array de idiomas existan
+  if (locale != nil && languages != nil && [languages count] > 0) {
+
+    // objectAtIndex devuelve un objeto autorelease (no requiere release)
+    NSString *language = [languages objectAtIndex:0];
+
+    // displayNameForKey también devuelve un objeto autorelease
+    NSString *displayNameString = [locale displayNameForKey:NSLocaleIdentifier
+                                                      value:language];
+
+    if (displayNameString != nil) {
+      hb_retc([displayNameString UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
 
-HB_FUNC(LOCALEGETLANGUAGE) {
+//----------------------------------------------------------------------------//
+
+HB_FUNC(LOCALE_GETLANGUAGE) {
+  // Cast directo del puntero de Harbour
   NSLocale *locale = (NSLocale *)hb_parnll(1);
-  NSString *code = locale.languageCode;
-  NSString *language = [locale localizedStringForLanguageCode:code];
 
-  hb_retc([language cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (locale != nil) {
+    // En No ARC, estas propiedades devuelven objetos autorelease
+    NSString *code = [locale languageCode];
+    NSString *language = [locale localizedStringForLanguageCode:code];
+
+    if (language != nil) {
+      hb_retc([language UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
 
-HB_FUNC(LOCALESETLANGUAGE) {
+//----------------------------------------------------------------------------//
+
+HB_FUNC(LOCALE_SETLANGUAGE) {
+  // Obtenemos el string desde Harbour (asumiendo que hb_NSSTRING_par maneja el
+  // autorelease)
   NSString *lang = hb_NSSTRING_par(1);
-  NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-  [defaults setObject:@[ lang ] forKey:@"AppleLanguages"];
-  // setObject:@[@"de"] forKey:@"AppleLanguages"];
-  [defaults synchronize];
+
+  if (lang != nil) {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+    // Creamos el array literal. En No-ARC, esto es un objeto autorelease.
+    NSArray *langArray = [NSArray arrayWithObject:lang];
+
+    [defaults setObject:langArray forKey:@"AppleLanguages"];
+    [defaults synchronize];
+  }
 }
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(LOCALEGETPREFID) {
-  NSString *language = [[NSLocale preferredLanguages] objectAtIndex:0];
-  hb_retc([language cStringUsingEncoding:NSUTF8StringEncoding]);
+  // preferredLanguages devuelve un NSArray "autoreleased"
+  NSArray *languages = [NSLocale preferredLanguages];
+
+  if (languages != nil && [languages count] > 0) {
+    // objectAtIndex devuelve el objeto sin traspasar la propiedad (no requiere
+    // release)
+    NSString *language = [languages objectAtIndex:0];
+    hb_retc([language UTF8String]);
+  } else {
+    hb_retc("");
+  }
 }
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(LOCALE_SETCOUNTRY) {
+  // Obtenemos el código de país desde Harbour (ej: "MX", "ES", "US")
+  NSString *countryCode = hb_NSSTRING_par(1);
+
+  if (countryCode != nil) {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+
+    // En No-ARC, 'setObject' no requiere retain manual del objeto pasado
+    // porque NSUserDefaults se encarga de su propia gestión interna.
+    [defaults setObject:countryCode forKey:@"AppleLocale"];
+
+    // Sincronizamos para asegurar que el cambio persista
+    [defaults synchronize];
+  }
+}
+
+HB_FUNC(LOCALE_GETCOUNTRY) {
+  // Recuperamos el objeto locale desde el puntero de Harbour
+  NSLocale *locale = (NSLocale *)hb_parnll(1);
+
+  if (locale != nil) {
+    // En No-ARC, countryCode es un objeto autorelease
+    // Nota: En versiones antiguas de iOS/macOS se usa:
+    // [locale objectForKey:NSLocaleCountryCode]
+    NSString *country = [locale countryCode];
+
+    if (country != nil) {
+      hb_retc([country UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 HB_FUNC(LOCALEGETMESURESYSTEM) {
   NSLocale *locale = (NSLocale *)hb_parnll(1);
-  NSString *string = [locale objectForKey:NSLocaleMeasurementSystem];
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
+  if (locale != nil) {
+    // 'string' es un objeto autorelease; no requiere [release]
+    NSString *string = [locale objectForKey:NSLocaleMeasurementSystem];
+
+    if (string != nil) {
+      hb_retc([string UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }
 
-HB_FUNC(LOCALEMESUREISMETRIC) {
+//----------------------------------------------------------------------------//
+
+HB_FUNC(LOCALE_MESUREISMETRIC) {
+  // Realizamos un cast simple sin bridge de ARC
   NSLocale *locale = (NSLocale *)hb_parnll(1);
-  bool isMetric = [[locale objectForKey:NSLocaleUsesMetricSystem] boolValue];
-  hb_retl((BOOL)isMetric);
+
+  if (locale != nil) {
+    // En Objective-C tradicional, objectForKey devuelve un objeto autorelease
+    // No necesitamos hacer release manual de 'isMetricNumber'
+    NSNumber *isMetricNumber = [locale objectForKey:NSLocaleUsesMetricSystem];
+    BOOL isMetric = [isMetricNumber boolValue];
+
+    hb_retl(isMetric);
+  } else {
+    hb_retl(NO);
+  }
+}
+
+//----------------------------------------------------------------------------//
+
+HB_FUNC(LOCALE_GETCURRENCYSYMBOL) {
+  // Recuperamos el objeto locale desde el puntero (long long)
+  NSLocale *locale = (NSLocale *)hb_parnll(1);
+
+  if (locale != nil) {
+    // En No-ARC, el objeto devuelto es 'autorelease'
+    NSString *symbol = [locale objectForKey:NSLocaleCurrencySymbol];
+
+    if (symbol != nil) {
+      hb_retc([symbol UTF8String]);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
 }

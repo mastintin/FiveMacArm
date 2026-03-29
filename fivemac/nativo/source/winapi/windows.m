@@ -1081,6 +1081,26 @@ HB_FUNC(WNDFADEIN) {
   }
 }
 
+HB_FUNC(WNDFORCEHIDE) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  if (window) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [window setAlphaValue:0.0]; // 100% invisible
+      [window orderOut:nil];      // Sacar del flujo visual
+    });
+  }
+}
+
+HB_FUNC(WNDFORCESHOW) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  if (window) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [window setAlphaValue:1.0];        // Recuperar opacidad
+      [window makeKeyAndOrderFront:nil]; // Traer al frente
+    });
+  }
+}
+
 HB_FUNC(WNDHIDE) {
   NSWindow *window = (NSWindow *)hb_parnll(1);
 

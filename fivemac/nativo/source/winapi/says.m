@@ -53,6 +53,7 @@ HB_FUNC(SAYSETSHADOW) {
 }
 
 //-------------------------------------------------------------//
+
 HB_FUNC(SAYSETVIBRANT) {
   NSTextField *say = (NSTextField *)hb_parnll(1);
 

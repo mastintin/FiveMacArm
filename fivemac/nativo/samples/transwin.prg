@@ -5,9 +5,9 @@ function Main()
    local oWnd
       
    DEFINE WINDOW oWnd TITLE "TRANPARENT WINDOW" ;
-      FROM 20, 300 TO 400,200                
+      FROM 50, 50 TO 500, 500       
                  
-   oWnd:Center() 
+   //oWnd:Center() 
                  
    @ 90, 40 BUTTON "Set Trans" OF oWnd ACTION SetTrans( oWnd:hWnd,0.60 ) 
                  
