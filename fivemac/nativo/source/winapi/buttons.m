@@ -250,7 +250,7 @@ HB_FUNC(BTNSETGLASS) {
 HB_FUNC(BTNSETBEZELCOLOR) {
   NSButton *button = (NSButton *)hb_parnll(1);
   if (button) {
-    NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(2) / 255.0
+    NSColor *color = [NSColor colorWithSRGBRed:hb_parnd(2) / 255.0
                                                green:hb_parnd(3) / 255.0
                                                 blue:hb_parnd(4) / 255.0
                                                alpha:hb_parnd(5)];
@@ -276,7 +276,7 @@ HB_FUNC(BTNSETCAPSULE) {
     int g = (nColor >> 8) & 0xFF;
     int b = (nColor >> 16) & 0xFF;
 
-    NSColor *col = [NSColor colorWithCalibratedRed:r / 255.0
+    NSColor *col = [NSColor colorWithSRGBRed:r / 255.0
                                              green:g / 255.0
                                               blue:b / 255.0
                                              alpha:1.0];

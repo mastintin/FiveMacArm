@@ -1,91 +1,36 @@
 #include <fivemac.h>
 
-@interface NSString (Size)
-- (NSSize)sizeWithWidth:(float)width andFont:(NSFont *)font;
-@end
+//----------------------------------------------------------//
 
-@implementation NSString (Size)
-- (NSSize)sizeWithWidth:(float)width andFont:(NSFont *)font {
-  NSSize size = NSMakeSize(width, FLT_MAX);
-  NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:self];
-  NSTextContainer *textContainer =
-      [[NSTextContainer alloc] initWithContainerSize:size];
-  NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
-  [layoutManager addTextContainer:textContainer];
-  [textStorage addLayoutManager:layoutManager];
-  [textStorage addAttribute:NSFontAttributeName
-                      value:font
-                      range:NSMakeRange(0, [textStorage length])];
-  [textContainer setLineFragmentPadding:0.0];
-  [layoutManager glyphRangeForTextContainer:textContainer];
-
-  NSRect usedRect = [layoutManager usedRectForTextContainer:textContainer];
-  size.height = usedRect.size.height;
-  size.width = usedRect.size.width;
-
-  if (size.width < width)
-    size.width += 5; // Extra buffer
-
-  return size;
-}
-
-@end
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-#define NSPopoverBehaviorTransient 1
-@interface NSPopover : NSObject
-#else
 @interface NSPopover (Message)
-#endif
-
 - (void)showRelativeToRect:(NSRect)rect
                     ofView:(NSView *)view
              preferredEdge:(NSRectEdge)edge
                     string:(NSString *)string
                   maxWidth:(float)width;
-
 - (void)showWinRelativeToRect:(NSRect)rect
                        ofView:(NSView *)view
                 preferredEdge:(NSRectEdge)edge
                        window:(NSWindow *)window
                      maxWidth:(float)width;
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-
-- (void)setContentSize:(NSSize)size;
-
-- (void)setContentViewController:(NSViewController *)controller;
-
-- (void)setAnimates:(BOOL)bYesNo;
-
-- (void)setBehavior:(int)iBehavior;
-
-#endif
-
 @end
 
-//----------------------------------------------------------//
-
-#if __MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-@implementation NSPopover
-#else
 @implementation NSPopover (Message)
-#endif
 
 - (void)showRelativeToRect:(NSRect)rect
                     ofView:(NSView *)view
              preferredEdge:(NSRectEdge)edge
                     string:(NSString *)string
                   maxWidth:(float)width {
-  float padding = 5;
+  float padding = 5.0;
 
-  NSSize size = [string
-      sizeWithWidth:250.0
-            andFont:[NSFont
-                        systemFontOfSize:[NSFont systemFontSizeForControlSize:
-                                                     NSControlSizeRegular]]];
+  // Suponiendo que sizeWithWidth:andFont: es una categoría de NSString que
+  // devuelve NSSize
+  NSFont *font = [NSFont
+      systemFontOfSize:[NSFont
+                           systemFontSizeForControlSize:NSControlSizeRegular]];
+  NSSize size = GetStringSize(string, width, font);
 
-  // Sanity check
   if (size.width < 20)
     size.width = 20;
   if (size.height < 10)
@@ -95,6 +40,8 @@
       NSMakeSize(size.width + (padding * 2), size.height + (padding * 2));
   NSRect popoverRect = NSMakeRect(0, 0, popoverSize.width, popoverSize.height);
 
+  // MRC: Usamos autorelease para que el label se libere cuando el contenedor se
+  // destruya
   NSTextField *label = [[NSTextField alloc]
       initWithFrame:NSMakeRect(padding, padding, size.width, size.height)];
 
@@ -105,28 +52,28 @@
   [label setStringValue:string];
   [[label cell] setLineBreakMode:NSLineBreakByWordWrapping];
 
+  // MRC: Autorelease para el contenedor
   NSView *container = [[NSView alloc] initWithFrame:popoverRect];
   [container addSubview:label];
-  // Ensure explicit frame
   [label setFrame:NSMakeRect(padding, padding, size.width, size.height)];
+  [label release];
 
+  // MRC: Autorelease para el controlador
   NSViewController *controller = [[NSViewController alloc] init];
   [controller setView:container];
+  [container release];
 
   [self setContentSize:popoverSize];
   [self setContentViewController:controller];
   [self setAnimates:YES];
-  [self setBehavior:NSPopoverBehaviorTransient]; // Auto-close
+  [self setBehavior:NSPopoverBehaviorTransient];
+  [controller release];
 
-  // Convert coordinates to Window Content View (Robust Anchor)
   NSWindow *win = [view window];
   if (win) {
     NSView *contentView = [win contentView];
-    // 1. Convert view bounds to Window Coordinate Space
     NSRect rectInWin = [view convertRect:rect toView:nil];
-    // 2. Convert Window Coords to Content View Coordinate Space
     NSRect rectInContent = [contentView convertRect:rectInWin fromView:nil];
-
     [self showRelativeToRect:rectInContent
                       ofView:contentView
                preferredEdge:edge];
@@ -141,13 +88,14 @@
                        window:(NSWindow *)window
                      maxWidth:(float)width {
   float padding = 5;
-
   NSRect frame = [window frame];
 
   NSSize popoverSize = NSMakeSize(frame.size.width + (padding * 2),
                                   frame.size.height + (padding * 2));
+
   NSRect popoverRect = NSMakeRect(0, 0, popoverSize.width, popoverSize.height);
 
+  // MRC: Autorelease para el contenedor
   NSView *container = [[NSView alloc] initWithFrame:popoverRect];
   NSView *winView = GetView(window);
 
@@ -159,8 +107,10 @@
     [winView performSelector:@selector(setOriginalWindow:) withObject:window];
   }
 
+  // MRC: Autorelease para el controlador
   NSViewController *controller = [[NSViewController alloc] init];
   [controller setView:container];
+  [container release];
 
   [self setContentSize:popoverSize];
   [self setContentViewController:controller];
@@ -168,68 +118,103 @@
   [self setBehavior:NSPopoverBehaviorTransient];
 
   [self showRelativeToRect:rect ofView:view preferredEdge:edge];
+  [controller release];
 }
 
 @end
 
 //----------------------------------------------------------//
-
 HB_FUNC(SHOWPOPOVER) {
   NSControl *theInput = (NSControl *)hb_parnll(1);
   NSString *mystring = hb_NSSTRING_par(2);
+
+  float width =
+      (hb_pcount() >= 3 && hb_parnd(3) > 0) ? (float)hb_parnd(3) : 250.0f;
+
+  // 1. Creamos el objeto. (Retain count = 1)
   NSPopover *popover = [[NSPopover alloc] init];
 
-  // Try to retain to prevent release (MRC style)
-  [popover retain];
+  if (theInput && popover) {
+    // 2. Lo mostramos.
+    // Usamos autorelease para que el objeto se libere solo cuando se cierre
+    // la piscina de eventos, a menos que Harbour lo retenga.
+    [popover autorelease];
 
-  // We use [theInput bounds] as base rect, and theInput as view.
-  // The method within NSPopover will handle coordinate conversion.
-  [popover showRelativeToRect:[theInput bounds]
-                       ofView:theInput
-                preferredEdge:NSMaxYEdge // Show the popover BELOW the button
-                       string:mystring
-                     maxWidth:250.0];
+    [popover showRelativeToRect:[theInput bounds]
+                         ofView:theInput
+                  preferredEdge:NSMaxYEdge
+                         string:mystring
+                       maxWidth:width];
+  }
 
+  // 3. Devolvemos el puntero a Harbour.
   hb_retnll((HB_LONGLONG)popover);
 }
+
+//----------------------------------------------------------//
 
 HB_FUNC(SHOWWINPOPOVER) {
   NSControl *theInput = (NSControl *)hb_parnll(1);
   NSWindow *window = (NSWindow *)hb_parnll(2);
-  NSPopover *popover = [[NSPopover alloc] init];
 
-  [popover showWinRelativeToRect:[theInput frame]
-                          ofView:[theInput superview]
-                   preferredEdge:NSMaxYEdge // Show the popover BELOW
-                          window:window
-                        maxWidth:250.0];
+  float width =
+      (hb_pcount() >= 3 && hb_parnd(3) > 0) ? (float)hb_parnd(3) : 250.0f;
+
+  // Usamos autorelease para que la memoria se gestione correctamente
+  // El popover se mantendrá vivo mientras esté en pantalla.
+  NSPopover *popover = [[[NSPopover alloc] init] autorelease];
+
+  if (theInput && popover) {
+    [popover showWinRelativeToRect:[theInput frame]
+                            ofView:[theInput superview]
+                      preferredEdge:NSMaxYEdge
+                             window:window
+                           maxWidth:width];
+  }
 
   hb_retnll((HB_LONGLONG)popover);
 }
 
-HB_FUNC(CLOSEPOPOVER) {
+//----------------------------------------------------------//
+
+HB_FUNC(SETPOPOVERAPPEARANCE) {
   NSPopover *popover = (NSPopover *)hb_parnll(1);
+  int nAppearance = hb_parni(2);
 
-  [popover close];
-}
-
-HB_FUNC(SETPOPOVERAPPERANCE) {
-  NSPopover *popover = (NSPopover *)hb_parnll(1);
-  int nAparence = hb_parni(2);
-
-  switch (nAparence) {
-  case 0:
-    popover.appearance =
-        [[NSAppearance init] appearanceNamed:NSAppearanceNameAqua];
-    break;
-
-  case 1:
-    popover.appearance =
-        [[NSAppearance init] appearanceNamed:NSAppearanceNameVibrantDark];
-    break;
-  case 2:
-    popover.appearance =
-        [[NSAppearance init] appearanceNamed:NSAppearanceNameVibrantLight];
-    break;
+  if (popover) {
+    NSAppearanceName names[] = {NSAppearanceNameAqua,
+                                NSAppearanceNameVibrantDark,
+                                NSAppearanceNameVibrantLight};
+    if (nAppearance >= 0 && nAppearance <= 2) {
+      // appearanceNamed NO requiere release (es un factory method)
+      popover.appearance = [NSAppearance appearanceNamed:names[nAppearance]];
+    }
   }
 }
+
+//----------------------------------------------------------//
+
+HB_FUNC(CLOSEPOPOVER) {
+  NSPopover *popover = (NSPopover *)hb_parnll(1);
+  if (popover) {
+    [popover close];
+  }
+}
+
+//----------------------------------------------------------//
+
+//----------------------------------------------------------//
+
+HB_FUNC(POPOVER_RELEASE) {
+  // 1. Obtenemos el puntero del popover desde Harbour
+  NSPopover *popover = (NSPopover *)hb_parnll(1);
+
+  if (popover != NULL) {
+    // 2. Verificamos que sea un objeto válido antes de liberar
+    if ([popover isKindOfClass:[NSPopover class]]) {
+      [popover release];
+    }
+  }
+}
+
+//----------------------------------------------------------//

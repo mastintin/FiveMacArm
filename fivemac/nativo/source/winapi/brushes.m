@@ -2,7 +2,7 @@
 
 HB_FUNC(BRUSHCREATESOLID) // nRed, nGreen, nBlue, nAlpha
 {
-  NSColor *color = [NSColor colorWithCalibratedRed:hb_parnd(1) / 255.0
+  NSColor *color = [NSColor colorWithSRGBRed:hb_parnd(1) / 255.0
                                              green:hb_parnd(2) / 255.0
                                               blue:hb_parnd(3) / 255.0
                                              alpha:hb_parnd(4) / 255.0];
@@ -27,11 +27,11 @@ HB_FUNC(BRUSHCREATEPATTERN) // cImageFile
 HB_FUNC(BRUSHCREATEGRADIENT) // nR1, nG1, nB1, nR2, nG2, nB2, nAngle, nWidth,
                              // nHeight
 {
-  NSColor *color1 = [NSColor colorWithCalibratedRed:hb_parnd(1) / 255.0
+  NSColor *color1 = [NSColor colorWithSRGBRed:hb_parnd(1) / 255.0
                                               green:hb_parnd(2) / 255.0
                                                blue:hb_parnd(3) / 255.0
                                               alpha:1.0];
-  NSColor *color2 = [NSColor colorWithCalibratedRed:hb_parnd(4) / 255.0
+  NSColor *color2 = [NSColor colorWithSRGBRed:hb_parnd(4) / 255.0
                                               green:hb_parnd(5) / 255.0
                                                blue:hb_parnd(6) / 255.0
                                               alpha:1.0];

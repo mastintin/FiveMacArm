@@ -86,7 +86,7 @@ HB_FUNC(MKMAPSETANNOTATIONCOLOR) // ( hAnnotation, nColor )
 {
   id<MKAnnotation> annotation = (id<MKAnnotation>)hb_parnll(1);
   NSColor *color =
-      [NSColor colorWithCalibratedRed:((hb_parnl(2) & 0xFF) / 255.0)
+      [NSColor colorWithSRGBRed:((hb_parnl(2) & 0xFF) / 255.0)
                                 green:(((hb_parnl(2) >> 8) & 0xFF) / 255.0)
                                  blue:(((hb_parnl(2) >> 16) & 0xFF) / 255.0)
                                 alpha:1.0];

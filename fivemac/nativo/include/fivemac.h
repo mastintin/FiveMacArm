@@ -80,6 +80,8 @@ NSImage *ImgTemplate(NSString *);
     return NO;                                                                 \
   }
 
+NSSize GetStringSize(NSString *string, float width, NSFont *font);
+
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 @interface View : NSView <NSWindowDelegate>
 #else

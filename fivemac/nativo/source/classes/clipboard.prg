@@ -41,6 +41,8 @@ CLASS TClipBoard
     METHOD CopyFile( cFile )
     METHOD CopyImage( hImg )  INLINE CLIPBOARDCOPYIMAGE( ::hClip, hImg )     
 
+    METHOD End()  // El guardián de la memoria   
+
 ENDCLASS
 
 //----------------------------------------------------------------------------//
@@ -159,3 +161,7 @@ METHOD CopiarFichero( cFile ) CLASS TClipBoard
         MSGINFO( "El archivo no existe: " + cFile )
     ENDIF
 RETURN
+
+METHOD End() CLASS TClipBoard
+    ::hClip := 0
+return nil

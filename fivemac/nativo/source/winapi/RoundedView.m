@@ -2,39 +2,6 @@
 
 static NSWindow *wndMain = NULL;
 
-@interface NSString (Size)
-
-- (NSSize)sizeWithWidth:(float)width andFont:(NSFont *)font;
-
-@end
-
-@implementation NSString (Size)
-
-- (NSSize)sizeWithWidth:(float)width andFont:(NSFont *)font {
-
-  NSSize size = NSMakeSize(width, FLT_MAX);
-
-  NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:self];
-  NSTextContainer *textContainer =
-      [[NSTextContainer alloc] initWithContainerSize:size];
-  NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
-  [layoutManager addTextContainer:textContainer];
-  [textStorage addLayoutManager:layoutManager];
-  [textStorage addAttribute:NSFontAttributeName
-                      value:font
-                      range:NSMakeRange(0, [textStorage length])];
-  [textContainer setLineFragmentPadding:0.0];
-
-  [layoutManager glyphRangeForTextContainer:textContainer];
-
-  size.height =
-      [layoutManager usedRectForTextContainer:textContainer].size.height;
-
-  return size;
-}
-
-@end
-
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 @interface RoundedView : NSView <NSWindowDelegate>
 #else
@@ -65,8 +32,7 @@ HB_FUNC(MSGROUNDCREATE) {
   NSString *string = hb_NSSTRING_par(1);
 
   float padding = 5;
-  NSSize size = [string sizeWithWidth:350.0
-                              andFont:[NSFont labelFontOfSize:22.0]];
+  NSSize size = GetStringSize(string, 350.0, [NSFont labelFontOfSize:22.0]);
 
   NSSize popoverSize =
       NSMakeSize(size.width + (padding * 2), size.height + (padding * 2));

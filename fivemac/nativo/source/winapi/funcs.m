@@ -614,3 +614,37 @@ HB_FUNC(NSAUTORELEASEPOOL_END) {
     [pool release];
   }
 }
+
+//----------------------------------------------------------------------//
+
+NSSize GetStringSize(NSString *string, float width, NSFont *font) {
+  if (string == nil || [string length] == 0) {
+    return NSZeroSize;
+  }
+
+  NSSize containerSize = NSMakeSize(width, FLT_MAX);
+  NSTextStorage *textStorage = [[NSTextStorage alloc] initWithString:string];
+  NSTextContainer *textContainer =
+      [[NSTextContainer alloc] initWithContainerSize:containerSize];
+  NSLayoutManager *layoutManager = [[NSLayoutManager alloc] init];
+
+  [layoutManager addTextContainer:textContainer];
+  [textStorage addLayoutManager:layoutManager];
+  [textStorage addAttribute:NSFontAttributeName
+                      value:font
+                      range:NSMakeRange(0, [textStorage length])];
+  [textContainer setLineFragmentPadding:0.0];
+  [layoutManager glyphRangeForTextContainer:textContainer];
+
+  NSRect usedRect = [layoutManager usedRectForTextContainer:textContainer];
+  NSSize resultSize = usedRect.size;
+  if (resultSize.width < width)
+    resultSize.width += 5;
+  resultSize.height += 2; // Margen de seguridad vertical
+
+  [layoutManager release];
+  [textContainer release];
+  [textStorage release];
+
+  return resultSize;
+}

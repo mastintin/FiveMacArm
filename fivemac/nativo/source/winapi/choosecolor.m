@@ -17,7 +17,7 @@ HB_FUNC( CHOOSECOLOR )
       nGreen = ( hb_parnl( 1 ) >> 8 ) & 0xFF;
       nBlue  = ( hb_parnl( 1 ) >> 16 ) & 0xFF;
       
-      oColor = [ NSColor colorWithCalibratedRed: ( float ) nRed / 255.0 green: ( float ) nGreen / 255.0 blue: ( float ) nBlue / 255.0 alpha: 1.0 ];
+      oColor = [ NSColor colorWithSRGBRed: ( float ) nRed / 255.0 green: ( float ) nGreen / 255.0 blue: ( float ) nBlue / 255.0 alpha: 1.0 ];
       [ oColorPanel setColor: oColor ]; 
    }   
       

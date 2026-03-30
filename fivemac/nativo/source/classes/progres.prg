@@ -12,7 +12,7 @@ CLASS TProgress FROM TControl
    DATA   nMax, nMin, nPos, nStep AS NUMERIC 
    
    CLASSDATA aProps INIT { "nTop", "nLeft", "nWidth", "nHeight", "cVarName",;
-                           "nValue", "lIndeterminate", "nAutoResize" }
+      "nValue", "lIndeterminate", "nAutoResize" }
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, nValue, nAutoResize, cVarName )
    
@@ -35,12 +35,12 @@ CLASS TProgress FROM TControl
    METHOD SetStep( nStepInc ) INLINE ( ::nStep:= nStepInc, ProgressIncremen( ::hWnd,::nStep ) )
    
    METHOD SetSpinStyle( lSpinStyle ) INLINE ;
-          If( lSpinStyle, ProgressSetSpin( ::hWnd ), ProgressSetBar( ::hWnd ) )
+      If( lSpinStyle, ProgressSetSpin( ::hWnd ), ProgressSetBar( ::hWnd ) )
 
    METHOD GetPos() INLINE ::nPos   
   
    METHOD SetIndeterminate( lIndeterminate ) INLINE ;
-          ProgressSetIndeterminate( ::hWnd, lIndeterminate ) 
+      ProgressSetIndeterminate( ::hWnd, lIndeterminate ) 
    
    // METHOD SetBezeled (lBezeled)  INLINE  ProgressSetBezeled(::hWnd,lBezeled)   
    
@@ -51,13 +51,20 @@ CLASS TProgress FROM TControl
    METHOD StopAnime() INLINE ProgressStopAnime( ::hWnd )   
    
    METHOD cGenPrg()
-       
+
+   METHOD SetFrame( nTop, nLeft, nWidth, nHeight )   
+   METHOD SetHidden( lHidden ) INLINE ProgressSetHidden( ::hWnd, lHidden )   
+    
+   METHOD IsHidden() INLINE ProgressIsHidden( ::hWnd )   
+
+   METHOD End() 
+
 ENDCLASS   
 
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, nValue, nAutoResize, cVarName ) ;
-   CLASS TProgress
+      CLASS TProgress
 
    DEFAULT nWidth := 100, nHeight := 20, nValue := 30
    
@@ -101,8 +108,8 @@ METHOD Initiate() CLASS TProgress
       ::hWnd = hWnd
    else
       MsgAlert( "Non defined PROGRESS cID " + ;
-                AllTrim( Str( ::nId ) ) + ;
-                " in resource " + ::oWnd:cNibName )
+         AllTrim( Str( ::nId ) ) + ;
+         " in resource " + ::oWnd:cNibName )
    endif
     
    ::Update( ::nPos )
@@ -114,20 +121,33 @@ return nil
 METHOD cGenPrg() CLASS TProgress
 
    local cCode := CRLF + CRLF + "   @ " + ;
-                  AllTrim( Str( ::nTop ) ) + ", " + ;
-                  AllTrim( Str( ::nLeft ) ) + " PROGRESS " + ::cVarName + ;
-                  " OF " + ::oWnd:cVarName + ;
-                  " ;" + CRLF + ;
-                  "      POSITION " + AllTrim( Str( ::nValue() ) ) + ;
-                  " SIZE " + ;
-                  AllTrim( Str( ::nWidth ) ) + ", " + ;
-                  AllTrim( Str( ::nHeight ) )
+      AllTrim( Str( ::nTop ) ) + ", " + ;
+      AllTrim( Str( ::nLeft ) ) + " PROGRESS " + ::cVarName + ;
+      " OF " + ::oWnd:cVarName + ;
+      " ;" + CRLF + ;
+      "      POSITION " + AllTrim( Str( ::nValue() ) ) + ;
+      " SIZE " + ;
+      AllTrim( Str( ::nWidth ) ) + ", " + ;
+      AllTrim( Str( ::nHeight ) )
                   
-            if ::nAutoResize != 0                  
-   				  	   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
-   			  	endif       
+   if ::nAutoResize != 0                  
+      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
+   endif       
                                                            
 return cCode   
+
+//----------------------------------------------------------------------------//
+
+METHOD SetFrame( nTop, nLeft, nWidth, nHeight ) CLASS TProgress
+
+   ::nTop    = nTop
+   ::nLeft   = nLeft
+   ::nWidth  = nWidth
+   ::nHeight = nHeight
+   
+   ProgressSetFrame( ::hWnd, nTop, nLeft, nWidth, nHeight )
+   
+return nil
 
 //----------------------------------------------------------------------------//
 
@@ -146,3 +166,8 @@ METHOD SetRange( nMin, nMax ) CLASS TProgress
 return nil
 
 //----------------------------------------------------------------------------//
+
+METHOD End() CLASS TProgress
+   ::hWnd := 0
+return nil
+

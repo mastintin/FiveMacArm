@@ -419,10 +419,8 @@ HB_FUNC(SAVEFILE) {
   else
     [op setTitle:hb_NSSTRING_par(1)];
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   if (HB_ISCHAR(2))
     [op setNameFieldStringValue:hb_NSSTRING_par(2)];
-#endif
 
   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   if ([op runModal] == NSModalResponseOK) {
