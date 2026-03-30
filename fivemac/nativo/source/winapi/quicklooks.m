@@ -31,6 +31,8 @@
 }
 @end
 
+//----------------------------------------------------------------------//
+
 HB_FUNC(ABRIREXCEL) {
   NSString *path =
       [[[NSString alloc] initWithUTF8String:hb_parc(1)] autorelease];
@@ -47,33 +49,51 @@ HB_FUNC(ABRIREXCEL) {
   }
 }
 
+//----------------------------------------------------------------------//
+
 HB_FUNC(QLPREVIEWCREATE) {
   NSWindow *window = (NSWindow *)hb_parnll(5);
   NSView *vParent = GetView(window);
   NSRect frame = NSMakeRect(hb_parnl(2), hb_parnl(1), hb_parnl(3), hb_parnl(4));
 
-  // Creamos el visor directo de QuickLook
-  QLPreviewView *preview =
-      [[QLPreviewView alloc] initWithFrame:frame
-                                     style:QLPreviewViewStyleNormal];
+  // Creamos y marcamos para liberación automática
+  QLPreviewView *preview = [[[QLPreviewView alloc]
+      initWithFrame:frame
+              style:QLPreviewViewStyleNormal] autorelease];
 
   [preview setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
   if (vParent) {
+    // Al añadirlo a la vista, vParent le hace un 'retain' (incrementa el
+    // contador) Esto evita que el objeto muera cuando el autorelease actúe.
     [vParent addSubview:preview];
   }
 
   hb_retnll((HB_LONGLONG)preview);
 }
 
+//----------------------------------------------------------------------//
+
 HB_FUNC(QLPREVIEWSETFILE) {
   QLPreviewView *preview = (QLPreviewView *)hb_parnll(1);
   NSString *cPath = hb_NSSTRING_par(2);
 
-  if (cPath) {
-    preview.previewItem = [NSURL fileURLWithPath:cPath];
+  if (preview && cPath) {
+    // fileURLWithPath devuelve un objeto autorelease (no necesitas hacer
+    // release tú)
+    NSURL *url = [NSURL fileURLWithPath:cPath];
+
+    // QLPreviewView suele manejar bien el retain de su previewItem,
+    // pero es vital que el objeto 'preview' sea válido.
+    [preview setPreviewItem:url];
+
+    // Forzamos la recarga para que QuickLook procese el nuevo archivo
+    // inmediatamente
+    [preview refreshPreviewItem];
   }
 }
+
+//----------------------------------------------------------------------//
 
 HB_FUNC(QLPREVIEWSETZOOM) {
   // Sin ScrollView, la magnificación nativa no está disponible directamente

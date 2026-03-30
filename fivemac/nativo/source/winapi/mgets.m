@@ -2,12 +2,7 @@
 
 static PHB_SYMB symFMH = NULL;
 
-#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-@interface TextView : NSTextView <NSTextViewDelegate, NSTextInputClient>
-#else
-@interface TextView : NSTextView
-#endif
-{
+@interface TextView : NSTextView <NSTextViewDelegate, NSTextInputClient> {
 }
 - (void)keyDown:(NSEvent *)theEvent;
 - (NSView *)view; // workaround to avoid a "unrecognized selector sent" error

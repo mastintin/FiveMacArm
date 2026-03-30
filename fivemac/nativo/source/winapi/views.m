@@ -214,8 +214,8 @@ HB_FUNC(VIEWSETGRADIENTCOLOR) {
   gradient.startPoint = CGPointMake(0.0, 0.5);
   gradient.endPoint = CGPointMake(1.0, 0.5);
 
-  NSColor *c1 = [NSColor colorWithCalibratedRed:r1 green:g1 blue:b1 alpha:a1];
-  NSColor *c2 = [NSColor colorWithCalibratedRed:r2 green:g2 blue:b2 alpha:a2];
+  NSColor *c1 = [NSColor colorWithSRGBRed:r1 green:g1 blue:b1 alpha:a1];
+  NSColor *c2 = [NSColor colorWithSRGBRed:r2 green:g2 blue:b2 alpha:a2];
 
   gradient.colors =
       [NSArray arrayWithObjects:(id)[c1 CGColor], (id)[c2 CGColor], nil];

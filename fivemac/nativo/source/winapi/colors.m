@@ -45,8 +45,9 @@ static PHB_SYMB symFMH = NULL;
 
 HB_FUNC(CREATECOLORWELL) {
   colorPick *clrWell =
-      [[colorPick alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
-                                                  hb_parnl(3), hb_parnl(4))];
+      [[[colorPick alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
+                                                   hb_parnl(3), hb_parnl(4))]
+          autorelease];
   NSWindow *window = (NSWindow *)hb_parnll(5);
 
   [GetView(window) addSubview:clrWell];
@@ -68,7 +69,7 @@ HB_FUNC(CLRWSETCOLOR) {
   float fGreen = (hb_parnl(2) - (((HB_LONG)fBlue) * 65536)) / 256;
   float fRed =
       hb_parnl(2) - (((HB_LONG)fBlue) * 65536) - (((HB_LONG)fGreen) * 256);
-  NSColor *color = [NSColor colorWithCalibratedRed:fRed / 255.0
+  NSColor *color = [NSColor colorWithSRGBRed:fRed / 255.0
                                              green:fGreen / 255.0
                                               blue:fBlue / 255.0
                                              alpha:1.0];
@@ -121,7 +122,7 @@ HB_FUNC(COLORFROMNRGB) {
   float fGreen = (hb_parnl(1) - (((HB_LONG)fBlue) * 65536)) / 256;
   float fRed =
       hb_parnl(1) - (((HB_LONG)fBlue) * 65536) - (((HB_LONG)fGreen) * 256);
-  NSColor *color = [NSColor colorWithCalibratedRed:fRed / 255.0
+  NSColor *color = [NSColor colorWithSRGBRed:fRed / 255.0
                                              green:fGreen / 255.0
                                               blue:fBlue / 255.0
                                              alpha:1.0];
@@ -135,7 +136,7 @@ HB_FUNC(GRADSETCOLORS) {
   float fGreen = (hb_parnl(1) - (((HB_LONG)fBlue) * 65536)) / 256;
   float fRed =
       hb_parnl(1) - (((HB_LONG)fBlue) * 65536) - (((HB_LONG)fGreen) * 256);
-  NSColor *colorini = [NSColor colorWithCalibratedRed:fRed / 255.0
+  NSColor *colorini = [NSColor colorWithSRGBRed:fRed / 255.0
                                                 green:fGreen / 255.0
                                                  blue:fBlue / 255.0
                                                 alpha:1.0];
@@ -144,13 +145,13 @@ HB_FUNC(GRADSETCOLORS) {
   fGreen = (hb_parnl(2) - (((HB_LONG)fBlue) * 65536)) / 256;
   fRed = hb_parnl(2) - (((HB_LONG)fBlue) * 65536) - (((HB_LONG)fGreen) * 256);
 
-  NSColor *colorend = [NSColor colorWithCalibratedRed:fRed / 255.0
+  NSColor *colorend = [NSColor colorWithSRGBRed:fRed / 255.0
                                                 green:fGreen / 255.0
                                                  blue:fBlue / 255.0
                                                 alpha:1.0];
 
-  NSGradient *gradient = [[NSGradient alloc] initWithStartingColor:colorini
-                                                       endingColor:colorend];
+  NSGradient *gradient = [[[NSGradient alloc] initWithStartingColor:colorini
+                                                       endingColor:colorend] autorelease];
 
   hb_retnll((HB_LONGLONG)gradient);
 }
@@ -160,8 +161,8 @@ HB_FUNC(GRADSETNSCOLORS) {
   NSColor *colorini = (NSColor *)hb_parnll(1);
   NSColor *colorend = (NSColor *)hb_parnll(2);
 
-  NSGradient *gradient = [[NSGradient alloc] initWithStartingColor:colorini
-                                                       endingColor:colorend];
+  NSGradient *gradient = [[[NSGradient alloc] initWithStartingColor:colorini
+                                                       endingColor:colorend] autorelease];
 
   hb_retnll((HB_LONGLONG)gradient);
 }
@@ -171,7 +172,7 @@ HB_FUNC(GRADSETNRBGCOLORS) {
   float fGreen = hb_parnl(2) / 255.0;
   float fRed = hb_parnl(1) / 255.0;
 
-  NSColor *colorini = [NSColor colorWithCalibratedRed:fRed / 255.0
+  NSColor *colorini = [NSColor colorWithSRGBRed:fRed / 255.0
                                                 green:fGreen / 255.0
                                                  blue:fBlue / 255.0
                                                 alpha:1.0];
@@ -180,13 +181,13 @@ HB_FUNC(GRADSETNRBGCOLORS) {
   fGreen = hb_parnl(5) / 255.0;
   fRed = hb_parnl(4) / 255.0;
 
-  NSColor *colorend = [NSColor colorWithCalibratedRed:fRed / 255.0
+  NSColor *colorend = [NSColor colorWithSRGBRed:fRed / 255.0
                                                 green:fGreen / 255.0
                                                  blue:fBlue / 255.0
                                                 alpha:1.0];
 
-  NSGradient *gradient = [[NSGradient alloc] initWithStartingColor:colorini
-                                                       endingColor:colorend];
+  NSGradient *gradient = [[[NSGradient alloc] initWithStartingColor:colorini
+                                                       endingColor:colorend] autorelease];
 
   hb_retnll((HB_LONGLONG)gradient);
 }
@@ -195,7 +196,7 @@ HB_FUNC(COLORFROMNRGB2) {
   float fBlue = hb_parnl(3) / 255.0;
   float fGreen = hb_parnl(2) / 255.0;
   float fRed = hb_parnl(1) / 255.0;
-  NSColor *color = [NSColor colorWithCalibratedRed:fRed
+  NSColor *color = [NSColor colorWithSRGBRed:fRed
                                              green:fGreen
                                               blue:fBlue
                                              alpha:1.0];
@@ -209,88 +210,88 @@ HB_FUNC(ETIQUETGRADCOLORS) {
 
   if ([string isEqualToString:@"orange"]) {
 
-    gradient = [[NSGradient alloc]
-        initWithStartingColor:[NSColor colorWithCalibratedRed:0.972549
+    gradient = [[[NSGradient alloc]
+        initWithStartingColor:[NSColor colorWithSRGBRed:0.972549
                                                         green:0.811765
                                                          blue:0.584314
                                                         alpha:1.0]
-                  endingColor:[NSColor colorWithCalibratedRed:0.952941
+                  endingColor:[NSColor colorWithSRGBRed:0.952941
                                                         green:0.662745
                                                          blue:0.286275
-                                                        alpha:1.0]];
+                                                        alpha:1.0]] autorelease];
   }
 
   if ([string isEqualToString:@"red"]) {
-    gradient = [[NSGradient alloc]
-        initWithStartingColor:[NSColor colorWithCalibratedRed:0.976471
+    gradient = [[[NSGradient alloc]
+        initWithStartingColor:[NSColor colorWithSRGBRed:0.976471
                                                         green:0.639216
                                                          blue:0.623529
                                                         alpha:1.0]
-                  endingColor:[NSColor colorWithCalibratedRed:0.964706
+                  endingColor:[NSColor colorWithSRGBRed:0.964706
                                                         green:0.368627
                                                          blue:0.360784
-                                                        alpha:1.0]];
+                                                        alpha:1.0]] autorelease];
   }
 
   if ([string isEqualToString:@"yellow"]) {
-    gradient = [[NSGradient alloc]
-        initWithStartingColor:[NSColor colorWithCalibratedRed:0.972549
+    gradient = [[[NSGradient alloc]
+        initWithStartingColor:[NSColor colorWithSRGBRed:0.972549
                                                         green:0.956863
                                                          blue:0.619608
                                                         alpha:1.0]
-                  endingColor:[NSColor colorWithCalibratedRed:0.925490
+                  endingColor:[NSColor colorWithSRGBRed:0.925490
                                                         green:0.862745
                                                          blue:0.305882
-                                                        alpha:1.0]];
+                                                        alpha:1.0]] autorelease];
   }
 
   if ([string isEqualToString:@"green"]) {
-    gradient = [[NSGradient alloc]
-        initWithStartingColor:[NSColor colorWithCalibratedRed:0.835294
+    gradient = [[[NSGradient alloc]
+        initWithStartingColor:[NSColor colorWithSRGBRed:0.835294
                                                         green:0.925490
                                                          blue:0.619608
                                                         alpha:1.0]
-                  endingColor:[NSColor colorWithCalibratedRed:0.698039
+                  endingColor:[NSColor colorWithSRGBRed:0.698039
                                                         green:0.850980
                                                          blue:0.301961
-                                                        alpha:1.0]];
+                                                        alpha:1.0]] autorelease];
   }
 
   if ([string isEqualToString:@"blue"]) {
-    gradient = [[NSGradient alloc]
-        initWithStartingColor:[NSColor colorWithCalibratedRed:0.678431
+    gradient = [[[NSGradient alloc]
+        initWithStartingColor:[NSColor colorWithSRGBRed:0.678431
                                                         green:0.819608
                                                          blue:0.996078
                                                         alpha:1.0]
-                  endingColor:[NSColor colorWithCalibratedRed:0.368627
+                  endingColor:[NSColor colorWithSRGBRed:0.368627
                                                         green:0.627451
                                                          blue:0.988235
-                                                        alpha:1.0]];
+                                                        alpha:1.0]] autorelease];
   }
 
   if ([string isEqualToString:@"purple"]) {
-    gradient = [[NSGradient alloc]
-        initWithStartingColor:[NSColor colorWithCalibratedRed:0.862745
+    gradient = [[[NSGradient alloc]
+        initWithStartingColor:[NSColor colorWithSRGBRed:0.862745
                                                         green:0.749020
                                                          blue:0.917647
                                                         alpha:1.0]
-                  endingColor:[NSColor colorWithCalibratedRed:0.749020
+                  endingColor:[NSColor colorWithSRGBRed:0.749020
                                                         green:0.537255
                                                          blue:0.839216
-                                                        alpha:1.0]];
+                                                        alpha:1.0]] autorelease];
   }
 
   if ([string isEqualToString:@"gray"]) {
 
-    gradient = [[NSGradient alloc]
-        initWithStartingColor:[NSColor colorWithCalibratedRed:0.811765
+    gradient = [[[NSGradient alloc]
+        initWithStartingColor:[NSColor colorWithSRGBRed:0.811765
                                                         green:0.811765
                                                          blue:0.811765
                                                         alpha:1.0]
-                  endingColor:[NSColor colorWithCalibratedRed:0.658824
+                  endingColor:[NSColor colorWithSRGBRed:0.658824
                                                         green:0.658824
                                                          blue:0.658824
-                                                        alpha:1.0]];
+                                                        alpha:1.0]] autorelease];
   }
 
   hb_retnll((HB_LONGLONG)gradient);

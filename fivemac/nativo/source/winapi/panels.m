@@ -83,7 +83,7 @@ HB_FUNC(PANELSETCOLOR) {
     if (fAlpha == 0)
       fAlpha = 1.0;
 
-    NSColor *color = [NSColor colorWithCalibratedRed:fRed
+    NSColor *color = [NSColor colorWithSRGBRed:fRed
                                                green:fGreen
                                                 blue:fBlue
                                                alpha:fAlpha];

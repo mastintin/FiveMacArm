@@ -218,7 +218,7 @@ HB_FUNC(VIEWSTACKBARSETCOLOR) {
   if (bar && bar.effectView) {
     if (a == 0)
       a = 255;
-    NSColor *color = [NSColor colorWithCalibratedRed:r / 255.0
+    NSColor *color = [NSColor colorWithSRGBRed:r / 255.0
                                                green:g / 255.0
                                                 blue:b / 255.0
                                                alpha:a / 255.0];

@@ -11,7 +11,11 @@ CLASS TCard FROM TPanel
     METHOD SetBorderColor( nColor )
     METHOD SetCornerRadius( nRadius)    
    
+    METHOD End()    
+
 ENDCLASS
+
+//----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, nClrBorder, cTitle, cIcon ) CLASS TCard
 
@@ -61,14 +65,31 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, nClrBorder, cTitle, cIcon ) CLAS
 
 return Self
 
+//----------------------------------------------------------------------------//
+
 METHOD SetBorderColor( nColor ) CLASS TCard
     if ::oBar != nil
         ::oBar:SetColor( nColor, nColor )
     endif
 return nil
 
+//----------------------------------------------------------------------------//
+
 METHOD SetCornerRadius( nRadius  ) CLASS TCard
     ::super:SetCornerRadius( nRadius )
     ::oBody:SetCornerRadius( nRadius )
     ::super:SetShadow( 30, 10 , 0, 10 ) 
 return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD End() CLASS TCard
+    if ::oBody != nil
+        ::oBody:End()
+        ::oBody := nil
+    endif
+   
+    ::oBar   := nil
+    ::oIcon  := nil
+    ::oTitle := nil
+return ::Super:End()

@@ -38,7 +38,7 @@ HB_FUNC(PRINTERSELECT) {
 }
 
 HB_FUNC(NRGBCOLOR) {
-  NSColor *color = [NSColor colorWithCalibratedRed:(CGFloat)hb_parnl(1)
+  NSColor *color = [NSColor colorWithSRGBRed:(CGFloat)hb_parnl(1)
                                              green:(CGFloat)hb_parnl(2)
                                               blue:(CGFloat)hb_parnl(3)
                                              alpha:(CGFloat)100];

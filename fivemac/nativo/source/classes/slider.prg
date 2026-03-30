@@ -16,8 +16,7 @@ CLASS TSlider FROM TControl
    METHOD SetCircular() INLINE CircularSlider( ::hWnd )   
    
    METHOD SetMinMaxValue( nMin, nMax )
-   
-   METHOD SetTickMarks( nTick )
+   METHOD SetTickMarks( nTick , lSnap )
    
    METHOD Change() 
    
@@ -31,6 +30,11 @@ CLASS TSlider FROM TControl
    METHOD Initiate()
    
    METHOD cGenPrg()
+
+   METHOD SetFrame( nTop, nLeft, nWidth, nHeight )   
+
+   METHOD End()
+
 
 ENDCLASS   
 
@@ -49,7 +53,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange, nValue, nAutoResize,;
    ::nAutoResize = nAutoResize
    
    if !Empty(cOnClick)
-   ::aEvents[1 ][ 2] :=  cOnclick
+      ::aEvents[1 ][ 2] :=  cOnclick
    endif
      
    oWnd:AddControl( Self )
@@ -82,10 +86,10 @@ METHOD Initiate() CLASS  TSlider
    local hWnd := SliderResCreate( ::oWnd:hWnd, ::nId )   
 
    if hWnd != 0
-   ::hWnd = hWnd
+      ::hWnd = hWnd
    else
-   MsgAlert( "Non defined SLIDER ID " + AllTrim( Str( ::nId ) ) + ;
-      " in resource " + ::oWnd:cNibName )
+      MsgAlert( "Non defined SLIDER ID " + AllTrim( Str( ::nId ) ) + ;
+         " in resource " + ::oWnd:cNibName )
    endif
 
    ::SetValue( ::nValue )
@@ -94,11 +98,11 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-METHOD SetTickMarks( nTick ) CLASS TSlider
+METHOD SetTickMarks( nTick , lSnap ) CLASS TSlider
 
-   DEFAULT nTick := 25
+   DEFAULT nTick := 25, lSnap := .F.
 
-   SliderSetTickMarks( ::hWnd, nTick )
+   SliderSetTickMarks( ::hWnd, nTick, lSnap )
    
 return nil  
 
@@ -121,7 +125,7 @@ METHOD Change() CLASS TSlider
    //  else
    ::nValue = ::GetValue() 
    if ! Empty( ::bChange )
-   Eval( ::bChange, ::nValue, Self )
+      Eval( ::bChange, ::nValue, Self )
    endif      
    //  endif   
    
@@ -142,13 +146,27 @@ METHOD cGenPrg() CLASS TSlider
    local cEventCode := ::GetEventCode( "OnClick" )    
        
    if ! Empty( cEventCode )
-   cCode += " ON CLICK " + cEventCode
+      cCode += " ON CLICK " + cEventCode
    endif   
                      
    if ::nAutoResize != 0                  
-   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
+      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
    endif            
                               
 return cCode  
 
 //----------------------------------------------------------------------------//
+
+METHOD SetFrame( nTop, nLeft, nWidth, nHeight ) CLASS TSlider
+
+   DEFAULT nTop := 0, nLeft := 0, nWidth := 100, nHeight := 100
+
+   Slider_SetFrame( ::hWnd, nTop, nLeft, nWidth, nHeight )
+
+return nil  
+
+//----------------------------------------------------------------------------//
+
+METHOD End()
+   ::hWnd := 0
+return nil  

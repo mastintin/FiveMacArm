@@ -116,7 +116,7 @@ HB_FUNC(BOXISLINEBORDER) {
 
 HB_FUNC(BOXSETFILLCOLOR) {
   NSBox *box = (NSBox *)hb_parnll(1);
-  NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
+  NSColor *color = [NSColor colorWithSRGBRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
                                              alpha:(hb_parnl(5) / 100.0)];
@@ -127,7 +127,7 @@ HB_FUNC(BOXSETFILLCOLOR) {
 
 HB_FUNC(BOXSETBORDERCOLOR) {
   NSBox *box = (NSBox *)hb_parnll(1);
-  NSColor *color = [NSColor colorWithCalibratedRed:(hb_parnl(2) / 255.0)
+  NSColor *color = [NSColor colorWithSRGBRed:(hb_parnl(2) / 255.0)
                                              green:(hb_parnl(3) / 255.0)
                                               blue:(hb_parnl(4) / 255.0)
                                              alpha:(hb_parnl(5) / 100.0)];
