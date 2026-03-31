@@ -1,9 +1,11 @@
+#import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>
 #import <IOKit/network/IOEthernetController.h>
 #import <IOKit/network/IOEthernetInterface.h>
 #import <IOKit/network/IONetworkInterface.h>
 #import <QuartzCore/QuartzCore.h>
 #import <UserNotifications/UserNotifications.h>
+
 #include <fivemac.h>
 #import <iTunes.h>
 
@@ -138,16 +140,10 @@ HB_FUNC(PATH) {
 
 //----------------------------------------------------------------------------//
 
-HB_FUNC(HOMETPATH) {
-  // NSFileManager defaultManager y homeDirectoryForCurrentUser
-  // devuelven objetos autorelease. No requieren release manual.
+HB_FUNC(HOMEPATH) {
   NSURL *homeURL = [[NSFileManager defaultManager] homeDirectoryForCurrentUser];
-
   if (homeURL != nil) {
-    // .path devuelve la ruta local (ej: /Users/tu_usuario)
-    // .absoluteString devolvería la URL (ej: file:///Users/tu_usuario)
     NSString *path = [homeURL path];
-
     if (path != nil) {
       hb_retc([path UTF8String]);
     } else {
@@ -156,6 +152,17 @@ HB_FUNC(HOMETPATH) {
   } else {
     hb_retc("");
   }
+}
+
+HB_FUNC(HOME) {
+   // Alias para facilitar su uso
+   PHB_ITEM pPath = hb_itemPutC( NULL, "" );
+   NSURL *homeURL = [[NSFileManager defaultManager] homeDirectoryForCurrentUser];
+   if (homeURL != nil) {
+      hb_itemPutC( pPath, [[homeURL path] UTF8String] );
+   }
+   hb_itemReturn( pPath );
+   hb_itemRelease( pPath );
 }
 
 //----------------------------------------------------------------------------//
@@ -811,6 +818,10 @@ HB_FUNC(FM_OPENFILE) {
 
   dispatch_semaphore_wait(
       semaphore, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+
+  // LIBERACIÓN MANUAL (Crucial en No-ARC)
+  dispatch_release(semaphore);
+
   hb_retl(success);
 }
 
@@ -826,6 +837,9 @@ HB_FUNC(MOVETOTRASH2) {
     lresult = [filemgr trashItemAtURL:originalURL
                      resultingItemURL:nil
                                 error:nil];
+
+    // LIBERACIÓN MANUAL (Crucial en No-ARC)
+    [originalURL release];
   }
 
   hb_retl(lresult);
@@ -1204,101 +1218,6 @@ HB_FUNC(USERNOTIFICATION) {
 
 //-------------------------------------------------------------//
 
-HB_FUNC(GETMACADDRESS) {
-  kern_return_t kernResult = KERN_FAILURE;
-  CFMutableDictionaryRef matchingDict;
-  io_iterator_t intfIterator;
-  unsigned char macAddress[kIOEthernetAddressSize];
-  char macAddressString[18] = {0};
-
-  // Buscamos interfaces de red tipo Ethernet/Wi-Fi
-  matchingDict = IOServiceMatching(kIOEthernetInterfaceClass);
-
-  if (matchingDict != NULL) {
-    CFMutableDictionaryRef propertyMatchDict = CFDictionaryCreateMutable(
-        kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
-        &kCFTypeDictionaryValueCallBacks);
-
-    // Buscamos específicamente la interfaz primaria (en0 normalmente)
-    CFDictionarySetValue(propertyMatchDict, CFSTR(kIOPrimaryInterface),
-                         kCFBooleanTrue);
-    CFDictionarySetValue(matchingDict, CFSTR(kIOPropertyMatchKey),
-                         propertyMatchDict);
-    CFRelease(
-        propertyMatchDict); // En No ARC/CoreFoundation liberamos lo creado
-
-    kernResult = IOServiceGetMatchingServices(kIOMainPortDefault, matchingDict,
-                                              &intfIterator);
-  }
-
-  if (kernResult == KERN_SUCCESS) {
-    io_object_t intfService;
-    while ((intfService = IOIteratorNext(intfIterator))) {
-      io_object_t controllerService;
-      // Obtenemos el controlador de la interfaz
-      kernResult = IORegistryEntryGetParentEntry(intfService, kIOServicePlane,
-                                                 &controllerService);
-
-      if (kernResult == KERN_SUCCESS) {
-        // Extraemos la dirección MAC física
-        CFDataRef data = (CFDataRef)IORegistryEntryCreateCFProperty(
-            controllerService, CFSTR(kIOMACAddress), kCFAllocatorDefault, 0);
-        if (data != NULL) {
-          CFDataGetBytes(data, CFRangeMake(0, kIOEthernetAddressSize),
-                         macAddress);
-          snprintf(macAddressString, sizeof(macAddressString),
-                   "%02x:%02x:%02x:%02x:%02x:%02x", macAddress[0],
-                   macAddress[1], macAddress[2], macAddress[3], macAddress[4],
-                   macAddress[5]);
-          CFRelease(data); // Limpieza CoreFoundation
-        }
-        IOObjectRelease(controllerService);
-      }
-      IOObjectRelease(intfService);
-    }
-    IOObjectRelease(intfIterator);
-  }
-
-  hb_retc(macAddressString);
-}
-
-/*
-HB_FUNC(GETMACADDRESS) {
-  NSPipe *outPipe = [NSPipe pipe];
-  NSTask *theTask = [[NSTask alloc] init];
-  NSString *string;
-  NSString *s;
-  // Built-in ethernet
-  [theTask setStandardOutput:outPipe];
-  [theTask setStandardError:outPipe];
-  [theTask setLaunchPath:@"/sbin/ifconfig"];
-  [theTask setCurrentDirectoryPath:@"~/"];
-  [theTask setArguments:[NSArray arrayWithObjects:@"en0", nil]];
-  [theTask launch];
-  [theTask waitUntilExit];
-
-  string = [[NSString alloc]
-      initWithData:[[outPipe fileHandleForReading] readDataToEndOfFile]
-          encoding:NSUTF8StringEncoding];
-
-  if (![string isEqualToString:@"ifconfig: interface en0 does not exist"]) {
-    s = string;
-    NSRange f;
-    f = [s rangeOfString:@"ether "];
-    if (f.location != NSNotFound) {
-      s = [s substringFromIndex:f.location + f.length];
-
-      string = [s substringWithRange:NSMakeRange(0, 17)];
-    }
-  }
-
-  hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
-}
-
-*/
-
-//-------------------------------------------------------------//
-
 HB_FUNC(CREATE_UUID) {
   NSString *uuid = [[NSUUID UUID] UUIDString];
   hb_retc([uuid UTF8String]);
@@ -1340,4 +1259,24 @@ HB_FUNC(PUMPEVENTS) {
                                        dequeue:YES]) != nil) {
     [NSApp sendEvent:event];
   }
+}
+
+//----------------------------------------------------------------------------//
+
+//---------usar para configuraciones  en library------------------------------//
+
+HB_FUNC(MAC_SETCONFIG) {
+  NSString *key = hb_NSSTRING_par(1);
+  NSString *value = hb_NSSTRING_par(2);
+
+  [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
+  // En versiones antiguas de macOS se usaba [defaults synchronize],
+  // pero hoy el sistema lo hace solo de forma automática.
+}
+
+HB_FUNC(MAC_GETCONFIG) {
+  NSString *key = hb_NSSTRING_par(1);
+  NSString *value = [[NSUserDefaults standardUserDefaults] stringForKey:key];
+
+  hb_retc(value ? [value UTF8String] : "");
 }

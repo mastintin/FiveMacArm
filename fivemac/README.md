@@ -358,6 +358,22 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **Control Lifecycle**: Updated `TControl:End()` to guarantee `ViewEnd()` is called, ensuring native views are cleanly removed from the window hierarchy even if the parent window is `nil`.
 - **Panel Stability**: Reinstated control registration logic in `TPanel:AddControl()` to ensure proper rendering of complex components like Browses.
 
+### Native Network Modernization (March 2026 - Part 29)
+- **High-Performance Network Engine**: Completely replaced the legacy `libcurl` dependency with a modern, native infrastructure based on Apple's **Foundation** (`NSURLSession`) and **Network** frameworks.
+- **Memory Safety & Stability**: Fixed critical memory leaks in the Objective-C layer related to semaphores, `NSURL` objects, and screen capture buffers. The new engine is 100% leak-free and thread-safe.
+- **Unified API (Zero-Transition Path)**: Introduced two twin classes that share the exact same API, allowing seamless switching between native Objective-C and modern Swift backends:
+    - **`TNetwork`**: High-level Harbour wrapper for the native Objective-C implementation.
+    - **`TSwiftNetwork`**: High-level Harbour wrapper for the modern Swift implementation with automatic JSON-to-Hash decoding.
+- **Full REST Support**: Both engines now support the complete set of HTTP methods: `GET`, `POST`, `PUT`, and `DELETE`.
+- **Advanced Features**:
+    - **Custom Headers**: New `SetHeader( cKey, cValue )` method to support modern APIs requiring `Authorization: Bearer` tokens and other custom metadata.
+    - **JSON-to-Hash Bridging**: Native Swift implementation automatically decodes HTTP JSON responses into Harbour Hashes/Arrays, eliminating manual string parsing.
+    - **Smart File Operations**: Robust `Download( cUrl, cFile )` and `Upload( cUrl, cFile )` methods with automatic file collision handling.
+    - **Robust Connectivity**: Standardized `IsConnected()`, `GetIP()`, `GetPublicIP()`, and `GetMac()` methods.
+- **Production-Ready Defaults**: All requests now include a standard Chrome-like **User-Agent** to avoid blockages from strict servers (like INE) and a default 30-second timeout.
+- **New Samples**: Added `testnet.prg` (Native) and `TestSwiftNetwork.prg` (SwiftUI) for immediate developer reference.
+- **Bug Fixes**: Resolved the long-standing `HOMEPATH` typo in `system.m` and introduced a convenient `HOME()` alias for executable path retrieval.
+
 ## Building
 
 To build the library and samples:

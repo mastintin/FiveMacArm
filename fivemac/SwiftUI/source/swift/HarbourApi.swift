@@ -2,12 +2,15 @@ import Foundation
 import Darwin 
 
 // Lectura de parámetros (Getters de C)
+
 @_silgen_name("hb_parc") func hb_parc(_ i: Int32) -> UnsafePointer<Int8>?
+
 @_silgen_name("hb_parl") func hb_parl(_ i: Int32) -> Int32
 @_silgen_name("hb_parni") func hb_parni(_ i: Int32) -> Int32
 @_silgen_name("hb_parnd") func hb_parnd(_ i: Int32) -> Double
 
 @_silgen_name("hb_parnll") func hb_parnll(_ i: Int32) -> Int64
+
 @_silgen_name("hb_retnll") func hb_retnll(_ n: Int64)
 
 
@@ -38,27 +41,38 @@ public func hb_vmPushString(_ s: String) {
     }
 }
 
-
-
-
 public typealias PHB_ITEM = UnsafeMutableRawPointer
 //typealias HB_SIZE = Int 
 public typealias HB_SIZE = CUnsignedLong
 
 
+@_silgen_name("hb_itemNew") func hb_itemNew(_ pItem: PHB_ITEM?) -> PHB_ITEM?
+@_silgen_name("hb_itemRelease") func hb_itemRelease(_ pItem: PHB_ITEM?) -> Void
+@_silgen_name("hb_itemReturn") func hb_itemReturn(_ pItem: PHB_ITEM?) -> Void
+@_silgen_name("hb_jsonDecode") func hb_jsonDecode(_ szJSON: UnsafePointer<Int8>?, _ pItem: PHB_ITEM?) -> Void
 
-// Funciones esenciales de la API de Harbour
+@_silgen_name("hb_itemType") func hb_itemType(_ pItem: PHB_ITEM?) -> Int32 // Los flags de tipo suelen ser Int32 (HB_IT_*)
 @_silgen_name("hb_arrayLen") func hb_arrayLen(_ pArray: PHB_ITEM?) -> HB_SIZE
-
 @_silgen_name("hb_arrayGetItemPtr") func hb_arrayGetItemPtr(_ pArray: PHB_ITEM?, _ index: HB_SIZE) -> PHB_ITEM?
 
+@_silgen_name("hb_itemGetCPtr") 
+private func _hb_itemGetCPtr(_ pItem: PHB_ITEM?) -> UnsafePointer<Int8>?
+
+public func hb_itemGetCPtr(_ pItem: PHB_ITEM?) -> String? {
+    // Intentamos obtener el puntero crudo
+    guard let cStr = _hb_itemGetCPtr(pItem) else {
+        return nil
+    }
+    
+    // 'validatingCString' es la opción más segura en Swift 6.3
+    // porque devuelve nil si la cadena de C tiene basura (caracteres inválidos)
+    return String(validatingUTF8: cStr) 
+}
 
 
 @_silgen_name("hb_hashLen") 
 func hb_hashLen(_ pHash: PHB_ITEM?) -> HB_SIZE
 
-@_silgen_name("hb_itemType") 
-func hb_itemType(_ pItem: PHB_ITEM?) -> Int32 // Los flags de tipo suelen ser Int32 (HB_IT_*)
 
 // --- HASH KEY ---//
 /*
@@ -79,21 +93,9 @@ public func hb_hashGetValuePtr(_ pHash: PHB_ITEM?, _ nPos: HB_SIZE) -> PHB_ITEM?
 }
 */
 
-// 1. Declaración de la función interna de Harbour (C)
-@_silgen_name("hb_itemGetCPtr") 
-func _hb_itemGetCPtr(_ pItem: PHB_ITEM?) -> UnsafePointer<Int8>?
 
-// 2. Función pública de Swift que la encapsula
-public func hb_itemGetCPtr(_ pItem: PHB_ITEM?) -> String? {
-    // Intentamos obtener el puntero crudo de la función interna
-    if let cStr = _hb_itemGetCPtr(pItem) {
-        // Si existe, lo convertimos a String de Swift
-        return String(validatingCString: cStr)
-    }
-    
-    // Si el puntero era nil o la conversión falló, devolvemos nil
-    return nil
-}
+//----------------------------------------------------------------------------//
+
 
 //----------------- viene de hbapi.h ----------------------
 
@@ -136,16 +138,24 @@ public let HB_IT_EVALITEM:  Int32 = ( HB_IT_BLOCK | HB_IT_SYMBOL )
 public let HB_IT_HASHKEY:   Int32 = ( HB_IT_INTEGER | HB_IT_LONG | HB_IT_DOUBLE | HB_IT_DATE | HB_IT_TIMESTAMP | HB_IT_STRING | HB_IT_POINTER )
 
 
+//----------------------------------------------------------------------------//
+// Extructura harbour de retorno de valores
+
+
 public struct Harbour {
-    public static func ret(_ value: String) {
-        hb_retc((value as NSString).utf8String)
+      public static func ret(_ value: String) {
+        value.withCString { ptr in
+            hb_retc(ptr)
+        }
     }
 
     public static func ret(_ value: String?) {
         if let v = value {
-            hb_retc((v as NSString).utf8String)
+            v.withCString { ptr in
+                hb_retc(ptr)
+            }
         } else {
-             hb_retc(nil)
+            hb_retc(nil)
         }
     }
     
@@ -169,10 +179,50 @@ public struct Harbour {
         hb_retni(Int32(value))
     }
 
+    public static func ret(_ value: Any) {
+        // 1. Si es un tipo básico, usamos los métodos que ya tienes
+        if let s = value as? String { self.ret(s); return }
+        if let i = value as? Int { self.ret(i); return }
+        if let b = value as? Bool { self.ret(b); return }
+        if let d = value as? Double { self.ret(d); return }
+
+        // 2. Si es un objeto complejo (Diccionario o Array), lo enviamos como HASH/ARRAY
+        if JSONSerialization.isValidJSONObject(value) {
+            do {
+                let data = try JSONSerialization.data(withJSONObject: value, options: [])
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    
+                    // Creamos el ítem de Harbour que recibirá el objeto
+                    let pItem = hb_itemNew(nil)
+                    
+                    // Usamos hb_jsonDecode para que Harbour cree el Hash/Array interno
+                    jsonString.withCString { ptr in
+                        hb_jsonDecode(ptr, pItem)
+                    }
+                    
+                    // Devolvemos el objeto a la VM de Harbour
+                    hb_itemReturn(pItem)
+                    
+                    // ¡Importante! Liberamos nuestra referencia local
+                    hb_itemRelease(pItem)
+                    return
+                }
+            } catch {
+                print("Error serializando JSON para Harbour: \(error)")
+            }
+        }
+
+        // 3. Si llega aquí, es que no sabemos qué es
+        print("Aviso: Tipo de retorno no soportado por Harbour: \(type(of: value))")
+        hb_retc(nil) 
+    }
+
+    /*
     // Caso de seguridad: Si no es nada de lo anterior, no hacemos nada
     public static func ret(_ value: Any) {
         print("Aviso: Tipo de retorno no soportado por Harbour: \(type(of: value))")
     }
+    */
 }
 
 //---------------------------------------
@@ -205,54 +255,56 @@ public struct HarbourBridgeSupport {
 }
 
 //---------------------------------------------
+
+// --- 1. DECLARACIONES DE BAJO NIVEL (Puente con Harbour) ---
+// Usamos Int32 para HB_SIZE por estabilidad en 64 bits como hablamos
+
+// 1. Declaraciones usando tu PHB_ITEM (que es UnsafeMutableRawPointer)
+
+@_silgen_name("hb_itemType") 
+private func _hb_itemType(_ pItem: PHB_ITEM?) -> Int32
+
+@_silgen_name("hb_arrayGetItemPtr") 
+private func _hb_arrayGetItemPtr(_ pArray: PHB_ITEM?, _ nPos: HB_SIZE) -> PHB_ITEM?
+
+@_silgen_name("hb_arrayLen") 
+private func _hb_arrayLen(_ pArray: PHB_ITEM?) -> UInt32
+
+
+// --- 2. ESTRUCTURA DE EXTRACCIÓN ---
+
 public struct SwiftPickerArray {
     
-    /// Convierte un puntero Int64 de Harbour directamente en un [String] nativo
+    /// Convierte un puntero Int64 de Harbour en un [String] nativo de Swift
     public static func from(harbourPtr: Int64) -> [String] {
-        // 1. Casting de Int64 a Puntero de Memoria
-        let pArray = UnsafeMutableRawPointer(bitPattern: Int(harbourPtr))
-        
-        // 2. Ejecutar la extracción segura
+        // Convertimos el Int64 a un puntero opaco (PHB_ITEM)
+        let pArray = PHB_ITEM(bitPattern: Int(harbourPtr))
         return getSwiftArray(from: pArray)
     }
 
-    /// Función interna que recorre la memoria de Harbour
-        /// Función interna que recorre la memoria de Harbour
-    /// Función interna que convierte un Array de Harbour en un Array de Strings de Swift
-private static func getSwiftArray(from pArray: PHB_ITEM?) -> [String] {
-    var result: [String] = []
-    
-    // 1. Validar que el puntero no sea nulo y que sea un tipo Array de Harbour
-    guard let pArray = pArray, (hb_itemType(pArray) & HB_IT_ARRAY) != 0 else {
-        return result
-    }
+    /// Recorre el array de Harbour y extrae solo los elementos que son String
+    private static func getSwiftArray(from pArray: PHB_ITEM?) -> [String] {
+        // 1. Validamos que el puntero no sea nulo y que sea un Array
+        guard let pArray = pArray, (_hb_itemType(pArray) & HB_IT_ARRAY) != 0 else {
+            return []
+        }
 
-    // 2. Obtener la longitud del array (HB_SIZE suele ser UInt)
-    let nLen = Int(hb_arrayLen(pArray))
-    
-    if nLen > 0 {
-        // 3. Recorrer el array (Recordar: Harbour usa base 1)
-        for i in 1...nLen {
-            // Obtenemos el puntero al ítem en la posición 'i'
-            if let pItem = hb_arrayGetItemPtr(pArray, HB_SIZE(i)) {
-                
-                // 4. Verificamos si el ítem es una cadena (String)
-                if (hb_itemType(pItem) & HB_IT_STRING) != 0 {
-                    
-                    // Intentamos obtener el puntero C (char *) del ítem
-                    if let cStr = hb_itemGetCPtr(pItem) {
-                        result.append(cStr)
-                    }
-                }
+        // 2. Obtenemos la longitud (HB_SIZE / UInt32)
+        let nLen = _hb_arrayLen(pArray)
+        if nLen == 0 { return [] }
+
+        // 3. Extracción limpia usando compactMap (Swift 6.3 style)
+        // Recorremos de 1 a nLen (Harbour usa base 1)
+        return (1...Int(nLen)).compactMap { i in
+            // Obtenemos el ítem en la posición i
+            guard let pItem = _hb_arrayGetItemPtr(pArray, HB_SIZE(i)),
+                  (_hb_itemType(pItem) & HB_IT_STRING) != 0,
+                  let cStr = _hb_itemGetCPtr(pItem) else {
+                return nil // Si no es string o falla, se ignora
             }
+            
+            // Validamos y convertimos a String de Swift
+            return String(validatingUTF8: cStr)
         }
     }
-    
-    return result
 }
-
-
-}
-
-
-
