@@ -409,11 +409,18 @@ HB_FUNC(SCREENTOPASTEBOARD) {
                  }
                  dispatch_semaphore_signal(sema);
                }];
+
+      // Liberación manual en No-ARC tras el setup
+      [filter release];
+      [config release];
     }];
 
     // Wait for async capture (timeout 5s)
     dispatch_semaphore_wait(
         sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)));
+
+    // IMPORTANTE: En No-ARC hay que liberar el semáforo manualmente
+    dispatch_release(sema);
 
     if (capturedImage) {
       NSPasteboard *pasteBoard = (NSPasteboard *)hb_parnll(1);
