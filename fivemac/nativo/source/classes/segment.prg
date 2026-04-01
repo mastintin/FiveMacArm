@@ -57,21 +57,22 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd,bAction , aSegments, aImages,;
    DEFAULT nStyle:= 5
 
    ::hWnd = SegmentCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
-
+   ::SetTag( GetNextTag() )
+   
    ::aSegments = aSegments
 
    if Len( ::aSegments ) > 0
-   ::SetCount( Len( ::aSegments ) )
-   AEval( ::aSegments , { | obj, ele | ::SetLabel( ele, ::aSegments[ ele ] ) } )
-   if Len( aImages ) > 0
-   AEval( aImages, { | cImg, ele | ::SetImg( cImg, ele ) } )
-   endif
+      ::SetCount( Len( ::aSegments ) )
+      AEval( ::aSegments , { | obj, ele | ::SetLabel( ele, ::aSegments[ ele ] ) } )
+      if Len( aImages ) > 0
+         AEval( aImages, { | cImg, ele | ::SetImg( cImg, ele ) } )
+      endif
    endif
 
    ::SetStyle( nStyle )
 
    if ! Empty( nTracking )
-   ::SetTracking( nTracking )
+      ::SetTracking( nTracking )
    endif
 
    ::nAutoResize = nAutoResize
@@ -104,11 +105,11 @@ METHOD Initiate() CLASS TSegment
    local hWnd := SegmentResCreate( ::oWnd:hWnd, ::nId )
 
    if hWnd != 0
-   ::hWnd = hWnd
+      ::hWnd = hWnd
    else
-   MsgAlert( "Non defined ID " + ;
-      AllTrim( Str( ::nId ) ) + ;
-      " in resource " + ::oWnd:cNibName )
+      MsgAlert( "Non defined ID " + ;
+         AllTrim( Str( ::nId ) ) + ;
+         " in resource " + ::oWnd:cNibName )
    endif
 
 return nil

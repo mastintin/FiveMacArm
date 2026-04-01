@@ -75,7 +75,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, lRaised, cAlign,;
    
       
    ::oWnd = oWnd
-   
+   ::SetTag( GetNextTag() )
        
    if lRaised
       ::SetRaised()

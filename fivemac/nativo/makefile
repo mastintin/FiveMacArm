@@ -75,8 +75,9 @@ PRG_OBJS = \
 	./obj/movie.o \
   	./obj/multiview.o \
 	./obj/nodo.o \
+	./obj/network.o \
 	./obj/nativemap.o \
-        ./obj/notification.o \
+    ./obj/notification.o \
   	./obj/nativeaudio.o \
   	./obj/nsobject.o \
   	./obj/picture.o \
@@ -107,8 +108,8 @@ PRG_OBJS = \
 	./obj/tabview.o \
 	./obj/tabItem.o \
 	./obj/stackitem.o \
-        ./obj/tclipget.o \
-        ./obj/textbox.o \
+    ./obj/tclipget.o \
+    ./obj/textbox.o \
     ./obj/tcifilter.o \
     ./obj/Ttimer.o	\
 	./obj/toolbar.o	\
@@ -160,6 +161,7 @@ C_OBJS = ./objc/browses.o	\
 	./objc/movies.o	\
 	./objc/msgs.o	\
 	./objc/nibs.o \
+	./objc/networks.o \
     ./objc/notifications.o \
 	./objc/objc.o \
 	./objc/or.o	\

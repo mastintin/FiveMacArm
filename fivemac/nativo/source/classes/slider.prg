@@ -33,6 +33,10 @@ CLASS TSlider FROM TControl
 
    METHOD SetFrame( nTop, nLeft, nWidth, nHeight )   
 
+   METHOD SetEnabled( lEnabled ) INLINE Control_SetEnabled( ::hWnd, lEnabled )   
+   METHOD IsEnabled() INLINE Control_IsEnabled( ::hWnd )   
+   METHOD SetFocus() INLINE Control_SetFocus( ::oWnd:hWnd, ::nTag )   
+
    METHOD End()
 
 
@@ -46,6 +50,8 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bChange, nValue, nAutoResize,;
    DEFAULT nWidth := 100, nHeight := 100, nValue := 0, oWnd := GetWndDefault()
      
    ::hWnd    = SliderCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
+   ::SetTag( GetNextTag() )
+
    ::nValue  = nValue
    ::oWnd    = oWnd
    ::bChange = bChange
@@ -166,7 +172,5 @@ METHOD SetFrame( nTop, nLeft, nWidth, nHeight ) CLASS TSlider
 return nil  
 
 //----------------------------------------------------------------------------//
-
-METHOD End()
-   ::hWnd := 0
-return nil  
+METHOD End() CLASS TSlider
+RETURN ::Super:End()

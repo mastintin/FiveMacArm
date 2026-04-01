@@ -38,7 +38,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAct
     ::hWnd = SD_SWIFT_SLIDER_CREATE( nTop, nLeft, nWidth, nHeight, nValue, oWnd:hWnd, ::cID, ::lShowValue, ::lGlass )
     
     if nAutoResize != 0
-    SWIFTAUTORESIZE( ::hWnd, nAutoResize )
+        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
 
     oWnd:AddControl( Self )
@@ -68,7 +68,6 @@ METHOD End() CLASS TSwiftSlider
         if nPos > 0
             aSwiftSliders[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cID := ""
     endif
 return ::Super:End()

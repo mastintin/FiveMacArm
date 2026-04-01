@@ -2,6 +2,14 @@
 
 //----------------------------------------------------------------------------//
 
+STATIC nLastTag := 0
+
+FUNCTION GetNextTag()
+RETURN ++nLastTag // Garantiza que NUNCA habrá dos controles con el mismo ID en toda la App
+
+
+//----------------------------------------------------------------------------//
+
 function cTimeMINSEC( nSeconds )
     local nMin, nSec
     hb_default( @nSeconds, 0 )

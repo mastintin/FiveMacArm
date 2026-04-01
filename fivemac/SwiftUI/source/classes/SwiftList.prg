@@ -135,7 +135,6 @@ METHOD End() CLASS TSwiftList
         if ::nListIndex > 0 .and. ::nListIndex <= Len( aSwiftLists )
             aSwiftLists[ ::nListIndex ] := nil
         endif
-        ::hWnd := 0
         ::cId := ""
     endif
 return ::Super:End()

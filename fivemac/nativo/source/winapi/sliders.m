@@ -156,3 +156,23 @@ HB_FUNC(GETSLIDERVALUE) {
     hb_retnd(0.0);
   }
 }
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(CONTROL_REMOVE) {
+  // Funciona para Sliders, Progress, QLPreview, etc.
+  NSView *view = (NSView *)hb_parnll(1);
+
+  if (view) {
+    // 1. Lo eliminamos de su padre (vParent)
+    [view removeFromSuperview];
+
+    // 2. IMPORTANTE en No-ARC:
+    // Al quitarlo de la vista, si fue creado con autorelease,
+    // el sistema lo destruirá pronto.
+    // Ponemos el puntero a NIL en Harbour para evitar accidentes.
+    hb_retnl(0);
+  }
+}
+
+//----------------------------------------------------------------------//

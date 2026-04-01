@@ -21,16 +21,16 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nRow, nCol, nWidth, nHeight, oWnd, cText, oRadMenu, lUpdate ) ;
-   CLASS TRadio
+      CLASS TRadio
 
    DEFAULT oWnd := GetWndDefault(), nWidth := 100, nHeight := 23,;
-           lUpdate := .F., oRadMenu := TRadMenu()
+      lUpdate := .F., oRadMenu := TRadMenu()
 
    ::hWnd     = RadCreate( nRow, nCol, nWidth, nHeight, cText, oWnd:hWnd )
    ::oRadMenu = oRadMenu
    ::lUpdate  = lUpdate
    ::oWnd     = oWnd
-
+   ::SetTag( GetNextTag() )
    oWnd:AddControl( Self )
 
    ::cVarName = "oRad" + ::GetCtrlIndex()
@@ -82,7 +82,7 @@ METHOD Initiate() CLASS TRadio
       ::hWnd = hWnd
    else
       MsgAlert( "Non defined Radio ID " + AllTrim( Str( ::nId ) ) + ;
-      " in resource " + ::oWnd:cNibName )
+         " in resource " + ::oWnd:cNibName )
    endif
 
 return nil

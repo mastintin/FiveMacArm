@@ -94,7 +94,6 @@ METHOD End() CLASS TSwiftButton
         if nPos > 0
             aSwiftButtons[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cID := ""
     endif
 return ::Super:End()

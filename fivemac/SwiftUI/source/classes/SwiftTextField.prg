@@ -91,7 +91,6 @@ METHOD End() CLASS TSwiftTextField
         if nPos > 0
             aSwiftTextFields[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cId := ""
     endif
 return ::Super:End()

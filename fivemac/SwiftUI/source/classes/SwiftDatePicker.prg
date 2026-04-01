@@ -84,7 +84,6 @@ METHOD End() CLASS TSwiftDatePicker
         if nPos > 0
             aSwiftDatePickers[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cId  := ""
     endif
 return ::Super:End()

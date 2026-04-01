@@ -68,22 +68,23 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bAction, cFileName, nStyle,;
 
    ::hWnd    = BtnBmpCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
    ::oWnd    = oWnd
+   ::SetTag( GetNextTag() )
    ::bAction = bAction
 
    if ! Empty( cOnClick )
-   ::SetEventCode( "OnClick", cOnClick )
+      ::SetEventCode( "OnClick", cOnClick )
    endif
 
    if ! Empty( cFileName )
-   ::cFileName = cFileName
+      ::cFileName = cFileName
    endif   
     
    if ! Empty( nStyle )
-   ::SetBezelStyle( nStyle )
+      ::SetBezelStyle( nStyle )
    endif 
    
    if ! Empty( cToolTip )
-   ::SetToolTip( cToolTip )
+      ::SetToolTip( cToolTip )
    endif
    
    ::nAutoResize = nAutoResize
@@ -113,11 +114,11 @@ METHOD cGenPrg() CLASS TBtnBmp
    local cEventCode := ::GetEventCode( "OnClick" )    
        
    if ! Empty( cEventCode )
-   cCode += " ACTION " + cEventCode
+      cCode += " ACTION " + cEventCode
    endif     
                       
    if ::nAutoResize != 0
-   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
+      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
    endif
 
 return cCode
@@ -131,11 +132,11 @@ METHOD Click() CLASS TBtnBmp
    //  else
  
    IF ::bAction != nil
-   if  valtype(::bAction)== "C"
-   Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
-   else
-   Eval( ::bAction, Self )
-   endif
+      if  valtype(::bAction)== "C"
+         Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
+      else
+         Eval( ::bAction, Self )
+      endif
    ENDIF
      
    //  endif 
@@ -156,9 +157,9 @@ NSImageOverlaps  = 6
 */
 
    if valtype( nLayout ) == "N"
-   ::nLayout := nLayout
+      ::nLayout := nLayout
    else
-   ::nLayout   = AScan( aLayouts, nLayout )
+      ::nLayout   = AScan( aLayouts, nLayout )
    endif
 
    BtnSetImagenPosition( ::hWnd, ::nLayout )

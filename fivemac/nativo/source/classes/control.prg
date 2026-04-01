@@ -12,6 +12,7 @@ CLASS TControl FROM TWindow
    DATA   nClrText, nClrBack 
    DATA   lLiquidGlass INIT .F.
    DATA   bDropFiles
+   DATA   nTag
 
    METHOD SetLiquidGlass( lActive, nRadius ) INLINE ( ::lLiquidGlass := lActive, ViewSetLiquidGlass( ::hWnd, nRadius ) )
 
@@ -59,7 +60,10 @@ CLASS TControl FROM TWindow
       SetTextcolor( ::hWnd, nRed, nGreen, nBlue, nAlfa )
    
    METHOD SetFont( cFaceName, nSize ) INLINE WndSetFont( ::hWnd, cFaceName, nSize )  
-      
+    
+   METHOD GetTag() INLINE Control_GetTag( ::hWnd )
+   METHOD SetTag( nTag ) INLINE ( ::nTag := nTag, Control_SetTag( ::hWnd, nTag ) ) 
+
    METHOD cGenPrg() INLINE "" 
    
    METHOD GetCtrlIndex()  
@@ -111,7 +115,7 @@ METHOD End() CLASS TControl
          ::oWnd:aControls = aControls
       endif
    endif
-   ViewEnd( ::hWnd )
+   // ViewEnd( ::hWnd )
    ::hWnd = nil
 return nil      
 

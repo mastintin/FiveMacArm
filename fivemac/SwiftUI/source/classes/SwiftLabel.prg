@@ -88,7 +88,6 @@ METHOD End() CLASS TSwiftLabel
         if nPos > 0
             aSwiftLabels[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cID := ""
     endif
 return ::Super:End()

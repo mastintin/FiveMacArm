@@ -127,7 +127,6 @@ METHOD End() CLASS TSwiftToggle
     if !Empty( ::hWnd )
         // Llamamos al macro de Swift
         SD_TGL_DESTROY( ::cId, ::hWnd )
-        ::hWnd := 0
         ::cID := ""
         if ::nTglIndex > 0 .and. ::nTglIndex <= Len( aSwiftToggles )
             aSwiftToggles[ ::nTglIndex ] := nil
