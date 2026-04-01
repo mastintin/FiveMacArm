@@ -143,14 +143,19 @@ public func sw_http_delete(url: String, timeout: Double) -> String {
 //----------------------------------------------------------------------------//
 
 @HarbourDirect
-public func sw_http_download(url: String, destination: String) -> Bool {
+public func sw_http_wait_download(url: String, destination: String, timeout: Double) -> Bool {
     guard let urlObj = URL(string: url) else { return false }
     let destURL = URL(fileURLWithPath: destination)
+    
+    // Si timeout es 0 o menor, usamos un valor por defecto de 60.0
+    let realTimeout = timeout > 0 ? timeout : 60.0
     
     let semaphore = DispatchSemaphore(value: 0)
     var success = false
     
     var request = URLRequest(url: urlObj)
+    request.timeoutInterval = realTimeout // Aplicamos el timeout a la petición también
+    
     for (key, value) in customHeaders {
         request.setValue(value, forHTTPHeaderField: key)
     }
@@ -170,7 +175,7 @@ public func sw_http_download(url: String, destination: String) -> Bool {
         semaphore.signal()
     }.resume()
     
-    _ = semaphore.wait(timeout: .now() + 60.0)
+    _ = semaphore.wait(timeout: .now() + realTimeout)
     return success
 }
 
@@ -215,17 +220,20 @@ private func sw_perform_request(url: String, method: String, body: String?, time
 //----------------------------------------------------------------------------//
 
 @HarbourDirect
-public func sw_http_upload(url: String, filePath: String) -> Bool {
+public func sw_http_upload(url: String, filePath: String, timeout: Double) -> Bool {
     guard let urlObj = URL(string: url) else { return false }
     let fileURL = URL(fileURLWithPath: filePath)
     
     guard FileManager.default.fileExists(atPath: fileURL.path) else { return false }
+    
+    let realTimeout = timeout > 0 ? timeout : 60.0
     
     let semaphore = DispatchSemaphore(value: 0)
     var success = false
     
     var request = URLRequest(url: urlObj)
     request.httpMethod = "POST"
+    request.timeoutInterval = realTimeout
     request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
     
     // Aplicamos User-Agent por defecto
@@ -243,6 +251,100 @@ public func sw_http_upload(url: String, filePath: String) -> Bool {
         semaphore.signal()
     }.resume()
     
-    _ = semaphore.wait(timeout: .now() + 60.0)
+    _ = semaphore.wait(timeout: .now() + realTimeout)
     return success
 }
+
+//----------------------------------------------------------------------------//
+
+@HarbourDirect
+public func sw_http_can_resume(url: String) -> Bool {
+    guard let urlObj = URL(string: url) else { return false }
+    let semaphore = DispatchSemaphore(value: 0)
+    var canResume = false
+    
+    var request = URLRequest(url: urlObj)
+    request.httpMethod = "HEAD"
+    
+    // Aplicamos Cabeceras personalizadas por si acaso (auth, etc)
+    for (key, value) in customHeaders {
+        request.setValue(value, forHTTPHeaderField: key)
+    }
+    
+    URLSession.shared.dataTask(with: request) { _, response, _ in
+        if let httpResponse = response as? HTTPURLResponse {
+            // Buscamos el header "Accept-Ranges" o "Content-Range"
+            if let acceptRanges = httpResponse.allHeaderFields["Accept-Ranges"] as? String {
+                canResume = (acceptRanges.lowercased() == "bytes")
+            }
+        }
+        semaphore.signal()
+    }.resume()
+    
+    _ = semaphore.wait(timeout: .now() + 5.0)
+    return canResume
+}
+
+//----------------------------------------------------------------------------//
+
+@HarbourDirect
+public func sw_http_download_async(url: String, destination: String, id: String, resumePath: String) {
+    let destURL = URL(fileURLWithPath: destination)
+    let resumeURL = URL(fileURLWithPath: resumePath)
+    
+    let completionHandler: (URL?, URLResponse?, Error?) -> Void = { tempURL, response, error in
+        var success = false
+        let resumeFile = destination + ".resume"
+        
+        if let temp = tempURL {
+            do {
+                if FileManager.default.fileExists(atPath: destURL.path) {
+                    try FileManager.default.removeItem(at: destURL)
+                }
+                try FileManager.default.moveItem(at: temp, to: destURL)
+                success = true
+                
+                // Si ha tenido éxito, borramos el archivo de reanudación si existía
+                try? FileManager.default.removeItem(atPath: resumeFile)
+            } catch {
+                print("Download Async Move Error: \(error)")
+            }
+        } else if let error = error {
+            // Si hubo un error, intentamos guardar el resumeData para el futuro
+            if let resumeData = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data {
+                try? resumeData.write(to: URL(fileURLWithPath: resumeFile))
+                print("Download interumpida: Guardado archivo .resume en \(resumeFile)")
+            }
+        }
+        
+        // Notificamos a Harbour en el hilo principal
+        DispatchQueue.main.async {
+            if let pDynSym = hb_dynsymFindName("SW_NET_ON_DOWNLOAD_END") {
+                hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
+                hb_vmPushNil()
+                hb_vmPushString(id)
+                hb_vmPushLogical(success ? 1 : 0)
+                hb_vmDo(2)
+            }
+        }
+    }
+
+    var task: URLSessionDownloadTask
+    
+    // Si nos pasan un archivo de reanudación y existe, intentamos reanudar
+    if !resumePath.isEmpty, 
+       let resumeData = try? Data(contentsOf: resumeURL) {
+        print("Swift: Intentando reanudar descarga desde \(resumePath)")
+        task = URLSession.shared.downloadTask(withResumeData: resumeData, completionHandler: completionHandler)
+    } else {
+        guard let urlObj = URL(string: url) else { return }
+        var request = URLRequest(url: urlObj)
+        for (key, value) in customHeaders {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        task = URLSession.shared.downloadTask(with: request, completionHandler: completionHandler)
+    }
+    
+    task.resume()
+}
+
