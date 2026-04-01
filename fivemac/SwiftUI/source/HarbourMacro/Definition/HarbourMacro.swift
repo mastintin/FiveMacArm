@@ -8,3 +8,7 @@ public macro HarbourBridge() = #externalMacro(module: "HarbourMacroImpl", type: 
 /// No requiere archivo .c. Soporta String, Bool e Int.
 @attached(peer, names: prefixed(_bridge_))
 public macro HarbourDirect() = #externalMacro(module: "HarbourMacroImpl", type: "HarbourDirectMacro")
+
+
+@attached(peer, names: arbitrary)
+public macro HarbourSW() = #externalMacro(module: "HarbourMacroImpl", type: "HarbourSWMacro")
