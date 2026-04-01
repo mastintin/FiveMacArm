@@ -214,6 +214,10 @@ HB_FUNC(SWIFTAUTORESIZE) {
   }
 }
 
+HB_FUNC(HB_ITEM_PTR) {
+  hb_retnll((long long)hb_param(1, HB_IT_ANY));
+}
+
 NSString *GetRootIdFromParam(int paramIndex) {
   if (HB_ISNUM(paramIndex)) {
     return [NSString stringWithFormat:@"%d", hb_parni(paramIndex)];

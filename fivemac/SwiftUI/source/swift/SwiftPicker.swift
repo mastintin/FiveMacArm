@@ -233,26 +233,36 @@ public func pkr_set_placeholder(id: String, placeholder: String) {
 }
 
 @HarbourDirect
-public func pkr_set_items(id: String, arrayPtr: Int64) {
-
-    // 2. Usar la clase auxiliar para obtener el array [String]
-    let items = SwiftPickerArray.from(harbourPtr: arrayPtr)
-    
-    // 3. Actualizar el estado del Picker en el hilo principal
+public func pkr_set_array(id: String, items: [String]) {
     DispatchQueue.main.async {
         if let state = SwiftPickerLoader.states[id] {
             state.items = items
-            
-            // Seguridad: si la selección actual ya no existe, elegir la primera
             if !items.contains(state.selection) {
                 state.selection = items.first ?? ""
             }
-        } else {
-            print("Bridge Error: No existe estado para el Picker ID: \(id)")
         }
     }
 }
 
+@HarbourDirect
+public func pkr_set_items(id: String, json: String) {
+    var items: [String] = []
+
+    if let data = json.data(using: .utf8) {
+        if let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            items = decoded
+        }
+    }
+
+    DispatchQueue.main.async {
+        if let state = SwiftPickerLoader.states[id] {
+            state.items = items
+            if !items.contains(state.selection) {
+                state.selection = items.first ?? ""
+            }
+        }
+    }
+}
 
 @HarbourDirect
 public func pkr_destroy(id: String, viewPtr: Int64) {
@@ -270,7 +280,6 @@ public func swift_picker_create(
     title: String,
     id: String
 ) -> Int64 {
-    
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
         

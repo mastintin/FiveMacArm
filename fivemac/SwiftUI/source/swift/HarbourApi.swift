@@ -23,6 +23,9 @@ import Darwin
 @_silgen_name("hb_param")
 func hb_param(_ iParam: Int32, _ iMask: Int32) -> UnsafeMutableRawPointer?
 
+@_silgen_name("hb_pcount")
+func hb_pcount() -> Int32
+
 @_silgen_name("hb_dynsymFindName") func hb_dynsymFindName(_ name: UnsafePointer<Int8>) -> UnsafeMutableRawPointer?
 @_silgen_name("hb_dynsymSymbol") func hb_dynsymSymbol(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer?
 @_silgen_name("hb_vmPushSymbol") func hb_vmPushSymbol(_ s: UnsafeMutableRawPointer?)
@@ -273,37 +276,25 @@ private func _hb_arrayLen(_ pArray: PHB_ITEM?) -> UInt32
 
 // --- 2. ESTRUCTURA DE EXTRACCIÓN ---
 
-public struct SwiftPickerArray {
+public struct HarbourArray {
     
-    /// Convierte un puntero Int64 de Harbour en un [String] nativo de Swift
-    public static func from(harbourPtr: Int64) -> [String] {
-        // Convertimos el Int64 a un puntero opaco (PHB_ITEM)
-        let pArray = PHB_ITEM(bitPattern: Int(harbourPtr))
-        return getSwiftArray(from: pArray)
-    }
-
     /// Recorre el array de Harbour y extrae solo los elementos que son String
-    private static func getSwiftArray(from pArray: PHB_ITEM?) -> [String] {
-        // 1. Validamos que el puntero no sea nulo y que sea un Array
-        guard let pArray = pArray, (_hb_itemType(pArray) & HB_IT_ARRAY) != 0 else {
-            return []
-        }
+    public static func getSwiftArray(from pArray: PHB_ITEM?) -> [String] {
+        guard let pArray = pArray else { return [] }
+        
+        let type = _hb_itemType(pArray)
+        guard (type & HB_IT_ARRAY) != 0 else { return [] }
 
-        // 2. Obtenemos la longitud (HB_SIZE / UInt32)
         let nLen = _hb_arrayLen(pArray)
         if nLen == 0 { return [] }
 
-        // 3. Extracción limpia usando compactMap (Swift 6.3 style)
-        // Recorremos de 1 a nLen (Harbour usa base 1)
         return (1...Int(nLen)).compactMap { i in
-            // Obtenemos el ítem en la posición i
-            guard let pItem = _hb_arrayGetItemPtr(pArray, HB_SIZE(i)),
-                  (_hb_itemType(pItem) & HB_IT_STRING) != 0,
-                  let cStr = _hb_itemGetCPtr(pItem) else {
-                return nil // Si no es string o falla, se ignora
-            }
+            guard let pItem = _hb_arrayGetItemPtr(pArray, HB_SIZE(i)) else { return nil }
             
-            // Validamos y convertimos a String de Swift
+            let itemType = _hb_itemType(pItem)
+            guard (itemType & HB_IT_STRING) != 0 else { return nil }
+            
+            guard let cStr = _hb_itemGetCPtr(pItem) else { return nil }
             return String(validatingUTF8: cStr)
         }
     }

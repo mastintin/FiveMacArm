@@ -123,16 +123,20 @@ public struct HarbourDirectMacro: PeerMacro {
             
             switch typeName {
             case "String":
-                extractionLines.append("let arg\(index) = hb_parc(\(hbIndex)).map { String(cString: $0) } ?? \"\"")
+                extractionLines.append("let arg\(index) = hb_parc(Int32(\(hbIndex))).map { String(cString: $0) } ?? \"\"")
             case "Bool":
-                extractionLines.append("let arg\(index) = hb_parl(\(hbIndex)) != 0")
+                extractionLines.append("let arg\(index) = hb_parl(Int32(\(hbIndex))) != 0")
             case "Int":
-                extractionLines.append("let arg\(index) = Int(hb_parni(\(hbIndex)))")
+                extractionLines.append("let arg\(index) = Int(hb_parni(Int32(\(hbIndex))))")
             case "Int64":
             // Para punteros, hWnd y HB_LONGLONG (64 bits)
-                extractionLines.append("let arg\(index) = hb_parnll(\(hbIndex))")
+                extractionLines.append("let arg\(index) = hb_parnll(Int32(\(hbIndex)))")
             case "Double":
-                extractionLines.append("let arg\(index) = hb_parnd(\(hbIndex))")
+                extractionLines.append("let arg\(index) = hb_parnd(Int32(\(hbIndex)))")
+            case "PHB_ITEM":
+                extractionLines.append("let arg\(index) = hb_param(Int32(\(hbIndex)), HB_IT_ANY)")
+            case "[String]":
+                 extractionLines.append("let arg\(index) = HarbourArray.getSwiftArray(from: hb_param(Int32(\(hbIndex)), HB_IT_ANY))")
             default:
                 extractionLines.append("let arg\(index) = \"\"")
             }
@@ -168,12 +172,88 @@ public struct HarbourDirectMacro: PeerMacro {
     }
 }
 
+import SwiftCompilerPlugin
+import SwiftSyntax
+import SwiftSyntaxBuilder
+import SwiftSyntaxMacros
+
+public struct HarbourSWMacro: PeerMacro {
+    public static func expansion(
+        of node: AttributeSyntax,
+        providingPeersOf declaration: some DeclSyntaxProtocol,
+        in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+        
+        guard let function = declaration.as(FunctionDeclSyntax.self) else { return [] }
+        
+        let funcName = function.name.text
+        let cName = "HB_FUN_SD_\(funcName.uppercased())"
+        let bridgeName = "_bridge_\(funcName)"
+        
+        let returnType = function.signature.returnClause?.type.description.trimmingCharacters(in: .whitespaces) ?? "Void"
+        let isVoid = returnType == "Void"
+        
+        let parameters = function.signature.parameterClause.parameters
+        var extractionLines: [String] = []
+        var callArgsList: [String] = []
+        
+        for (index, param) in parameters.enumerated() {
+            let hbIndex = index + 1
+            let targetName = param.firstName.text
+            let typeName = param.type.description.trimmingCharacters(in: .whitespaces)
+            
+            // Gracias a las sobrecargas, la macro solo escribe la llamada directa.
+            // hbIndex es Int, por lo que Swift elegirá automáticamente las funciones de "alto nivel".
+            switch typeName {
+            case "String":
+                extractionLines.append("let arg\(index) = hb_parc(\(hbIndex))")
+            case "Bool":
+                extractionLines.append("let arg\(index) = hb_parl(\(hbIndex))")
+            case "Int":
+                extractionLines.append("let arg\(index) = hb_parni(\(hbIndex))")
+            case "Int64":
+                extractionLines.append("let arg\(index) = hb_parnll(\(hbIndex))")
+            case "Double":
+                extractionLines.append("let arg\(index) = hb_parnd(\(hbIndex))")
+            default:
+                extractionLines.append("let arg\(index) = \"\"")
+            }
+            callArgsList.append("\(targetName): arg\(index)")
+        }
+        
+        let extractionBody = extractionLines.joined(separator: "\n    ")
+        let callArgs = callArgsList.joined(separator: ", ")
+
+        let finalBody: String
+        if isVoid {
+            finalBody = """
+                DispatchQueue.main.async {
+                    \(funcName)(\(callArgs))
+                }
+            """
+        } else {
+            // Llama a tu struct Harbour.ret() pasándole el resultado de la función Swift
+            finalBody = "Harbour.ret(\(funcName)(\(callArgs)))"
+        }
+
+        let bridgeCode: DeclSyntax = """
+        @_cdecl("\(raw: cName)")
+        public func \(raw: bridgeName)(_ p: UnsafeMutableRawPointer?) {
+            \(raw: extractionBody)
+            \(raw: finalBody)
+        }
+        """     
+        return [DeclSyntax(bridgeCode)]
+    }
+}
+
 
 @main
 struct HarbourMacroPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         HarbourBridgeMacro.self ,
-        HarbourDirectMacro.self  // Registramos la nueva macro aquí
+        HarbourDirectMacro.self ,
+        HarbourSWMacro.self  // Registramos la nueva macro aquí
     ]
 }
 

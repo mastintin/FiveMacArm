@@ -91,9 +91,13 @@ METHOD OnChange( cValue ) CLASS TSwiftPicker
    
 return nil
 
-METHOD SetItems( aItems ) CLASS TSwiftPicker
-    ::aItems := aItems
-    SD_PKR_SET_ITEMS( ::cId,  aItems  )
+METHOD SetItems( uItems ) CLASS TSwiftPicker
+    ::aItems := uItems
+    if ValType( uItems ) == "A"
+       SD_PKR_SET_ARRAY( ::cID, uItems )
+    else
+       SD_PKR_SET_ITEMS( ::cID, uItems )
+    endif
 return nil
 
 METHOD SetColor( nAccent, nText ) CLASS TSwiftPicker
