@@ -1,9 +1,0 @@
-#import "SwiftCommon.h"
-/*
-HB_FUNC(SWIFTTEXTFIELDCREATE) {
-...
-}
-HB_FUNC(SWIFTTEXTEDITORCREATE) {
-...
-}
-*/
