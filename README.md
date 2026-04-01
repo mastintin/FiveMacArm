@@ -13,6 +13,15 @@
   - Support for **SF Symbols** (`ImgSymbols`) alongside traditional bitmaps.
   - Updated build system using `clang` and dynamic SDK path detection.
 
+## 🎯 Development Strategy
+
+In the recent evolution of FiveMac, we are prioritizing new developments in **Swift** over **Objective-C** for specific modules (especially in the `SwiftUI/` and modern network wrappers). This strategic shift is based on:
+
+1. **Superior Memory Management**: Swift's modern memory safety and ARC (Automatic Reference Counting) are significantly more robust than Objective-C, helping to prevent leaks and pointer-related crashes.
+2. **Apple's Modern API Priority**: Apple increasingly prioritizes new system functions and frameworks (such as `SwiftUI`, `Network`, and `Observation`) that are optimized for or exclusive to Swift.
+3. **Code Simplicity & Maintainability**: Swift allows for cleaner and more concise code. A clear example is the implementation of networking and asynchronous tasks, which are handled with much less boilerplate than in Objective-C.
+4. **Future-Proofing**: Swift is the future of the macOS ecosystem. While Objective-C remains supported for compatibility, it has moved into a maintenance phase while Swift continues to evolve rapidly.
+
 ## 📂 Project Structure
 
 The project is organized to separate the native core from high-level modern GUI wrappers.
