@@ -23,11 +23,11 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, nAutoResize ) CLASS TSwi
         // x = { oControl/cID, cTitle, cIcon }
         cTabId := ""
         if ValType( x[1] ) == "O" 
-             if __ObjHasData( x[1], "cID" )
-                 cTabId := x[1]:cID
-             elseif __ObjHasData( x[1], "cId" ) 
-                 cTabId := x[1]:cId
-             endif
+            if __ObjHasData( x[1], "cID" )
+                cTabId := x[1]:cID
+            elseif __ObjHasData( x[1], "cId" ) 
+                cTabId := x[1]:cId
+            endif
         elseif ValType( x[1] ) == "C"
             cTabId := x[1]
         endif
@@ -50,6 +50,5 @@ return Self
 METHOD End() CLASS TSwiftTabView
     if !Empty( ::hWnd )
         SD_TAB_DESTROY( ::hWnd )
-        ::hWnd := 0
     endif
 return ::Super:End()

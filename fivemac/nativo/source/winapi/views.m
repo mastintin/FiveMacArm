@@ -2,6 +2,8 @@
 #include <fivemac.h>
 #include <hbapiitm.h>
 
+#import <objc/runtime.h> // Esencial para detectar Zombies
+
 HB_FUNC(VIEWSETAUTORESIZE) {
   NSView *view = (NSView *)hb_parnll(1);
 
@@ -70,6 +72,9 @@ HB_FUNC(VIEWSETTOOLTIP) {
   [(NSView *)window setToolTip:string];
 }
 
+//----------------------------------------------------------------------//
+
+/*
 HB_FUNC(VIEWEND) {
   NSView *view = (NSView *)hb_parnll(1);
 
@@ -82,10 +87,15 @@ HB_FUNC(VIEWEND) {
     [pool release];
   }
 }
+*/
 
+HB_FUNC(VIEWEND) {
+  // BLOQUEO TEMPORAL DE SEGURIDAD
+  // No hacemos nada para evitar que Xjubila use punteros corruptos
+  hb_ret();
+}
 
-
-
+//----------------------------------------------------------------------//
 
 HB_FUNC(OSCONTROLGETSIZE) {
   // 1. Usamos un pool local por si el acceso a la vista genera objetos
@@ -124,28 +134,26 @@ HB_FUNC(VIEWCLEAN) {
 
     for (NSView *view in subviews) {
       NSView *targetView = view;
-      
+
       // If it's a table/browse, we must clean its delegate to stop calls
       if ([view isKindOfClass:[NSTableView class]]) {
-         NSTableView *tv = (NSTableView *)view;
+        NSTableView *tv = (NSTableView *)view;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-         // If it's a Wbrowse, it might need extra cleanup
-         if ([tv respondsToSelector:@selector(setDataSource:)]) {
-            [tv setDataSource:nil];
-            [tv setDelegate:nil];
-         }
+        // If it's a Wbrowse, it might need extra cleanup
+        if ([tv respondsToSelector:@selector(setDataSource:)]) {
+          [tv setDataSource:nil];
+          [tv setDelegate:nil];
+        }
 #pragma clang diagnostic pop
-         targetView = [view enclosingScrollView];
+        targetView = [view enclosingScrollView];
       }
 
       [targetView removeFromSuperview];
     }
 
-
     [subviews release];
   }
-
 
   [pool release];
   hb_ret();
@@ -288,3 +296,94 @@ HB_FUNC(VIEWENABLEDRAGANDDROP) {
 }
 
 //----------------------------------------------------------------------------//
+
+HB_FUNC(CONTROL_SETFOCUS) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  NSInteger tag = hb_parni(2);
+
+  // Buscamos la vista por Tag
+  NSView *vParent = GetView(window);
+  NSView *targetView = [vParent viewWithTag:tag];
+
+  if (targetView) {
+    // 1. Hacemos que la vista sea "First Responder" (foco)
+    [targetView.window makeFirstResponder:targetView];
+
+    // 2. Forzamos el redibujado para que se vea el borde de foco
+    [targetView setNeedsDisplay:YES];
+  }
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(CONTROL_SETTAG) {
+  NSView *view = (NSView *)hb_parnll(1);
+
+  if (view) {
+    NSInteger nTag = (NSInteger)hb_parni(2);
+
+    // 1. Blindaje de seguridad: ¿Sabe este objeto ponerse un tag?
+    if ([view respondsToSelector:@selector(setTag:)]) {
+      // 2. Si sabe, le ordenamos que lo haga (cast a ID para evitar warnings)
+      [(id)view setTag:nTag];
+    }
+  }
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(CONTROL_GETTAG) {
+  // NSView es la clase base que contiene la propiedad tag
+  NSView *view = (NSView *)hb_parnll(1);
+
+  if (view) {
+    // Retornamos el valor entero del Tag asignado
+    hb_retni((int)[view tag]);
+  } else {
+    // Si el puntero es inválido, devolvemos -1 o 0 como error
+    hb_retni(-1);
+  }
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(CONTROL_SETENABLED) {
+  // Funciona para NSSlider, NSProgressIndicator y casi cualquier control
+  NSControl *control = (NSControl *)hb_parnll(1);
+
+  if (control) {
+    // hb_parl(2) recibe .T. (Habilitado) o .F. (Deshabilitado) desde Harbour
+    BOOL bEnabled = hb_parl(2);
+
+    [control setEnabled:bEnabled];
+
+    // Forzamos el redibujado para que cambie al estado "gris" (dimmed) si se
+    // deshabilita
+    [control setNeedsDisplay:YES];
+  }
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(CONTROL_ISENABLED) {
+  // NSControl es la clase base para Sliders, Buttons, etc.
+  NSControl *control = (NSControl *)hb_parnll(1);
+
+  if (control) {
+    // Retorna .T. si está habilitado, .F. si está deshabilitado
+    hb_retl([control isEnabled]);
+  } else {
+    // Si el puntero es nulo, por seguridad devolvemos .F.
+    hb_retl(NO);
+  }
+}
+
+//----------------------------------------------------------------------//
+
+HB_FUNC(CONTROL_REMOVE) {
+  // Unificamos con VIEWEND para usar el mismo blindaje de seguridad
+  HB_FUN_VIEWEND();
+  hb_retnll(0); // Devolvemos 0 a Harbour para resetear el ::hWnd
+}
+
+//----------------------------------------------------------------------//

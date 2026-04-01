@@ -71,7 +71,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cFileName, cResName, cToolTip,;
 
    ::hWnd = ImgCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
    ::oWnd  = oWnd
-
+   ::SetTag( GetNextTag() )
    aSize := ParseSize( @cFilename, aSize )
 
    if ! Empty( cFileName ) .and. File( cFileName )
@@ -158,14 +158,14 @@ METHOD cGenPrg() CLASS TImage
       cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )               
    endif   
    					                    
- return cCode                                
+return cCode                                
 
 //----------------------------------------------------------------------------//
 
 METHOD End() CLASS TImage
-    if ! Empty( ::hWnd )
-       IMAGEVIEWRELEASE( ::hWnd )
-    endif
+   if ! Empty( ::hWnd )
+      IMAGEVIEWRELEASE( ::hWnd )
+   endif
 return ::Super:End()
 
 //----------------------------------------------------------------------------//

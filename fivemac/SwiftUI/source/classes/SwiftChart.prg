@@ -76,7 +76,6 @@ METHOD End() CLASS TSwiftChart
         if nPos > 0
             aSwiftCharts[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cID := ""
     endif
 return ::Super:End()

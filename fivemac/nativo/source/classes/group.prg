@@ -67,7 +67,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cPrompt, nStyle,;
    ::lFlipped = lFlipped
 
    if __ObjHasData( oWnd, "lVibrancy" ) .and. oWnd:lVibrancy
-   ::SetVibrancy( .T. )
+      ::SetVibrancy( .T. )
    endif
 
    ::nAutoResize = nAutoResize
@@ -93,15 +93,15 @@ METHOD cGenPrg() CLASS TGroup
       AllTrim( Str( ::nHeight ) )
 
    if ::lFlipped
-   cCode += " FLIPPED"
+      cCode += " FLIPPED"
    endif                          
 
    if ::nAutoResize != 0
-   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
+      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
    endif
    
    for n = 1 to Len( ::aControls )
-   AEval( ::aControls, { | oCtrl | cCode += oCtrl:cGenPrg() } )
+      AEval( ::aControls, { | oCtrl | cCode += oCtrl:cGenPrg() } )
    next     
 
 
@@ -142,9 +142,9 @@ return Self
 //----------------------------------------------------------------------------//
 
 METHOD End() CLASS TGroup
-    if ! Empty( ::hWnd )
-       BoxRelease( ::hWnd )
-    endif
+   if ! Empty( ::hWnd )
+      BoxRelease( ::hWnd )
+   endif
 return ::Super:End()
 
 //----------------------------------------------------------------------------//

@@ -60,7 +60,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName ) CLASS TWebview
     // Param 6: Parent Window Handle
     ::hWnd = WebviewCreate( nTop, nLeft, nWidth, nHeight, Self, oWnd:hWnd )
     ::oWnd = oWnd
-  
+    ::SetTag( GetNextTag() )    
     ::SetURL( cUrlName )
    
     oWnd:AddControl( Self ) 
@@ -72,7 +72,7 @@ return Self
 METHOD OnMessage( cBody, cName ) CLASS TWebview
 
     if ::bOnMessage != nil
-    Eval( ::bOnMessage, cBody, cName, Self )
+        Eval( ::bOnMessage, cBody, cName, Self )
     endif
 
     return nil 
@@ -106,17 +106,17 @@ METHOD Initiate() CLASS TWebview
 
     local hWnd:= WNDGETIDENTFROMNIB (::oWnd:hWnd,alltrim(str( ::nId )) )   
     if hWnd = -1
-    MsgAlert( "Non found WEBVIEW cID " + ;
-        AllTrim( Str( ::nId ) ) + ;
-        " in resource " + ::oWnd:cNibName )
-    return nil
+        MsgAlert( "Non found WEBVIEW cID " + ;
+            AllTrim( Str( ::nId ) ) + ;
+            " in resource " + ::oWnd:cNibName )
+        return nil
     endif 
     if hWnd != 0 
-    ::hWnd = hWnd
+        ::hWnd = hWnd
     else
-    MsgAlert( "Non defined WEBVIEW cID " + ;
-        AllTrim( Str( ::nId ) ) + ;
-        " in resource " + ::oWnd:cNibName )
+        MsgAlert( "Non defined WEBVIEW cID " + ;
+            AllTrim( Str( ::nId ) ) + ;
+            " in resource " + ::oWnd:cNibName )
     endif
 
     ::SetURL( ::cUrl )

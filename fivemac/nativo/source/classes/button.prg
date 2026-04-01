@@ -115,27 +115,29 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nStyle,;
 
    ::hWnd = BtnCreate( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd )
 
+   ::SetTag( GetNextTag() )
+
    if ! Empty( nStyle )
-   ::SetBezelStyle( nStyle )
+      ::SetBezelStyle( nStyle )
    endif
 
    if ! Empty( ntype )
-   ::SetType( nType )
+      ::SetType( nType )
    endif
 
    if ! Empty( cBmp )
-   ::SetFileName( cBmp )
+      ::SetFileName( cBmp )
    endif
 
    if ! Empty( cTooltip )
-   ::SetToolTip( cToolTip )
+      ::SetToolTip( cToolTip )
    endif
 
    ::oWnd    = oWnd
    ::bAction = bAction
    
    if ! Empty( cOnClick )
-   ::SetEventCode( "OnClick", cOnClick )
+      ::SetEventCode( "OnClick", cOnClick )
    endif
    
    ::nAutoResize = nAutoResize
@@ -177,11 +179,11 @@ METHOD cGenPrg() CLASS TButton
    local cEventCode := ::GetEventCode( "OnClick" )    
        
    if ! Empty( cEventCode )
-   cCode += " ACTION " + cEventCode
+      cCode += " ACTION " + cEventCode
    endif     
                        
    if ::nAutoResize != 0
-   cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
+      cCode += " AUTORESIZE " + AllTrim( Str( ::nAutoResize ) )
    endif
 
 return cCode
@@ -195,12 +197,12 @@ METHOD Click() CLASS TButton
    //  else
  
    IF ::bAction != nil
-   if  valtype(::bAction)== "C"
-   MsgInfo( ::bAction )
-   Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
-   else
-   Eval( ::bAction, Self )
-   endif
+      if  valtype(::bAction)== "C"
+         MsgInfo( ::bAction )
+         Eval( &( "{ | sender | " + ::bAction + " }" ), Self )
+      else
+         Eval( ::bAction, Self )
+      endif
    ENDIF
      
    //  endif 
@@ -214,11 +216,11 @@ METHOD Initiate() CLASS TButton
    local hWnd := BtnResCreate( ::oWnd:hWnd, ::nId )
 
    if hWnd != 0
-   ::hWnd = hWnd
+      ::hWnd = hWnd
    else
-   MsgAlert( "Non defined ID " + ;
-      AllTrim( Str( ::nId ) ) + ;
-      " in resource " + ::oWnd:cNibName )
+      MsgAlert( "Non defined ID " + ;
+         AllTrim( Str( ::nId ) ) + ;
+         " in resource " + ::oWnd:cNibName )
    endif
 
 return nil

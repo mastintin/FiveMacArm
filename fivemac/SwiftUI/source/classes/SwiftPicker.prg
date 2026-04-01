@@ -108,7 +108,6 @@ METHOD End() CLASS TSwiftPicker
         if nPos > 0
             aSwiftPickers[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cId  := ""
     endif
 return ::Super:End()

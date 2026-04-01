@@ -99,12 +99,10 @@ METHOD End() CLASS TPanel
     endif
     
     ::aControls = {}
-
     // Importante: Si TPanel tiene un handle de NSView (::hWnd)
     // llamamos a la función de C para desvincularlo de la supervista
     if ! Empty( ::hWnd )
         PANELDESTROY( ::hWnd )
-        ::hWnd = 0
     endif
 
 return ::Super:End()

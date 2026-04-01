@@ -69,10 +69,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, nValue, nAutoResize, cVarName ) 
    DEFAULT nWidth := 100, nHeight := 20, nValue := 30
    
    ::hWnd = ProgressCreate( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, nValue )
-
+   ::SetTag( GetNextTag() )
    ::oWnd   = oWnd
    ::nValue = nValue
-   
    ::nAutoResize = nAutoResize
 
    oWnd:AddControl( Self )
@@ -168,6 +167,5 @@ return nil
 //----------------------------------------------------------------------------//
 
 METHOD End() CLASS TProgress
-   ::hWnd := 0
-return nil
+return ::Super:End()
 

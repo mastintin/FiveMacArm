@@ -158,6 +158,8 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, bSetGet, bValid, lUpdate,;
         endif
     endif
 
+    ::SetTag( GetNextTag() )
+
     if lRounded
         ::SetBezelRound( .T. )
     endif

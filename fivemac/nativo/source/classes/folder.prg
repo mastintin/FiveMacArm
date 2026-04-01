@@ -24,7 +24,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aPages, cVarName, lFlipped ) CLA
    DEFAULT lFlipped := .F.
    
    ::hWnd = FldCreate(  nTop, nLeft, nWidth, nHeight, oWnd:hWnd )
-   
+   ::SetTag( GetNextTag() )   
    ::lFlipped = lFlipped
    ::aItems = {}
    
@@ -59,8 +59,8 @@ METHOD FindControl( hWnd ) CLASS TFolder
          return ::aItems[ n ]
       else
          if ( oControl := ::aItems[ n ]:FindControl( hWnd ) ) != nil
-	    return oControl
-	 endif
+            return oControl
+         endif
       endif
    next
    

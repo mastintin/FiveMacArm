@@ -37,7 +37,6 @@ return Self
 METHOD End() CLASS SwiftObservation
     if !Empty( ::hWnd )
         SD_OBS_DESTROY( ::cId, ::hWnd )
-        ::hWnd := 0
         ::cId  := ""
     endif
 return ::Super:End()

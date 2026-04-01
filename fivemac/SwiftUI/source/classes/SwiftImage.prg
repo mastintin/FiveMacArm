@@ -94,7 +94,6 @@ METHOD End() CLASS TSwiftImage
         if nPos > 0
             aSwiftImages[ nPos ] := nil
         endif
-        ::hWnd := 0
         ::cId := ""
     endif
 return ::Super:End()
