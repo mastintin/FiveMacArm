@@ -44,7 +44,7 @@ all: $(LIB_NAME)
 $(LIB_NAME): $(SWIFT_OBJ) $(OBJC_OBJS) $(PRG_OBJS)
 	@mkdir -p lib
 	@echo "Archiving $@..."
-	ar rc $@ obj/*.o
+	ar rc $@ $(SWIFT_OBJ) $(OBJC_OBJS) obj/Hrb_*.o
 	ranlib $@
 
 # Compile Swift

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Directorios
-BASE_DIR="source/HarbourMacro"
+BASE_DIR="."
 BUILD_DIR="$BASE_DIR/.build/release"
 BIN_DIR="$BASE_DIR/bin"
 
