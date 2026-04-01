@@ -78,7 +78,7 @@ public func sw_getIP() -> String {
 //----------------------------------------------------------------------------//
 
 @HarbourDirect
-public func sw_http_get_json(url: String) -> Any? {
+public func sw_http_get_json(url: String) -> Any {
     guard let urlObj = URL(string: url) else { return "Error: Invalid URL" }
 
     let semaphore = DispatchSemaphore(value: 0)
