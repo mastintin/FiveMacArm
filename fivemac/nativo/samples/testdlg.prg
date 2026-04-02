@@ -4,7 +4,7 @@ function Main()
 
    local oDlg
    
-   DEFINE DIALOG oDlg TITLE "Dialog"
+   DEFINE DIALOG oDlg TITLE "Dialog" NOFLIPPED 
    
    @ 40, 40 BUTTON "Another" OF oDlg ACTION Another()
    
@@ -18,7 +18,7 @@ function Another()
 
    local oDlg
 
-   DEFINE DIALOG oDlg TITLE "Dialog" 
+   DEFINE DIALOG oDlg TITLE "Dialog"  NOFLIPPED 
    
    ACTIVATE DIALOG oDlg
    

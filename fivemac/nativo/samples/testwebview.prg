@@ -6,7 +6,7 @@ function Main()
    
    SetImgPath( ResPath() + "/bitmaps/" )
 
-   DEFINE WINDOW oWnd TITLE "WebView Test" 
+   DEFINE WINDOW oWnd TITLE "WebView Test"  NOFLIPPED 
 	  	 
 	 oWnd:Maximize() 	 
 	  	 

@@ -8,7 +8,7 @@ function Main()
 
    local oWnd,obtn
 
-   DEFINE WINDOW oWnd 
+   DEFINE WINDOW oWnd  NOFLIPPED 
 
  //  REDEFINE BUTTON obtn ID 10 OF oWnd ACTION primer()
 @ 20, 20 BUTTON "Another" ACTION primer()
@@ -26,7 +26,7 @@ function Another()
    local oChk, lTest := .T.
    local oCbx, cVar  := "One"
    
-   DEFINE WINDOW oWnd RESOURCE "HuidView"
+   DEFINE WINDOW oWnd RESOURCE "HuidView" NOFLIPPED 
    
    REDEFINE GET oGet VAR cText ID 10 OF oWnd
    
@@ -57,7 +57,7 @@ local ldisclo:= .f.
  local onode1,onode2,onode3,onode4
 local osay 
  
-DEFINE WINDOW oWnd RESOURCE "hola"
+DEFINE WINDOW oWnd RESOURCE "hola" NOFLIPPED 
 
 REDEFINE BUTTON oBtn ID 10 OF oWnd ACTION oWnd:end()
 

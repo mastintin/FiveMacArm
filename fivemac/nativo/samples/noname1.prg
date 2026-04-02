@@ -4,7 +4,7 @@ function BuildWindow()
 
    local oForm1, oBtn1, oBtn2, oImg1
 
-   DEFINE WINDOW oForm1 ;
+   DEFINE WINDOW oForm1  NOFLIPPED ;
       TITLE "Form1" ;
       SIZE 500, 356
 

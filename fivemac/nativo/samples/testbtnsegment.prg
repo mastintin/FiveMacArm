@@ -20,7 +20,7 @@ function Main()
   local nTipoback:= 1
   local oMEnu:=BuildMenu()
    
-   DEFINE WINDOW oWnd TITLE "TestButton Segmented" ; //TEXTURED ;
+   DEFINE WINDOW oWnd TITLE "TestButton Segmented"  NOFLIPPED ; //TEXTURED ;
        FROM 370, 250 TO 480, 800	  	 
 	  	 	    	 
                                                              

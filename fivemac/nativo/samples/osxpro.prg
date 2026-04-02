@@ -20,7 +20,7 @@ function Main()
    BuildMenu()
    BuildPreprocessor()
 
-   DEFINE WINDOW oWndCommand TITLE "Command" ;
+   DEFINE WINDOW oWndCommand TITLE "Command"  NOFLIPPED ;
       FROM 115, 436 TO 510, 950
 
    DEFINE TOOLBAR oBar OF oWndCommand	
@@ -216,7 +216,7 @@ function New()
 
    local oWnd, oRadMenu, cType := "Program"
 
-   DEFINE WINDOW oWnd TITLE "New" ;
+   DEFINE WINDOW oWnd TITLE "New"  NOFLIPPED ;
       FROM 207, 22 TO 670, 300
 
    @ 415, 20 SAY "File type" OF oWnd
@@ -250,7 +250,7 @@ function BuildResult()
       return nil
    endif
 
-   DEFINE WINDOW oWndResult TITLE "Result" ;
+   DEFINE WINDOW oWndResult TITLE "Result"  NOFLIPPED ;
       FROM 172, 458 TO 600, 1150
 
    DEFINE TOOLBAR oBar OF oWndResult
@@ -288,7 +288,7 @@ function Browse()
       return nil
    endif
 
-   DEFINE WINDOW oWnd TITLE Alias() ;
+   DEFINE WINDOW oWnd TITLE Alias()  NOFLIPPED ;
       // FROM 213, 109 TO 717, 431
 
    @ 48, 20 BROWSE oBrw OF oWnd SIZE 672, 363 ALIAS Alias()
@@ -422,7 +422,7 @@ function Edit()
       return nil
    endif
 
-   DEFINE WINDOW oWnd TITLE Alias() ;
+   DEFINE WINDOW oWnd TITLE Alias()  NOFLIPPED ;
       FROM 213, 109 TO 717, 431
 
    @ 48, 20 BROWSE oBrw FIELDS "", "" HEADERS "FieldName", "Value" ;
@@ -453,7 +453,7 @@ function ModifyCommand( cPrgName )
                  "return nil"	
    endif
 
-   DEFINE WINDOW oWnd TITLE cPrgName ;
+   DEFINE WINDOW oWnd TITLE cPrgName  NOFLIPPED ;
       FROM 100, 430 TO 650, 1350
 	
    DEFINE TOOLBAR oBar OF oWnd
@@ -540,7 +540,7 @@ function BuildButtonBar()
 
    local oWnd, oBar
 
-   DEFINE WINDOW oWnd TITLE "OsxPro" ;
+   DEFINE WINDOW oWnd TITLE "OsxPro"  NOFLIPPED ;
     FROM  0, 0  TO 0, ScreenWidth()
 
    DEFINE TOOLBAR oBar OF oWnd

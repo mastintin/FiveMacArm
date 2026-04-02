@@ -25,7 +25,7 @@ function Main()
    (cAlias)->Code := cCode
    endif 
 
-   DEFINE WINDOW oWnd
+   DEFINE WINDOW oWnd NOFLIPPED 
 
    DEFINE BUTTONBAR oBar OF oWnd
 

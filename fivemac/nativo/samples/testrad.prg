@@ -4,7 +4,7 @@ function Main()
 
    local oWnd, oRad, nRad := 2
 
-   DEFINE WINDOW oWnd TITLE "Testing RadioButtons" PANELED
+   DEFINE WINDOW oWnd TITLE "Testing RadioButtons" PANELED NOFLIPPED 
 
    @ 200, 30 RADIO oRad VAR nRad ITEMS { "One", "Two", "Three" } OF oWnd
 

@@ -11,7 +11,7 @@ function Main()
    
     MSGBADGE("New")
    
-   DEFINE WINDOW oWnd TITLE "DBF Browse" ;
+   DEFINE WINDOW oWnd TITLE "DBF Browse"  NOFLIPPED ;
       FROM 213, 109 TO 650, 820
    
      

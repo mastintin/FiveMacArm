@@ -6,7 +6,7 @@ function Main()
     local cGet := "Here is some text to save and load..."
     local cFile := ""
    
-    DEFINE WINDOW oWnd TITLE "Word Document Test" ;
+    DEFINE WINDOW oWnd TITLE "Word Document Test"  NOFLIPPED ;
         FROM 50, 50 TO 500, 700
       
     @ 20, 20 GET oGet VAR cGet MEMO SIZE 640, 400 OF oWnd

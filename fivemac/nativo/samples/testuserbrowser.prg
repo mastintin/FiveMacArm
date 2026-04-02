@@ -6,7 +6,7 @@ function Main()
 
     local oWnd
 
-    DEFINE WINDOW oWnd TITLE "User Test Browser (NSDiffableDataSource)" ;
+    DEFINE WINDOW oWnd TITLE "User Test Browser (NSDiffableDataSource)"  NOFLIPPED ;
         FROM 200, 200 TO 600, 800
 
     // Call the C function to create and attach the browser

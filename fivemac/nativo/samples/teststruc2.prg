@@ -41,7 +41,7 @@ Function TableImport( oDbSQLite, oDbMySQL, cTable )
     local lExit := .t.
     local nRecCount := oDbSQLite:RecCount()
 
-    DEFINE WINDOW oWnd TITLE "Importando " + cTable ;
+    DEFINE WINDOW oWnd TITLE "Importando " + cTable  NOFLIPPED ;
         FROM 200, 200 TO 320, 600
        
     @ 40, 20 PROGRESS oProg POSITION 0 SIZE 360, 20 OF oWnd

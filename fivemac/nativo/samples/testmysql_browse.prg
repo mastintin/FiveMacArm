@@ -25,7 +25,7 @@ function Main()
 
     LoadData()
 
-    DEFINE WINDOW oWnd TITLE "MySQL Users CRUD (" + cHost + ")" ;
+    DEFINE WINDOW oWnd TITLE "MySQL Users CRUD (" + cHost + ")"  NOFLIPPED ;
         FROM 200, 200 TO 600, 800 FLIPPED
 
     DEFINE TOOLBAR oBar OF oWnd

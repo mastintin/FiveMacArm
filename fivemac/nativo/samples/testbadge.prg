@@ -5,7 +5,7 @@ function Main()
   local oWnd, cTest := "Hello world!"
   local cInfo:=space(50)
 
-   DEFINE WINDOW oWnd TITLE "TestGet" FROM 300, 300 TO 500, 700
+   DEFINE WINDOW oWnd TITLE "TestGet" FROM 300, 300 TO 500, 700 NOFLIPPED 
    
    MSGBADGE("new")
       

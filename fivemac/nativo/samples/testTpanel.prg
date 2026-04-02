@@ -4,7 +4,7 @@ function Main()
 
     local oWnd, oPanel, oBtn
 
-    DEFINE WINDOW oWnd TITLE "Testing TPanel" ;
+    DEFINE WINDOW oWnd TITLE "Testing TPanel"  NOFLIPPED ;
         SIZE 600, 400 FLIPPED GLASS
 
     // Create a Panel at (50, 50) with size 300x200

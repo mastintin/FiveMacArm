@@ -4,7 +4,7 @@ function Main()
 
   local oWnd, oImg, oFile, cFile := "                                     "
 
-  DEFINE WINDOW oWnd TITLE "SImage Migration Test (NSImageView)" ;
+  DEFINE WINDOW oWnd TITLE "SImage Migration Test (NSImageView)"  NOFLIPPED ;
     SIZE 800, 620 FLIPPED 
 
   @ 50, 20 SIMAGE oImg FILENAME "/System/Library/CoreServices/Finder.app/Contents/Resources/Finder.icns" ;

@@ -12,7 +12,7 @@ function MyMsgLogo( cBmp, nSeconds )
 
    local oWnd,oImg 
    
-   DEFINE WINDOW oWnd FROM 20, 300 TO 600, 800 NOBORDER 
+   DEFINE WINDOW oWnd FROM 20, 300 TO 600, 800 NOBORDER  NOFLIPPED 
    oWnd:SetPos( ( ScreenHeight() - 580 ) / 2, ( ScreenWidth() - 500 ) / 2 )
    oWnd:SetSplash()
    

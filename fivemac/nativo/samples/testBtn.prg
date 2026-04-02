@@ -18,7 +18,7 @@ function Main()
    local nHeight:= 100
    local nWidth:= 40
 
- DEFINE WINDOW oWnd TITLE "Testing coordinates" ;
+ DEFINE WINDOW oWnd TITLE "Testing coordinates"  NOFLIPPED ;
       FROM 50, 50 TO 200, 400
 
  @ 30, 40 BUTTON "Dialog" OF oWnd ACTION oWnd:Iconize()

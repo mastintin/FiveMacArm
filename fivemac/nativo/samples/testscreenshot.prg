@@ -3,7 +3,7 @@
 function Main()
    local oDlg
    
-   DEFINE DIALOG oDlg TITLE "Screen Capture to Clipboard Test" SIZE 400, 200
+   DEFINE DIALOG oDlg TITLE "Screen Capture to Clipboard Test" SIZE 400, 200 NOFLIPPED 
 
    @ 40, 40 BUTTON "Capture Screen" OF oDlg ;
       ACTION CaptureScreen() ;

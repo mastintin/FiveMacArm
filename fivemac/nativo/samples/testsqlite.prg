@@ -21,7 +21,7 @@ function Main()
 
    LoadData()
 
-   DEFINE WINDOW oWnd TITLE "SQLite Users CRUD (" + cDBName + ")" ;
+   DEFINE WINDOW oWnd TITLE "SQLite Users CRUD (" + cDBName + ")"  NOFLIPPED ;
       FROM 200, 200 TO 600, 800
 
    DEFINE TOOLBAR oBar OF oWnd
@@ -82,7 +82,7 @@ function AddUser()
    local oDlg, cName := Space( 50 ), nAge := 0
    local lSave := .F.
 
-   DEFINE DIALOG oDlg TITLE "Add User" SIZE 400, 200
+   DEFINE DIALOG oDlg TITLE "Add User" SIZE 400, 200 NOFLIPPED 
 
    @ 20, 20 SAY "Name:" OF oDlg
    @ 20, 80 GET cName OF oDlg SIZE 280, 24
@@ -121,7 +121,7 @@ function EditUser()
                                              // Let's verify. If Query returns strings for everything, we use Val().
                                              // My C code used hb_itemPutC for everything from argv. So yes, strings.
    
-   DEFINE DIALOG oDlg TITLE "Edit User (ID: " + AllTrim(Str(nId)) + ")" SIZE 400, 200
+   DEFINE DIALOG oDlg TITLE "Edit User (ID: " + AllTrim(Str(nId)) + ")" SIZE 400, 200 NOFLIPPED 
 
    @ 20, 20 SAY "Name:" OF oDlg
    @ 20, 80 GET cName OF oDlg SIZE 280, 24

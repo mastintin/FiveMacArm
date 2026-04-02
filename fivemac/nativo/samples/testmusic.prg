@@ -20,7 +20,7 @@ function Main()
     
     
 
-    DEFINE WINDOW oWnd TITLE "FiveMac Music Test" ;
+    DEFINE WINDOW oWnd TITLE "FiveMac Music Test"  NOFLIPPED ;
         FROM 200, 200 TO 700, 870 FLIPPED
 
     @ 20, 20 BUTTON "Play/Pause" SIZE 100, 30 ACTION ( oMusic:PlayPause() ) OF oWnd

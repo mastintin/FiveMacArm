@@ -21,7 +21,7 @@ Function myMain()
    
  DEFINE SOUND oSound 
    
- DEFINE WINDOW oWnd TITLE "Testing coordinates" ;
+ DEFINE WINDOW oWnd TITLE "Testing coordinates"  NOFLIPPED ;
       FROM 50, 50 TO 200, 400
 
          

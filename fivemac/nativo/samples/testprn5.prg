@@ -34,7 +34,7 @@ FUNCTION Main()
 
    LOCAL oDlg
    
-   DEFINE DIALOG oDlg TITLE "Dialog"
+   DEFINE DIALOG oDlg TITLE "Dialog" NOFLIPPED 
    
    @ 40, 40 BUTTON "print" OF oDlg ACTION RK_PrintTest()
    

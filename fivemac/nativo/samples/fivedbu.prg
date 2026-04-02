@@ -16,7 +16,7 @@ function Main()
 
    BuildMenu()
    
-   DEFINE WINDOW oWnd TITLE "FiveDBU for FiveMac" ;
+   DEFINE WINDOW oWnd TITLE "FiveDBU for FiveMac"  NOFLIPPED ;
     FROM  0,0  TO 0 , ScreenWidth()
 
    BuildBar()
@@ -153,7 +153,7 @@ function New(cAlias)
         cTitle = "DBF builder"
     endif
 
-   DEFINE DIALOG oDlg TITLE cTitle ;
+   DEFINE DIALOG oDlg TITLE cTitle  NOFLIPPED ;
       FROM 207, 274 TO 590, 790
 
    @ 351, 20 SAY "FieldName:" OF oDlg SIZE 78, 17   
@@ -409,7 +409,7 @@ else
  endif
 
 
-   DEFINE WINDOW oWnd TITLE cDbfName ;
+   DEFINE WINDOW oWnd TITLE cDbfName  NOFLIPPED ;
       FROM ScreenHeight() - 650, 50 TO ScreenHeight() - 150, 950
 
    DEFINE TOOLBAR oBar OF oWnd
@@ -537,7 +537,7 @@ function ShowStruct( cAlias )
 
    local oDlg, oBrw, aInfo := ( cAlias )->( DbStruct() )
    
-   DEFINE DIALOG oDlg TITLE "Dbf " + cAlias + " fields"
+   DEFINE DIALOG oDlg TITLE "Dbf " + cAlias + " fields" NOFLIPPED 
    
    oDlg:SetSize( 430, 395 )
 
@@ -577,7 +577,7 @@ function RecEdit( oBrw )
    nRecNo = ( cAlias )->( RecNo() )
    aRecord = ( cAlias )->( LoadRecord() )
    
-   DEFINE WINDOW oWnd TITLE "Edit: " + oBrw:cAlias SIZE 600, 500
+   DEFINE WINDOW oWnd TITLE "Edit: " + oBrw:cAlias SIZE 600, 500 NOFLIPPED 
    
    DEFINE TOOLBAR oBar OF oWnd
 
@@ -682,7 +682,7 @@ function IndexBuilder()
    local lDescend := .F., lMemory := .F., cScope := "All", nRecNo
    local oPgr, nMeter := 0, nStep := 10, lTag := .T. 
 
-   DEFINE DIALOG oDlg TITLE "Index builder" 
+   DEFINE DIALOG oDlg TITLE "Index builder"  NOFLIPPED 
 
    oDlg:SetSize( 530, 380 )
 
@@ -773,7 +773,7 @@ function Indexes()
       endif   
    next    
 
-   DEFINE WINDOW oWnd TITLE "Indexes of " + Alias() 
+   DEFINE WINDOW oWnd TITLE "Indexes of " + Alias()  NOFLIPPED 
 
    oWnd:SetSize( 950, 550 )
 
@@ -822,7 +822,7 @@ function Filter( oBrw )
    local oDlg, cFilter := PadR( DbFilter(), 200 )
    local obtn
 
-   DEFINE DIALOG oDlg TITLE "Filter " + Alias() SIZE 600, 200
+   DEFINE DIALOG oDlg TITLE "Filter " + Alias() SIZE 600, 200 NOFLIPPED 
 
    @ 110, 30 SAY "Expression:" OF oDlg SIZE 80, 22
 

@@ -7,7 +7,7 @@ function Main()
    local oWnd
    local obtn
 
-   DEFINE WINDOW oWnd TITLE "Testing popover" ;
+   DEFINE WINDOW oWnd TITLE "Testing popover"  NOFLIPPED ;
       FROM 150, 150 TO 300, 400
    
    ownd:center()
@@ -28,7 +28,7 @@ function otra()
    local oget
    local ctext:= "Hello Word"
 
-   DEFINE WINDOW oWnd2 TITLE "Testing popover" ;
+   DEFINE WINDOW oWnd2 TITLE "Testing popover"  NOFLIPPED ;
       FROM 150, 150 TO 400, 500
    
    @ 50, 40 GET oget VAR cText MEMO OF oWnd2 ;

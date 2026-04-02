@@ -7,7 +7,7 @@ local nValue := 0
 local nEntero
 local ownd
 
- DEFINE WINDOW oWnd FROM 100, 100 TO 800, 1200 FULL
+ DEFINE WINDOW oWnd FROM 100, 100 TO 800, 1200 FULL NOFLIPPED 
  
  
  ACTIVATE WINDOW oWnd ON INIT ( Espar(), ownd:end() )

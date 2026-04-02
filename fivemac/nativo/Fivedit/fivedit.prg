@@ -49,7 +49,7 @@ function Main()
    oHbDocs := THbDocs():New()
    // MsgInfo( "HbDocs Loaded. Items: " + Str( Len( oHbDocs:aDocs ) ) )
 
-   DEFINE WINDOW oWnd FROM 100, 100 TO 800, 1200 FULL
+   DEFINE WINDOW oWnd FROM 100, 100 TO 800, 1200 FULL NOFLIPPED 
 
    BuildButtonBar()
 
@@ -562,7 +562,7 @@ function Preferences()
    local aFonts := FM_availableFonts()
 
   
-   DEFINE DIALOG oDlg TITLE "Preferences" 
+   DEFINE DIALOG oDlg TITLE "Preferences"  NOFLIPPED 
  
    DEFINE MULTIVIEW oMulti OF oDlg RESIZED
 
@@ -1921,7 +1921,7 @@ function DlgAddSnipet( aSniped, oBrwSniped )
    local lsave := .f.
 
 
-   DEFINE DIALOG oDlg TITLE "Snipet Code" ;
+   DEFINE DIALOG oDlg TITLE "Snipet Code"  NOFLIPPED ;
       FROM 220, 350 TO 620, 800
 
    @ 413, 34 SAY "Name Snippet" OF oDlg SIZE 150, 17
@@ -2114,7 +2114,7 @@ function FunCreaDbf()
    local oBtnCreate,oBtnEdit
    local aStruct
 
-   DEFINE DIALOG oDlg TITLE "DBF Builder" ;
+   DEFINE DIALOG oDlg TITLE "DBF Builder"  NOFLIPPED ;
       FROM 207, 274 TO 590, 790
 
    @ 351, 20 SAY "FieldName:" OF oDlg SIZE 78, 17
@@ -2378,7 +2378,7 @@ function EditReplace()
    local cFind := Space( 50 )
    local cRep  := Space( 50 )
    
-   DEFINE DIALOG oDlg TITLE "Replace" ;
+   DEFINE DIALOG oDlg TITLE "Replace"  NOFLIPPED ;
       FROM 220, 350 TO 380, 800
 
    @ 132, 10 SAY "Find:" OF oDlg SIZE 80, 17

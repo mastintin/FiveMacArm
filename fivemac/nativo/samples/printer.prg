@@ -4,7 +4,7 @@ function Main()
 
    local oDlg
 
-   DEFINE DIALOG oDlg TITLE "Printer test"
+   DEFINE DIALOG oDlg TITLE "Printer test" NOFLIPPED 
 
    @ 40, 40 BUTTON "Print" OF oDlg ACTION Print()
 

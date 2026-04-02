@@ -4,7 +4,7 @@ function Main()
 
    local oWnd
       
-   DEFINE WINDOW oWnd TITLE "TRANPARENT WINDOW" ;
+   DEFINE WINDOW oWnd TITLE "TRANPARENT WINDOW"  NOFLIPPED ;
       FROM 50, 50 TO 500, 500       
                  
    //oWnd:Center() 

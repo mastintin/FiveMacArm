@@ -10,7 +10,7 @@ function Main()
    
 
 
-   DEFINE DIALOG oDlg TITLE "Testing Groups" ;
+   DEFINE DIALOG oDlg TITLE "Testing Groups"  NOFLIPPED ;
       FROM 270, 350 TO 500, 740
       
 

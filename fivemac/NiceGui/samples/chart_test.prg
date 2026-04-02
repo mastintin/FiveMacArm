@@ -13,7 +13,7 @@ function Main()
     local hSeries := {=>}
     local aData := { 5, 20, 36, 10, 10, 20 }
 
-    DEFINE WINDOW oWnd TITLE "FiveMac NiceChart Demo" SIZE 800, 600
+    DEFINE WINDOW oWnd TITLE "FiveMac NiceChart Demo" SIZE 800, 600 NOFLIPPED 
 
     oPage = TNicePage():New( oWnd )
    

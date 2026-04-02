@@ -15,7 +15,7 @@ function Main()
    local hImage
    local oImg
    
-   DEFINE DIALOG oDlg TITLE "Testing itunes" ;
+   DEFINE DIALOG oDlg TITLE "Testing itunes"  NOFLIPPED ;
       FROM 70, 50 TO 500, 740
       
              

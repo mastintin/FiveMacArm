@@ -8,7 +8,7 @@ function Main()
 
    local oWnd
        
-   DEFINE WINDOW oWnd TITLE "" ;
+   DEFINE WINDOW oWnd TITLE ""  NOFLIPPED ;
       FROM 20, 300 TO 600,400 
          
    oWnd:Center()   

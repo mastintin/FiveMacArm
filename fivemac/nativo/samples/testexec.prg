@@ -7,7 +7,7 @@ function Main()
 
    ? cprg
 
-   DEFINE WINDOW oWnd TITLE "Testing MacExec()"
+   DEFINE WINDOW oWnd TITLE "Testing MacExec()" NOFLIPPED 
 
    @ 200, 40 BUTTON "Calculator" ACTION MacExec( "calculator" )
 

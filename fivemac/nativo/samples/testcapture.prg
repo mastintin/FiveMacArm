@@ -5,7 +5,7 @@ function Main()
    local oDlg,oCap
    local cFile:="/Volumes/Macintosh HD/Usuarios/Manuel/Desktop/My Recorded Movie.mov"
    
-   DEFINE DIALOG oDlg TITLE "Dialog"
+   DEFINE DIALOG oDlg TITLE "Dialog" NOFLIPPED 
    
 @ 1, 40 BUTTON "start" OF oDlg ACTION  oCap:= CreateCaptureCaM( cFile, oDlg )
    

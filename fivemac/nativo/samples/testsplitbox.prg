@@ -6,7 +6,7 @@ function Main()
 
     local oWnd, oSplit, oView1, oView2, oView3
 
-    DEFINE WINDOW oWnd TITLE "SplitBox 3 Panels Test" ;
+    DEFINE WINDOW oWnd TITLE "SplitBox 3 Panels Test"  NOFLIPPED ;
         FROM 100, 100 TO 600, 800 FLIPPED
 
     oSplit := TSplitBox():New( 0, 0, oWnd:nWidth, oWnd:nHeight, oWnd, .T. )

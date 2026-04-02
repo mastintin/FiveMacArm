@@ -11,7 +11,7 @@ function Main()
    DEFINE BRUSH oBrush COLOR {220,220,220,200}
 
 
-   DEFINE DIALOG oDlg TITLE "Dialog designer" ;
+   DEFINE DIALOG oDlg TITLE "Dialog designer"  NOFLIPPED ;
       FROM  35, 128 TO  355, 692 ;
       BRUSH oBrush
 

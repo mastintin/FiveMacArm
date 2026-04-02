@@ -12,7 +12,7 @@ FUNCTION MAIN()
     local oget
     local oget2,cDlg
 
-      DEFINE DIALOG oDlg TITLE "Dialog"
+      DEFINE DIALOG oDlg TITLE "Dialog" NOFLIPPED 
       
     @ 80, 10 GET oget VAR cCode MEMO SIZE 480, 315 OF oDlg
     

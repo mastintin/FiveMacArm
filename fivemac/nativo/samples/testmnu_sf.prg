@@ -4,7 +4,7 @@ function Main()
 
    local oWnd
 
-   DEFINE WINDOW oWnd TITLE "Test SF Symbols in Menu" ;
+   DEFINE WINDOW oWnd TITLE "Test SF Symbols in Menu"  NOFLIPPED ;
       FROM 200, 200 TO 500, 600
 
    MENU oWnd

@@ -14,7 +14,7 @@ function Main()
 
 /*
 
-   DEFINE WINDOW oWnd ;
+   DEFINE WINDOW oWnd  NOFLIPPED ;
       FROM 444, 89 TO 689, 500
    
    oWnd:center()
@@ -46,7 +46,7 @@ LOCAL nFotoWidth
 LOCAL nFotoHeight
 local cPathFin := UserPath()+"/Desktop/"
 
-DEFINE DIALOG oWndFoto TITLE 'grote foto' ;
+DEFINE DIALOG oWndFoto TITLE 'grote foto'  NOFLIPPED ;
 FROM 0, 0 TO 800, 800
 
 @ 40, 10 IMAGE oFoto FILENAME cFoto OF oWndFoto SIZE 500, 500

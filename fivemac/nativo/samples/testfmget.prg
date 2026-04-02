@@ -10,7 +10,7 @@ function Main()
    local nEuroNum := 12345.67
    local dEuroDate := Date()
 
-   DEFINE WINDOW oWnd TITLE "Testing TFMGet" ;
+   DEFINE WINDOW oWnd TITLE "Testing TFMGet"  NOFLIPPED ;
       FROM 200, 200 TO 400, 600
 
    @ 40, 40 FMGET oGet VAR cText OF oWnd SIZE 200, 24 ;

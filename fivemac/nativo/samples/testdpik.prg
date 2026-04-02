@@ -7,7 +7,7 @@ function Main()
    local oDlg, oDPick 
    local oget , dDate:=ctod("12/12/11")
           
-   DEFINE DIALOG oDlg TITLE "Test DatePicker" ;
+   DEFINE DIALOG oDlg TITLE "Test DatePicker"  NOFLIPPED ;
       FROM 20, 300 TO 238, 480
    
    @ 192 ,20 Get dDate SIZE 80, 20

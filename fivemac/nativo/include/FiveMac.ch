@@ -8,6 +8,7 @@
 #include "colors.ch"
 #include "hbxlsxwriter.ch"
 #include "xlsxCmd.ch"
+#include "SwiftControls.ch"
 
 #define CRLF hb_OsNewLine()
 
@@ -58,13 +59,14 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <round: ROUNDED> ] ;
    [ <full: FULL> ] ;
    [ <flipped: FLIPPED>  ] ;
+   [ <noflipped: NOFLIPPED>  ] ;
    [ <glass: GLASS> ] ;
    => ;
    <oWnd> := TWindow():New( <nTop>, <nLeft>, <nBottom>, <nRight>,;
    [<cTitle>], [<.textured.>],;
    [<.paneled.>], [<.noborder.>], [<.full.>],;
    [<.round.>], [<nWidth>], [<nHeight>], [<.flipped.>], [<(oWnd)>],;
-   [<.glass.>] )
+   [<.glass.>], [<.noflipped.>] )
 
 #xcommand ACTIVATE WINDOW <oWnd> ;
    [ ON [ LEFT ] CLICK <uLClicked> ] ;
@@ -101,11 +103,12 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <textured: TEXTURED> ] ; 
    [ <paneled: PANELED> ] ;  
    [ <flipped: FLIPPED> ] ; 
+   [ <noflipped: NOFLIPPED> ] ;
    [ BRUSH <obrush> ] ;
    => ;
    <oDlg> := TDialog():New( <nTop>, <nLeft>, <nBottom>, <nRight>,;
    <cTitle>, [<.textured.>], [<.paneled.>], [<nWidth>], [<nHeight>],;
-   [<.flipped.>], [<obrush>] )
+   [<.flipped.>], [<obrush>], [<.noflipped.>] )
 
 #xcommand ACTIVATE DIALOG <oDlg> ;
    [ ON [ LEFT ] CLICK <uLClicked> ] ;

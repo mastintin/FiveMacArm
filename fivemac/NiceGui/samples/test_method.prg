@@ -3,7 +3,7 @@
 FUNCTION Main()
     local oWnd, oWeb
    
-    DEFINE WINDOW oWnd TITLE "Test WebView Method"
+    DEFINE WINDOW oWnd TITLE "Test WebView Method" NOFLIPPED 
    
     @ 20, 20 WEBVIEW oWeb SIZE 200, 200 OF oWnd
    

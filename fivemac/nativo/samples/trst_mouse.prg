@@ -13,7 +13,7 @@ function Main()
    local oWnd, oSayBlue
    local nBotton
 
-   DEFINE WINDOW oWnd TITLE "Mouse Test" ;
+   DEFINE WINDOW oWnd TITLE "Mouse Test"  NOFLIPPED ;
       FROM 200, 200 TO 600, 600
 
    @ 100, 100 SAY oSay PROMPT "" SIZE 200, 200 OF oWnd

@@ -33,7 +33,7 @@ Function TableExport( oDb, cDbf )
     local lExit := .t.
     local nRecCount := oDb:RecCount()
     
-    DEFINE WINDOW oWnd TITLE "Exportando SQLite a DBF: " + FileNoPath( cDbf ) ;
+    DEFINE WINDOW oWnd TITLE "Exportando SQLite a DBF: " + FileNoPath( cDbf )  NOFLIPPED ;
         FROM 200, 200 TO 320, 600
        
     @ 40, 20 PROGRESS oProg POSITION 0 SIZE 360, 20 OF oWnd

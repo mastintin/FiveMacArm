@@ -4,7 +4,7 @@ function Main()
 
    local oWnd, lVar := .t.
    
-   DEFINE WINDOW oWnd TITLE "Test"
+   DEFINE WINDOW oWnd TITLE "Test" NOFLIPPED 
 
    @ 20, 20 CHECKBOX lVar PROMPT "checkbox" OF oWnd SWITCH .t. ;
       ON CHANGE MsgInfo( cValToChar( lVar ) )

@@ -6,7 +6,7 @@ function Main()
 
    local oWnd
 
-   DEFINE WINDOW oWnd TITLE "Testing coordinates" ;
+   DEFINE WINDOW oWnd TITLE "Testing coordinates"  NOFLIPPED ;
       FROM 50, 50 TO 300, 200
 
    @ 100, 40 BUTTON "Dialog" OF oWnd ACTION ADialog()
@@ -25,7 +25,7 @@ function Another()
 
    local oWnd
    
-   DEFINE WINDOW oWnd TITLE "Another window" ;
+   DEFINE WINDOW oWnd TITLE "Another window"  NOFLIPPED ;
       TEXTURED
 
    @ 40, 40 BUTTON "Iconize" OF oWnd ACTION UrlLoad("http://www.google.es")  
@@ -40,7 +40,7 @@ function ADialog()
 
    local oDlg
    
-   DEFINE DIALOG oDlg TITLE "A modal dialog"
+   DEFINE DIALOG oDlg TITLE "A modal dialog" NOFLIPPED 
 
    @ 40, 40 BUTTON "End" OF oDlg ACTION oDlg:End()
 
@@ -57,7 +57,7 @@ function Dialog2()
 
    local oDlg
    
-   DEFINE DIALOG oDlg TITLE "Another dialog"
+   DEFINE DIALOG oDlg TITLE "Another dialog" NOFLIPPED 
 
    @ 40, 40 BUTTON "End" OF oDlg ACTION oDlg:End()
    

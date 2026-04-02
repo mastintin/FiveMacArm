@@ -4,7 +4,7 @@ function Main()
 
     local oWnd, oSay, oBtn, oBrush
 
-    DEFINE WINDOW oWnd TITLE "FiveMac Tahoe Window Glass" ;
+    DEFINE WINDOW oWnd TITLE "FiveMac Tahoe Window Glass"  NOFLIPPED ;
         FROM 100, 100 TO 600, 700 ;
         GLASS
 

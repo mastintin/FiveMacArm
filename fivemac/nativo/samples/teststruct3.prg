@@ -41,7 +41,7 @@ Function TableImport( oDbMySQL, cDbf )
     nRecCount := TEMP_DBF->( LastRec() )
     dbCloseArea()
 
-    DEFINE WINDOW oWnd TITLE "Importando DBF: " + FileNoPath( cDbf ) ;
+    DEFINE WINDOW oWnd TITLE "Importando DBF: " + FileNoPath( cDbf )  NOFLIPPED ;
         FROM 200, 200 TO 320, 600
        
     @ 40, 20 PROGRESS oProg POSITION 0 SIZE 360, 20 OF oWnd

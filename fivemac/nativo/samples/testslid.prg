@@ -9,7 +9,7 @@ function Main()
    local oBtn1,obtn2
    
    
-   DEFINE WINDOW oWnd TITLE "TEST SLIDER" ;
+   DEFINE WINDOW oWnd TITLE "TEST SLIDER"  NOFLIPPED ;
                  FROM 20, 100 TO 440,600 
        
      oWnd:Center()   
@@ -68,7 +68,7 @@ Function Otro()
 local ownd ,oPrg, oslider,obtn
 local nPos
 
-DEFINE WINDOW oWnd RESOURCE "testslid"
+DEFINE WINDOW oWnd RESOURCE "testslid" NOFLIPPED 
 
 REDEFINE PROGRESS oPrg ID 40 OF oWnd POSITION 10
  

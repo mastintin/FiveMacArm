@@ -4,7 +4,7 @@ function Main()
 
    local oWnd
 
-   DEFINE WINDOW oWnd
+   DEFINE WINDOW oWnd NOFLIPPED 
 
    // @ 300, 200 COLORWELL oClr SIZE 100, 30 OF oWnd
 

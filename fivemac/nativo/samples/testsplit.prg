@@ -20,7 +20,7 @@ function Main()
   
      
    
-   DEFINE WINDOW oWnd TITLE "TestSplit" ;
+   DEFINE WINDOW oWnd TITLE "TestSplit"  NOFLIPPED ;
        FROM 10, 10 TO 700, 700
 	   
    DEFINE MSGBAR OF oWnd

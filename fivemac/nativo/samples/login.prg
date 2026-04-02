@@ -10,7 +10,7 @@ function Main()
 
    BuildMenu() // Build the main menu
 
-   DEFINE WINDOW oWnd TITLE "Application login test"
+   DEFINE WINDOW oWnd TITLE "Application login test" NOFLIPPED 
 
    if Logon()
 
@@ -90,7 +90,7 @@ function Logon()
    local oDlg, lSuccess := .T.
    local cLogin := Space( 80 ), cPassw := Space( 80 )
 
-   DEFINE DIALOG oDlg TITLE "Please Logon" ;
+   DEFINE DIALOG oDlg TITLE "Please Logon"  NOFLIPPED ;
       FROM 0, 0 TO 200, 300
 
    @ 130,  50 SAY "Login:" OF oDlg SIZE 80, 20
