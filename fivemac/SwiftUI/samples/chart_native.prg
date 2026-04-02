@@ -12,7 +12,7 @@ function Main()
         { "label" => "Fri", "value" => 25, "group" => "Sales" };
         }
 
-    DEFINE WINDOW oWnd TITLE "Native Swift Charts (macOS 13+)" SIZE 600, 400
+    DEFINE WINDOW oWnd TITLE "Native Swift Charts (macOS 13+)" SIZE 600, 400 NOFLIPPED 
 
     @ 30, 20 SWIFTCHART oChart DATA aData TYPE "bar" SIZE 560, 300 OF oWnd
 

@@ -25,7 +25,7 @@ function Main()
     local nWinWidth := 900
     local nWinHeight := 600
 
-    DEFINE WINDOW oWnd TITLE "SwiftFive Mail App - Standalone Lists" ;
+    DEFINE WINDOW oWnd TITLE "SwiftFive Mail App - Standalone Lists"  NOFLIPPED ;
         SIZE nWinWidth, nWinHeight FLIPPED
 
     // --- Sidebar (List 1) ---

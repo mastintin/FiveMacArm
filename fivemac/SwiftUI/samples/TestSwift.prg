@@ -14,7 +14,7 @@ function Main()
     local oWnd, oTab, oTabBtn, oTabLbl
     Local lResize := .f.
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI in FiveMac" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI in FiveMac"  NOFLIPPED ;
         FROM 200, 250 TO 900, 950 FLIPPED
    
     // --- Left Column: Native Controls ---

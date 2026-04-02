@@ -5,7 +5,7 @@ function Main()
     local oWnd, oObs
     local osay1
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Bidirectional Observation" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI Bidirectional Observation"  NOFLIPPED ;
         SIZE 400, 550
 
     oObs := SwiftObservation():New()

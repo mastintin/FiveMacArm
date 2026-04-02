@@ -14,7 +14,7 @@ function Main()
   
        
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Aesthetic Batch Test" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI Aesthetic Batch Test"  NOFLIPPED ;
         SIZE 400, 600
 
 

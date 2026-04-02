@@ -8,7 +8,7 @@ function Main()
     local oTranscription, oPitch, oJitter, oShimmer
     local oBtnStart, oBtnStop
     
-    DEFINE WINDOW oWnd TITLE "FiveMac Speech Analysis (SwiftUI)" ;
+    DEFINE WINDOW oWnd TITLE "FiveMac Speech Analysis (SwiftUI)"  NOFLIPPED ;
         SIZE 500, 600 GLASS FLIPPED
     
     // Using SwiftUI VStack for a modern layout

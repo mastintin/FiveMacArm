@@ -7,7 +7,7 @@ function Main()
     local oWnd
     local oBtnTL, oBtnTR, oBtnBL, oBtnBR, oBtnC
 
-    DEFINE WINDOW oWnd TITLE "Test Swift AutoResize (Anchors)" ;
+    DEFINE WINDOW oWnd TITLE "Test Swift AutoResize (Anchors)"  NOFLIPPED ;
         SIZE 600, 400
 
     // Top-Left 

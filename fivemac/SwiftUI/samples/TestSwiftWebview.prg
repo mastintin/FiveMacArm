@@ -18,10 +18,10 @@ function Main()
       [<button onclick='window.webkit.messageHandlers.fivemac.postMessage("Hola desde el Navegador!")'>Enviar Mensaje a Harbour</button>] + ;
       [</body></html>]
 
-   DEFINE WINDOW oWnd TITLE "FiveMac: SwiftUI WebView Standalone" SIZE 900, 700 FLIPPED
+   DEFINE WINDOW oWnd TITLE "FiveMac: SwiftUI WebView Standalone" SIZE 900, 700 
 
    // Usando el nuevo comando SWIFTWEBVIEW o la clase TSwiftWebview directamente
-   @ 70, 20 SWIFTWEBVIEW oWeb SIZE 860, 610 OF oWnd
+   @ 70, 20 SWIFTWEBVIEW oWeb SIZE 860, 580 OF oWnd AUTORESIZE 18
    
    // Definir el manejador de mensajes de JS -> Harbour
    oWeb:bOnMessage := { | cBody, cName | MsgInfo( "Harbour ha recibido: " + CRLF + CRLF + cBody, "Bridge JS -> Swift -> Harbour" ) }

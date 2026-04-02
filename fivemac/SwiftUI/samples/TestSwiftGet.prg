@@ -7,7 +7,7 @@ function Main()
     local cText1 := "Auto-Batch 1"
     local cText2 := "Auto-Batch 2"
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI SWIFTGET Test" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI SWIFTGET Test"  NOFLIPPED ;
         SIZE 400, 400
 
     @ 20, 20 SWIFTSAY "Using the NEW @ ... SWIFTGET command:" SIZE 360, 20 OF oWnd

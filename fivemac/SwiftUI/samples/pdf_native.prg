@@ -7,7 +7,7 @@ function Main()
     local cPdf := GetEnv( "TMPDIR" ) + "/chart_native.pdf"
     local cJson := '[{"label":"Enero","value":120,"group":"Sales"},{"label":"Febrero","value":200,"group":"Sales"},{"label":"Marzo","value":150,"group":"Sales"}]'
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI PDF Export Test" SIZE 600, 500
+    DEFINE WINDOW oWnd TITLE "SwiftUI PDF Export Test" SIZE 600, 500 NOFLIPPED 
 
     @ 20, 20 SWIFTCHART oChart SIZE 560, 300 DATA cJson TYPE "bar" OF oWnd
    

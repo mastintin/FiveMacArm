@@ -8,7 +8,7 @@ function Main()
     local cFile := hb_GetEnv( "HOME" ) + "/Desktop/test_speech.m4a"
     local lRecording := .f.
 
-    DEFINE WINDOW oWnd TITLE "Speech File Recording & Transcription" ;
+    DEFINE WINDOW oWnd TITLE "Speech File Recording & Transcription"  NOFLIPPED ;
         SIZE 600, 500 GLASS 
     
     @ 20, 20 SAY "Multi-line Transcription:" OF oWnd

@@ -6,7 +6,7 @@ function Main()
     local oWnd, oVStack
     local lInvert := .T.
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI VStack Demo" SIZE 600, 600
+    DEFINE WINDOW oWnd TITLE "SwiftUI VStack Demo" SIZE 600, 600 NOFLIPPED 
 
     @ 50, 50 SWIFTVSTACK oVStack SIZE 300, 400 OF oWnd
     oVStack:SetScroll( .T. )
