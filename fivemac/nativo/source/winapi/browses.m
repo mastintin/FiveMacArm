@@ -1,5 +1,5 @@
 #import <QuartzCore/QuartzCore.h>
-#include <fivemac.h>
+#include "fivemac.h"
 
 static PHB_SYMB symFMH = NULL;
 
@@ -455,13 +455,26 @@ HB_FUNC(BRWSETGRIDLINES) {
 HB_FUNC(BRWGETGRIDLINES) { hb_retnl([(Wbrowse *)hb_parnll(1) gridStyleMask]); }
 
 HB_FUNC(BRWSETBKCOLOR) {
-  [(Wbrowse *)hb_parnll(1) setBackgroundColor:(NSColor *)hb_parnll(2)];
+  Wbrowse *browse = (Wbrowse *)hb_parnll(1);
+  if (browse) {
+    NSColor *color = [NSColor colorWithCalibratedRed:(CGFloat)hb_parnl(2) / 255.0
+                                               green:(CGFloat)hb_parnl(3) / 255.0
+                                                blue:(CGFloat)hb_parnl(4) / 255.0
+                                               alpha:(CGFloat)hb_parnl(5) / 100.0];
+    [browse setBackgroundColor:color];
+  }
 }
 
 HB_FUNC(BRWSETTEXTCOLOR) {
   Wbrowse *browse = (Wbrowse *)hb_parnll(1);
-  for (NSTableColumn *col in [browse tableColumns])
-    [[col dataCell] setTextColor:(NSColor *)hb_parnll(2)];
+  if (browse) {
+    NSColor *color = [NSColor colorWithCalibratedRed:(CGFloat)hb_parnl(2) / 255.0
+                                               green:(CGFloat)hb_parnl(3) / 255.0
+                                                blue:(CGFloat)hb_parnl(4) / 255.0
+                                               alpha:(CGFloat)hb_parnl(5) / 100.0];
+    for (NSTableColumn *col in [browse tableColumns])
+      [[col dataCell] setTextColor:color];
+  }
 }
 
 HB_FUNC(BRWSETFONT) {
