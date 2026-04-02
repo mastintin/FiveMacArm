@@ -11,6 +11,11 @@ CLASS TSwiftSlider FROM TControl
     DATA lShowValue
     DATA lGlass
 
+    ACCESS Value      INLINE ::nValue
+    ASSIGN Value( n ) INLINE ::SetValue( n )
+    
+    ASSIGN OnChange( b ) INLINE ::bAction := b
+
     METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAction )
     METHOD SetValue( nValue )
     METHOD GetValue()
@@ -18,7 +23,7 @@ CLASS TSwiftSlider FROM TControl
     METHOD SetAccentColor( nColor )
     METHOD SetColor( nFg, nBg )
     METHOD End()
-   
+    
 ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAction, nAutoResize ) CLASS TSwiftSlider

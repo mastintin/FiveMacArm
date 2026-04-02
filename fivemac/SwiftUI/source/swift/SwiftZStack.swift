@@ -293,13 +293,7 @@ public func swift_zstack_create(
         
         let callback: (String) -> Void = { itemId in
              let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTONACTION") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushNumber(0, 0) // dummy index
-                    hb_vmPushString(itemId)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onAction(finalId, itemId)
             }
             if Thread.isMainThread {
                 sendToHarbour()

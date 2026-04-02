@@ -7,6 +7,15 @@ CLASS TSwiftImage FROM TControl
 
     DATA bAction
     DATA cId
+    DATA cName
+
+    ACCESS Value       INLINE ::cName
+    ASSIGN Value( c )  INLINE ::SetName( c )
+    
+    ACCESS Name        INLINE ::cName
+    ASSIGN Name( c )   INLINE ::SetName( c )
+    
+    ASSIGN OnClick( b ) INLINE ::bAction := b
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable )
     METHOD OnAction()
@@ -30,6 +39,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable, nAut
 
     ::oWnd    = oWnd
     ::bAction = bAction
+    ::cName   = cName
     
     ::cId     := ""
     
@@ -65,6 +75,7 @@ METHOD SetSystemName( cName ) CLASS TSwiftImage
 return nil
 
 METHOD SetName( cName ) CLASS TSwiftImage
+    ::cName := cName
     SD_IMG_SET_NAME( ::cId, cName )
 return nil
 

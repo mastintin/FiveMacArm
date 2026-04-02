@@ -28,6 +28,13 @@ CLASS TSwiftZStack FROM TControl
     DATA hItems INIT {=>}
     DATA aBatch INIT {}
 
+    ASSIGN OnAction( b )    INLINE ::bAction := b
+    
+    ASSIGN BgColor( c )     INLINE ::SetBackgroundColor( c )
+    ASSIGN FgColor( c )     INLINE ::SetForegroundColor( c )
+    
+    ASSIGN Alignment( n )   INLINE ::SetAlignment( n )
+
     METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
     
     METHOD RegItem( cId, oItem ) INLINE SwiftRegisterItem( cId, oItem )

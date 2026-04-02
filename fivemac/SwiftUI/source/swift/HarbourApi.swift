@@ -151,6 +151,8 @@ public struct SwiftBridge {
     private static var _symAction: UnsafeMutableRawPointer? = nil
     private static var _symChange: UnsafeMutableRawPointer? = nil
     private static var _symValid:  UnsafeMutableRawPointer? = nil
+    private static var _symAppear: UnsafeMutableRawPointer? = nil
+    private static var _symDisappear: UnsafeMutableRawPointer? = nil
     
     // Funciones auxiliares para obtener símbolos con caché
     private static func getActionSym() -> UnsafeMutableRawPointer? {
@@ -166,6 +168,16 @@ public struct SwiftBridge {
     private static func getValidSym() -> UnsafeMutableRawPointer? {
         if _symValid == nil { "SW_ONVALIDATE".withCString { ptr in if let pDyn = hb_dynsymFindName(ptr) { _symValid = hb_dynsymSymbol(pDyn) } } }
         return _symValid
+    }
+
+    private static func getAppearSym() -> UnsafeMutableRawPointer? {
+        if _symAppear == nil { "SW_ONAPPEAR".withCString { ptr in if let pDyn = hb_dynsymFindName(ptr) { _symAppear = hb_dynsymSymbol(pDyn) } } }
+        return _symAppear
+    }
+
+    private static func getDisappearSym() -> UnsafeMutableRawPointer? {
+        if _symDisappear == nil { "SW_ONDISAPPEAR".withCString { ptr in if let pDyn = hb_dynsymFindName(ptr) { _symDisappear = hb_dynsymSymbol(pDyn) } } }
+        return _symDisappear
     }
 
     // --- PORTAL 1: ON ACTION (Clics, Disparadores) ---
@@ -197,5 +209,14 @@ public struct SwiftBridge {
             return hb_parl(-1) != 0 // Retornamos el resultado del VALID de Harbour
         }
         return true
+    }
+
+    // --- PORTAL 4: LIFECYCLE (onAppear / onDisappear) ---
+    public static func onAppear(_ id: String) {
+        if let sym = self.getAppearSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmDo(1) }
+    }
+
+    public static func onDisappear(_ id: String) {
+        if let sym = self.getDisappearSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmDo(1) }
     }
 }

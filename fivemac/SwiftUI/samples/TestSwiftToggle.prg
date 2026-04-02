@@ -11,13 +11,13 @@ function Main()
 
     @ 60, 20 SWIFTTOGGLE oToggle VAR lVal PROMPT "My Switch" SIZE 150, 40 OF oWnd ;
         SWITCH .T. ;
-        ON CHANGE { |lOn| oLabel:SetText( "Toggle is: " + If( lOn, "ON", "OFF" ) ) }
+        ON CHANGE { |lOn| oLabel:Text := "Toggle is: " + If( lOn, "ON", "OFF" ) }
 
     @ 110, 20 SWIFTBUTTON oBtn PROMPT "Toggle ON" SIZE 100, 30 OF oWnd ;
-        ACTION { || oToggle:Set( .T. ) }
+        ACTION { || oToggle:Checked := .T. }
 
     @ 110, 120 SWIFTBUTTON oBtn PROMPT "Estado" SIZE 100, 30 OF oWnd ;
-        ACTION { || msginfo(oToggle:get() ) }
+        ACTION { || msginfo( If( oToggle:Checked, "ON", "OFF" ) ) }
 
     ACTIVATE WINDOW oWnd
 return nil

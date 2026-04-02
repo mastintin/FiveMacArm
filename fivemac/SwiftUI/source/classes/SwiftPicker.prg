@@ -12,6 +12,14 @@ CLASS TSwiftPicker FROM TControl
     DATA   cVarName
     DATA   cID
 
+    ACCESS Value      INLINE ::GetValue()
+    ASSIGN Value( v ) INLINE ::Set( v )
+    
+    ACCESS Items       INLINE ::aItems
+    ASSIGN Items( a )  INLINE ::SetItems( a )
+    
+    ASSIGN OnChange( b ) INLINE ::bChange := b
+
     METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarName, cTextLabel, nAutoResize )
     METHOD Redefine( nId, oWnd, aItems, bChange, bSetGet, cVarName )
    
@@ -21,7 +29,7 @@ CLASS TSwiftPicker FROM TControl
     METHOD SetShowLabel( lShow ) INLINE SD_PKR_SET_SHOW_LABEL( ::cID, lShow )
     METHOD SetText( cText )      INLINE SD_PKR_SET_TITLE( ::cID, cText )
     METHOD SetColor( nAccent, nText )
-    METHOD GetValue()            INLINE SD_PKR_GET_SELECTION( ::cID )
+    METHOD GetValue()            
     METHOD SetPlaceholder( cText ) INLINE SD_PKR_SET_PLACEHOLDER( ::cID, cText )
     METHOD End()
     METHOD SetAutoResize( nStyle ) INLINE ::_nAutoResize( nStyle )
@@ -102,6 +110,9 @@ METHOD SetItems( uItems ) CLASS TSwiftPicker
        SD_PKR_SET_ITEMS( ::cID, uItems )
     endif
 return nil
+
+METHOD GetValue() CLASS TSwiftPicker
+return SD_PKR_GET_SELECTION( ::cID )
 
 METHOD SetColor( nAccent, nText ) CLASS TSwiftPicker
     SD_PKR_SET_COLORS( ::cID, clrToHex( nAccent ), clrToHex( nText ) )

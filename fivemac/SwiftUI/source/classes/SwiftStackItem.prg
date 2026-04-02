@@ -10,6 +10,15 @@ CLASS TSwiftStackItem
     
     DATA aBatch      INIT {}
 
+    ACCESS Text        INLINE ::GetText()
+    ASSIGN Text( c )   INLINE ::SetText( c )
+    
+    ASSIGN OnClick( b )  INLINE ::bAction := b
+    ASSIGN OnAction( b ) INLINE ::bAction := b
+    
+    ASSIGN Color( n )   INLINE ::SetColor( n )
+    ASSIGN BgColor( n ) INLINE ::SetBgColor( n )
+
     METHOD New( cId, oOwner )
     
     METHOD Root() 
@@ -42,10 +51,16 @@ CLASS TSwiftStackItem
     METHOD SetFont( nSize, lBold )
     METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha )
-    METHOD SetRadius( nRadius )
+    METHOD OnAction()
     METHOD End()
 
 ENDCLASS
+
+METHOD OnAction() CLASS TSwiftStackItem
+    if ::bAction != nil
+        Eval( ::bAction, ::cId, Self )
+    endif
+return nil
 
 METHOD New( cId, oOwner ) CLASS TSwiftStackItem
     ::cId := cId
@@ -309,6 +324,10 @@ METHOD SetText( cText ) CLASS TSwiftStackItem
         SD_VSTK_SET_ITEM_TEXT( oRoot:cId, ::cId, cText )
     endif
 return nil
+
+METHOD GetText() CLASS TSwiftStackItem
+    local oRoot := ::Root()
+return SD_SW_GET_ITEM_TEXT( oRoot:cId, ::cId )
 
 METHOD SetFont( nSize, lBold ) CLASS TSwiftStackItem
     local oRoot := ::Root()

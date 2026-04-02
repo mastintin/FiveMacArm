@@ -19,6 +19,12 @@ CLASS TSwiftList FROM TSwiftVStack
     DATA cId
     DATA nListIndex 
     DATA bAction
+    DATA cSelectedId
+
+    ASSIGN Value( n )      INLINE ::SelectIndex( n )
+    ACCESS Value()         INLINE ::cSelectedId
+    
+    ASSIGN OnAction( b )   INLINE ::bAction := b
 
     METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
     METHOD OnAction( cItemId )
@@ -61,6 +67,8 @@ return Self
 
 METHOD OnAction( cItemId ) CLASS TSwiftList
     local oItem := SwiftGetItem( cItemId )
+    
+    ::cSelectedId := cItemId
 
     // Si el elemento interno (ej. un botón en la fila) tiene su propia acción, la ejecutamos
     if oItem != nil .and. __ObjHasMsg( oItem, "BACTION" ) .and. oItem:bAction != nil

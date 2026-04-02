@@ -8,6 +8,12 @@ CLASS TSwiftWebview FROM TControl
     DATA cUrl
     DATA bOnMessage
     DATA nMagnification INIT 1.0
+
+    ACCESS Value      INLINE ::cUrl
+    ASSIGN Value( c ) INLINE ::Load( c )
+    
+    ASSIGN OnMessage( b ) INLINE ::bOnMessage := b
+    ASSIGN OnAction( b )  INLINE ::bOnMessage := b
  
     METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName, cId, nAutoResize )
 
@@ -29,7 +35,7 @@ CLASS TSwiftWebview FROM TControl
     METHOD SetZoom( nZoom ) INLINE ( ::nMagnification := nZoom, SD_SW_WEBVIEW_SET_ZOOM( ::cId, nZoom ) )
     METHOD SaveToPDF( cPath ) INLINE SD_SW_WEBVIEW_SAVE_PDF( ::cId, cPath )
 
-    METHOD OnMessage( cBody, cName )
+    METHOD OnAction( cBody, cName )
 
 ENDCLASS   
 
@@ -63,17 +69,8 @@ return Self
 
 //----------------------------------------------------------------------------//
 
-METHOD OnMessage( cBody, cName ) CLASS TSwiftWebview
+METHOD OnAction( cBody, cName ) CLASS TSwiftWebview
     if ::bOnMessage != nil
         Eval( ::bOnMessage, cBody, cName, Self )
-    endif
-return nil
-
-//----------------------------------------------------------------------------//
-
-function SW_WEBVIEW_ON_MESSAGE( cId, cBody, cName )
-    local oWeb := SwiftGetItem( cId )
-    if oWeb != nil
-       oWeb:OnMessage( cBody, cName )
     endif
 return nil

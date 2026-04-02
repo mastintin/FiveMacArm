@@ -126,3 +126,21 @@ function SW_ONVALIDATE( cId, uValue )
        lValid := Eval( oItem:bValid, uValue, oItem )
     endif
 return lValid
+
+// -------------------------------------------------------------------------------- //
+
+function SW_ONAPPEAR( cId )
+    local oItem := SwiftGetItem( cId )
+    if oItem != nil .and. __ObjHasMsg( oItem, "ONAPPEAR" )
+       oItem:OnAppear()
+    endif
+return nil
+
+// -------------------------------------------------------------------------------- //
+
+function SW_ONDISAPPEAR( cId )
+    local oItem := SwiftGetItem( cId )
+    if oItem != nil .and. __ObjHasMsg( oItem, "ONDISAPPEAR" )
+       oItem:OnDisappear()
+    endif
+return nil

@@ -20,6 +20,15 @@ CLASS TSwiftVStack FROM TControl
     DATA aBatch INIT {}
     DATA aIds   INIT {}
 
+    ASSIGN OnAction( b )    INLINE ::bAction := b
+    
+    ASSIGN BgColor( c )     INLINE ::SetBgColorHex( c )
+    ASSIGN FgColor( c )     INLINE ::SetFgColorHex( c )
+    
+    ASSIGN Spacing( n )     INLINE ::SetSpacing( n )
+    ASSIGN Alignment( n )   INLINE ::SetAlignment( n )
+    ASSIGN Scrollable( l )  INLINE ::SetScrollable( l )
+
     METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
     METHOD AddItem( nType, cContent, bAction, cSecondary )
     METHOD AddBatch( aItems )

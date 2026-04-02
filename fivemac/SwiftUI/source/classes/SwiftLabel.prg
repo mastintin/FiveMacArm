@@ -6,6 +6,20 @@ static aSwiftLabels := {}
 CLASS TSwiftLabel FROM TControl
 
     DATA cID
+    DATA cText
+    DATA bAction
+
+    ASSIGN OnClick( b ) INLINE ::bAction := b
+    ASSIGN OnAction( b ) INLINE ::bAction := b
+
+    ACCESS Text       INLINE ::cText
+    ASSIGN Text( c )  INLINE ::SetText( c )
+    
+    ACCESS Value      INLINE ::cText
+    ASSIGN Value( c ) INLINE ::SetText( c )
+    
+    ACCESS Prompt     INLINE ::cText
+    ASSIGN Prompt( c ) INLINE ::SetText( c )
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd )
     METHOD SetText( cText )
@@ -13,15 +27,22 @@ CLASS TSwiftLabel FROM TControl
     METHOD SetColor( nColor )
     METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
     METHOD SetAlignment( nAlign )
+    METHOD OnAction()
     METHOD End()   
 ENDCLASS
+
+METHOD OnAction() CLASS TSwiftLabel
+    if ::bAction != nil
+        Eval( ::bAction, Self )
+    endif
+return nil
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwiftLabel
 
     DEFAULT nWidth := 100, nHeight := 20, oWnd := GetWndDefault(), cText := "Swift Label", nAutoResize := 0
 
     ::oWnd    = oWnd
-    // ::nId     = ::GetCtrlIndex()
+    ::cText   = cText
     ::cID      := ""
 
     AAdd( aSwiftLabels, Self )
@@ -41,6 +62,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwif
 return Self
 
 METHOD SetText( cText ) CLASS TSwiftLabel
+    ::cText := cText
     SD_LBL_SET_TEXT( ::cID, cText )
 return nil
 

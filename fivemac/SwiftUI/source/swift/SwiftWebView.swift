@@ -151,22 +151,7 @@ struct WebViewRepresentable: NSViewRepresentable {
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "fivemac" {
-                if Coordinator.pSymOnMessage == nil {
-                    "SW_WEBVIEW_ON_MESSAGE".withCString { ptr in
-                            if let pDyn = hb_dynsymFindName(ptr) {
-                                Coordinator.pSymOnMessage = hb_dynsymSymbol(pDyn)
-                            }
-                    }
-                }
-
-                if let sym = Coordinator.pSymOnMessage {
-                    hb_vmPushSymbol(sym)
-                    hb_vmPushNil()
-                    hb_vmPushString(state.id)
-                    hb_vmPushString("\(message.body)")
-                    hb_vmPushString(message.name)
-                    hb_vmDo(3)
-                }
+                SwiftBridge.onAction(state.id, "\(message.body)", message.name)
             }
         }
         

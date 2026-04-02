@@ -10,6 +10,14 @@ CLASS TSwiftDatePicker FROM TControl
     DATA   dDate
     DATA   cID
 
+    ACCESS Value      INLINE ::GetDate()
+    ASSIGN Value( d ) INLINE ::SetDate( d )
+    
+    ACCESS Date       INLINE ::GetDate()
+    ASSIGN Date( d )  INLINE ::SetDate( d )
+    
+    ASSIGN OnChange( b ) INLINE ::bChange := b
+
     METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, dDate, bChange, cTitle )
     
     METHOD SetDate( dDate )  

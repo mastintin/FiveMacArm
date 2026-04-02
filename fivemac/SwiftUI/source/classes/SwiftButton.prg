@@ -6,7 +6,18 @@ CLASS TSwiftButton FROM TControl
 
     DATA bAction
     DATA cID
+    DATA cText, cPrompt
     DATA lGlass
+
+    ACCESS Text       INLINE ::cText
+    ASSIGN Text( c )  INLINE ::SetText( c )
+    
+    // Alias for Text
+    ACCESS Prompt     INLINE ::cText
+    ASSIGN Prompt( c ) INLINE ::SetText( c )
+    
+    ASSIGN OnClick( b ) INLINE ::bAction := b
+    ASSIGN OnAction( b ) INLINE ::bAction := b
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction )
     METHOD OnAction()
@@ -14,7 +25,7 @@ CLASS TSwiftButton FROM TControl
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
     METHOD SetGlass( lGlass )
-    METHOD SetText( cText )  INLINE SD_BTN_SET_TEXT( ::cID, cText )
+    METHOD SetText( cText )
     METHOD SetImage( cImage ) 
     METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
     METHOD End()
@@ -27,6 +38,8 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
 
     ::bAction = bAction
     ::oWnd    = oWnd
+    ::cText   = cPrompt
+    ::cPrompt = cPrompt
     ::cID := ""
    
     AAdd( aSwiftButtons, Self )
@@ -34,7 +47,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
     ::hWnd = SD_SWIFT_BUTTON_CREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::cID )
     ::cID := SW_GET_ID( ::hWnd )
     SwiftRegisterItem( ::cID, Self )
-
+    
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
@@ -42,6 +55,12 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
     oWnd:AddControl( Self )
 
 return Self
+
+METHOD SetText( cText ) CLASS TSwiftButton
+    ::cText   := cText
+    ::cPrompt := cText
+    SD_BTN_SET_TEXT( ::cID, cText )
+return nil
 
 METHOD OnAction() CLASS TSwiftButton
    

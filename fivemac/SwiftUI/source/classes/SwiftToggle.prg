@@ -14,14 +14,24 @@ CLASS TSwiftToggle FROM TControl
     DATA nColorAcc   AS NUMERIC
     DATA nColorText  AS NUMERIC
 
+    ACCESS Checked      INLINE ::lOn
+    ASSIGN Checked( l ) INLINE ::Set( l )
+    
+    // Alias for Value to be consistent with other controls
+    ACCESS Value        INLINE ::lOn
+    ASSIGN Value( l )   INLINE ::Set( l )
+    
+    ASSIGN OnChange( b ) INLINE ::bAction := b
+
     METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction )
     METHOD Set( lOn )
     METHOD Get()
-    METHOD Value()    
+    METHOD Value( lNewValue )    
     METHOD SetColor( nAccent, nText )
     METHOD SetCaption(cCaption ) 
     METHOD End() 
     METHOD OnChange( lOn )
+    
 ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction, nAutoResize ) CLASS TSwiftToggle

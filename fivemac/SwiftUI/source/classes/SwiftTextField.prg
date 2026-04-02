@@ -8,6 +8,14 @@ CLASS TSwiftTextField FROM TControl
     DATA cId
     DATA cText, cPlaceholder
 
+    ACCESS Value      INLINE ::cText
+    ASSIGN Value( c ) INLINE ::SetText( c )
+    
+    ACCESS Text       INLINE ::cText
+    ASSIGN Text( c )  INLINE ::SetText( c )
+    
+    ASSIGN OnChange( b ) INLINE ::bOnChange := b
+
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, oBatch )
     METHOD SetText( cText )
     METHOD GetText()

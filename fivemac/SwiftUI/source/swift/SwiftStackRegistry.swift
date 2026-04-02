@@ -258,3 +258,12 @@ public struct RecursiveItemView: View {
         }
     }
 }
+
+@HarbourDirect
+public func swift_get_item_text(rootId: String, itemId: String) -> String {
+    if let state = SwiftStackRegistry.sharedStates[rootId],
+       let item = findItem(in: state.items, id: itemId) {
+        return item.content
+    }
+    return ""
+}

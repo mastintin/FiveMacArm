@@ -35,6 +35,7 @@ public class SwiftVStackState: StackStateProtocol {
 
 struct SwiftVStackView: View {
     var state: SwiftVStackState
+    var rootId: String
 
     var body: some View {
         Group {
@@ -67,6 +68,12 @@ struct SwiftVStackView: View {
         .foregroundColor(
             Color(red: state.fgRed, green: state.fgGreen, blue: state.fgBlue, opacity: state.fgAlpha)
         )
+        .onAppear {
+            SwiftBridge.onAppear(rootId)
+        }
+        .onDisappear {
+            SwiftBridge.onDisappear(rootId)
+        }
     }
 
     var content: some View {
@@ -115,7 +122,7 @@ public class SwiftVStackLoader: NSObject {
          lastCreatedState = state
          lastCreatedItem = nil
 
-         let view = SwiftVStackView(state: state)
+         let view = SwiftVStackView(state: state, rootId: finalId)
          ViewRegistry.register(view, for: finalId)
 
          let hostingView = NSHostingView(rootView: view)

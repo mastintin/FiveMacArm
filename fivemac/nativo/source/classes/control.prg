@@ -13,6 +13,11 @@ CLASS TControl FROM TWindow
    DATA   lLiquidGlass INIT .F.
    DATA   bDropFiles
    DATA   nTag
+   DATA   bOnAppear
+   DATA   bOnDisappear
+
+   METHOD OnAppear()    INLINE If( ! Empty( ::bOnAppear ), Eval( ::bOnAppear, Self ), nil )
+   METHOD OnDisappear() INLINE If( ! Empty( ::bOnDisappear ), Eval( ::bOnDisappear, Self ), nil )
 
    METHOD SetLiquidGlass( lActive, nRadius ) INLINE ( ::lLiquidGlass := lActive, ViewSetLiquidGlass( ::hWnd, nRadius ) )
 
