@@ -8,7 +8,6 @@
 #include "colors.ch"
 #include "hbxlsxwriter.ch"
 #include "xlsxCmd.ch"
-#include "SwiftControls.ch"
 
 #define CRLF hb_OsNewLine()
 
