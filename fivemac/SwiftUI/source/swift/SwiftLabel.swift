@@ -69,14 +69,16 @@ public class SwiftLabelLoader: NSObject {
     public static var states: [String: LabelState] = [:]
 
     public static func makeLabel(text: String,  id: String) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          // Default state
         let state = LabelState(text: text, fontSize: 24.0, fontStyle: "", textColor: .black)
-        states[id] = state
+        states[finalId] = state
         
         let view = SwiftLabelView(state: state)
-        ViewRegistry.register(view, for: id)
+        ViewRegistry.register(view, for: finalId)
         
         let hostingView = NSHostingView(rootView: view)
+        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
         return hostingView
     }
     
@@ -217,6 +219,8 @@ public func swift_label_create(
             id: id
         )
         
+        _ = labelView.identifier?.rawValue ?? id
+
         // Buscar el contenedor del padre (hWnd de Harbour)
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()

@@ -49,17 +49,19 @@ public class SwiftZStackLoader: NSObject {
     
     @objc(makeZStackWithIndex:)
     public static func makeZStack(id: String) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = SwiftZStackState()
          
          // Register in central registry
-         SwiftStackRegistry.sharedStates[id] = state
+         SwiftStackRegistry.sharedStates[finalId] = state
          
          let view = SwiftZStackView(state: state)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
          
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -285,8 +287,9 @@ public func swift_zstack_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
-        
+        var finalId = id
         let zStackView = SwiftZStackLoader.makeZStack(id: id)
+        finalId = zStackView.identifier?.rawValue ?? id
         
         let callback: (String) -> Void = { itemId in
              let sendToHarbour = {
@@ -305,7 +308,7 @@ public func swift_zstack_create(
             }
         }
         
-        SwiftZStackLoader.setActionCallback(rootId: id, callback: callback)
+        SwiftZStackLoader.setActionCallback(rootId: finalId, callback: callback)
         
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()

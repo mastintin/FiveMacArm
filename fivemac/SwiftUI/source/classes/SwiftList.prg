@@ -18,44 +18,32 @@ static aSwiftLists := {}
 CLASS TSwiftList FROM TSwiftVStack
     DATA cId
     DATA nListIndex 
+    DATA bAction
 
     METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
-    
-    // We inherit AddVStack/AddHStack from TSwiftVStack
-    // But we might need to override the bridge calls if they expect SWIFTLIST...
-    // Actually SWIFTVSTACKCREATE and SWIFTLISTCREATE are different,
-    // but the subsequent AddItem/AddBatch bridges can be shared if they use the same Loader.
-
+    METHOD OnAction( cItemId )
     METHOD SelectIndex( nIndex )
-
     METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha )
-
     METHOD SetVibrancy( lOnOff )
-
     METHOD AddItem( nType, cContent, cSecondaryContent, cParentId )
-
     METHOD AddBatch( cJson, cParentId )
-
     METHOD AddListRow()
-
     METHOD GetLastItemId() 
-
     METHOD End()
 
 ENDCLASS
-
 
 METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftList
 
     DEFAULT nWidth := 200, nHeight := 200, oWnd := GetWndDefault(), nAutoResize := 0
 
-    ::oWnd = oWnd
+    ::oWnd := oWnd
+    ::cId  := ""
     
-    ::cId := hb_UUID()
-    ::aBatch := {}
-
     ::hWnd = SD_SWIFT_LIST_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId )
-    
+    ::cId := SW_GET_ID( ::hWnd )
+   
+    SwiftRegisterItem( ::cId, Self )
     AAdd( aSwiftLists, Self )
     ::nListIndex := Len( aSwiftLists )
 
@@ -71,22 +59,18 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftList
 
 return Self
 
-//----------------------------------------------------------------//
-
-function SWIFTLISTONACTION( cId, cItemId )
-    local nPos := AScan( aSwiftLists, { |o| o != nil .and. o:cId == cId } )
+METHOD OnAction( cItemId ) CLASS TSwiftList
     local oItem := SwiftGetItem( cItemId )
 
+    // Si el elemento interno (ej. un botón en la fila) tiene su propia acción, la ejecutamos
     if oItem != nil .and. __ObjHasMsg( oItem, "BACTION" ) .and. oItem:bAction != nil
         Eval( oItem:bAction, cItemId, oItem )
-        return nil // If item has its own action, we might skip the list action or not, 
-        // but usually, if it's a button click inside the row, we don't want the row click too.
+        return nil 
     endif
 
-    if nPos > 0
-        if aSwiftLists[ nPos ]:bAction != nil
-            Eval( aSwiftLists[ nPos ]:bAction, cItemId )
-        endif
+    // Si no, ejecutamos la acción de la lista (clic en la fila)
+    if ::bAction != nil
+        Eval( ::bAction, cItemId, Self )
     endif
 return nil
 
@@ -99,7 +83,7 @@ METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftList
     DEFAULT nAlpha := 1.0
     
     if pcount() <= 2
-        nClr   := nRed
+        nClr := nRed
     else
         nClr := nRGB( nRed, nGreen, nBlue )
     endif
@@ -110,13 +94,12 @@ return nil
 METHOD SetVibrancy( lOnOff ) CLASS TSwiftList
     DEFAULT lOnOff := .T.
     if lOnOff
-        ::SetBackgroundColor( 0, 0, 0, 0.0 ) // Clear background for vibrancy
+        ::SetBackgroundColor( 0, 0, 0, 0.0 ) 
     endif 
 return nil
 
 METHOD AddItem( nType, cContent, cSecondaryContent, cParentId ) CLASS TSwiftList
 return SD_LST_ADD_ITEM( ::cId, nType, cContent, cSecondaryContent, cParentId )
-
 
 METHOD AddBatch( cJson, cParentId ) CLASS TSwiftList
 return SD_LST_ADD_BATCH( ::cId, cJson, cParentId )
@@ -132,6 +115,7 @@ return SD_LST_GET_LAST_ITEM_ID( ::cId )
 METHOD End() CLASS TSwiftList
     if !Empty( ::hWnd )
         SD_LST_DESTROY( ::cId, ::hWnd )
+        SwiftUnregisterItem( ::cId )
         if ::nListIndex > 0 .and. ::nListIndex <= Len( aSwiftLists )
             aSwiftLists[ ::nListIndex ] := nil
         endif
@@ -139,15 +123,13 @@ METHOD End() CLASS TSwiftList
     endif
 return ::Super:End()
 
-
-//--------------------------------------------------------------------
-
 // ---------------------------------------------------------
-// Clase ligera para gestionar una fila (HStack) de la lista
+// Clase TSwiftRow
 // ---------------------------------------------------------
+
 CREATE CLASS TSwiftRow
-    VAR oList    // Referencia al objeto TSwiftList (la lista completa)
-    VAR cId      // El UUID de esta fila concreta (el hstackContainer)
+    VAR oList    
+    VAR cId      
     VAR oLastIcon 
 
     METHOD New( oList, cId )
@@ -221,8 +203,13 @@ METHOD SetSpacing( nSpacing ) CLASS TSwiftRow
     SD_LST_SET_ITEM_LAYOUT( ::oList:cId, ::cId, "0", "0", hb_ntos( nSpacing ) )
 return Self
 
+METHOD End() CLASS TSwiftRow
+    ::oLastIcon := nil
+    ::oList := nil
+return nil
+
 // ---------------------------------------------------------
-// Clase aislada para elementos individuales dentro de una fila de lista
+// Clase TSwiftListItem
 // ---------------------------------------------------------
 
 CLASS TSwiftListItem
@@ -237,21 +224,8 @@ CLASS TSwiftListItem
     METHOD End()
 ENDCLASS
 
-METHOD End() CLASS TSwiftRow
-    ::bAction := nil
-    ::oLastIcon := nil
-    ::oList := nil
-return nil
-
-METHOD End() CLASS TSwiftListItem
-    SwiftUnregisterItem( ::cId )
-    ::bAction := nil
-    ::oList := nil
-return nil
-
-
 METHOD New( cId, oList ) CLASS TSwiftListItem
-    ::cId   := cId
+    ::cId := cId
     ::oList := oList
     SwiftRegisterItem( ::cId, Self )
 return Self
@@ -275,3 +249,9 @@ METHOD SetFont( nSize, lBold ) CLASS TSwiftListItem
     DEFAULT nSize := 0, lBold := .F.
     SD_LST_SET_ITEM_FONT( ::oList:cId, ::cId, hb_ntos( nSize ), lBold )
 return Self
+
+METHOD End() CLASS TSwiftListItem
+    SwiftUnregisterItem( ::cId )
+    ::bAction := nil
+    ::oList := nil
+return nil

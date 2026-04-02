@@ -87,15 +87,17 @@ public class SwiftButtonLoader: NSObject {
     public static var states: [String: ButtonState] = [:]
 
     public static func makeButton(title: String, id: String, callback: @escaping () -> Void) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = ButtonState(title: title)
-         states[id] = state
+         states[finalId] = state
          
          let view = SwiftButtonView(state: state, callback: callback)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
          
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = [] 
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -194,19 +196,14 @@ public func swift_button_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
         let callback: () -> Void = {
             let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTBTNONCLICK") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id)
-                    hb_vmDo(1)
-                }
+                SwiftBridge.onAction(finalId)
             }
-
             if Thread.isMainThread {
-               sendToHarbour()
+                sendToHarbour()
             } else {
                 DispatchQueue.main.async { sendToHarbour() }
             }
@@ -214,10 +211,10 @@ public func swift_button_create(
 
         let buttonView = SwiftButtonLoader.makeButton(
             title: title, 
-            id: id,
+            id: finalId, // Pasamos el ID ya generado
             callback: callback
         )
-        
+
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             

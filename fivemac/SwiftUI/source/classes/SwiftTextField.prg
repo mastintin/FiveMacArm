@@ -30,7 +30,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
     ::cText      = cText
     ::cPlaceholder = cPlaceholder
     
-    ::cId        = hb_UUID()
+    ::cId := ""
    
     AAdd( aSwiftTextFields, Self )
     
@@ -40,8 +40,13 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
 
     if oBatch != nil
         oBatch:Add( Self )
+        // Note: Batch mode needs care if we want Swift to generate IDs, 
+        // as we only get them when the batch is created.
+        // For now, we can pre-generate if empty or keep it as is.
     else
         ::hWnd = SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::cId )
+        ::cId := SW_GET_ID( ::hWnd )
+        SwiftRegisterItem( ::cId, Self )
     endif
 
     if nAutoResize != 0
@@ -87,6 +92,7 @@ METHOD End() CLASS TSwiftTextField
     local nPos 
     if !Empty( ::hWnd )
         SD_TF_DESTROY( ::cId, ::hWnd )
+        SwiftUnregisterItem( ::cId )
         nPos := AScan( aSwiftTextFields, { |o| o != nil .and. o:cId == ::cId } )
         if nPos > 0
             aSwiftTextFields[ nPos ] := nil
@@ -96,19 +102,9 @@ METHOD End() CLASS TSwiftTextField
 return ::Super:End()
 
 METHOD OnChange( cNewText ) CLASS TSwiftTextField
+    ::cText := cNewText
     if ::bOnChange != nil
         Eval( ::bOnChange, cNewText, Self )
-    endif
-return nil
-
-// Callback from C using cId
-function SWIFTTEXTFIELDONCHANGE( cId, cNewText )
-    local nPos := AScan( aSwiftTextFields, { |o| o != nil .and. o:cId == cId } )
-    local oTxf
-    
-    if nPos > 0
-        oTxf := aSwiftTextFields[ nPos ]
-        oTxf:OnChange( cNewText )
     endif
 return nil
 
@@ -123,11 +119,13 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftTextEditor
     ::oWnd      = oWnd
     ::cText     = cText
     
-    ::cId       = hb_UUID()
+    ::cId       := ""
     
     AAdd( aSwiftTextFields, Self )
     
     ::hWnd = SD_SWIFT_TEXTEDITOR_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cId )
+    ::cId := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cId, Self )
 
     oWnd:AddControl( Self )
 

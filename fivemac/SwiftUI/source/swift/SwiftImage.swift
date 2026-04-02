@@ -71,15 +71,17 @@ public class SwiftImageLoader: NSObject {
     public static var states: [String: SwiftImageState] = [:]
 
     public static func makeImage(systemName: String, name: String, filePath: String, id: String, callback: (() -> Void)?) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = SwiftImageState(systemName: systemName, name: name, filePath: filePath)
-         states[id] = state
+         states[finalId] = state
          
          let view = SwiftImageView(state: state, callback: callback)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
 
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -182,15 +184,11 @@ public func swift_image_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
         let callback: () -> Void = {
             let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTIMAGEONCLICK") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id)
-                    hb_vmDo(1)
-                }
+                SwiftBridge.onAction(finalId)
             }
             
             if Thread.isMainThread {
@@ -200,16 +198,14 @@ public func swift_image_create(
             }
         }
 
-        // We determine if name is system or file based on some heuristic or just pass as system for now
-        // Usually SF Symbols have dots or are known, but here we just follow the old pattern
         let imgView = SwiftImageLoader.makeImage(
             systemName: name, 
             name: "", 
             filePath: "", 
-            id: id, 
+            id: finalId, // Pasamos el ID ya generado
             callback: callback
         )
-        
+
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             

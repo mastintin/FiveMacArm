@@ -120,14 +120,16 @@ public class SwiftChartLoader: NSObject {
     
     @objc(makeChart:data:type:index:)
     public static func makeChart(id: String, data: String, type: String, index: Int) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
         let state = ChartState(dataJson: data, type: type)
-        states[id] = state
+        states[finalId] = state
         
         let view = SwiftChartView(state: state)
-        ViewRegistry.register(view, for: id)
+        ViewRegistry.register(view, for: finalId)
         
         let hostingView = NSHostingView(rootView: view)
-        views[id] = hostingView
+        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
+        views[finalId] = hostingView
         return hostingView
     }
 
@@ -243,7 +245,6 @@ public func swift_chart_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
-        
         let chartView = SwiftChartLoader.makeChart(
             id: id,
             data: data,

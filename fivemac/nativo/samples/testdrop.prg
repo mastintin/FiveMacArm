@@ -34,3 +34,5 @@ function ProcessDrop( aFiles, oGet, cText )
     oGet:Refresh()
 
 return nil
+
+miMsginfo

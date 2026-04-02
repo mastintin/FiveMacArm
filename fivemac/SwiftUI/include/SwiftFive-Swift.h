@@ -546,7 +546,7 @@ SWIFT_CLASS_NAMED("SwiftVStackLoader")
 
 SWIFT_CLASS_NAMED("SwiftWebViewLoader")
 @interface SwiftWebViewLoader : NSObject
-+ (NSView * _Nonnull)makeWebViewWithId:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
++ (NSView * _Nonnull)makeWebViewWithId:(NSString * _Nullable)id SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -985,7 +985,11 @@ SWIFT_EXTERN void HB_FUN_CREATESWIFTVIEW(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN int8_t const * _Nullable sw_GetRootId_par(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
 
+SWIFT_EXTERN void HB_FUN_SW_GET_ID(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN BOOL sw_parl(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void HB_FUN_SW_SET_ID(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SWIFTAUTORESIZE(void * _Nullable p) SWIFT_NOEXCEPT;
 

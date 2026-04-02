@@ -51,15 +51,17 @@ public class SwiftDatePickerLoader: NSObject {
     public static var states: [String: DatePickerState] = [:]
 
     public static func makeDatePicker(date: Date, title: String, id: String, callback: ((Date) -> Void)?) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = DatePickerState(date: date, title: title)
-         states[id] = state
+         states[finalId] = state
          
          let view = SwiftDatePickerView(state: state, callback: callback)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
          
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -146,19 +148,14 @@ public func swift_datepicker_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
         let initialDate = SwiftDatePickerLoader.harbourStrToDate(dateStr)
 
         let callback: (Date) -> Void = { newDate in
             let dateStr = SwiftDatePickerLoader.dateToHarbourStr(newDate)
             let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTDATEPICKERONCHANGE") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id)
-                    hb_vmPushString(dateStr)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onChange(finalId, dateStr)
             }
             
             // Always async to avoid crashes if Harbour opens modal dialogs (like MsgInfo)
@@ -171,10 +168,10 @@ public func swift_datepicker_create(
         let dtpView = SwiftDatePickerLoader.makeDatePicker(
             date: initialDate,
             title: title,
-            id: id,
+            id: finalId, // Pasamos el ID ya generado
             callback: callback
         )
-        
+
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             

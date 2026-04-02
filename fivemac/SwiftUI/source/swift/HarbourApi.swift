@@ -143,3 +143,59 @@ public struct HarbourArray {
         }
     }
 }
+
+// --- 4. SWIFT BRIDGE (REPARTIDOR UNIVERSAL OPTIMIZADO) ---
+
+public struct SwiftBridge {
+    // Caché estático de símbolos (Equivalente al patrón 'static PHB_SYMB' en winapi/windows.m)
+    private static var _symAction: UnsafeMutableRawPointer? = nil
+    private static var _symChange: UnsafeMutableRawPointer? = nil
+    private static var _symValid:  UnsafeMutableRawPointer? = nil
+    
+    // Funciones auxiliares para obtener símbolos con caché
+    private static func getActionSym() -> UnsafeMutableRawPointer? {
+        if _symAction == nil { "SW_ONACTION".withCString { ptr in if let pDyn = hb_dynsymFindName(ptr) { _symAction = hb_dynsymSymbol(pDyn) } } }
+        return _symAction
+    }
+
+    private static func getChangeSym() -> UnsafeMutableRawPointer? {
+        if _symChange == nil { "SW_ONCHANGE".withCString { ptr in if let pDyn = hb_dynsymFindName(ptr) { _symChange = hb_dynsymSymbol(pDyn) } } }
+        return _symChange
+    }
+
+    private static func getValidSym() -> UnsafeMutableRawPointer? {
+        if _symValid == nil { "SW_ONVALIDATE".withCString { ptr in if let pDyn = hb_dynsymFindName(ptr) { _symValid = hb_dynsymSymbol(pDyn) } } }
+        return _symValid
+    }
+
+    // --- PORTAL 1: ON ACTION (Clics, Disparadores) ---
+    public static func onAction(_ id: String) {
+        if let sym = self.getActionSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmDo(1) }
+    }
+
+    public static func onAction(_ id: String, _ value: String) {
+        if let sym = self.getActionSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushString(value); hb_vmDo(2) }
+    }
+
+    // --- PORTAL 2: ON CHANGE (Cambios Dinámicos) ---
+    public static func onChange(_ id: String, _ value: String) {
+        if let sym = self.getChangeSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushString(value); hb_vmDo(2) }
+    }
+
+    public static func onChange(_ id: String, _ value: Double) {
+        if let sym = self.getChangeSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushNumber(value, 0); hb_vmDo(2) }
+    }
+
+    public static func onChange(_ id: String, _ value: Bool) {
+        if let sym = self.getChangeSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushLogical(value ? 1 : 0); hb_vmDo(2) }
+    }
+
+    // --- PORTAL 3: ON VALIDATE (Cláusula VALID / Pérdida de Foco) ---
+    public static func onValidate(_ id: String, _ value: String) -> Bool {
+        if let sym = self.getValidSym() {
+            hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushString(value); hb_vmDo(2)
+            return hb_parl(-1) != 0 // Retornamos el resultado del VALID de Harbour
+        }
+        return true
+    }
+}

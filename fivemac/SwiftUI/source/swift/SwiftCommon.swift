@@ -116,6 +116,26 @@ public func swift_uuid(_ p: UnsafeMutableRawPointer?) {
     hb_retc(UUID().uuidString)
 }
 
+@_cdecl("HB_FUN_SW_GET_ID")
+public func sw_get_id_hb(_ p: UnsafeMutableRawPointer?) {
+    let viewPtr = hb_parnll(1)
+    if viewPtr != 0, let nsView = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)) {
+        let view = Unmanaged<NSView>.fromOpaque(nsView).takeUnretainedValue()
+        hb_retc(view.identifier?.rawValue ?? "")
+    } else {
+        hb_retc("")
+    }
+}
+
+@_cdecl("HB_FUN_SW_SET_ID")
+public func sw_set_id_hb(_ p: UnsafeMutableRawPointer?) {
+    let viewPtr = hb_parnll(1)
+    if viewPtr != 0, let nsView = UnsafeMutableRawPointer(bitPattern: Int(viewPtr)), let newId = hb_parc(2) {
+        let view = Unmanaged<NSView>.fromOpaque(nsView).takeUnretainedValue()
+        view.identifier = NSUserInterfaceItemIdentifier(String(cString: newId))
+    }
+}
+
 // MARK: - Core View Engine
 
 func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Double, left: Double, w: Double, h: Double) {
@@ -134,7 +154,7 @@ public func create_swift_view_hb(_ p: UnsafeMutableRawPointer?) {
     guard let cStr = hb_parc(2), let windowAddr = UnsafeMutableRawPointer(bitPattern: Int(hb_parnll(1))) else { return }
     let window = Unmanaged<NSObject>.fromOpaque(windowAddr).takeUnretainedValue()
     let className = String(cString: cStr)
-    var swiftClass: AnyClass? = NSClassFromString(className) ?? NSClassFromString("SwiftFive.\(className)")
+    let swiftClass: AnyClass? = NSClassFromString(className) ?? NSClassFromString("SwiftFive.\(className)")
     guard let finalClass = swiftClass as? NSObject.Type else { return }
     let selector = NSSelectorFromString("makeViewWithCallback:")
     if finalClass.responds(to: selector) {

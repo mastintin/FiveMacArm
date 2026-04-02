@@ -22,6 +22,7 @@ function Main()
 
    // Usando el nuevo comando SWIFTWEBVIEW o la clase TSwiftWebview directamente
    @ 70, 20 SWIFTWEBVIEW oWeb SIZE 860, 580 OF oWnd AUTORESIZE 18
+   MsgInfo( "ID Autogenerado por Swift: " + oWeb:cId )
    
    // Definir el manejador de mensajes de JS -> Harbour
    oWeb:bOnMessage := { | cBody, cName | MsgInfo( "Harbour ha recibido: " + CRLF + CRLF + cBody, "Bridge JS -> Swift -> Harbour" ) }

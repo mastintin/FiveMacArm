@@ -92,17 +92,19 @@ public class SwiftSliderLoader: NSObject {
     public static var states: [String: SliderState] = [:]
     
     public static func makeSlider(value: Double, id: String, showValue: Bool, isGlass: Bool, callback: @escaping ((Double) -> Void)) -> NSView {
+        let finalId = id.isEmpty ? UUID().uuidString : id
         let state = SliderState(value: value, showValue: showValue, isGlass: isGlass, callback: callback)
-        states[id] = state
+        states[finalId] = state
         
         let view = SwiftSliderView(state: state)
-        ViewRegistry.register(view, for: id)
+        ViewRegistry.register(view, for: finalId)
         
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         hostingView.wantsLayer = true
         hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
         
         return hostingView
     }
@@ -174,16 +176,11 @@ public func swift_slider_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
         let callback: (Double) -> Void = { newValue in
             let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTSLIDERONCHANGE") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id) 
-                    hb_vmPushDouble(newValue, 0)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onChange(finalId, newValue)
             }
 
             if Thread.isMainThread {
@@ -195,12 +192,12 @@ public func swift_slider_create(
 
         let sliderView = SwiftSliderLoader.makeSlider(
             value: value, 
-            id: id,
+            id: finalId, // Pasamos el ID ya generado
             showValue: showValue,
             isGlass: isGlass,
             callback: callback
         )
-        
+
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             

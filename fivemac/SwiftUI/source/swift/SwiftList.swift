@@ -67,18 +67,20 @@ public class SwiftListLoader: NSObject {
 
     @objc(makeListWithIndex:)
     public static func makeList(id: String) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = SwiftListState()
          
-         states[id] = state
+         states[finalId] = state
          lastCreatedState = state
-         SwiftStackRegistry.sharedStates[id] = state
+         SwiftStackRegistry.sharedStates[finalId] = state
          
          let view = SwiftListView(state: state)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
 
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -367,17 +369,13 @@ public func swift_list_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
-        let listView = SwiftListLoader.makeList(id: id)
+        let finalId = id.isEmpty ? UUID().uuidString : id
+        
+        let listView = SwiftListLoader.makeList(id: finalId)
         
         let callback: (String) -> Void = { itemId in
              let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTLISTONACTION") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id)
-                    hb_vmPushString(itemId)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onAction(finalId, itemId)
             }
             if Thread.isMainThread {
                 sendToHarbour()
@@ -386,7 +384,7 @@ public func swift_list_create(
             }
         }
         
-        SwiftListLoader.setActionCallback(rootId: id, callback: callback)
+        SwiftListLoader.setActionCallback(rootId: finalId, callback: callback)
         
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()

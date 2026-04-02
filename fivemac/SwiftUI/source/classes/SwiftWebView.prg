@@ -38,13 +38,14 @@ ENDCLASS
 METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName, cId, nAutoResize ) CLASS TSwiftWebview
 
     DEFAULT nWidth := 300, nHeight := 100, oWnd := GetWndDefault()
-    DEFAULT cId := "sw_web_" + AllTrim(Str(GetNextTag()))
-    
-    ::cId := cId
-    ::oWnd := oWnd
+    DEFAULT cId := ""
     
     // Create the Swift View and get its pointer
-    ::hWnd := SD_SW_WEBVIEW_CREATE( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, Self, ::cId )
+    ::hWnd := SD_SW_WEBVIEW_CREATE( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, Self, cId )
+    
+    ::cId := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cId, Self )
+    ::oWnd := oWnd
     
     ::SetTag( GetNextTag() )
     
@@ -70,10 +71,9 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function WebViewOnMessage( oWeb, cBody, cName )
-
+function SW_WEBVIEW_ON_MESSAGE( cId, cBody, cName )
+    local oWeb := SwiftGetItem( cId )
     if oWeb != nil
        oWeb:OnMessage( cBody, cName )
     endif
-
 return nil

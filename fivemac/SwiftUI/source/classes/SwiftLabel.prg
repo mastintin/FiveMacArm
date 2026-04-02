@@ -22,13 +22,15 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwif
 
     ::oWnd    = oWnd
     // ::nId     = ::GetCtrlIndex()
-    ::cID      = hb_UUID()
+    ::cID      := ""
 
     AAdd( aSwiftLabels, Self )
     
 
     // Pass ::cID (Param 7)
     ::hWnd = SD_SWIFT_LABEL_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cID )
+    ::cID := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cID, Self )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -84,6 +86,7 @@ METHOD End() CLASS TSwiftLabel
     local nPos 
     if !Empty( ::hWnd )
         SD_LBL_DESTROY( ::cId, ::hWnd )
+        SwiftUnregisterItem( ::cID )
         nPos := AScan( aSwiftLabels, { |o| o != nil .and. o:cID == ::cID } )
         if nPos > 0
             aSwiftLabels[ nPos ] := nil
