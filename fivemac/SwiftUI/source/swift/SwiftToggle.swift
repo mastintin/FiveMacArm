@@ -59,57 +59,55 @@ public class SwiftToggleLoader: NSObject {
     public static var states: [String: ToggleState] = [:]
     
     public static func makeToggle(caption: String, isOn: Bool, id: String, isSwitch: Bool, callback: @escaping ((Bool) -> Void)) -> NSView {
+        let finalId = id.isEmpty ? UUID().uuidString : id
         let state = ToggleState(isOn: isOn, caption: caption, isSwitch: isSwitch, callback: callback)
-        states[id] = state
+        states[finalId] = state
         
         let view = SwiftToggleView(state: state)
-        let idString: String = id 
-        ViewRegistry.register(view, for: idString)
-       
+        ViewRegistry.register(view, for: finalId)
         
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = [] 
         hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
         return hostingView
     }
 
-
     public static func destroyToggle(id: String, viewPtr: Int64) {
-        // 1. Limpiar el estado (asumiendo que 'states' también usa el ID)
         states.removeValue(forKey: id)
-    
-        // 2. Limpiar el registro global de vistas usando el UUID
         ViewRegistry.clean(id: id) 
-    
-        // 3. Liberar la memoria física (el puntero)
+        
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
-                // "Consume" el contador de referencia para que el objeto muera
                 _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
-}
+    }
 
     // Métodos de actualización rápida (UI Thread)
     public static func setValue(id: String, isOn: Bool) {
-        DispatchQueue.main.async { states[id]?.isOn = isOn }
+        DispatchQueue.main.async {
+            states[id]?.isOn = isOn
+        }
     }
 
     public static func setCaption(id: String, caption: String) {
-        DispatchQueue.main.async { states[id]?.caption = caption }
+        DispatchQueue.main.async {
+            states[id]?.caption = caption
+        }
     }
     
     // Versión ultra-rápida para Harbour (nRGB)
     public static func setColors(id: String, accentColor: Int, textColor: Int, alpha: Int) {
         DispatchQueue.main.async {
             if let state = states[id] {
-                // Usamos una pequeña variante de nuestra extensión
                 let a = Double(alpha) / 255.0
                 state.accentColor = Color(hbColor: accentColor).opacity(a)
-            state.textColor = Color(hbColor: textColor).opacity(a)
+                state.textColor = Color(hbColor: textColor).opacity(a)
+            }
         }
     }
-}
+    
     // Versión para Hexadecimal (Strings)
     public static func setColors(id: String, accentHex: String, textHex: String) {
         DispatchQueue.main.async {
@@ -153,7 +151,6 @@ public func tgl_set_value(id: String, value: Bool ) {
     SwiftToggleLoader.setValue(id: id, isOn: value )
 }
 
-
 //---------- creacion del control 
 
 @HarbourDirect
@@ -169,20 +166,13 @@ public func swift_toggle_create(
     isSwitch: Bool
     ) -> Int64 {
     
-    // 1. Definimos la lógica de creación en una función interna
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
         let callback: (Bool) -> Void = { newValue in
             let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTTOGGLEONCHANGE") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    // Usamos PushNumber o el equivalente que prefieras
-                    hb_vmPushString( id ) 
-                    hb_vmPushLogical(newValue ? 1 : 0)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onChange(finalId, newValue)
             }
 
             if Thread.isMainThread {
@@ -192,20 +182,17 @@ public func swift_toggle_create(
             }
         }
 
-        // Crear la vista usando el Factory
         let toggleView = SwiftToggleLoader.makeToggle(
             caption: caption, 
             isOn: isOn, 
-            id: id,
+            id: finalId,
             isSwitch: isSwitch, 
             callback: callback
         )
         
-        // Buscar el contenedor del padre (hWnd de Harbour)
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             
-            // Aplicar Layout (Asegúrate de que applySwiftViewLayout use .maxXMargin y .minYMargin)
             applySwiftViewLayout(
                 swiftView: toggleView, 
                 parent: parentObj, 
@@ -215,19 +202,13 @@ public func swift_toggle_create(
                 h: height
             )
             
-            // Retener la vista para Harbour
             let viewPtr = Unmanaged.passRetained(toggleView).toOpaque()
             viewAddress = Int64(Int(bitPattern: viewPtr))
-        } else {
-            print("Error: El parentPtr \(parentPtr) no es una dirección de memoria válida")
         }
         
         return viewAddress
     }
 
-    // 2. EVITAR EL DEADLOCK:
-    // Si ya estamos en el hilo principal (Harbour Main Thread), ejecutamos directo.
-    // Si no, usamos sync para esperar el resultado.
     if Thread.isMainThread {
         return executeCreation()
     } else {

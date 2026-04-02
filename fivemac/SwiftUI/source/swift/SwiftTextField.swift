@@ -14,10 +14,11 @@ public class TextFieldState {
     var textColor: Color = .primary
     var backgroundColor: Color = .clear
     
-    init(text: String = "", placeholder: String = "", id: String = "") {
+    init(text: String = "", placeholder: String = "", id: String = "", callback: ((String) -> Void)? = nil) {
         self.text = text
         self.placeholder = placeholder
         self.id = id
+        self.onAction = callback
     }
 }
 
@@ -32,11 +33,9 @@ struct SwiftTextFieldView: View {
         
         TextField(state.placeholder, text: textBinding, onEditingChanged: { isEditing in
             if !isEditing {
-                print("DEBUG: [Swift] TextField Editing Finished. Final text: \(state.text)")
                 state.onAction?(state.text)
             }
         }, onCommit: {
-            print("DEBUG: [Swift] TextField Committed with Enter. Text: \(state.text)")
             state.onAction?(state.text)
         })
         .font(.system(size: state.fontSize))
@@ -60,7 +59,9 @@ struct SwiftTextEditorView: View {
             .foregroundColor(state.textColor)
             .scrollContentBackground(.hidden)
             .background(state.backgroundColor)
-            .border(Color.gray.opacity(0.2))
+            .onChange(of: state.text) { _, newValue in
+                state.onAction?(newValue)
+            }
     }
 }
 
@@ -69,31 +70,33 @@ public class SwiftTextFieldLoader: NSObject {
     
     public static var states: [String: TextFieldState] = [:]
 
-    public static func makeTextField(text: String, placeholder: String, id: String, callback: @escaping (String) -> Void) -> NSView {
-        let state = TextFieldState(text: text, placeholder: placeholder, id: id)
-        state.onAction = callback
-        
-        states[id] = state 
+    public static func makeTextField(text: String, placeholder: String, id: String, callback: @escaping ((String) -> Void)) -> NSView {
+        let finalId = id.isEmpty ? UUID().uuidString : id
+        let state = TextFieldState(text: text, placeholder: placeholder, id: finalId, callback: callback)
+        states[finalId] = state
         
         let view = SwiftTextFieldView(state: state)
-        ViewRegistry.register(view, for: id)
+        ViewRegistry.register(view, for: finalId)
         
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
         return hostingView
     }
 
-    public static func makeTextEditor(text: String, id: String) -> NSView {
-        let state = TextFieldState(text: text, id: id)
-        states[id] = state
+    public static func makeTextEditor(text: String, id: String, callback: @escaping ((String) -> Void)) -> NSView {
+        let finalId = id.isEmpty ? UUID().uuidString : id
+        let state = TextFieldState(text: text, id: finalId, callback: callback)
+        states[finalId] = state
         
         let view = SwiftTextEditorView(state: state)
-        ViewRegistry.register(view, for: id)
+        ViewRegistry.register(view, for: finalId)
 
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
         return hostingView
     }
 
@@ -163,16 +166,11 @@ public func swift_textfield_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
         let callback: (String) -> Void = { newText in
             let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTTEXTFIELDONCHANGE") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id) 
-                    hb_vmPushString(newText)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onChange(finalId, newText)
             }
 
             if Thread.isMainThread {
@@ -185,10 +183,10 @@ public func swift_textfield_create(
         let fieldView = SwiftTextFieldLoader.makeTextField(
             text: text, 
             placeholder: placeholder,
-            id: id,
+            id: finalId,
             callback: callback
         )
-        
+
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             
@@ -230,12 +228,26 @@ public func swift_texteditor_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
+        let callback: (String) -> Void = { newText in
+            let sendToHarbour = {
+                SwiftBridge.onChange(finalId, newText)
+            }
+
+            if Thread.isMainThread {
+               sendToHarbour()
+            } else {
+                DispatchQueue.main.async { sendToHarbour() }
+            }
+        }
+
         let fieldView = SwiftTextFieldLoader.makeTextEditor(
             text: text, 
-            id: id
+            id: finalId,
+            callback: callback
         )
-        
+
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             

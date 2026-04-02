@@ -104,22 +104,24 @@ public class SwiftVStackLoader: NSObject {
 
     @objc(makeVStackWithIndex:)
     public static func makeVStack(id: String) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = SwiftVStackState()
          
          // Register in dictionary
-         states[id] = state 
-         SwiftStackRegistry.sharedStates[id] = state 
+         states[finalId] = state 
+         SwiftStackRegistry.sharedStates[finalId] = state 
          
          // Restore legacy global state for compatibility
          lastCreatedState = state
          lastCreatedItem = nil
 
          let view = SwiftVStackView(state: state)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
 
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -1192,18 +1194,13 @@ public func swift_vstack_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
-        let vStackView = SwiftVStackLoader.makeVStack(id: id)
+        let vStackView = SwiftVStackLoader.makeVStack(id: finalId)
         
         let callback: (String) -> Void = { itemId in
              let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTONACTION") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushNumber(0, 0) // dummy index
-                    hb_vmPushString(itemId)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onAction(finalId, itemId)
             }
             if Thread.isMainThread {
                 sendToHarbour()
@@ -1212,7 +1209,7 @@ public func swift_vstack_create(
             }
         }
         
-        SwiftVStackLoader.setActionCallback(rootId: id, callback: callback)
+        SwiftVStackLoader.setActionCallback(rootId: finalId, callback: callback)
         
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()

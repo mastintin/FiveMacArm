@@ -56,7 +56,8 @@ $(SWIFT_OBJ): $(SWIFT_SOURCES)
 obj/Hrb_%.o: source/classes/%.prg
 	@mkdir -p obj
 	@echo "Compiling Harbour: $<..."
-	$(HB_BIN) $< $(HBFLAGS) -oobj/$*.c
+	$(HB_BIN) $< $(HBFLAGS) -o$*.c
+	@mv $*.c obj/
 	$(CC) $(CFLAGS) obj/$*.c -o $@
 	@rm obj/$*.c
 

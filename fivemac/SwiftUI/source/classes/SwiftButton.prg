@@ -2,13 +2,6 @@
 
 static aSwiftButtons := {}
 
-#xcommand @ <nRow>, <nCol> SWIFTBUTTON [ <oBtn> PROMPT ] <cCaption> ;
-    [ SIZE <nWidth>, <nHeight> ] ;
-    [ OF <oWnd> ] ;
-    [ ACTION <uAction> ] ;
-    => ;
-    [ <oBtn> := ] TSwiftButton():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cCaption>, <oWnd>, [<{uAction}>] )
-
 CLASS TSwiftButton FROM TControl
 
     DATA bAction
@@ -16,7 +9,7 @@ CLASS TSwiftButton FROM TControl
     DATA lGlass
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction )
-    METHOD Click()
+    METHOD OnAction()
     METHOD SetColor( nFgColor, nBgColor )
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
@@ -34,11 +27,13 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
 
     ::bAction = bAction
     ::oWnd    = oWnd
-    ::cID     = hb_UUID()
+    ::cID := ""
    
     AAdd( aSwiftButtons, Self )
 
     ::hWnd = SD_SWIFT_BUTTON_CREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::cID )
+    ::cID := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cID, Self )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -48,7 +43,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize ) 
 
 return Self
 
-METHOD Click() CLASS TSwiftButton
+METHOD OnAction() CLASS TSwiftButton
    
     if ::bAction != nil
         Eval( ::bAction, Self )
@@ -89,6 +84,7 @@ METHOD End() CLASS TSwiftButton
     local nPos 
     if !Empty( ::hWnd )
         SD_BTN_DESTROY( ::cID, ::hWnd )
+        SwiftUnregisterItem( ::cID )
         ::bAction := nil
         nPos := AScan( aSwiftButtons, { |o| o != nil .and. o:cID == ::cID } )
         if nPos > 0
@@ -97,14 +93,3 @@ METHOD End() CLASS TSwiftButton
         ::cID := ""
     endif
 return ::Super:End()
-
-
-
-// Called from C callback
-function SwiftBtnOnClick( cId )
-    local nPos := AScan( aSwiftButtons, { |o| o != nil .and. o:cId == cId } )
-    if nPos > 0
-        aSwiftButtons[ nPos ]:Click()
-    endif
-   
-return nil

@@ -64,11 +64,12 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftZStack
     DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
     ::oWnd = oWnd
-    ::cId = hb_UUID()
+    ::cId := ""
     ::hItems := {=>}
     ::aBatch := {}
 
     ::hWnd = SD_SWIFT_ZSTACK_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId )
+    ::cId := SW_GET_ID( ::hWnd )
 
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )

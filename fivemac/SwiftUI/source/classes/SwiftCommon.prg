@@ -11,14 +11,14 @@ function SwiftRegisterItem( cId, oItem )
     s_hRegistry = {=>}
     endif
 
-    if Empty( cId ) .or. ValType( cId ) != "C"
+    if Empty( cId ) 
        return nil
     endif
 
-    cId = AllTrim( cId ) // Clean key - CRITICAL FIX
-    // MsgAlert( "DEBUG: [Harbour] Registering Item: '" + cId + "' Len: " + Str(Len(cId)) + " Type: " + ValType(oItem) )
-    // SysWait( 0.1 ) // Validate Timing Hypothesis
-    // LogFile( "swift_debug.log", { "Registering", cId, ValType(oItem) } )
+    if ValType( cId ) == "C"
+       cId = AllTrim( cId )
+    endif
+
     s_hRegistry[ cId ] := oItem
    
 return nil
@@ -41,6 +41,9 @@ return nil
 // -------------------------------------------------------------------------------- //
 
 function SwiftGetItem( cId )
+    if ValType( cId ) == "C"
+       cId = AllTrim( cId )
+    endif
 return If( hb_HHasKey( s_hRegistry, cId ), s_hRegistry[ cId ], nil )
 
 // -------------------------------------------------------------------------------- //
@@ -67,8 +70,6 @@ function SwiftOnAction( nControlIndex, cItemId )
     endif
 
     cItemId = AllTrim( cItemId )
-    // MsgInfo( "DEBUG: [Harbour] Action for ID: " + cItemId )
-
     // 1. Try global registry (for individual items registered with SwiftRegisterItem)
     oItem = SwiftGetItem( cItemId )
     
@@ -98,5 +99,30 @@ function SwiftOnAction( nControlIndex, cItemId )
 
 return nil
 
-function SwiftVStackOnClick( nControlIndex, nItemIndex )
-return SwiftOnAction( nControlIndex, ltrim(str(nItemIndex)) )
+// -------------------------------------------------------------------------------- //
+
+function SW_ONACTION( cId, uParam1, uParam2 )
+    local oItem := SwiftGetItem( cId )
+    if oItem != nil .and. __ObjHasMsg( oItem, "ONACTION" )
+       oItem:OnAction( uParam1, uParam2 )
+    endif
+return nil
+
+// -------------------------------------------------------------------------------- //
+
+function SW_ONCHANGE( cId, uValue )
+    local oItem := SwiftGetItem( cId )
+    if oItem != nil .and. __ObjHasMsg( oItem, "ONCHANGE" )
+       oItem:OnChange( uValue )
+    endif
+return nil
+
+// -------------------------------------------------------------------------------- //
+
+function SW_ONVALIDATE( cId, uValue )
+    local oItem := SwiftGetItem( cId )
+    local lValid := .T.
+    if oItem != nil .and. __ObjHasMsg( oItem, "BVALID" ) .and. oItem:bValid != nil
+       lValid := Eval( oItem:bValid, uValue, oItem )
+    endif
+return lValid

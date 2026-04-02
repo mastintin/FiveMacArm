@@ -37,6 +37,7 @@ public class SwiftGridLoader: NSObject {
     
     @objc(makeGridWithIndex:columnsJson:)
     public static func makeGrid(id: String, columnsJson: String) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = SwiftVStackState()
          
          // Decode Columns
@@ -48,14 +49,15 @@ public class SwiftGridLoader: NSObject {
          SwiftVStackLoader.lastCreatedState = state 
          
          // Register state for addItem/addBatch lookups
-         SwiftVStackLoader.states[id] = state
+         SwiftVStackLoader.states[finalId] = state
          
          let view = SwiftGridView(state: state)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
 
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -82,18 +84,13 @@ public func swift_grid_create(
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
-        let gridView = SwiftGridLoader.makeGrid(id: id, columnsJson: columnsJson)
+        let gridView = SwiftGridLoader.makeGrid(id: finalId, columnsJson: columnsJson)
         
         let callback: (String) -> Void = { itemId in
              let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTGRIDONACTION") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id)
-                    hb_vmPushString(itemId)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onAction(finalId, itemId)
             }
             if Thread.isMainThread {
                 sendToHarbour()
@@ -102,7 +99,7 @@ public func swift_grid_create(
             }
         }
         
-        SwiftGridLoader.setActionCallback(rootId: id, callback: callback)
+        SwiftGridLoader.setActionCallback(rootId: finalId, callback: callback)
         
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()

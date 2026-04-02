@@ -33,7 +33,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, hData, cType ) CLASS TSwiftChart
     DEFAULT cType   := "bar"
    
     AAdd( aSwiftCharts, Self )
-    ::cID = hb_UUID()
+    ::cID := ""
 
     // Serialize initial data
     if ValType( ::hData ) != "C"
@@ -41,7 +41,8 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, hData, cType ) CLASS TSwiftChart
     endif
 
     ::hWnd = SD_SWIFT_CHART_CREATE( nTop, nLeft, nWidth, nHeight, oWnd:hWnd, ::cID, ::hData, ::cChartType )
-   
+    ::cID := SW_GET_ID( ::hWnd )
+  
     oWnd:AddControl( Self )
 
 return Self

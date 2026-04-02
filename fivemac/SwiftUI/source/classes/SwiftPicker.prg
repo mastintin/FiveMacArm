@@ -45,10 +45,13 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarNa
     ::bSetGet = bSetGet
     ::cVarName = cVarName
 
+    ::cID := ""
+    
     AAdd( aSwiftPickers, Self )
-    ::cID = hb_UUID()
 
     ::hWnd = SD_SWIFT_PICKER_CREATE( nTop, nLeft, nWidth, nHeight, hb_jsonEncode( aItems ), oWnd:hWnd, cTextLabel, ::cID )
+    ::cID := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cID, Self )
     
     oWnd:AddControl( Self )
 
@@ -108,6 +111,7 @@ METHOD End() CLASS TSwiftPicker
     local nPos 
     if !Empty( ::hWnd )
         SD_PKR_DESTROY( ::cId, ::hWnd )
+        SwiftUnregisterItem( ::cId )
         nPos := AScan( aSwiftPickers, { |o| o != nil .and. o:cID == ::cID } )
         if nPos > 0
             aSwiftPickers[ nPos ] := nil
@@ -115,15 +119,3 @@ METHOD End() CLASS TSwiftPicker
         ::cId  := ""
     endif
 return ::Super:End()
-
-
-//----------------------------------------------------------------------------//
-
-function SwiftPickerOnChange( cId, cValue )
-    local nPos := AScan( aSwiftPickers, { |o| o != nil .and. o:cID == cId } )
-    if nPos > 0
-        aSwiftPickers[ nPos ]:OnChange( cValue )
-    endif
-return nil
-
-//----------------------------------------------------------------------------//

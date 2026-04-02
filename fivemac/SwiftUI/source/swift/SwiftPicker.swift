@@ -146,15 +146,17 @@ public class SwiftPickerLoader: NSObject {
     public static var states: [String: PickerState] = [:]
 
     public static func makePicker(title: String, items: [String], id: String, callback: ((String) -> Void)?) -> NSView {
+         let finalId = id.isEmpty ? UUID().uuidString : id
          let state = PickerState(items: items, selection: items.first ?? "", title: title)
-         states[id] = state
+         states[finalId] = state
          
          let view = SwiftPickerView(state: state, callback: callback)
-         ViewRegistry.register(view, for: id)
+         ViewRegistry.register(view, for: finalId)
          
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
+         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
          return hostingView
     }
 
@@ -282,6 +284,7 @@ public func swift_picker_create(
 ) -> Int64 {
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
+        let finalId = id.isEmpty ? UUID().uuidString : id
         
         var items: [String] = []
         if let data = itemsJson.data(using: .utf8) {
@@ -290,13 +293,7 @@ public func swift_picker_create(
 
         let callback: (String) -> Void = { newValue in
             let sendToHarbour = {
-                if let pDynSym = hb_dynsymFindName("SWIFTPICKERONCHANGE") {
-                    hb_vmPushSymbol(hb_dynsymSymbol(pDynSym))
-                    hb_vmPushNil()
-                    hb_vmPushString(id)
-                    hb_vmPushString(newValue)
-                    hb_vmDo(2)
-                }
+                SwiftBridge.onChange(finalId, newValue)
             }
             
             if Thread.isMainThread {
@@ -309,10 +306,10 @@ public func swift_picker_create(
         let pickerView = SwiftPickerLoader.makePicker(
             title: title,
             items: items,
-            id: id,
+            id: finalId, // Pasamos el ID ya generado
             callback: callback
         )
-        
+
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
             

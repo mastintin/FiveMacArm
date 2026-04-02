@@ -51,6 +51,7 @@ METHOD Create() CLASS TSwiftBatch
     for n := 1 to Len( ::aControls )
     if n <= Len( aHandles )
     ::aControls[ n ]:hWnd = aHandles[ n ]
+    ::aControls[ n ]:cId := SW_GET_ID( ::aControls[ n ]:hWnd )
     endif
     next
     endif

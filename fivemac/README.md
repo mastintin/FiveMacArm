@@ -374,6 +374,18 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **New Samples**: Added `testnet.prg` (Native) and `TestSwiftNetwork.prg` (SwiftUI) for immediate developer reference.
 - **Bug Fixes**: Resolved the long-standing `HOMEPATH` typo in `system.m` and introduced a convenient `HOME()` alias for executable path retrieval.
 
+### Modern Event Dispatching & SwiftUI Registry (April 2026)
+- **Universal Event Portal**: Implemented a high-performance, centralized event dispatching system using `SwiftBridge` (Swift) and generic `SW_ONCHANGE`/`SW_ONACTION` (Harbour) handlers.
+- **UUID-based Registry**: Transitioned to an O(1) global Hash registry (`s_hRegistry`) for all SwiftUI controls, replacing inefficient array scans and ensuring reliable control lookup.
+- **State Synchronization**: Unified `OnChange` delegation across all text and value-based controls (Slider, Toggle, TextField, DatePicker, etc.), ensuring Harbour `DATAs` (`::lOn`, `::cText`, `::nValue`) are automatically synchronized with the native UI state.
+- **Architecture Refactoring**: 
+    - Standardized control lifecycle with `SwiftRegisterItem` and `SwiftUnregisterItem`.
+    - Genericized `OnAction` delegation for Buttons, Images, Lists, and Stacks, removing legacy control-specific callbacks.
+    - Implemented delegated event handling, shifting state management from global functions to individual control classes.
+- **Bug Fixes**: 
+    - Resolved critical closure-capture race conditions in Swift controls by enforcing pre-generation of UUIDs.
+    - Fixed asynchronous execution deadlocks in control creation via `Thread.isMainThread` checks and synchronous dispatching.
+
 ## Building
 
 To build the library and samples:

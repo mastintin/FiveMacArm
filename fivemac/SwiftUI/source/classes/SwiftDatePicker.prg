@@ -36,11 +36,14 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, dDate, bChange, cTitle ) CLASS T
     ::dDate   = dDate
     ::bChange = bChange
 
+    ::cID := ""
+    
     AAdd( aSwiftDatePickers, Self )
-    ::cID = hb_UUID()
 
     ::hWnd = SD_SWIFT_DATEPICKER_CREATE( nTop, nLeft, nWidth, nHeight, DToS( dDate ), oWnd:hWnd, cTitle, ::cID )
-    
+    ::cID := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cID, Self )
+   
     oWnd:AddControl( Self )
 
 return Self
@@ -80,6 +83,7 @@ METHOD End() CLASS TSwiftDatePicker
     local nPos 
     if !Empty( ::hWnd )
         SD_DTP_DESTROY( ::cID, ::hWnd )
+        SwiftUnregisterItem( ::cID )
         nPos := AScan( aSwiftDatePickers, { |o| o != nil .and. o:cID == ::cID } )
         if nPos > 0
             aSwiftDatePickers[ nPos ] := nil
@@ -89,10 +93,3 @@ METHOD End() CLASS TSwiftDatePicker
 return ::Super:End()
 
 //----------------------------------------------------------------------------//
-
-function SwiftDatePickerOnChange( cId, cDateStr )
-    local nPos := AScan( aSwiftDatePickers, { |o| o != nil .and. o:cID == cId } )
-    if nPos > 0
-        aSwiftDatePickers[ nPos ]:OnChange( cDateStr )
-    endif
-return nil

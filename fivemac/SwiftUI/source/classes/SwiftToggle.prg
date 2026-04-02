@@ -21,6 +21,7 @@ CLASS TSwiftToggle FROM TControl
     METHOD SetColor( nAccent, nText )
     METHOD SetCaption(cCaption ) 
     METHOD End() 
+    METHOD OnChange( lOn )
 ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction, nAutoResize ) CLASS TSwiftToggle
@@ -41,7 +42,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction,
    
     ::bAction  = bAction
     ::oWnd     = oWnd
-    ::cID      = hb_UUID()
+    ::cID      := ""
    
     AAdd( aSwiftToggles, Self )
     ::nTglIndex   = Len( aSwiftToggles )
@@ -49,8 +50,8 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction,
     //::nIndex := Len( oWnd:aControls )
 
     ::hWnd = SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::cID, ::lSwitch )
-
-    //  ::hWnd = SWIFTTOGGLECREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::nIndex, ::cID, ::lSwitch )
+    ::cID := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cID, Self )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -61,6 +62,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction,
 return Self
 
 //------------------------------------------
+
 METHOD Set( lOn ) CLASS TSwiftToggle
     
     if ::lOn != lOn  // Solo actuamos si el valor es diferente
@@ -84,8 +86,8 @@ METHOD Get() CLASS TSwiftToggle
 return ::lOn
 
 //-----------------------------------------
-METHOD VALUE( lNewValue )
 
+METHOD VALUE( lNewValue )
     if lNewValue != nil
         ::Set( lNewValue )
     else
@@ -101,6 +103,7 @@ METHOD SetCaption( cCaption ) CLASS TSwiftToggle
 return nil
 
 //------------------------------
+
 METHOD SetColor( nAccent, nText, nAlpha ) CLASS TSwiftToggle
     LOCAL nAcc, nTxt
    
@@ -120,45 +123,23 @@ METHOD SetColor( nAccent, nText, nAlpha ) CLASS TSwiftToggle
     endif
 return self
 
-
 // ---------------------------------------------------------------------------
 
 METHOD End() CLASS TSwiftToggle
     if !Empty( ::hWnd )
         // Llamamos al macro de Swift
         SD_TGL_DESTROY( ::cId, ::hWnd )
+        SwiftUnregisterItem( ::cId )
         ::cID := ""
         if ::nTglIndex > 0 .and. ::nTglIndex <= Len( aSwiftToggles )
             aSwiftToggles[ ::nTglIndex ] := nil
         endif
-        
     endif
 return ::Super:End()
 
-//-----------------------------------------
-// --- FUNCION DE EVENTO (CALLBACK DESDE SWIFT) ---
-
-// En Harbour, cuando el Toggle cambia, Swift te devuelve el cId (String)
-function SwiftToggleOnChange( cId, lOn )
-    local nPos, oControl
-
-    nPos := AScan( aSwiftToggles, { |o| o:cId == cId } )
-
-    if nPos > 0
-        oControl := aSwiftToggles[ nPos ]
-        if oControl != nil
-            oControl:lOn := lOn
-            if oControl:bAction != nil
-                Eval( oControl:bAction, lOn, oControl ) // <--- AQUÍ SE DISPARA EL LABEL
-            endif
-        endif
+METHOD OnChange( lOn ) CLASS TSwiftToggle
+    ::lOn := lOn
+    if ::bAction != nil
+        Eval( ::bAction, lOn, Self )
     endif
-
 return nil
-
-
-function GetSwiftToggles() 
-return aSwiftToggles
-
-
-

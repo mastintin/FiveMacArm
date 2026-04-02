@@ -43,6 +43,7 @@ CLASS TSwiftVStack FROM TControl
     METHOD SetAlignment( nAlign )
     METHOD AddSpacer()
     METHOD AddDivider()
+    METHOD OnAction( cItemId )
     
     METHOD SetLastItemId( cId )
     METHOD GetLastItemId() INLINE SD_VSTK_GET_LAST_ITEM_ID( ::cId )
@@ -65,11 +66,13 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftVStack
     DEFAULT nWidth := 200, nHeight := 300
     DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
-    ::cId := hb_UUID()
+    ::cId := ""
     ::aBatch := {}
     ::aIds   := {}
 
     ::hWnd = SD_SWIFT_VSTACK_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId )
+    ::cId := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cId, Self )
    
     if nAutoResize != 0
     SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -269,14 +272,27 @@ METHOD SetLastItemId( cId ) CLASS TSwiftVStack
     SD_VSTK_SET_LAST_ITEM_ID( ::cId, cId )
 return nil
 
+METHOD OnAction( cItemId ) CLASS TSwiftVStack
+    local oItem := SwiftGetItem( cItemId )
+
+    if oItem != nil .and. __ObjHasMsg( oItem, "BACTION" ) .and. oItem:bAction != nil
+        Eval( oItem:bAction, cItemId, oItem )
+        return nil 
+    endif
+
+    if ::bAction != nil
+        Eval( ::bAction, cItemId, Self )
+    endif
+return nil
+
 METHOD End() CLASS TSwiftVStack
     if !Empty( ::hWnd )
        SD_VSTK_DESTROY( ::cId, ::hWnd )
        // Unregister all items from global registry
+       SwiftUnregisterItem( ::cId )
        Aeval( ::aIds, { | cId | SwiftUnregisterItem( cId ) } )
        ::aIds := {}
        ::hWnd := nil
        ::cId  := ""
     endif
-return ::Super:End()
 

@@ -70,9 +70,6 @@ struct WebViewRepresentable: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: WKWebView, context: Context) {
-        // Synchronize Harbour Item to Coordinator
-        context.coordinator.phbWebview = state.phbWebview
-        
         if let url = state.url {
             nsView.load(URLRequest(url: url))
             DispatchQueue.main.async { state.url = nil }
@@ -128,7 +125,6 @@ struct WebViewRepresentable: NSViewRepresentable {
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var state: SwiftWebViewState
         var observers: [NSKeyValueObservation] = []
-        var phbWebview: PHB_ITEM? = nil
         static var pSymOnMessage: UnsafeMutableRawPointer? = nil
 
         init(state: SwiftWebViewState) {
@@ -155,29 +151,22 @@ struct WebViewRepresentable: NSViewRepresentable {
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if message.name == "fivemac" {
-                guard let pItem = phbWebview else {
-                    print("[SwiftWebView] Error: phbWebview is nil")
-                    return
-                }
-
                 if Coordinator.pSymOnMessage == nil {
-                    Coordinator.pSymOnMessage = hb_dynsymSymbol(hb_dynsymFindName("WEBVIEWONMESSAGE"))
+                    "SW_WEBVIEW_ON_MESSAGE".withCString { ptr in
+                            if let pDyn = hb_dynsymFindName(ptr) {
+                                Coordinator.pSymOnMessage = hb_dynsymSymbol(pDyn)
+                            }
+                    }
                 }
 
-                guard let pSym = Coordinator.pSymOnMessage else {
-                    print("[SwiftWebView] Error: WEBVIEWONMESSAGE symbol not found")
-                    return
+                if let sym = Coordinator.pSymOnMessage {
+                    hb_vmPushSymbol(sym)
+                    hb_vmPushNil()
+                    hb_vmPushString(state.id)
+                    hb_vmPushString("\(message.body)")
+                    hb_vmPushString(message.name)
+                    hb_vmDo(3)
                 }
-
-                hb_vmPushSymbol(pSym)
-                hb_vmPushNil()
-                hb_vmPush(pItem) // Push self (Harbour TWebview Object)
-
-                let body = "\(message.body)"
-                hb_vmPushString(body)
-                hb_vmPushString(message.name)
-
-                hb_vmDo(3)
             }
         }
         
@@ -194,19 +183,23 @@ public class SwiftWebViewLoader: NSObject {
     static var states: [String: SwiftWebViewState] = [:]
 
     @objc(makeWebViewWithId:)
-    public static func makeWebView(id: String) -> NSView {
-        let state = SwiftWebViewState(id: id)
-        states[id] = state
+    public static func makeWebView(id: String?) -> NSView {
+        let finalId = (id == nil || id!.isEmpty) ? UUID().uuidString : id!
+        let state = SwiftWebViewState(id: finalId)
+        states[finalId] = state
         
         let view = SwiftWebView(state: state)
-        ViewRegistry.register(view, for: id)
+        ViewRegistry.register(view, for: finalId)
         
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         
+        // Set the native NSView identifier
+        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
+        
         // Register the hostingView as a generic NSView object for operations like capturing PDF
-        ViewRegistry.registerObject(hostingView, for: id)
+        ViewRegistry.registerObject(hostingView, for: finalId)
         
         return hostingView
     }
@@ -249,8 +242,9 @@ public func sw_webview_create_manual(_ p: UnsafeMutableRawPointer?) {
 @HarbourDirect
 public func sw_webview_create(top: Double, left: Double, w: Double, h: Double, parent: Int64, hbObject: PHB_ITEM?, id: String) -> Int64 {
     let view = SwiftWebViewLoader.makeWebView(id: id)
+    let finalId = view.identifier?.rawValue ?? id 
     
-    if let state = SwiftWebViewLoader.states[id] {
+    if let state = SwiftWebViewLoader.states[finalId] {
         state.phbWebview = hb_itemNew(hbObject)
     }
     
