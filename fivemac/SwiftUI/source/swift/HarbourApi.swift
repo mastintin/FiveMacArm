@@ -189,6 +189,10 @@ public struct SwiftBridge {
         if let sym = self.getActionSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushString(value); hb_vmDo(2) }
     }
 
+    public static func onAction(_ id: String, _ value: String, _ secondary: String) {
+        if let sym = self.getActionSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushString(value); hb_vmPushString(secondary); hb_vmDo(3) }
+    }
+
     // --- PORTAL 2: ON CHANGE (Cambios Dinámicos) ---
     public static func onChange(_ id: String, _ value: String) {
         if let sym = self.getChangeSym() { hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id); hb_vmPushString(value); hb_vmDo(2) }

@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import SwiftUI
+import HarbourMacro
 
 public struct GridItemSpec: Codable {
     public let type: String // "fixed", "flexible", "adaptive"
@@ -260,7 +261,7 @@ public struct RecursiveItemView: View {
 }
 
 @HarbourDirect
-public func swift_get_item_text(rootId: String, itemId: String) -> String {
+public func sw_get_item_text(rootId: String, itemId: String) -> String {
     if let state = SwiftStackRegistry.sharedStates[rootId],
        let item = findItem(in: state.items, id: itemId) {
         return item.content
