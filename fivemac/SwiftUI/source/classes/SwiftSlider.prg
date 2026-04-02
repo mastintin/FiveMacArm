@@ -1,24 +1,14 @@
 #include "FiveMac.ch"
 #include "SwiftControls.ch"
 
-static aSwiftSliders := {}
+CLASS TSwiftSlider FROM TSwiftControl
 
-CLASS TSwiftSlider FROM TControl
-
-    DATA bAction
-    DATA cID
-    DATA nValue
     DATA lShowValue
     DATA lGlass
 
-    ACCESS Value      INLINE ::nValue
-    ASSIGN Value( n ) INLINE ::SetValue( n )
-    
-    ASSIGN OnChange( b ) INLINE ::bAction := b
-
     METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAction )
-    METHOD SetValue( nValue )
-    METHOD GetValue()
+    METHOD Set( nValue )
+    METHOD Get()
     METHOD OnChange( nValue )
     METHOD SetAccentColor( nColor )
     METHOD SetColor( nFg, nBg )
@@ -34,19 +24,17 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAct
     DEFAULT oWnd := GetWndDefault()
     DEFAULT nAutoResize := 0
 
+    ::Super:New( nTop, nLeft, nWidth, nHeight )
+
     ::oWnd    = oWnd
     ::bAction = bAction
-    ::nValue  = nValue
+    ::hState["Value"]  = nValue
     ::lShowValue = lShowValue
     ::lGlass = lGlass
    
-    ::cID := ""
-    
-    AAdd( aSwiftSliders, Self )
-
-    ::hWnd = SD_SWIFT_SLIDER_CREATE( nTop, nLeft, nWidth, nHeight, nValue, oWnd:hWnd, ::cID, ::lShowValue, ::lGlass )
-    ::cID := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cID, Self )
+    ::hWnd = SD_SWIFT_SLIDER_CREATE( nTop, nLeft, nWidth, nHeight, nValue, oWnd:hWnd, ::cId, ::lShowValue, ::lGlass )
+    ::cId := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cId, Self )
     
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -58,21 +46,22 @@ return Self
 
 //----------------------------------------------------------------------------//
 
-METHOD SetValue( nValue ) CLASS TSwiftSlider
-    ::nValue := nValue
-    SD_SLD_SET_VALUE( ::cID, nValue )
+METHOD Set( nValue ) CLASS TSwiftSlider
+    if ::Value != nValue
+       ::hState["Value"] := nValue
+       SD_SLD_SET_VALUE( ::cId, nValue )
+    endif
 return nil
 
 //----------------------------------------------------------------------------//
 
-METHOD GetValue() CLASS TSwiftSlider
-    ::nValue := SD_SLD_GET_VALUE( ::cID )
-return ::nValue
+METHOD Get() CLASS TSwiftSlider
+return ::Value
 
 //----------------------------------------------------------------------------//
 
 METHOD OnChange( nValue ) CLASS TSwiftSlider
-    ::nValue := nValue
+    ::hState["Value"] := nValue
     if ::bAction != nil
         Eval( ::bAction, nValue, Self )
     endif
@@ -81,13 +70,13 @@ return nil
 //----------------------------------------------------------------------------//
 
 METHOD SetAccentColor( nColor ) CLASS TSwiftSlider
-    SD_SLD_SET_ACCENT_COLOR( ::cID, nColor )
+    SD_SLD_SET_ACCENT_COLOR( ::cId, nColor )
 return nil
 
 //----------------------------------------------------------------------------//
 
 METHOD SetColor( nFg, nBg ) CLASS TSwiftSlider
-    SD_SLD_SET_COLORS( ::cID, clrToHex( nFg ), clrToHex( nBg ) )
+    SD_SLD_SET_COLORS( ::cId, clrToHex( nFg ), clrToHex( nBg ) )
 return nil
 
 //----------------------------------------------------------------------------//
@@ -95,8 +84,5 @@ return nil
 METHOD End() CLASS TSwiftSlider
     if !Empty( ::hWnd )
         SD_SLD_DESTROY( ::cId, ::hWnd )
-        SwiftUnregisterItem( ::cId )
-        AScan( aSwiftSliders, { |o, i| If( o != nil .and. o:cID == ::cId, aSwiftSliders[ i ] := nil, ) } )
-        ::cId := ""
     endif
 return ::Super:End()

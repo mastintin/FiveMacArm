@@ -1,32 +1,15 @@
 #include "FiveMac.ch"
 
-static aSwiftToggles := {}
+CLASS TSwiftToggle FROM TSwiftControl
 
-CLASS TSwiftToggle FROM TControl
-
-    DATA cID
-    DATA nIndex
-    DATA nTglIndex
     DATA cCaption
-    DATA bAction
-    DATA lOn
     DATA lSwitch
     DATA nColorAcc   AS NUMERIC
     DATA nColorText  AS NUMERIC
 
-    ACCESS Checked      INLINE ::lOn
-    ASSIGN Checked( l ) INLINE ::Set( l )
-    
-    // Alias for Value to be consistent with other controls
-    ACCESS Value        INLINE ::lOn
-    ASSIGN Value( l )   INLINE ::Set( l )
-    
-    ASSIGN OnChange( b ) INLINE ::bAction := b
-
     METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction )
     METHOD Set( lOn )
     METHOD Get()
-    METHOD Value( lNewValue )    
     METHOD SetColor( nAccent, nText )
     METHOD SetCaption(cCaption ) 
     METHOD End() 
@@ -42,26 +25,18 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction,
     DEFAULT lSwitch := .F.
     DEFAULT nAutoResize := 0
 
-    ::nTop     = nTop
-    ::nLeft    = nLeft
-    ::nWidth   = nWidth
-    ::nHeight  = nHeight
+    ::Super:New( nTop, nLeft, nWidth, nHeight )
+    
     ::cCaption = cCaption
-    ::lOn      = lOn
+    ::hState["Value"] = lOn
     ::lSwitch  = lSwitch
    
     ::bAction  = bAction
     ::oWnd     = oWnd
-    ::cID      := ""
    
-    AAdd( aSwiftToggles, Self )
-    ::nTglIndex   = Len( aSwiftToggles )
-    
-    //::nIndex := Len( oWnd:aControls )
-
-    ::hWnd = SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::cID, ::lSwitch )
-    ::cID := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cID, Self )
+    ::hWnd = SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::cId, ::lSwitch )
+    ::cId := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cId, Self )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -75,15 +50,11 @@ return Self
 
 METHOD Set( lOn ) CLASS TSwiftToggle
     
-    if ::lOn != lOn  // Solo actuamos si el valor es diferente
-        ::lOn := lOn
-        
-        // Llamamos al macro de Swift (usando el Bool directo)
-        SD_TGL_SET_VALUE( ::cId, ::lOn )
-        
-        // Opcional: Ejecutar el callback también cuando se cambia por código
+    if ::Value != lOn
+        ::hState["Value"] := lOn
+        SD_TGL_SET_VALUE( ::cId, lOn )
         if ::bAction != nil
-            Eval( ::bAction, ::lOn, self )
+            Eval( ::bAction, lOn, self )
         endif
     endif
 
@@ -92,18 +63,7 @@ return nil
 //----------------------------------------
 
 METHOD Get() CLASS TSwiftToggle
-    ::lOn = SD_TGL_GET_VALUE( ::cID )
-return ::lOn
-
-//-----------------------------------------
-
-METHOD VALUE( lNewValue )
-    if lNewValue != nil
-        ::Set( lNewValue )
-    else
-        ::lOn = SD_TGL_GET_VALUE( ::cID )
-    endif
-return ::lOn
+return ::Value
 
 //-----------------------------------------
 
@@ -117,16 +77,11 @@ return nil
 METHOD SetColor( nAccent, nText, nAlpha ) CLASS TSwiftToggle
     LOCAL nAcc, nTxt
    
-    DEFAULT nAlpha := 255 // Opaco por defecto
+    DEFAULT nAlpha := 255 
 
     if !Empty( ::cId )
-        // CASO 1: Colores numéricos (nRGB)
         if ValType( nAccent ) == "N"
-            // Si queremos transparencia, usamos el macro de RGBA enviando un Int32
-            // Construimos un ARGB o RGBA. Usemos el bridge tgl_set_colors_int
             SD_TGL_SET_COLORS_RGBA( ::cId, nAccent, nText , nAlpha)  
-         
-            // CASO 2: Colores Hexadecimales (pueden traer el alfa en el string)
         elseif ValType( nAccent ) == "C"
             SD_TGL_SET_COLORS_HEX( ::cId, nAccent, nText )
         endif
@@ -137,18 +92,12 @@ return self
 
 METHOD End() CLASS TSwiftToggle
     if !Empty( ::hWnd )
-        // Llamamos al macro de Swift
         SD_TGL_DESTROY( ::cId, ::hWnd )
-        SwiftUnregisterItem( ::cId )
-        ::cID := ""
-        if ::nTglIndex > 0 .and. ::nTglIndex <= Len( aSwiftToggles )
-            aSwiftToggles[ ::nTglIndex ] := nil
-        endif
     endif
 return ::Super:End()
 
 METHOD OnChange( lOn ) CLASS TSwiftToggle
-    ::lOn := lOn
+    ::hState["Value"] := lOn
     if ::bAction != nil
         Eval( ::bAction, lOn, Self )
     endif
