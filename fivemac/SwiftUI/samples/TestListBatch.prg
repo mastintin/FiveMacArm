@@ -7,7 +7,7 @@ function Main()
 
     local oWnd, oList
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI List Batch Registration" SIZE 400, 500
+    DEFINE WINDOW oWnd TITLE "SwiftUI List Batch Registration" SIZE 400, 500 NOFLIPPED 
 
     oList := TSwiftList():New( 10, 10, 380, 480, oWnd )
     

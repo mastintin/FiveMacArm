@@ -3,7 +3,7 @@
 function Main()
     local oWnd, oZStack, oGrid, aColumns
 
-    DEFINE WINDOW oWnd TITLE "Simple ZStack Test" SIZE 400, 400
+    DEFINE WINDOW oWnd TITLE "Simple ZStack Test" SIZE 400, 400 NOFLIPPED 
 
     // Create ZStack
     oZStack := TSwiftZStack():New( 0, 0, 400, 400, oWnd )

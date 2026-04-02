@@ -3,7 +3,7 @@
 function Main()
     local oWnd, oVStack
 
-    DEFINE WINDOW oWnd TITLE "Simple SwiftUI Test" SIZE 400, 400
+    DEFINE WINDOW oWnd TITLE "Simple SwiftUI Test" SIZE 400, 400 NOFLIPPED 
 
     // Create VStack
     oVStack := TSwiftVStack():New( 50, 50, 300, 300, oWnd )

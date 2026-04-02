@@ -5,7 +5,7 @@ function Main()
     local oWnd, oToggle, oLabel, oBtn
     local lVal := .F.
 
-    DEFINE WINDOW oWnd TITLE "Testing SwiftToggle" SIZE 400, 300
+    DEFINE WINDOW oWnd TITLE "Testing SwiftToggle" SIZE 400, 300 NOFLIPPED 
 
     @ 20, 20 SWIFTLABEL oLabel PROMPT "Toggle is: OFF" SIZE 200, 30 OF oWnd
 

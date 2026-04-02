@@ -9,7 +9,7 @@ function Main()
 
     NSLog( "--- App Starting ---" )
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Standalone Batch Test" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI Standalone Batch Test"  NOFLIPPED ;
         SIZE 400, 400
 
     @ 20, 20 SAY "These controls are created in a SINGLE BATCH:" SIZE 300, 20 OF oWnd

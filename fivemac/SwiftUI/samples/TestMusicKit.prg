@@ -27,7 +27,7 @@ function Main()
         oMusic:PlayFirst() 
     endif
 
-    DEFINE WINDOW oWnd TITLE "FiveMac Music" ;
+    DEFINE WINDOW oWnd TITLE "FiveMac Music"  NOFLIPPED ;
         FROM 100, 100 TO 800, 500 FLIPPED
     
 

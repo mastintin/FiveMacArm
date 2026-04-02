@@ -8,7 +8,7 @@ function Main()
 
     NSLog( "--- App Starting ---" )
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Native TextField Test" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI Native TextField Test"  NOFLIPPED ;
         SIZE 400, 350
 
     @ 20, 20 SAY "Standalone TextField (Absolute Position):" SIZE 300, 20 OF oWnd

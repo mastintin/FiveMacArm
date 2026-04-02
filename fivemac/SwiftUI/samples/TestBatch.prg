@@ -8,7 +8,7 @@ function Main()
     local oWnd, oZStack, oGrid
     local aColumns
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Batch Registration (OO Style)" SIZE 500, 600
+    DEFINE WINDOW oWnd TITLE "SwiftUI Batch Registration (OO Style)" SIZE 500, 600 NOFLIPPED 
 
     oZStack := TSwiftZStack():New( 0, 0, 500, 600, oWnd )
     oZStack:SetBackgroundColor( 100, 150, 255, 0.2 )

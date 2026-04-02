@@ -4,7 +4,7 @@ function Main()
     local oWnd, oBtnFile, oBtnDir, nColor := 0
     local cFile := "", cDir := ""
 
-    DEFINE WINDOW oWnd TITLE "Swift System Functions Test" ;
+    DEFINE WINDOW oWnd TITLE "Swift System Functions Test"  NOFLIPPED ;
         SIZE 400, 200 GLASS
 
     @ 30, 20 BUTTON oBtnFile PROMPT "Import Source (Swift)" SIZE 180, 30 OF oWnd ;

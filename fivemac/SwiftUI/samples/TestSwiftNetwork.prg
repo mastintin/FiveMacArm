@@ -9,7 +9,7 @@ function Main()
     local oSayConn, oSayIP
     local cUrl := "https://api.ipify.org?format=json"
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Native Network Test" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI Native Network Test"  NOFLIPPED ;
         SIZE 450, 500
 
     @ 20, 20 SWIFTSAY "SwiftUI Network Implementation" SIZE 400, 30 OF oWnd

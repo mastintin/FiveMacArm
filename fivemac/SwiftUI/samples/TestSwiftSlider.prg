@@ -6,7 +6,7 @@ function Main()
     local obtn1, obtn2
     local nVal := 50
 
-    DEFINE WINDOW oWnd TITLE "Testing SwiftSlider" SIZE 400, 300 GLASS
+    DEFINE WINDOW oWnd TITLE "Testing SwiftSlider" SIZE 400, 300 GLASS NOFLIPPED 
 
     @ 20, 20 SWIFTLABEL oLabel PROMPT "Value: 70" SIZE 200, 30 OF oWnd
 

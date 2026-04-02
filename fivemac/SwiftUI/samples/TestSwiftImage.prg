@@ -10,7 +10,7 @@ function Main()
     local oBtn1, oBtn2, oBtn3, oBtnExit
     local nMode := 0
 
-    DEFINE WINDOW oWnd TITLE "SwiftUI Image Loader (Multiple Images)" ;
+    DEFINE WINDOW oWnd TITLE "SwiftUI Image Loader (Multiple Images)"  NOFLIPPED ;
         FROM 200, 200 TO 700, 1000 
 
     // Image 1 (Left)

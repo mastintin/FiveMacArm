@@ -9,7 +9,7 @@ CLASS TSwiftWebview FROM TControl
     DATA bOnMessage
     DATA nMagnification INIT 1.0
  
-    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName, cId )
+    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName, cId, nAutoResize )
 
     METHOD Load( cUrlName ) INLINE ( ::cUrl := cUrlName , SD_SW_WEBVIEW_LOAD( ::cId, ::cUrl ) )
     METHOD LoadHtml( cHtml, cBaseUrl ) INLINE SD_SW_WEBVIEW_LOAD_HTML( ::cId, cHtml, cBaseUrl )
@@ -35,7 +35,7 @@ ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName, cId ) CLASS TSwiftWebview
+METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName, cId, nAutoResize ) CLASS TSwiftWebview
 
     DEFAULT nWidth := 300, nHeight := 100, oWnd := GetWndDefault()
     DEFAULT cId := "sw_web_" + AllTrim(Str(GetNextTag()))
@@ -50,6 +50,10 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cUrlName, cId ) CLASS TSwiftWebv
     
     if !Empty( cUrlName )
         ::Load( cUrlName )
+    endif
+    
+    if nAutoResize != nil
+        ::_nAutoResize( nAutoResize )
     endif
     
     oWnd:AddControl( Self )

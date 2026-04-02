@@ -10,7 +10,7 @@ function Main()
    SET DATE TO BRITISH
    SET CENTURY ON
 
-   DEFINE WINDOW oWnd TITLE "SwiftUI DatePicker Demo" ;
+   DEFINE WINDOW oWnd TITLE "SwiftUI DatePicker Demo"  NOFLIPPED ;
       FROM 100, 100 TO 500, 650
 
    @ 30, 30 SWIFTLABEL "Fecha estándar (Stepper):" OF oWnd SIZE 300, 20

@@ -6,7 +6,7 @@ function Main()
     local oWnd, oVStack, oBtn1, oBtn2
     local nW := 500, nH := 600
 
-    DEFINE WINDOW oWnd TITLE "New SwiftUI Stack Action Test" SIZE nW, nH
+    DEFINE WINDOW oWnd TITLE "New SwiftUI Stack Action Test" SIZE nW, nH NOFLIPPED 
 
     @ 50, 50 SWIFTVSTACK oVStack SIZE 400, 500 OF oWnd
     oVStack:SetBackgroundColor( 240, 240, 240, 1.0 )

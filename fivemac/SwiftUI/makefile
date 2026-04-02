@@ -29,11 +29,9 @@ SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-nam
 
 # Files
 SWIFT_SOURCES=$(wildcard source/swift/*.swift)
-OBJC_SOURCES=$(wildcard source/winapi/*.m)
 PRG_SOURCES=$(wildcard source/classes/*.prg)
 
 SWIFT_OBJ=obj/SwiftFive.o
-OBJC_OBJS=$(patsubst source/winapi/%.m,obj/ObjC_%.o,$(OBJC_SOURCES))
 PRG_OBJS=$(patsubst source/classes/%.prg,obj/Hrb_%.o,$(PRG_SOURCES))
 
 LIB_NAME=lib/libSwiftFive.a
@@ -41,10 +39,10 @@ LIB_NAME=lib/libSwiftFive.a
 # Rules
 all: $(LIB_NAME)
 
-$(LIB_NAME): $(SWIFT_OBJ) $(OBJC_OBJS) $(PRG_OBJS)
+$(LIB_NAME): $(SWIFT_OBJ) $(PRG_OBJS)
 	@mkdir -p lib
 	@echo "Archiving $@..."
-	ar rc $@ $(SWIFT_OBJ) $(OBJC_OBJS) obj/Hrb_*.o
+	ar rc $@ $(SWIFT_OBJ) obj/Hrb_*.o
 	ranlib $@
 
 # Compile Swift
@@ -53,12 +51,6 @@ $(SWIFT_OBJ): $(SWIFT_SOURCES)
 	@mkdir -p include
 	@echo "Compiling Swift..."
 	swiftc $(SWIFT_SOURCES) $(SWIFTFLAGS) -o $@
-
-# Compile ObjC
-obj/ObjC_%.o: source/winapi/%.m
-	@mkdir -p obj
-	@echo "Compiling ObjC: $<..."
-	$(CC) $(CFLAGS) $< -o $@
 
 # Compile Harbour to C then to O
 obj/Hrb_%.o: source/classes/%.prg

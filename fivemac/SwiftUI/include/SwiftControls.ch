@@ -138,7 +138,8 @@
     [ SIZE <nWidth>, <nHeight> ] ;
     [ OF <oWnd> ] ;
     [ URL <cUrl> ] ;
+    [ AUTORESIZE <nAutoResize> ] ;
     => ;
-    [ <oWeb> := ] TSwiftWebview():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cUrl> )
+    [ <oWeb> := ] TSwiftWebview():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cUrl>,, <nAutoResize> )
 
 #endif
