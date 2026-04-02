@@ -22,16 +22,17 @@ public class SwiftPDF: NSObject {
             // 2. Try SwiftUI View retrieval (For ImageRenderer)
             let swiftUIView = ViewRegistry.getView(for: id)
             
-            if #available(macOS 13.0, *), let renderView = swiftUIView {
+            print("[SwiftPDF] Attempting PDF capture for ID: \(id)")
+            
+            if #available(macOS 13.0, *), let renderView = swiftUIView as? AnyView {
+                print("[SwiftPDF] Found SwiftUI View for ID: \(id). Initializing ImageRenderer...")
                 let renderer: ImageRenderer<AnyView>
-                var viewToRender: AnyView = AnyView(renderView)
+                var viewToRender: AnyView = renderView
                 
                 if let boundsView = nsObject {
                      let size = boundsView.bounds.size
-                     // Force the view to take the size of the hosting view
+                     print("[SwiftPDF] Scaling PDF to size: \(size.width)x\(size.height)")
                      viewToRender = AnyView(renderView.frame(width: size.width, height: size.height))
-                     
-                     // Also set proposed size
                      renderer = ImageRenderer(content: viewToRender)
                      renderer.proposedSize = ProposedViewSize(size)
                 } else {

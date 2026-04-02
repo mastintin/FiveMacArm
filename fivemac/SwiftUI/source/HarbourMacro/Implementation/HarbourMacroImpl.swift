@@ -119,26 +119,39 @@ public struct HarbourDirectMacro: PeerMacro {
         for (index, param) in parameters.enumerated() {
             let hbIndex = index + 1
             let targetName = param.firstName.text
-            let typeName = param.type.description.trimmingCharacters(in: .whitespaces)
+            
+            // Limpiamos el tipo (quitamos MyModule., ?, espacios, etc.)
+            var typeName = param.type.description.trimmingCharacters(in: .whitespaces)
+            let isOptional = typeName.hasSuffix("?")
+            if isOptional { typeName = String(typeName.dropLast()) }
+            if let dotIndex = typeName.lastIndex(of: ".") {
+                typeName = String(typeName[typeName.index(after: dotIndex)...])
+            }
             
             switch typeName {
             case "String":
-                extractionLines.append("let arg\(index) = hb_parc(Int32(\(hbIndex))).map { String(cString: $0) } ?? \"\"")
+                extractionLines.append("let arg\(index) = hb_parc(Int32(\(hbIndex))).map { String(cString: $0) } ?? \(isOptional ? "nil" : "\"\"")")
             case "Bool":
                 extractionLines.append("let arg\(index) = hb_parl(Int32(\(hbIndex))) != 0")
             case "Int":
                 extractionLines.append("let arg\(index) = Int(hb_parni(Int32(\(hbIndex))))")
             case "Int64":
-            // Para punteros, hWnd y HB_LONGLONG (64 bits)
                 extractionLines.append("let arg\(index) = hb_parnll(Int32(\(hbIndex)))")
             case "Double":
                 extractionLines.append("let arg\(index) = hb_parnd(Int32(\(hbIndex)))")
-            case "PHB_ITEM":
+            case "PHB_ITEM", "UnsafeRawPointer", "UnsafeMutableRawPointer":
                 extractionLines.append("let arg\(index) = hb_param(Int32(\(hbIndex)), HB_IT_ANY)")
+            case "NSObject", "NSView":
+                 extractionLines.append("let arg\(index) = HarbourBridgeSupport.toNSObject(hb_parnll(Int32(\(hbIndex))))")
             case "[String]":
                  extractionLines.append("let arg\(index) = HarbourArray.getSwiftArray(from: hb_param(Int32(\(hbIndex)), HB_IT_ANY))")
             default:
-                extractionLines.append("let arg\(index) = \"\"")
+                // Si no conocemos el tipo exacto, pero es un puntero (termina en Pointer)
+                if typeName.contains("Pointer") {
+                    extractionLines.append("let arg\(index) = hb_param(Int32(\(hbIndex)), HB_IT_ANY)")
+                } else {
+                    extractionLines.append("let arg\(index) = \"\"")
+                }
             }
             callArgsList.append("\(targetName): arg\(index)")
         }
