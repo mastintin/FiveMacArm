@@ -37,6 +37,10 @@
 -ldflag=CoreMedia
 -ldflag=-framework
 -ldflag=UniformTypeIdentifiers
+-ldflag=-framework
+-ldflag=Network
+-ldflag=-framework
+-ldflag=SystemConfiguration
 # Scintilla flags for ObjC
 -ldflag=-framework
 -ldflag=Scintilla
