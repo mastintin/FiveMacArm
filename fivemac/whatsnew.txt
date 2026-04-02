@@ -1,4 +1,25 @@
-## Recent Updates Summary (January - February 2026)
+## Recent Updates Summary (January - April 2026)
+
+April 2026
+==========
+
+* **Flipped Coordinate System (Default)**: Fivemac has transitioned to a modern "flipped" coordinate system by default (Top-Left origin). 📉✨
+  - New windows and dialogs now default to `::lFlipped := .T.`, aligning Fivemac with modern macOS/SwiftUI development standards.
+  - **Backward Compatibility**: Introduced the `NOFLIPPED` clause in `DEFINE WINDOW` and `DEFINE DIALOG`. 🛡️
+  - **Mass Migration**: Successfully protected 230+ legacy samples and the `Fivedit` IDE by automatically injecting the `NOFLIPPED` clause, ensuring zero behavior changes for existing codebases.
+
+* **SwiftUI Bridge Modernization**:
+  - The SwiftUI bridge is now **100% Native Swift and Harbour**. 🚀
+  - Removed all legacy Objective-C winapi files (`SwiftCommon.m`, `SwiftCommon.h`).
+  - Implemented direct `HB_FUNC` descriptors in Swift for high-performance communication.
+  - Updated `Makefile` to a pure Swift/Harbour build process.
+
+* **Enhanced SWIFTWEBVIEW**:
+  - Added native `AUTORESIZE` support to the `SWIFTWEBVIEW` command and `TSwiftWebview` class. ✅
+  - Implemented high-quality PDF capture using native `WKWebView.createPDF` methods, replacing legacy image-rendering attempts.
+
+* **Framework Integration**:
+  - Consolidated all SwiftUI bridge commands into a dedicated `SwiftControls.ch` and integrated it into the core `FiveMac.ch` header. 🏛️
 
 * **Architecture & Stability**: Core migration to 64-bit safe Objective-C APIs. Improved focus handling and robust popover positioning dynamically rooted to `NSWindow`.
 * **SplitBox & UI Overhaul**: New `TSplitBox` replaces the legacy splitter. Introduction of `TViewStack`, `TCard`, and `TSidebar` for modern macOS layouts, including support for native "Glass" translucency effects. 
