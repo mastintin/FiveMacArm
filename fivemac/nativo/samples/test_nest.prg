@@ -6,7 +6,7 @@ function Main()
 
    local oWnd
 
-   DEFINE WINDOW oWnd TITLE "FiveMac: Banco de Pruebas" SIZE 550, 550
+   DEFINE WINDOW oWnd TITLE "FiveMac: Banco de Pruebas" SIZE 550, 550 NOFLIPPED 
 
    @ 230, 200 BUTTON "Llamar Ventana 2" OF oWnd SIZE 150, 40 ;
       ACTION Ventana2()
@@ -25,7 +25,7 @@ function Ventana2()
                     { "Carles", 1850, Date() - 2 }, ;
                     { "Linares", 3000, Date() + 5 } }
 
-   DEFINE WINDOW oWnd2 TITLE "Browse y Leaks" SIZE 600, 500
+   DEFINE WINDOW oWnd2 TITLE "Browse y Leaks" SIZE 600, 500 NOFLIPPED 
 
    // Sintaxis de exito del testbrw
    @ 150, 20 BROWSE oBrw OF oWnd2 SIZE 560, 280 ;

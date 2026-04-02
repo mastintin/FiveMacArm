@@ -6,7 +6,7 @@ function Main()
   local cInfo:=space(50)
   local oNotifi 
   
-   DEFINE WINDOW oWnd TITLE "TestGet" FROM 300, 300 TO 500, 700
+   DEFINE WINDOW oWnd TITLE "TestGet" FROM 300, 300 TO 500, 700 NOFLIPPED 
 
      oNotifi := TNotification():new(oWnd) 
               

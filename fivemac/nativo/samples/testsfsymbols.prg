@@ -14,7 +14,7 @@ function Main()
     local oWnd, oImg1, oImg2, oImg3, oImg4, oImg5, oImg6, oImg7, oImg8, oImg9
     local oSymbol
    
-    DEFINE WINDOW oWnd TITLE "SF Symbols Final Test" ;
+    DEFINE WINDOW oWnd TITLE "SF Symbols Final Test"  NOFLIPPED ;
         FROM 50, 50 TO 700, 950
       
     @ 20, 20 SAY "Regular (Black)" OF oWnd

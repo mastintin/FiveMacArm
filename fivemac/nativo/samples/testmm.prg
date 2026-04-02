@@ -4,7 +4,7 @@ function Main()
 
    local oWnd, oBtn
    
-   DEFINE WINDOW oWnd TITLE "Mouse Move"
+   DEFINE WINDOW oWnd TITLE "Mouse Move" NOFLIPPED 
    
    @ 20, 20 BUTTON oBtn PROMPT "OK" 
    

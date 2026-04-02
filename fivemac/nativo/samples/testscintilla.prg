@@ -6,7 +6,7 @@ function Main()
    
    LogToMyFile( "Main Start" )
 
-   DEFINE WINDOW oWnd TITLE "Scintilla Folding Test" ;
+   DEFINE WINDOW oWnd TITLE "Scintilla Folding Test"  NOFLIPPED ;
       FROM 200, 200 TO 800, 1000
 
    oEditor = TScintilla():New( 10, 10, 780, 560, oWnd )

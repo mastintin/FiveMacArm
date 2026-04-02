@@ -8,7 +8,7 @@ function Main()
 
     local oWnd, oSay, oMovie
    
-    DEFINE WINDOW oWnd TITLE "Playing movies" ;
+    DEFINE WINDOW oWnd TITLE "Playing movies"  NOFLIPPED ;
         FROM 200, 250 TO 750, 1100
 
     DEFINE MSGBAR OF oWnd

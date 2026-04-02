@@ -21,7 +21,7 @@ local aTipos:= {"switchToTerrainMap","switchToSatelliteMap","switchToHybridMap" 
   local cDir:= ""
   local nX
   
-   DEFINE WINDOW oWnd TITLE "WebView Test"  ;
+   DEFINE WINDOW oWnd TITLE "WebView Test"   NOFLIPPED ;
        FROM 370, 650 TO 980, 1480        
      oWnd:Maximize()    
       

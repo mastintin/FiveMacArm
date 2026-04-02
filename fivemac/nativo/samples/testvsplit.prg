@@ -10,7 +10,7 @@ function Main()
     local oPanel1, oPanel2
     local oView1, oView2
 
-    DEFINE WINDOW oWnd TITLE "Vertical Splitter Advanced Test (New API)" ;
+    DEFINE WINDOW oWnd TITLE "Vertical Splitter Advanced Test (New API)"  NOFLIPPED ;
         FROM 100, 100 TO 700, 900 FLIPPED
 
     //   @ 50, 0 SPLITTER oSplitV OF oWnd SIZE 800, 600 VERTICAL

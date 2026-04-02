@@ -4,7 +4,7 @@ function Main()
 
     local oWnd, oImage, oGet, cText := "Drop files here...                 "
 
-    DEFINE WINDOW oWnd TITLE "Test Drag and Drop" ;
+    DEFINE WINDOW oWnd TITLE "Test Drag and Drop"  NOFLIPPED ;
         FROM 200, 200 TO 700, 600 
 
     @ 20, 20 GET oGet VAR cText SIZE 360, 100 OF oWnd UPDATE

@@ -4,7 +4,7 @@ function Main()
 
     local oWnd, oQL
 
-    DEFINE WINDOW oWnd TITLE "FiveMac: QuickLook Preview" ;
+    DEFINE WINDOW oWnd TITLE "FiveMac: QuickLook Preview"  NOFLIPPED ;
         SIZE 900, 700
 
     @ 10, 10 BUTTON "Abrir Archivo..." SIZE 130, 25 OF oWnd ;

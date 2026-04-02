@@ -44,7 +44,7 @@ function Main()
     oMusic:Play()
 
     // 3. Crear Interfaz (Nativa AppKit)
-    DEFINE WINDOW oWnd TITLE "FiveMac Independent Player (AVFoundation)" ;
+    DEFINE WINDOW oWnd TITLE "FiveMac Independent Player (AVFoundation)"  NOFLIPPED ;
         FROM 100, 100 TO 520, 600 FLIPPED
 
     ownd:SetReSizable( .F. )

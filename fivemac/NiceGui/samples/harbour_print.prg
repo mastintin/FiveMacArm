@@ -5,7 +5,7 @@ FUNCTION Main()
     local oWnd, oBtnPrint, oBtnPreview
 
     // 1. Native Launcher Window (Small)
-    DEFINE WINDOW oWnd TITLE "Report Launcher" SIZE 400, 240
+    DEFINE WINDOW oWnd TITLE "Report Launcher" SIZE 400, 240 NOFLIPPED 
 
     @ 60, 50 BUTTON oBtnPreview PROMPT "Previsualizar Factura" SIZE 300, 40 OF oWnd ;
         ACTION ShowPreview()

@@ -5,7 +5,7 @@ function Main()
     local oWnd, oImg
     local cText := "https://github.com/FiveTechSoft/FiveMac"
 
-    DEFINE WINDOW oWnd TITLE "CoreImage QR Code Generator" ;
+    DEFINE WINDOW oWnd TITLE "CoreImage QR Code Generator"  NOFLIPPED ;
         SIZE 400, 500 FLIPPED
 
     @ 20, 20 SAY "Enter text to encode:" OF oWnd SIZE 360, 20

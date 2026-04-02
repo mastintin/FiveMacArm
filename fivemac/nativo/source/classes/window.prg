@@ -37,7 +37,8 @@ CLASS TWindow
    DATA  lRounded INIT .F.
    DATA  cVarName
    DATA  oPopup
-   DATA  lFlipped INIT .F.
+   DATA  lFlipped INIT .T.
+   DATA  lNoFlipped INIT .F.
    DATA  lGlass INIT .F.
    DATA  lVibrancy INIT .F.
    DATA  cCursor
@@ -53,7 +54,7 @@ CLASS TWindow
       { { "OnDropFiles", "aFiles" }, nil } } 
 
    METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled, lNoBorder,;
-      lFullScreen, nWidth, nHeight, lFlipped, cVarName )
+      lFullScreen, nWidth, nHeight, lFlipped, cVarName, lGlass, lNoFlipped )
 
    METHOD Activate( bLClicked, bValid, lMaximized, bPainted, lCentered, bInit,;
       bRClicked, bResized )
@@ -218,14 +219,22 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled, lNoBorder,;
-      lFullScreen, lRounded, nWidth, nHeight, lFlipped, cVarName, lGlass ) CLASS TWindow
+      lFullScreen, lRounded, nWidth, nHeight, lFlipped, cVarName, lGlass, lNoFlipped ) CLASS TWindow
 
    DEFAULT nTop := 200, nLeft := 300, nBottom := 600, nRight := 800,;
       cTitle := "FiveMac", lTextured := .F., lPaneled := .F.,;
-      lNoborder := .F., lFullScreen := .F., lRounded:= .F., lFlipped := .f.,;
-      lGlass := .f.
+      lNoborder := .F., lFullScreen := .F., lRounded:= .F., lFlipped := .F.,;
+      lGlass := .f., lNoFlipped := .F.
 
-   ::lFlipped = lFlipped
+   ::lFlipped = .T. // New Flipped default 
+   
+   if lNoFlipped
+      ::lFlipped = .f.
+   elseif lFlipped
+      ::lFlipped = .t.
+   endif
+   
+   ::lNoFlipped = lNoFlipped
       
    ::hWnd = WndCreate( nTop, nLeft, nRight - nLeft, nBottom - nTop,;
       If( lNoborder, NSBorderlessWindowMask,;

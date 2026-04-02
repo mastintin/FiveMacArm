@@ -11,7 +11,7 @@ function Main()
 
    BuildMenu()  
 
-   DEFINE WINDOW oWndMain TITLE "FiveMac Designer" ;
+   DEFINE WINDOW oWndMain TITLE "FiveMac Designer"  NOFLIPPED ;
       SIZE ScreenWidth(), 0
 
    oWndMain:setPos(ScreenHeight() )
@@ -262,7 +262,7 @@ function SelForm()
 
    local oDlg, oBrw1, oBtn1, oBtn2
 
-   DEFINE DIALOG oDlg ;
+   DEFINE DIALOG oDlg  NOFLIPPED ;
       TITLE "Select form" ;
       SIZE 270, 334 FLIPPED
 

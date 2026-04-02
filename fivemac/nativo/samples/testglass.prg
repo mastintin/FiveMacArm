@@ -5,7 +5,7 @@ function Main()
     local oWnd, oPanel, oGet, oGroup, oBtn
     local cText := "Testing glass effects"
 
-    DEFINE WINDOW oWnd TITLE "Glass Test" ;
+    DEFINE WINDOW oWnd TITLE "Glass Test"  NOFLIPPED ;
         FROM 50, 50 TO 500, 800 FLIPPED GLASS
 
     @ 20, 20 PANEL oPanel SIZE 300, 300 OF oWnd GLASS

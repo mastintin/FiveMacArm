@@ -4,7 +4,7 @@
 function Main()
    local oWnd, oMovie
 
-   DEFINE WINDOW oWnd TITLE "Test AVFoundation" SIZE 800, 600
+   DEFINE WINDOW oWnd TITLE "Test AVFoundation" SIZE 800, 600 NOFLIPPED 
 
    @ 10, 10 MOVIE oMovie SIZE 780, 500 OF oWnd FILENAME "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
 

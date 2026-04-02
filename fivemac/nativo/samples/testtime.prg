@@ -9,7 +9,7 @@ function Main()
    local oTimer
 
 
-   DEFINE WINDOW oWnd    
+   DEFINE WINDOW oWnd     NOFLIPPED 
     
   
 

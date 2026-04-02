@@ -5,7 +5,7 @@ function Main()
 
    local oDlg
    
-   DEFINE DIALOG oDlg TITLE "Dialog"
+   DEFINE DIALOG oDlg TITLE "Dialog" NOFLIPPED 
    
    @ 40, 40 BUTTON "print" OF oDlg ACTION imprime()
    

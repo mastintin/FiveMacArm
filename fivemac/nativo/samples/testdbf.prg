@@ -14,7 +14,7 @@ function Main()
    
    BuildMenu()    
    
-   DEFINE WINDOW oWnd TITLE "Tutor02" ;
+   DEFINE WINDOW oWnd TITLE "Tutor02"  NOFLIPPED ;
        FROM 200, 200 TO 600, 400
 
    for n = 1 to FCount()

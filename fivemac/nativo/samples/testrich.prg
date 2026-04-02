@@ -4,7 +4,7 @@ function Main()
 
    local oDlg, oFld, oGet1, cText1 := "", oGet2, cText2 := ""
 
-   DEFINE DIALOG oDlg SIZE 600, 400
+   DEFINE DIALOG oDlg SIZE 600, 400 NOFLIPPED 
 
    @ 0, 0 FOLDER oFld OF oDlg PAGES "First", "Second" SIZE 600, 350 
 

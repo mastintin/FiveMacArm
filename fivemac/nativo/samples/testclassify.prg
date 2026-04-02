@@ -6,7 +6,7 @@ function Main()
     local cFile := ""
     local aResults := {}
    
-    DEFINE WINDOW oWnd TITLE "Image Classification Test" ;
+    DEFINE WINDOW oWnd TITLE "Image Classification Test"  NOFLIPPED ;
         FROM 50, 50 TO 600, 800
       
     @ 20, 20 IMAGE oImg SIZE 300, 400 OF oWnd

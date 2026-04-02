@@ -18,7 +18,7 @@ function Main()
    local oBrwPrgs
    local oResult, cResult := ""
 
-   DEFINE DIALOG oDlg TITLE "Visual Make for Harbour" ;
+   DEFINE DIALOG oDlg TITLE "Visual Make for Harbour"  NOFLIPPED ;
       SIZE 560, 540 FLIPPED
 
  @  20,  20 SAY "Main PRG" SIZE  80,  20  OF oDlg
@@ -88,7 +88,7 @@ function Settings()
    local oCbx
    local lFWHTemp,oFWHPath,cFWHPathTmp := "~/five/Fivemac/fivemac/lib/"
       
-   DEFINE DIALOG oDlg TITLE "Settings" SIZE 500, 400 flipped
+   DEFINE DIALOG oDlg TITLE "Settings" SIZE 500, 400 flipped NOFLIPPED 
    
    @ 15, 16 SAY "hbmk2 path" OF oDlg SIZE 80, 24 PIXEL
 

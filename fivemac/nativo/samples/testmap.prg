@@ -13,7 +13,7 @@ function Main()
     local cPOI := "Pizza"
     local oGetPOI
     
-    DEFINE WINDOW oWnd TITLE "MapKit Routing" ;
+    DEFINE WINDOW oWnd TITLE "MapKit Routing"  NOFLIPPED ;
         FROM 50, 50 TO 700, 1000 FLIPPED
       
     oMap = TNativeMap():New( 20, 20, 760, 360, oWnd )

@@ -27,7 +27,7 @@ function Main()
   ? GETBLUENSCOLOR( hcolor )
  ? GETBLUENSCOLOR2( hcolor )
    
-   DEFINE WINDOW oWnd TITLE "TEST color" ;
+   DEFINE WINDOW oWnd TITLE "TEST color"  NOFLIPPED ;
                  FROM 20, 100 TO 440,600 
        
      oWnd:Center()   

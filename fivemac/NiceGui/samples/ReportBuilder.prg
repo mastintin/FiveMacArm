@@ -729,7 +729,7 @@ return nil
 METHOD ShowCode( cCode ) CLASS TReportBuilder
     local oDlg, oGet
    
-    DEFINE DIALOG oDlg TITLE "Generated Source Code" SIZE 800, 600
+    DEFINE DIALOG oDlg TITLE "Generated Source Code" SIZE 800, 600 NOFLIPPED 
    
     @ 10, 10 GET oGet VAR cCode MEMO OF oDlg SIZE 780, 500
    

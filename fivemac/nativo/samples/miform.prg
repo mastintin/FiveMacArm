@@ -3,7 +3,7 @@ function Main()
 
    local oForm1, oWeb1, oBtn1, oBtn2
 
-   DEFINE WINDOW oForm1 ;
+   DEFINE WINDOW oForm1  NOFLIPPED ;
       TITLE "Form1" ;
       SIZE 882, 641 FLIPPED
 

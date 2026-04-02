@@ -34,7 +34,7 @@ cAlias := alias()
 msginfo(cAlias)
 
  
-   DEFINE WINDOW oWnd TITLE "DBF Browse" ;
+   DEFINE WINDOW oWnd TITLE "DBF Browse"  NOFLIPPED ;
       FROM 213, 109 TO 650, 820
       @ 48, 20 BROWSE oBrw ;
       FIELDS If( Int( (cAlias)->(RecNo()) % 2 ) == 0, cImgPath+"ok.png", cImgPath+"alert.png" ),(cAlias)->Last, (cAlias)->First ;

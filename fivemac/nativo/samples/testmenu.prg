@@ -8,7 +8,7 @@ function Main()
  
    BuildMenu()
  
-   DEFINE WINDOW oWnd TITLE "Hello world"
+   DEFINE WINDOW oWnd TITLE "Hello world" NOFLIPPED 
  
    ACTIVATE WINDOW oWnd ;
       VALID MsgYesNo( "Want to end ?" )

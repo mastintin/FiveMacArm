@@ -13,7 +13,7 @@
 CLASS TDialog FROM TWindow
 
    METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled,;
-               nWidth, nHeight ,lflipped ,oBrush)
+               nWidth, nHeight ,lflipped ,oBrush, lNoFlipped )
 
    METHOD Activate( bLClicked, bValid, lModeless, lCentered, bInit, bRClicked,;
                     bResized )
@@ -22,13 +22,21 @@ ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, nHeight ,lflipped ,oBrush ) CLASS TDialog
+METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, nHeight ,lflipped ,oBrush, lNoFlipped ) CLASS TDialog
 
    DEFAULT nTop := 300, nLeft := 300, nBottom := 700, nRight := 800,;
                  cTitle := "FiveMac", lTextured := .f., lPaneled := .f. ,;
-                 lflipped:= .f.
+                 lflipped:= .f., lNoFlipped := .F.
 
-   ::lflipped:= lflipped
+   ::lFlipped = .T. // New Flipped default 
+   
+   if lNoFlipped
+      ::lFlipped = .f.
+   elseif lflipped
+      ::lFlipped = .t.
+   endif
+
+   ::lNoFlipped := lNoFlipped
     
    ::hWnd = WndCreate( nTop, nLeft, nRight - nLeft, nBottom - nTop,;
                        nOr( NSTitledWindowMask, NSClosableWindowMask,;

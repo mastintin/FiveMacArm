@@ -13,7 +13,7 @@ function Main()
   // hb_langSelect( cLang )
   // hb_cdpSelect( cCodePage )
 
-   DEFINE DIALOG oDlg TITLE "Harbour JSON Demo" SIZE 420, 200
+   DEFINE DIALOG oDlg TITLE "Harbour JSON Demo" SIZE 420, 200 NOFLIPPED 
 
    @ 140, 20 SAY "Nombre:" OF oDlg
    @ 140, 100 GET oGet1 VAR cName SIZE 200, 24 OF oDlg

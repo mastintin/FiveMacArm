@@ -9,7 +9,7 @@ function Main()
    local cFirst := Space( 20 ), cLast := Space( 20 )
    local obtn1, oPopup
    
-   DEFINE DIALOG oDlg TITLE "Testing Gets" ;
+   DEFINE DIALOG oDlg TITLE "Testing Gets"  NOFLIPPED ;
       FROM 220, 350 TO 450, 750 
 
    @ 139, 50 SAY "First:" OF oDlg SIZE 50, 17

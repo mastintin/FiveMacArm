@@ -12,7 +12,7 @@ function Main()
    local oMail
    
    
-   DEFINE DIALOG oDlg TITLE "Testing mail" ;
+   DEFINE DIALOG oDlg TITLE "Testing mail"  NOFLIPPED ;
       FROM 70, 50 TO 500, 740
       
              

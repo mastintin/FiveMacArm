@@ -6,7 +6,7 @@
    local lIndeterminate := .F.
    local lSpin := .F.
    
-   DEFINE WINDOW oWnd TITLE "TEST PROGRESS" ;
+   DEFINE WINDOW oWnd TITLE "TEST PROGRESS"  NOFLIPPED ;
       FROM 20, 100 TO 420, 640 TEXTURED FLIPPED
       
    @ 124, 10 PROGRESS oProg SIZE 510, 20 OF oWnd AUTORESIZE 9

@@ -12,7 +12,7 @@ function Main()
 
    BuildMenu()  
 
-   DEFINE WINDOW oWndMain TITLE "DonorQuest for Mac" ;
+   DEFINE WINDOW oWndMain TITLE "DonorQuest for Mac"  NOFLIPPED ;
       SIZE ScreenWidth(), 0
 
    oWndMain:SetPos( ScreenHeight() )
@@ -110,7 +110,7 @@ function Open()
    
    USE ( Path() + "/Primary/d_header.dbf" ) VIA "DBFCDX" SHARED ALIAS "ds"
    
-   DEFINE WINDOW oWnd TITLE "DONOR Dataset: Main Information View for " ;
+   DEFINE WINDOW oWnd TITLE "DONOR Dataset: Main Information View for "  NOFLIPPED ;
       SIZE ScreenWidth(), 300 FLIPPED
       
    oWnd:SetPos( ScreenHeight() - 410, 0 )   
@@ -170,7 +170,7 @@ function Donations()
    
    USE ( Path() + "/Primary/d_donati.dbf" ) VIA "DBFCDX" SHARED ALIAS "do" NEW
    
-   DEFINE WINDOW oWnd TITLE "Donations for " ;
+   DEFINE WINDOW oWnd TITLE "Donations for "  NOFLIPPED ;
       SIZE ScreenWidth() / 2, 300 FLIPPED
       
    oWnd:SetPos( ScreenHeight() - 720, 0 )   
@@ -216,7 +216,7 @@ function Schedule()
    
    USE ( Path() + "/Primary/d_schcon.dbf" ) VIA "DBFCDX" SHARED ALIAS "sc" NEW
    
-   DEFINE WINDOW oWnd TITLE "Scheduled Contacts for " ;
+   DEFINE WINDOW oWnd TITLE "Scheduled Contacts for "  NOFLIPPED ;
       SIZE ScreenWidth() / 2 - 10, 150 FLIPPED
       
    oWnd:SetPos( ScreenHeight() - 570, ScreenWidth() / 2 + 10 )   
@@ -257,7 +257,7 @@ function Notepad()
    local oWnd, oBtn1, oBtn2, oBtn3 
    local oNotes
    
-   DEFINE WINDOW oWnd TITLE "Note Pad for " ;
+   DEFINE WINDOW oWnd TITLE "Note Pad for "  NOFLIPPED ;
       SIZE ScreenWidth() / 2 - 10, 140 FLIPPED
       
    oWnd:SetPos( ScreenHeight() - 720, ScreenWidth() / 2 + 10 )   

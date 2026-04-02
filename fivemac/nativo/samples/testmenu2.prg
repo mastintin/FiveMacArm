@@ -14,7 +14,7 @@ function Main()
 
   oMenu1:activate()
 
-   DEFINE WINDOW oWnd TITLE "Hello world"
+   DEFINE WINDOW oWnd TITLE "Hello world" NOFLIPPED 
 
 oWnd:bGetFocus:= { ||  omenu1:activate()    }
 
@@ -51,7 +51,7 @@ function New_Window()
 
 local oDlg, oMenuDlg
 
-DEFINE DIALOG oDlg
+DEFINE DIALOG oDlg NOFLIPPED 
 
 omenu2:activate()
   //  BuildMenuDlg()

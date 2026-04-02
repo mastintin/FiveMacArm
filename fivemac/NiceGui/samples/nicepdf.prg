@@ -6,7 +6,7 @@ function Main()
     local cUrl := "http://localhost:8080/report"
     local cPdf := GetEnv( "TMPDIR" ) + "/nicegui_report.pdf"
 
-    DEFINE WINDOW oWnd TITLE "NiceGUI -> PDF Bridge" SIZE 850, 700
+    DEFINE WINDOW oWnd TITLE "NiceGUI -> PDF Bridge" SIZE 850, 700 NOFLIPPED 
 
     @ 10, 10 SAY "Paso 1: Inicia el servidor Python (report_server.py)" OF oWnd SIZE 400, 20
     @ 35, 10 SAY "Paso 2: Pulsa 'Cargar Reporte'" OF oWnd SIZE 400, 20

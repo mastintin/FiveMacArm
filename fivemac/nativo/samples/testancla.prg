@@ -12,7 +12,7 @@ function Main()
    local nAncla:= 0
    local cPath := UserPath() + "/five/Fivemac/fivemac/bitmaps/"
 
-   DEFINE DIALOG oDlg TITLE "Testing Anclas" ;
+   DEFINE DIALOG oDlg TITLE "Testing Anclas"  NOFLIPPED ;
       FROM 270, 350 TO 510, 740
    
    @ 60, 70 GROUP oGroup PROMPT "" SIZE 250, 120 OF oDlg

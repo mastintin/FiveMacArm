@@ -6,7 +6,7 @@ function Main()
 
    BuildMenu() // Build the main menu
    
-   DEFINE WINDOW oWnd TITLE "FiveMac"
+   DEFINE WINDOW oWnd TITLE "FiveMac" NOFLIPPED 
    
    ACTIVATE WINDOW oWnd ;
       VALID MsgYesNo( "Want to end ?" )

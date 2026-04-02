@@ -20,7 +20,7 @@ function Main()
    cRightMask = "/*"
    cRightPath = UserPath()
 
-   DEFINE WINDOW oWnd TITLE "FiveMac File Manager" ;
+   DEFINE WINDOW oWnd TITLE "FiveMac File Manager"  NOFLIPPED ;
       FROM 0, 0 TO ScreenHeight(), ScreenWidth()
    
    oWNd:bKeyDown = { | nKey | If( nKey == 13, 1, 0 ) } // Avoid "beep"
@@ -378,7 +378,7 @@ function View()
       return nil
    endif   
    
-   DEFINE WINDOW oWnd TITLE "View: " + cPathName + "/" + cFileName ;
+   DEFINE WINDOW oWnd TITLE "View: " + cPathName + "/" + cFileName  NOFLIPPED ;
       FROM 50, 50 TO ScreenHeight() - 50, 1000
    
    if Len( cExt ) >= 3 .and. Lower( cExt ) $ "gif, png, tiff, icns, jpg, bmp"

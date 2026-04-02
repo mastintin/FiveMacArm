@@ -39,7 +39,7 @@ function Main()
    local oget,cText:=""
    
    
-   DEFINE WINDOW oWnd TITLE "TestBrImage" ;
+   DEFINE WINDOW oWnd TITLE "TestBrImage"  NOFLIPPED ;
        FROM 200, 250 TO 750, 1100
 
   

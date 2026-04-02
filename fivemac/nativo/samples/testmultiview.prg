@@ -19,7 +19,7 @@ function Main()
   
      
    
-   DEFINE WINDOW oWnd TITLE "TestMultiview" ;
+   DEFINE WINDOW oWnd TITLE "TestMultiview"  NOFLIPPED ;
        FROM 10, 10 TO 700, 700
 	   
    DEFINE MSGBAR OF oWnd

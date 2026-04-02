@@ -18,7 +18,7 @@ function Main()
    
    aEval(aUsers,{ |ele | aadd(aUserName, ele[3]) } )
    
-   DEFINE WINDOW oWnd TITLE "Test WhatsApp" FROM 300, 300 TO 550, 670
+   DEFINE WINDOW oWnd TITLE "Test WhatsApp" FROM 300, 300 TO 550, 670 NOFLIPPED 
    
    @ 200, 40 SAY "User:" OF oWnd   
    @ 200, 100 COMBOBOX oCbx VAR cUser OF oWnd ;

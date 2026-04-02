@@ -5,7 +5,7 @@ function Main()
    local oWnd, oBrw
    local aData := {}
 
-   DEFINE WINDOW oWnd TITLE "Testing Array Browse" SIZE 600, 400
+   DEFINE WINDOW oWnd TITLE "Testing Array Browse" SIZE 600, 400 NOFLIPPED 
 
    @ 20, 20 BROWSE oBrw OF oWnd SIZE 400, 300 ;
       HEADERS "Column 1", "Column 2" ;

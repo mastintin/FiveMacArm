@@ -7,7 +7,7 @@ function Main()
     local nPos, oBtn
     local nZoom := 20
    
-    DEFINE WINDOW oWnd TITLE "Test CVBrowse (Selection Event)" ;
+    DEFINE WINDOW oWnd TITLE "Test CVBrowse (Selection Event)"  NOFLIPPED ;
         FROM 200, 200 TO 700, 800
 
     @ 50, 20 CVBROWSE oBr OF oWnd SIZE 560, 400 ;

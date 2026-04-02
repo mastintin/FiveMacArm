@@ -5,7 +5,7 @@ function Main()
     local oWnd, oBtn, oBtn2, oGet, cText := "Test Inspector", oRad, nRad := 1
     local oPanel
 
-    DEFINE WINDOW oWnd TITLE "Testing Real-Time Inspector" ;
+    DEFINE WINDOW oWnd TITLE "Testing Real-Time Inspector"  NOFLIPPED ;
         FROM 200, 200 TO 600, 800
 
     @ 350, 40 BUTTON oBtn PROMPT "Launch Inspector" OF oWnd ;

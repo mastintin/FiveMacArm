@@ -14,7 +14,7 @@ function Main()
         "3. Third item" + CRLF + CRLF + ;
         "> This is a blockquote rendered natively."
 
-    DEFINE WINDOW oWnd TITLE "Markdown Native View" ;
+    DEFINE WINDOW oWnd TITLE "Markdown Native View"  NOFLIPPED ;
         FROM 200, 200 TO 700, 800
 
     @ 20, 20 MARKDOWN oMd SIZE 560, 460 OF oWnd TEXT cText

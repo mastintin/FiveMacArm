@@ -13,7 +13,7 @@ function Main()
     local oWnd, oBr
     local cPath := "/Library/Desktop Pictures" 
 
-    DEFINE WINDOW oWnd TITLE "New Image Browser (NSCollectionView)" ;
+    DEFINE WINDOW oWnd TITLE "New Image Browser (NSCollectionView)"  NOFLIPPED ;
         FROM 200, 200 TO 800, 1000
 
     @ 20, 20 BRIMAGE oBr OF oWnd SIZE 760, 560

@@ -9,7 +9,7 @@ function Main()
    local cText := ""
    local cAanteken
    
-   DEFINE WINDOW oWnd TITLE "TestGet" FROM 300, 300 TO 800, 900
+   DEFINE WINDOW oWnd TITLE "TestGet" FROM 300, 300 TO 800, 900 NOFLIPPED 
    
    @ 150, 40 SAY "Name:" OF oWnd
    

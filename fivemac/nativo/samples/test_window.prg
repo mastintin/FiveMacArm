@@ -4,7 +4,7 @@ function Main()
 
    local oWnd
 
-   DEFINE WINDOW oWnd TITLE "Test Window" SIZE 400, 400
+   DEFINE WINDOW oWnd TITLE "Test Window" SIZE 400, 400 NOFLIPPED 
 
    @ 100, 100 BUTTON "Close" ACTION oWnd:End()
 

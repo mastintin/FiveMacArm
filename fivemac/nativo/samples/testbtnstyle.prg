@@ -4,7 +4,7 @@ function Main()
 
     local oWnd, oBtn1, oBtn2, oBtn3
 
-    DEFINE WINDOW oWnd TITLE "Test Button Styles" ;
+    DEFINE WINDOW oWnd TITLE "Test Button Styles"  NOFLIPPED ;
         FROM 100, 100 TO 400, 600 GLASS
 
     @ 20, 20 BUTTON oBtn1 PROMPT "Normal" OF oWnd SIZE 150, 40

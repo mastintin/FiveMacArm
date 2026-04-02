@@ -20,7 +20,7 @@ function Main()
 
     nState:= 2  
 
-    DEFINE WINDOW oWnd TITLE "FiveMac + NiceGUI Music Player" ;
+    DEFINE WINDOW oWnd TITLE "FiveMac + NiceGUI Music Player"  NOFLIPPED ;
         SIZE 450, 600 FLIPPED
 
     DEFINE NICE PAGE oPage OF oWnd

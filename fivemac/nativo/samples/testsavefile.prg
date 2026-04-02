@@ -15,7 +15,7 @@ function Main()
    
    msginfo( cLanguage )
 
-   DEFINE DIALOG oDlg TITLE "Dialog"
+   DEFINE DIALOG oDlg TITLE "Dialog" NOFLIPPED 
    
    @ 40, 40 BUTTON "Grabar" OF oDlg ACTION SaveForm( oDlg )
    DEFINE MSGBAR OF oDlg

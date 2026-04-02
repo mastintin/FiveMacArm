@@ -5,7 +5,7 @@ function Main()
    local oDlg
    local otab
      
-   DEFINE DIALOG oDlg TITLE "Testing Groups" ;
+   DEFINE DIALOG oDlg TITLE "Testing Groups"  NOFLIPPED ;
       FROM 270, 350 TO 500, 740
    
     @ 70, 30 TABS otab PROMPTS {"hola","Adios"} OF oDlg SIZE 320, 120 

@@ -8,7 +8,7 @@ function Main()
 
    local oWnd
 
-   DEFINE WINDOW oWnd TITLE "Tutor02" ;
+   DEFINE WINDOW oWnd TITLE "Tutor02"  NOFLIPPED ;
        FROM 200, 250 TO 550, 750
 
    DEFINE MSGBAR OF oWnd

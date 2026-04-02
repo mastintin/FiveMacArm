@@ -5,7 +5,7 @@ function Main()
    local oDlg, cVar
    local aFonts := FM_availableFonts()
    
-   DEFINE DIALOG oDlg TITLE "Available fonts" SIZE 300, 300
+   DEFINE DIALOG oDlg TITLE "Available fonts" SIZE 300, 300 NOFLIPPED 
 
    @ 200, 50 COMBOBOX cVar ITEMS aFonts SIZE 200, 20 OF oDlg
 

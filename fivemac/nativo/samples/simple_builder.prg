@@ -18,7 +18,7 @@ function Main()
    // Standard Coordinates (Bottom-Left is 0,0)
    // Height 550 (Increased to lower top elements visually)
    
-   DEFINE DIALOG oWnd TITLE "Simple Project Builder" ;
+   DEFINE DIALOG oWnd TITLE "Simple Project Builder"  NOFLIPPED ;
       SIZE 600, 550  FLIPPED
 
    // --- Top: Inputs (Y=30..90) ---

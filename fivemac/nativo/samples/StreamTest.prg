@@ -5,7 +5,7 @@ function Main()
     local oWnd, oMusic
     local cUrl := "https://stream.live.vc.bbc.co.uk/bbc_world_service"
 
-    DEFINE WINDOW oWnd TITLE "Prueba de Streaming Nativo" size 400, 200
+    DEFINE WINDOW oWnd TITLE "Prueba de Streaming Nativo" size 400, 200 NOFLIPPED 
 
     oMusic := TNativeAudio():New()
    

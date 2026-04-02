@@ -5,7 +5,7 @@ function Main()
    local oWnd, cObject, oFld, oBrw
    local aInfo := { { "top", "100" }, { "left", "100" } }
    
-   DEFINE WINDOW oWnd TITLE "Object Inspector" ;
+   DEFINE WINDOW oWnd TITLE "Object Inspector"  NOFLIPPED ;
       FROM 125, 32 TO 286, 476 PANELED
    
    @ 436, 20 COMBOBOX cObject OF oWnd ;

@@ -41,7 +41,7 @@ Function TableImport( oDbSQLite, cDbf )
     nRecCount := TEMP_DBF->( LastRec() )
     dbCloseArea()
 
-    DEFINE WINDOW oWnd TITLE "Importando DBF a SQLite: " + FileNoPath( cDbf ) ;
+    DEFINE WINDOW oWnd TITLE "Importando DBF a SQLite: " + FileNoPath( cDbf )  NOFLIPPED ;
         FROM 200, 200 TO 320, 600
        
     @ 40, 20 PROGRESS oProg POSITION 0 SIZE 360, 20 OF oWnd

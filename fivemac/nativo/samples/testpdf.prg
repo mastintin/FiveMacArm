@@ -14,7 +14,7 @@ function Main()
 	local oPdf
 	local cFile
    
-	DEFINE WINDOW oWnd TITLE "WebView Test" TEXTURED SIZE 1000, 800
+	DEFINE WINDOW oWnd TITLE "WebView Test" TEXTURED SIZE 1000, 800 NOFLIPPED 
 	  	 
 	oWnd:Maximize() 	 
 	  	 

@@ -9,7 +9,7 @@ function Main()
    local oSayIp, cIp := "Pulsar para obtener IP"
    local cResponse := ""
 
-   DEFINE WINDOW oWnd TITLE "Test de Red FiveMac" ;
+   DEFINE WINDOW oWnd TITLE "Test de Red FiveMac"  NOFLIPPED ;
       FROM 200, 200 TO 500, 700
 
    @ 20, 20 SAY "Estado de Red:" OF oWnd

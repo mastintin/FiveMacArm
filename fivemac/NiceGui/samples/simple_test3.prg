@@ -3,7 +3,7 @@
 FUNCTION Main()
     local oWnd, oWeb
 
-    DEFINE WINDOW oWnd TITLE "Test Native WebView" SIZE 1000, 800
+    DEFINE WINDOW oWnd TITLE "Test Native WebView" SIZE 1000, 800 NOFLIPPED 
 
     @ 50, 50 WEBVIEW oWeb OF oWnd SIZE 900, 700
 

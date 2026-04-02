@@ -6,7 +6,7 @@ function Main()
 
    local oDlg,obtn,oBar
    
-   DEFINE DIALOG oDlg TITLE "Capturador"  FROM 10, 10 TO 10, 160    
+   DEFINE DIALOG oDlg TITLE "Capturador"  FROM 10, 10 TO 10, 160     NOFLIPPED 
    
     oDlg:center()
      
@@ -27,7 +27,7 @@ function Another()
 
    local oDlg
 
-   DEFINE DIALOG oDlg TITLE "Dialog" 
+   DEFINE DIALOG oDlg TITLE "Dialog"  NOFLIPPED 
    
    ACTIVATE DIALOG oDlg
    

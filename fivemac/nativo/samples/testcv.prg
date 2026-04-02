@@ -4,7 +4,7 @@ function Main()
 
     local oWnd, oBrw
 
-    DEFINE WINDOW oWnd TITLE "NSCollectionView Test" ;
+    DEFINE WINDOW oWnd TITLE "NSCollectionView Test"  NOFLIPPED ;
         SIZE 800, 600
 
     oBrw = TCVBrowse():New( 20, 20, 760, 500, oWnd )

@@ -4,7 +4,7 @@ function Main()
 
     local oWnd, oWeb
    
-    DEFINE WINDOW oWnd TITLE "Harbour <-> JS Bridge" SIZE 800, 600
+    DEFINE WINDOW oWnd TITLE "Harbour <-> JS Bridge" SIZE 800, 600 NOFLIPPED 
    
     @ 0, 0 WEBVIEW oWeb SIZE 800, 600 OF oWnd
    

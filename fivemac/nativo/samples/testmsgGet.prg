@@ -4,7 +4,7 @@ function Main()
 
    local oWnd
 
-   DEFINE WINDOW oWnd TITLE "Main Test Window" 
+   DEFINE WINDOW oWnd TITLE "Main Test Window"  NOFLIPPED 
    
    ACTIVATE WINDOW oWnd ON INIT RunTest( oWnd )
 

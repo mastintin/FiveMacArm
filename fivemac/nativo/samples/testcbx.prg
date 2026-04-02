@@ -9,7 +9,7 @@ function Main()
    local oBtnCreate,oBtnEdit
    local aStruct
    
-   DEFINE DIALOG oDlg TITLE "DBF Builder" ;
+   DEFINE DIALOG oDlg TITLE "DBF Builder"  NOFLIPPED ;
       FROM 207, 274 TO 590, 790
 
    @ 351, 20 SAY "FieldName:" OF oDlg SIZE 78, 17   
