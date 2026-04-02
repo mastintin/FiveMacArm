@@ -3,6 +3,10 @@
 #include <hbapiitm.h>
 #include <hbvm.h>
 
+// Dummy symbol to avoid ranlib warning about empty object file
+void _swift_common_dummy_symbol(void) {}
+
+/*
 void SwiftMsgAlert(NSString *title, NSString *msg) {
   NSAlert *alert = [[NSAlert alloc] init];
   [alert setMessageText:title];
@@ -10,7 +14,9 @@ void SwiftMsgAlert(NSString *title, NSString *msg) {
   [alert addButtonWithTitle:@"OK"];
   [alert runModal];
 }
+*/
 
+/*
 void setupSwiftView(NSView *swiftView, id parent, CGFloat top, CGFloat left,
                     CGFloat w, CGFloat h) {
   if (!parent) {
@@ -49,7 +55,10 @@ void setupSwiftView(NSView *swiftView, id parent, CGFloat top, CGFloat left,
   [swiftView setTranslatesAutoresizingMaskIntoConstraints:YES];
   [swiftView setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
 }
+// Moved to SwiftCommon.swift -> applySwiftViewLayout
+*/
 
+/* 
 HB_FUNC(CREATESWIFTVIEW) {
   NSLog(@"HB_FUNC: CREATESWIFTVIEW start");
   NSWindow *window = (NSWindow *)hb_parnll(1);
@@ -100,7 +109,10 @@ HB_FUNC(CREATESWIFTVIEW) {
     }
   }
 }
+// Moved to SwiftCommon.swift
+*/
 
+/*
 HB_FUNC(SWIFTSTANDALONEBATCHCREATE) {
   NSLog(@"HB_FUNC: SWIFTSTANDALONEBATCHCREATE start");
   NSWindow *window = (NSWindow *)hb_parnll(1);
@@ -201,23 +213,19 @@ HB_FUNC(SWIFTSTANDALONEBATCHCREATE) {
   NSLog(@"SWIFTSTANDALONEBATCHCREATE: Finished, returning array");
   hb_itemReturnRelease(pArray);
 }
+// Moved to SwiftCommon.swift
+*/
 
-HB_FUNC(SWIFT_UUID) {
-  NSString *uuid = [[NSUUID UUID] UUIDString];
-  hb_retc([uuid UTF8String]);
-}
-
+/*
 HB_FUNC(SWIFTAUTORESIZE) {
   NSView *view = (NSView *)hb_parnll(1);
   if (view) {
     [view setAutoresizingMask:hb_parnl(2)];
   }
 }
+*/
 
-HB_FUNC(HB_ITEM_PTR) {
-  hb_retnll((long long)hb_param(1, HB_IT_ANY));
-}
-
+/*
 NSString *GetRootIdFromParam(int paramIndex) {
   if (HB_ISNUM(paramIndex)) {
     return [NSString stringWithFormat:@"%d", hb_parni(paramIndex)];
@@ -225,5 +233,4 @@ NSString *GetRootIdFromParam(int paramIndex) {
     return hb_NSSTRING_par(paramIndex);
   }
 }
-
-// List functions moved to SwiftList.swift as @HarbourDirect
+*/

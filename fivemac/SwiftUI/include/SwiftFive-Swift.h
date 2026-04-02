@@ -544,20 +544,16 @@ SWIFT_CLASS_NAMED("SwiftVStackLoader")
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
+SWIFT_CLASS_NAMED("SwiftWebViewLoader")
+@interface SwiftWebViewLoader : NSObject
++ (NSView * _Nonnull)makeWebViewWithId:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
 SWIFT_CLASS_NAMED("SwiftZStackLoader")
 @interface SwiftZStackLoader : NSObject
 + (NSView * _Nonnull)makeZStackWithIndex:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
 + (void)setActionCallbackWithRootId:(NSString * _Nonnull)rootId callback:(void (^ _Nonnull)(NSString * _Nonnull))callback;
-- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
-@end
-
-SWIFT_CLASS_NAMED("ViewRegistry")
-@interface ViewRegistry : NSObject
-+ (void)registerObject:(id _Nonnull)object forId:(NSString * _Nonnull)id;
-+ (id _Nullable)getObject:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
-+ (void)clean:(NSString * _Nonnull)id;
-+ (void)registerNSView:(NSView * _Nonnull)view forId:(NSString * _Nonnull)id;
-+ (void)registerNSView:(NSView * _Nonnull)view forIndex:(NSInteger)index;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -789,6 +785,34 @@ SWIFT_EXTERN void HB_FUN_SD_SW_ISCONNECTED(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SW_MSG_YES_NO(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_EVAL(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_EVAL_ARG(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_GO_BACK(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_GO_FORWARD(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_IS_LOADING(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_LOAD(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_LOAD_FILE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_LOAD_HTML(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_PROGRESS(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_RELOAD(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_SAVE_PDF(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_SET_ZOOM(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_STOP(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SD_SWIFT_BUTTON_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SWIFT_CHART_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
@@ -957,11 +981,17 @@ SWIFT_EXTERN void HB_FUN_SD_ZSTK_SET_ITEM_TEXT(void * _Nullable p) SWIFT_NOEXCEP
 
 SWIFT_EXTERN void HB_FUN_SD_ZSTK_SET_LAST_ITEM_ID(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_CREATESWIFTVIEW(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN int8_t const * _Nullable sw_GetRootId_par(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
 
-SWIFT_EXTERN int8_t const * _Nullable sw_parc(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
-
 SWIFT_EXTERN BOOL sw_parl(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void HB_FUN_SWIFTAUTORESIZE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SWIFTSTANDALONEBATCHCREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SWIFT_UUID(void * _Nullable p) SWIFT_NOEXCEPT;
 
 #endif // defined(__OBJC__)
 #if __has_attribute(external_source_symbol)

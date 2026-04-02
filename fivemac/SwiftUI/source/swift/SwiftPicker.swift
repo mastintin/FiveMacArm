@@ -245,18 +245,6 @@ public func pkr_set_array(id: String, items: [String]) {
 }
 
 @HarbourDirect
-public func pkr_set_array(id: String, items: [String]) {
-    DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
-            state.items = items
-            if !items.contains(state.selection) {
-                state.selection = items.first ?? ""
-            }
-        }
-    }
-}
-
-@HarbourDirect
 public func pkr_set_items(id: String, json: String) {
     var items: [String] = []
 

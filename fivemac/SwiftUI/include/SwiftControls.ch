@@ -134,4 +134,11 @@
 
 //----------------------------------------------------------------------------//
 
+#xcommand @ <nRow>, <nCol> SWIFTWEBVIEW [ <oWeb> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    [ URL <cUrl> ] ;
+    => ;
+    [ <oWeb> := ] TSwiftWebview():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cUrl> )
+
 #endif

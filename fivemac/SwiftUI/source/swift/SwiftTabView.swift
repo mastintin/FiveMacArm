@@ -39,8 +39,8 @@ struct SwiftTabView: View {
             ZStack {
                 ForEach(tabData, id: \.id) { item in
                     if selectedTab == item.id {
-                         if let view = ViewRegistry.getView(for: item.id) {
-                            view
+                         if let nsView = ViewRegistry.getObject(for: item.id) as? NSView {
+                            GenericNSViewWrapper(view: nsView)
                         } else {
                             Text("View \(item.id) not found")
                         }

@@ -8,10 +8,10 @@
 #import "SwiftFive-Swift.h"
 
 // Forward declarations of common helper functions
-void SwiftMsgAlert(NSString *title, NSString *msg);
+
 void setupSwiftView(NSView *swiftView, id parent, CGFloat x, CGFloat y,
                     CGFloat w, CGFloat h);
-NSString *GetRootIdFromParam(int paramIndex);
+
 
 // Direct bridging Helpers for Factory methods (Internal)
 const int8_t *sw_parc(int iParam);
