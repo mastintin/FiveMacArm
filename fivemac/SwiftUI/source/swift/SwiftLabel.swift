@@ -5,22 +5,34 @@ import HarbourMacro
 
 // State for the Label
 @Observable
-public class LabelState {
-    var text: String
+public class LabelState: RGBAColorableState {
+    var caption: String
     var fontSize: CGFloat
     var fontStyle: String // Empty means use fontSize
 
-    var accentColor: Color = .blue // O el tipo que corresponda
+    var accentColor: Color = .blue
     var textColor: Color = .primary
     var alignment: TextAlignment = .leading 
     var isVisible: Bool = true
     var isEnabled: Bool = true
   
-    init(text: String, fontSize: CGFloat = 24.0, fontStyle: String = "", textColor: Color = .black) {
-        self.text = text
+    init(caption: String, fontSize: CGFloat = 24.0, fontStyle: String = "", textColor: Color = .black) {
+        self.caption = caption
         self.fontSize = fontSize
         self.fontStyle = fontStyle
         self.textColor = textColor
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.accentColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
     }
 }
 
@@ -53,7 +65,7 @@ private var swiftUIAlignment: Alignment {
     var body: some View {
         let _ = state.textColor // Esto le dice a SwiftUI: "Observa este cambio"
         let _ = state.fontSize
-        Text(state.text)
+        Text(state.caption)
             .font(getFont())
             .foregroundColor(state.textColor)
             .multilineTextAlignment(state.alignment) // Alineación del texto en sí
@@ -64,15 +76,13 @@ private var swiftUIAlignment: Alignment {
 
 @objc(SwiftLabelLoader)
 public class SwiftLabelLoader: NSObject {
-    
-    // Store states by Index (String for Hybrid Support)
-    public static var states: [String: LabelState] = [:]
 
-    public static func makeLabel(text: String,  id: String) -> NSView {
-         let finalId = id.isEmpty ? UUID().uuidString : id
-         // Default state
-        let state = LabelState(text: text, fontSize: 24.0, fontStyle: "", textColor: .black)
-        states[finalId] = state
+    public static func makeLabel(caption: String, id: String) -> NSView {
+        let finalId = id.isEmpty ? UUID().uuidString : id
+        let state = LabelState(caption: caption, fontSize: 24.0, fontStyle: "", textColor: .black)
+        
+        // Register in central registry
+        ViewRegistry.register(state, for: finalId)
         
         let view = SwiftLabelView(state: state)
         ViewRegistry.register(view, for: finalId)
@@ -83,13 +93,9 @@ public class SwiftLabelLoader: NSObject {
     }
     
     public static func destroyLabel(id: String, viewPtr: Int64) {
-        // 1. Limpiar el estado para que el objeto @Observable muera
-        states.removeValue(forKey: id)
+        // Clean from registries
+        ViewRegistry.clean(id: id)
         
-        // 2. Limpiar el registro global de FiveMac
-        ViewRegistry.clean(id: id) 
-        
-        // 3. Liberar la retención manual del NSHostingView
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
                 _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
@@ -97,20 +103,19 @@ public class SwiftLabelLoader: NSObject {
         }
     }
 
-
-    public static func updateLabel(_ text: String, id: String ) {
-        DispatchQueue.main.async {
-            if let state = states[id] {
-                state.text = text
+    public static func updateLabel(_ caption: String, id: String ) {
+        let block = {
+            if let state = ViewRegistry.getState(for: id) as? LabelState {
+                state.caption = caption
             }
         }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public static func setAlignment(id: String, align: Int) {
-        DispatchQueue.main.async {
-            if let state = states[id] {
+        let block = {
+            if let state = ViewRegistry.getState(for: id) as? LabelState {
                 // 0: Left, 1: Right, 2: Center (Estándar Harbour/Win)
-                // Ojo: Revisa si tu Harbour usa 0:L, 1:C, 2:R y ajusta los cases:
                 switch align {
                 case 1: state.alignment = .center
                 case 2: state.alignment = .trailing
@@ -118,22 +123,22 @@ public class SwiftLabelLoader: NSObject {
                 }
             }
         }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
-   
     public static func setLabelFontSize(_ size: Double, id: String) {
-        DispatchQueue.main.async {
-            if let state = states[id] {
+        let block = {
+            if let state = ViewRegistry.getState(for: id) as? LabelState {
                 state.fontSize = CGFloat(size)
                 state.fontStyle = "" // Clear style to usage size
             }
         }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
-
     
     public static func setLabelFontStyle(_ style: String, id: String) {
         DispatchQueue.main.async {
-            if let state = states[id] {
+            if let state = ViewRegistry.getState(for: id) as? LabelState {
                 state.fontStyle = style
             }
         }
@@ -142,24 +147,21 @@ public class SwiftLabelLoader: NSObject {
     // Versión ultra-rápida para Harbour (nRGB)
     public static func setColors(id: String, textColor: Int, alpha: Int) {
         DispatchQueue.main.async {
-            if let state = states[id] {
-                // Usamos una pequeña variante de nuestra extensión
+            if let state = ViewRegistry.getState(for: id) as? LabelState {
                 let a = Double(alpha) / 255.0
                 state.textColor = Color(hbColor: textColor).opacity(a)
             }    
         }
-    
-}
+    }
+
     // Versión para Hexadecimal (Strings)
     public static func setColors(id: String, textHex: String, alpha: Int) {
         DispatchQueue.main.async {
-            if let state = states[id] {
+            if let state = ViewRegistry.getState(for: id) as? LabelState {
                 state.textColor = Color(hex: textHex).opacity(Double(alpha) / 255.0)
             }
         }
     }
-
-
 }
 
 // --- HARBOUR BRIDGE MACROS ---
@@ -204,7 +206,7 @@ public func swift_label_create(
     left: Double, 
     width: Double, 
     height: Double,
-    text: String, 
+    caption: String, 
     parentPtr: Int64,
     id: String
      ) -> Int64 {
@@ -215,7 +217,7 @@ public func swift_label_create(
         
         // Crear la vista usando el Factory
         let labelView = SwiftLabelLoader.makeLabel(
-            text: text, 
+            caption: caption, 
             id: id
         )
         

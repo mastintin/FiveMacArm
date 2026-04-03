@@ -4,8 +4,8 @@ import Observation
 import HarbourMacro
 
 @Observable
-public class ButtonState {
-    var title: String
+public class ButtonState: RGBAColorableState {
+    var caption: String
     var backgroundColor: Color
     var foregroundColor: Color
     var cornerRadius: CGFloat
@@ -13,14 +13,26 @@ public class ButtonState {
     var isGlass: Bool
     var imageName: String
 
-    init(title: String, backgroundColor: Color = .blue, foregroundColor: Color = .white, cornerRadius: CGFloat = 8, padding: CGFloat = 0, isGlass: Bool = false, imageName: String = "") {
-        self.title = title
+    init(caption: String, backgroundColor: Color = .blue, foregroundColor: Color = .white, cornerRadius: CGFloat = 8, padding: CGFloat = 0, isGlass: Bool = false, imageName: String = "") {
+        self.caption = caption
         self.backgroundColor = backgroundColor
         self.foregroundColor = foregroundColor
         self.cornerRadius = cornerRadius
         self.padding = padding
         self.isGlass = isGlass
         self.imageName = imageName
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.backgroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.foregroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
     }
 }
 
@@ -37,7 +49,7 @@ struct SwiftButtonView: View {
                      if !state.imageName.isEmpty {
                          Image(systemName: state.imageName)
                      }
-                     Text(state.title)
+                     Text(state.caption)
                  }
                  .padding(.horizontal, 12)
                  .padding(.vertical, 8)
@@ -56,7 +68,7 @@ struct SwiftButtonView: View {
                      if !state.imageName.isEmpty {
                          Image(systemName: state.imageName)
                      }
-                     Text(state.title)
+                     Text(state.caption)
                  }
                  .padding(state.padding > 0 ? state.padding : 10)
                  .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -83,13 +95,13 @@ extension View {
 
 @objc(SwiftButtonLoader)
 public class SwiftButtonLoader: NSObject {
-    
-    public static var states: [String: ButtonState] = [:]
 
-    public static func makeButton(title: String, id: String, callback: @escaping () -> Void) -> NSView {
+    public static func makeButton(caption: String, id: String, callback: @escaping () -> Void) -> NSView {
          let finalId = id.isEmpty ? UUID().uuidString : id
-         let state = ButtonState(title: title)
-         states[finalId] = state
+         let state = ButtonState(caption: caption)
+         
+         // Register in central registries
+         ViewRegistry.register(state, for: finalId)
          
          let view = SwiftButtonView(state: state, callback: callback)
          ViewRegistry.register(view, for: finalId)
@@ -102,7 +114,6 @@ public class SwiftButtonLoader: NSObject {
     }
 
     public static func destroyButton(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id:id) 
         
         if viewPtr != 0 {
@@ -113,31 +124,38 @@ public class SwiftButtonLoader: NSObject {
     }
 
     public static func setText(id: String, text: String) {
-        DispatchQueue.main.async { states[id]?.title = text }
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.caption = text } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public static func setBackgroundColor(id: String, hex: String) {
-        DispatchQueue.main.async { states[id]?.backgroundColor = Color(hex: hex) }
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.backgroundColor = Color(hex: hex) } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public static func setForegroundColor(id: String, hex: String) {
-        DispatchQueue.main.async { states[id]?.foregroundColor = Color(hex: hex) }
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.foregroundColor = Color(hex: hex) } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public static func setCornerRadius(id: String, radius: Double) {
-        DispatchQueue.main.async { states[id]?.cornerRadius = CGFloat(radius) }
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.cornerRadius = CGFloat(radius) } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
     
     public static func setPadding(id: String, padding: Double) {
-        DispatchQueue.main.async { states[id]?.padding = CGFloat(padding) }
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.padding = CGFloat(padding) } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public static func setGlass(id: String, isGlass: Bool) {
-        DispatchQueue.main.async { states[id]?.isGlass = isGlass }
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.isGlass = isGlass } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public static func setImage(id: String, imageName: String) {
-        DispatchQueue.main.async { states[id]?.imageName = imageName }
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.imageName = imageName } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 }
 
@@ -146,11 +164,6 @@ public class SwiftButtonLoader: NSObject {
 @HarbourDirect
 public func btn_set_text(id: String, text: String) {
     SwiftButtonLoader.setText(id: id, text: text)
-}
-
-@HarbourDirect
-public func btn_set_bg(id: String, hex: String) {
-    SwiftButtonLoader.setBackgroundColor(id: id, hex: hex)
 }
 
 @HarbourDirect
@@ -189,7 +202,7 @@ public func swift_button_create(
     left: Double, 
     width: Double, 
     height: Double,
-    title: String, 
+    caption: String, 
     parentPtr: Int64,
     id: String
     ) -> Int64 {
@@ -210,7 +223,7 @@ public func swift_button_create(
         }
 
         let buttonView = SwiftButtonLoader.makeButton(
-            title: title, 
+            caption: caption, 
             id: finalId, // Pasamos el ID ya generado
             callback: callback
         )

@@ -4,7 +4,7 @@ import Observation
 import HarbourMacro
 
 @Observable
-public class DatePickerState {
+public class DatePickerState: RGBAColorableState {
     var date: Date
     var isVisible: Bool = true
     var isEnabled: Bool = true
@@ -15,6 +15,18 @@ public class DatePickerState {
     init(date: Date = Date(), title: String = "") {
         self.date = date
         self.title = title
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.accentColor = Color(hbColor: color, alpha: alpha)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.textColor = Color(hbColor: color, alpha: alpha)
+        }
     }
 }
 
@@ -48,12 +60,12 @@ struct SwiftDatePickerView: View {
 @objc(SwiftDatePickerLoader)
 public class SwiftDatePickerLoader: NSObject {
     
-    public static var states: [String: DatePickerState] = [:]
-
     public static func makeDatePicker(date: Date, title: String, id: String, callback: ((Date) -> Void)?) -> NSView {
          let finalId = id.isEmpty ? UUID().uuidString : id
          let state = DatePickerState(date: date, title: title)
-         states[finalId] = state
+         
+         // Register in central registry
+         ViewRegistry.register(state, for: finalId)
          
          let view = SwiftDatePickerView(state: state, callback: callback)
          ViewRegistry.register(view, for: finalId)
@@ -66,7 +78,6 @@ public class SwiftDatePickerLoader: NSObject {
     }
 
     public static func destroyDatePicker(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id)
         
         if viewPtr != 0 {
@@ -96,7 +107,7 @@ public class SwiftDatePickerLoader: NSObject {
 @HarbourDirect
 public func dtp_set_date(id: String, dateStr: String) {
     DispatchQueue.main.async {
-        if let state = SwiftDatePickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? DatePickerState {
             state.date = SwiftDatePickerLoader.harbourStrToDate(dateStr)
         }
     }
@@ -104,7 +115,7 @@ public func dtp_set_date(id: String, dateStr: String) {
 
 @HarbourDirect
 public func dtp_get_date(id: String) -> String {
-    if let state = SwiftDatePickerLoader.states[id] {
+    if let state = ViewRegistry.getState(for: id) as? DatePickerState {
         return SwiftDatePickerLoader.dateToHarbourStr(state.date)
     }
     return ""
@@ -113,7 +124,7 @@ public func dtp_get_date(id: String) -> String {
 @HarbourDirect
 public func dtp_set_colors(id: String, accentHex: String, textHex: String) {
     DispatchQueue.main.async {
-        if let state = SwiftDatePickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? DatePickerState {
             state.accentColor = Color(hex: accentHex)
             state.textColor = Color(hex: textHex)
         }
@@ -123,7 +134,7 @@ public func dtp_set_colors(id: String, accentHex: String, textHex: String) {
 @HarbourDirect
 public func dtp_set_enabled(id: String, enabled: Bool) {
     DispatchQueue.main.async {
-        if let state = SwiftDatePickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? DatePickerState {
             state.isEnabled = enabled
         }
     }

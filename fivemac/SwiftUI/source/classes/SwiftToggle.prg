@@ -2,22 +2,28 @@
 
 CLASS TSwiftToggle FROM TSwiftControl
 
-    DATA cCaption
-    DATA lSwitch
-    DATA nColorAcc   AS NUMERIC
-    DATA nColorText  AS NUMERIC
+    ACCESS Caption      INLINE ::hState["Caption"]
+    ASSIGN Caption( c ) INLINE ::SetCaption( c )
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction )
-    METHOD Set( lOn )
-    METHOD Get()
-    METHOD SetColor( nAccent, nText )
+    ACCESS Checked      INLINE ::hState["Value"]
+    ASSIGN Checked( l ) INLINE ::SetValue( l )
+
+    ACCESS Value        INLINE ::hState["Value"]
+    ASSIGN Value( l )   INLINE ::SetValue( l )
+
+    ACCESS IsSwitch      INLINE ::hState["IsSwitch"]
+    ASSIGN IsSwitch( l ) INLINE ::hState["IsSwitch"] := l
+
+    METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction, nAutoResize, cId )
+    METHOD SetValue( lOn )
+    METHOD GetValue()
     METHOD SetCaption(cCaption ) 
     METHOD End() 
     METHOD OnChange( lOn )
     
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction, nAutoResize ) CLASS TSwiftToggle
+METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction, nAutoResize, cId ) CLASS TSwiftToggle
 
     DEFAULT nWidth := 100, nHeight := 30
     DEFAULT lOn := .F.
@@ -25,19 +31,17 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction,
     DEFAULT lSwitch := .F.
     DEFAULT nAutoResize := 0
 
-    ::Super:New( nTop, nLeft, nWidth, nHeight )
+    ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
     
-    ::cCaption = cCaption
-    ::hState["Value"] = lOn
-    ::lSwitch  = lSwitch
+    ::hState["Caption"]     = cCaption
+    ::hState["Value"]       = lOn
+    ::hState["IsSwitch"]    = lSwitch
    
     ::bAction  = bAction
     ::oWnd     = oWnd
    
-    ::hWnd = SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::cId, ::lSwitch )
-    ::cId := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cId, Self )
-
+    ::Register( SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::cId, lSwitch ) )
+    
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
     endif
@@ -48,7 +52,7 @@ return Self
 
 //------------------------------------------
 
-METHOD Set( lOn ) CLASS TSwiftToggle
+METHOD SetValue( lOn ) CLASS TSwiftToggle
     
     if ::Value != lOn
         ::hState["Value"] := lOn
@@ -62,31 +66,15 @@ return nil
 
 //----------------------------------------
 
-METHOD Get() CLASS TSwiftToggle
+METHOD GetValue() CLASS TSwiftToggle
 return ::Value
 
 //-----------------------------------------
 
 METHOD SetCaption( cCaption ) CLASS TSwiftToggle
-    ::cCaption := cCaption
+    ::hState["Caption"] := cCaption
     SD_TGL_SET_CAPTION( ::cId, cCaption )
 return nil
-
-//------------------------------
-
-METHOD SetColor( nAccent, nText, nAlpha ) CLASS TSwiftToggle
-    LOCAL nAcc, nTxt
-   
-    DEFAULT nAlpha := 255 
-
-    if !Empty( ::cId )
-        if ValType( nAccent ) == "N"
-            SD_TGL_SET_COLORS_RGBA( ::cId, nAccent, nText , nAlpha)  
-        elseif ValType( nAccent ) == "C"
-            SD_TGL_SET_COLORS_HEX( ::cId, nAccent, nText )
-        endif
-    endif
-return self
 
 // ---------------------------------------------------------------------------
 

@@ -4,8 +4,9 @@ import Observation
 import HarbourMacro
 
 @Observable
-public class TextFieldState {
+public class TextFieldState: RGBAColorableState {
     var text: String = ""
+    var caption: String = ""
     var placeholder: String = ""
     var fontSize: CGFloat = 13.0
     
@@ -14,11 +15,24 @@ public class TextFieldState {
     var textColor: Color = .primary
     var backgroundColor: Color = .clear
     
-    init(text: String = "", placeholder: String = "", id: String = "", callback: ((String) -> Void)? = nil) {
+    init(text: String = "", caption: String = "", placeholder: String = "", id: String = "", callback: ((String) -> Void)? = nil) {
         self.text = text
+        self.caption = caption
         self.placeholder = placeholder
         self.id = id
         self.onAction = callback
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.backgroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
     }
 }
 
@@ -31,17 +45,24 @@ struct SwiftTextFieldView: View {
             set: { state.text = $0 }
         )
         
-        TextField(state.placeholder, text: textBinding, onEditingChanged: { isEditing in
-            if !isEditing {
-                state.onAction?(state.text)
+        VStack(alignment: .leading, spacing: 2) {
+            if !state.caption.isEmpty {
+                Text(state.caption)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-        }, onCommit: {
-            state.onAction?(state.text)
-        })
-        .font(.system(size: state.fontSize))
-        .foregroundColor(state.textColor)
-        .textFieldStyle(RoundedBorderTextFieldStyle())
-        .background(state.backgroundColor)
+            TextField(state.placeholder, text: textBinding, onEditingChanged: { isEditing in
+                if !isEditing {
+                    state.onAction?(state.text)
+                }
+            }, onCommit: {
+                state.onAction?(state.text)
+            })
+            .font(.system(size: state.fontSize))
+            .foregroundColor(state.textColor)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .background(state.backgroundColor)
+        }
     }
 }
 
@@ -67,13 +88,13 @@ struct SwiftTextEditorView: View {
 
 @objc(SwiftTextFieldLoader)
 public class SwiftTextFieldLoader: NSObject {
-    
-    public static var states: [String: TextFieldState] = [:]
 
-    public static func makeTextField(text: String, placeholder: String, id: String, callback: @escaping ((String) -> Void)) -> NSView {
+    public static func makeTextField(text: String, caption: String, placeholder: String, id: String, callback: @escaping ((String) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
-        let state = TextFieldState(text: text, placeholder: placeholder, id: finalId, callback: callback)
-        states[finalId] = state
+        let state = TextFieldState(text: text, caption: caption, placeholder: placeholder, id: finalId, callback: callback)
+        
+        // Register in central registry
+        ViewRegistry.register(state, for: finalId)
         
         let view = SwiftTextFieldView(state: state)
         ViewRegistry.register(view, for: finalId)
@@ -88,10 +109,13 @@ public class SwiftTextFieldLoader: NSObject {
     public static func makeTextEditor(text: String, id: String, callback: @escaping ((String) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
         let state = TextFieldState(text: text, id: finalId, callback: callback)
-        states[finalId] = state
+        
+        // Register in central registry
+        ViewRegistry.register(state, for: finalId)
         
         let view = SwiftTextEditorView(state: state)
         ViewRegistry.register(view, for: finalId)
+        ViewRegistry.register(state, for: finalId)
 
         let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
@@ -101,7 +125,6 @@ public class SwiftTextFieldLoader: NSObject {
     }
 
     public static func destroyTextField(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id) 
         
         if viewPtr != 0 {
@@ -116,22 +139,23 @@ public class SwiftTextFieldLoader: NSObject {
 
 @HarbourDirect
 public func tf_set_text(id: String, text: String) {
-    DispatchQueue.main.async {
-        if let state = SwiftTextFieldLoader.states[id] {
+    let block = {
+        if let state = ViewRegistry.getState(for: id) as? TextFieldState {
             state.text = text
         }
     }
+    if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
 }
 
 @HarbourDirect
 public func tf_get_text(id: String) -> String {
-    return SwiftTextFieldLoader.states[id]?.text ?? ""
+    return (ViewRegistry.getState(for: id) as? TextFieldState)?.text ?? ""
 }
 
 @HarbourDirect
 public func tf_set_colors(id: String, fgHex: String, bgHex: String) {
     DispatchQueue.main.async {
-        if let state = SwiftTextFieldLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? TextFieldState {
             state.textColor = Color(hex: fgHex)
             state.backgroundColor = Color(hex: bgHex)
         }
@@ -141,7 +165,7 @@ public func tf_set_colors(id: String, fgHex: String, bgHex: String) {
 @HarbourDirect
 public func tf_set_font_size(id: String, size: Double) {
     DispatchQueue.main.async {
-        if let state = SwiftTextFieldLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? TextFieldState {
             state.fontSize = CGFloat(size)
         }
     }
@@ -159,6 +183,7 @@ public func swift_textfield_create(
     width: Double, 
     height: Double,
     text: String, 
+    caption: String,
     placeholder: String,
     parentPtr: Int64,
     id: String
@@ -182,6 +207,7 @@ public func swift_textfield_create(
 
         let fieldView = SwiftTextFieldLoader.makeTextField(
             text: text, 
+            caption: caption,
             placeholder: placeholder,
             id: finalId,
             callback: callback

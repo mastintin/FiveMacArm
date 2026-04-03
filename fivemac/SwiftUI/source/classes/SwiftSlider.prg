@@ -3,20 +3,24 @@
 
 CLASS TSwiftSlider FROM TSwiftControl
 
-    DATA lShowValue
-    DATA lGlass
+    ACCESS ShowValue      INLINE ::hState["ShowValue"]
+    ASSIGN ShowValue( l ) INLINE ::hState["ShowValue"] := l
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAction )
-    METHOD Set( nValue )
-    METHOD Get()
+    ACCESS Glass      INLINE ::hState["Glass"]
+    ASSIGN Glass( l ) INLINE ::hState["Glass"] := l
+
+    ACCESS Value      INLINE ::hState["Value"]
+    ASSIGN Value( n ) INLINE ::SetValue( n )
+
+    METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAction, nAutoResize, cId )
+    METHOD SetValue( nValue )
+    METHOD GetValue()
     METHOD OnChange( nValue )
-    METHOD SetAccentColor( nColor )
-    METHOD SetColor( nFg, nBg )
     METHOD End()
     
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAction, nAutoResize ) CLASS TSwiftSlider
+METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAction, nAutoResize, cId ) CLASS TSwiftSlider
 
     DEFAULT nWidth := 200, nHeight := 40, nValue := 50
     DEFAULT lShowValue := .T.
@@ -24,17 +28,15 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAct
     DEFAULT oWnd := GetWndDefault()
     DEFAULT nAutoResize := 0
 
-    ::Super:New( nTop, nLeft, nWidth, nHeight )
+    ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
 
     ::oWnd    = oWnd
     ::bAction = bAction
-    ::hState["Value"]  = nValue
-    ::lShowValue = lShowValue
-    ::lGlass = lGlass
+    ::hState["Value"]     = nValue
+    ::hState["ShowValue"] = lShowValue
+    ::hState["Glass"]     = lGlass
    
-    ::hWnd = SD_SWIFT_SLIDER_CREATE( nTop, nLeft, nWidth, nHeight, nValue, oWnd:hWnd, ::cId, ::lShowValue, ::lGlass )
-    ::cId := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cId, Self )
+    ::Register( SD_SWIFT_SLIDER_CREATE( nTop, nLeft, nWidth, nHeight, nValue, oWnd:hWnd, ::cId, lShowValue, lGlass ) )
     
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -46,7 +48,7 @@ return Self
 
 //----------------------------------------------------------------------------//
 
-METHOD Set( nValue ) CLASS TSwiftSlider
+METHOD SetValue( nValue ) CLASS TSwiftSlider
     if ::Value != nValue
        ::hState["Value"] := nValue
        SD_SLD_SET_VALUE( ::cId, nValue )
@@ -55,7 +57,7 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-METHOD Get() CLASS TSwiftSlider
+METHOD GetValue() CLASS TSwiftSlider
 return ::Value
 
 //----------------------------------------------------------------------------//
@@ -65,18 +67,6 @@ METHOD OnChange( nValue ) CLASS TSwiftSlider
     if ::bAction != nil
         Eval( ::bAction, nValue, Self )
     endif
-return nil
-
-//----------------------------------------------------------------------------//
-
-METHOD SetAccentColor( nColor ) CLASS TSwiftSlider
-    SD_SLD_SET_ACCENT_COLOR( ::cId, nColor )
-return nil
-
-//----------------------------------------------------------------------------//
-
-METHOD SetColor( nFg, nBg ) CLASS TSwiftSlider
-    SD_SLD_SET_COLORS( ::cId, clrToHex( nFg ), clrToHex( nBg ) )
 return nil
 
 //----------------------------------------------------------------------------//

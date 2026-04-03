@@ -4,21 +4,29 @@ import Observation
 import HarbourMacro
 
 @Observable
-public class SwiftListState: StackStateProtocol {
+public class SwiftListState: StackStateProtocol, RGBAColorableState {
     public var items: [StackItem] = []
     public var onAction: ((String) -> Void)?
     public var lastItem: StackItem? = nil
-    
     public var selectedId: String? = nil
     
-    // Background colors
-    public var red: Double = 1.0
-    public var green: Double = 1.0
-    public var blue: Double = 1.0
-    public var alpha: Double = 1.0
-    public var useInvertedColor: Bool = false
+    // RGBA System Integration
+    public var backgroundColor: Color = .clear
+    public var textColor: Color = .primary
 
     public init() {}
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.backgroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
 }
 
 struct SwiftListView: View {
@@ -40,15 +48,7 @@ struct SwiftListView: View {
         }
         .listStyle(PlainListStyle())
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(
-            Group {
-                if state.useInvertedColor {
-                    Color.primary.colorInvert().opacity(state.alpha)
-                } else {
-                    Color(red: state.red, green: state.green, blue: state.blue, opacity: state.alpha)
-                }
-            }
-        )
+        .background(state.backgroundColor)
         .modifier(ListBackgroundModifier())
     }
 }
@@ -62,17 +62,12 @@ struct ListBackgroundModifier: ViewModifier {
 @objc(SwiftListLoader)
 public class SwiftListLoader: NSObject {
     
-    public static var states: [String: SwiftListState] = [:]
-    public static var lastCreatedState: SwiftListState? = nil
-
-    @objc(makeListWithIndex:)
     public static func makeList(id: String) -> NSView {
          let finalId = id.isEmpty ? UUID().uuidString : id
          let state = SwiftListState()
          
-         states[finalId] = state
-         lastCreatedState = state
-         SwiftStackRegistry.sharedStates[finalId] = state
+         // Register in registries
+         ViewRegistry.register(state, for: finalId)
          
          let view = SwiftListView(state: state)
          ViewRegistry.register(view, for: finalId)
@@ -86,7 +81,7 @@ public class SwiftListLoader: NSObject {
 
     @objc(setActionCallbackWithRootId:callback:)
     public static func setActionCallback(rootId: String, callback: @escaping (String) -> Void) {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState {
+        if let state = ViewRegistry.get(rootId) as? SwiftListState {
             state.onAction = callback
         }
     }
@@ -94,7 +89,7 @@ public class SwiftListLoader: NSObject {
     // Legacy support
     @objc(selectIndex:index:)
     public static func selectIndex(_ id: String, index: Int) {
-         if let state = SwiftStackRegistry.sharedStates[id] as? SwiftListState {
+         if let state = ViewRegistry.get(id) as? SwiftListState {
              DispatchQueue.main.async {
                  if index > 0 && index <= state.items.count {
                      state.selectedId = state.items[index - 1].id
@@ -105,36 +100,21 @@ public class SwiftListLoader: NSObject {
          }
     }
 
-    @objc(setBackgroundColorRed:red:green:blue:alpha:)
     public static func setBackgroundColor(rootId: String, red: Double, green: Double, blue: Double, alpha: Double) {
          DispatchQueue.main.async {
-              if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState {
-                  state.red = red
-                  state.green = green
-                  state.blue = blue
-                  state.alpha = alpha
+              if let state = ViewRegistry.getState(for: rootId) as? SwiftListState {
+                  state.backgroundColor = Color(.sRGB, red: red, green: green, blue: blue, opacity: alpha)
               }
          }
     }
 
-    public static func findItemRecursive(id: String, in items: [StackItem]) -> StackItem? {
-        for item in items {
-            if item.id == id { return item }
-            if !item.children.isEmpty {
-                if let found = findItemRecursive(id: id, in: item.children) {
-                    return found
-                }
-            }
-        }
-        return nil
-    }
 
     public static func addListRow(rootId: String) -> String {
         var newItemId = ""
         let block = {
              let newItem = StackItem(type: .hstackContainer, content: "")
              newItemId = newItem.id
-             if let state = SwiftStackRegistry.sharedStates[rootId] {
+             if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.items.append(newItem)
                   state.lastItem = newItem
              }
@@ -146,8 +126,8 @@ public class SwiftListLoader: NSObject {
     @objc(setItemLayout:id:w:h:s:)
     public static func setItemLayout(rootId: String, id: String, w: String, h: String, s: String) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState,
-               let item = findItemRecursive(id: id, in: state.items) {
+            if let state = ViewRegistry.get(rootId) as? SwiftListState,
+               let item = findItem(in: state.items, id: id) {
                 if let valW = Double(w), valW > 0 { item.itemWidth = valW }
                 if let valH = Double(h), valH > 0 { item.itemHeight = valH }
                 if let valS = Double(s), valS >= 0 { item.spacing = valS }
@@ -158,34 +138,28 @@ public class SwiftListLoader: NSObject {
     @objc(setItemFont:id:size:isBold:)
     public static func setItemFont(rootId: String, id: String, size: String, isBold: Bool) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState,
-               let item = findItemRecursive(id: id, in: state.items) {
+            if let state = ViewRegistry.get(rootId) as? SwiftListState,
+               let item = findItem(in: state.items, id: id) {
                 if let valSize = Double(size), valSize > 0 { item.fontSize = valSize }
                 item.isBold = isBold
             }
         }
     }
 
-    @objc(setItemColor:id:hex:)
-    public static func setItemColor(rootId: String, id: String, hex: String) {
+    public static func setItemColor(rootId: String, id: String, color: Int, alpha: Int) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState,
-               let item = findItemRecursive(id: id, in: state.items) {
-                if let parsed = Color.parseHexRGBA(hex) {
-                    item.fgColor = parsed
-                }
+            if let state = ViewRegistry.get(rootId) as? SwiftListState,
+               let item = findItem(in: state.items, id: id) {
+                item.fgColor = (Double(color & 0xFF)/255, Double((color >> 8)&0xFF)/255, Double((color >> 16)&0xFF)/255, Double(alpha)/255)
             }
         }
     }
 
-    @objc(setItemBgColor:id:hex:)
-    public static func setItemBgColor(rootId: String, id: String, hex: String) {
+    public static func setItemBgColor(rootId: String, id: String, color: Int, alpha: Int) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState,
-               let item = findItemRecursive(id: id, in: state.items) {
-                if let parsed = Color.parseHexRGBA(hex) {
-                    item.bgColor = parsed
-                }
+            if let state = ViewRegistry.get(rootId) as? SwiftListState,
+               let item = findItem(in: state.items, id: id) {
+                item.bgColor = (Double(color & 0xFF)/255, Double((color >> 8)&0xFF)/255, Double((color >> 16)&0xFF)/255, Double(alpha)/255)
             }
         }
     }
@@ -193,8 +167,8 @@ public class SwiftListLoader: NSObject {
     @objc(setItemText:id:text:)
     public static func setItemText(rootId: String, id: String, text: String) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState,
-               let item = findItemRecursive(id: id, in: state.items) {
+            if let state = ViewRegistry.get(rootId) as? SwiftListState,
+               let item = findItem(in: state.items, id: id) {
                 item.content = text
             }
         }
@@ -203,8 +177,8 @@ public class SwiftListLoader: NSObject {
     @objc(setItemRadius:id:radius:)
     public static func setItemRadius(rootId: String, id: String, radius: Double) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState,
-               let item = findItemRecursive(id: id, in: state.items) {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol as? SwiftListState,
+               let item = findItem(in: state.items, id: id) {
                 item.cornerRadius = radius
             }
         }
@@ -217,8 +191,8 @@ public func lst_set_item_layout(rootId: String, id: String, w: String, h: String
 }
 
 @HarbourDirect
-public func lst_set_item_color_hex(rootId: String, id: String, hex: String) {
-    SwiftListLoader.setItemColor(rootId: rootId, id: id, hex: hex)
+public func lst_set_item_color(rootId: String, id: String, color: Int, alpha: Int) {
+    SwiftListLoader.setItemColor(rootId: rootId, id: id, color: color, alpha: alpha)
 }
 
 @HarbourDirect
@@ -227,8 +201,8 @@ public func lst_set_item_font(rootId: String, id: String, size: String, isBold: 
 }
 
 @HarbourDirect
-public func lst_set_item_bgcolor_hex(rootId: String, id: String, hex: String) {
-    SwiftListLoader.setItemBgColor(rootId: rootId, id: id, hex: hex)
+public func lst_set_item_bgcolor(rootId: String, id: String, color: Int, alpha: Int) {
+    SwiftListLoader.setItemBgColor(rootId: rootId, id: id, color: color, alpha: alpha)
 }
 
 @HarbourDirect
@@ -260,18 +234,11 @@ public func lst_set_bgcolor(rootId: String, r: String, g: String, b: String, a: 
     }
 }
 
-@HarbourDirect
-public func lst_set_bgcolor_hex(rootId: String, hex: String) {
-    let color = Color(hex: hex)
-    var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-    NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
-    SwiftListLoader.setBackgroundColor(rootId: rootId, red: Double(r), green: Double(g), blue: Double(b), alpha: Double(a))
-}
 
 @HarbourDirect
 public func lst_remove_all(rootId: String) {
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState {
+        if let state = ViewRegistry.get(rootId) as? SwiftListState {
             state.items.removeAll()
             state.lastItem = nil
         }
@@ -283,7 +250,7 @@ public func lst_remove_all(rootId: String) {
 public func lst_add_item(rootId: String, type: Int, content: String, secondary: String, parentId: String) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState {
+        if let state = ViewRegistry.get(rootId) as? SwiftListState {
             let itemType = StackItem.ItemType(rawValue: type) ?? .text
             let secContent = secondary.isEmpty ? nil : secondary
             let newItem = StackItem(type: itemType, content: content, secondaryContent: secContent)
@@ -292,7 +259,7 @@ public func lst_add_item(rootId: String, type: Int, content: String, secondary: 
             state.lastItem = newItem
 
             if !parentId.isEmpty {
-                if let parent = SwiftListLoader.findItemRecursive(id: parentId, in: state.items) {
+                if let parent = findItem(in: state.items, id: parentId) {
                     parent.children.append(newItem)
                 } else {
                     state.items.append(newItem)
@@ -324,8 +291,9 @@ public func lst_add_batch(rootId: String, json: String, parentId: String?) -> St
     
     var newIds: [String] = []
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftListState {
-            let parentItem = (parentId != nil && !parentId!.isEmpty) ? SwiftListLoader.findItemRecursive(id: parentId!, in: state.items) : nil
+        if let state = ViewRegistry.get(rootId) as? SwiftListState {
+            let pid = (parentId != nil && !parentId!.isEmpty) ? parentId! : nil
+            let parentItem = (pid != nil) ? findItem(in: state.items, id: pid!) : nil
             
             for itemIn in batchItems {
                 let newItemType = StackItem.ItemType(rawValue: itemIn.type) ?? .text
@@ -354,7 +322,7 @@ public func lst_add_batch(rootId: String, json: String, parentId: String?) -> St
 
 @HarbourDirect
 public func lst_get_last_item_id(rootId: String) -> String {
-    return SwiftStackRegistry.sharedStates[rootId]?.lastItem?.id ?? ""
+    return (ViewRegistry.get(rootId) as? StackStateProtocol)?.lastItem?.id ?? ""
 }
 
 @HarbourDirect
@@ -415,7 +383,6 @@ public func swift_list_create(
 
 @HarbourDirect
 public func lst_destroy(id: String, viewPtr: Int64) {
-    SwiftStackRegistry.sharedStates.removeValue(forKey: id)
     ViewRegistry.clean(id: id)
     
     if viewPtr != 0 {

@@ -3,10 +3,9 @@
 
 static aSwiftImages := {}
 
-CLASS TSwiftImage FROM TControl
+CLASS TSwiftImage FROM TSwiftControl
 
     DATA bAction
-    DATA cId
     DATA cName
 
     ACCESS Value       INLINE ::cName
@@ -22,7 +21,6 @@ CLASS TSwiftImage FROM TControl
     
     METHOD SetSystemName( cName )
     METHOD SetName( cName )
-    METHOD SetColor( nColor )
     METHOD SetResizable( lResizable )
     METHOD SetFile( cFile )
     METHOD SetAspectRatio( nMode )
@@ -37,11 +35,10 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable, nAut
     DEFAULT nWidth := 40, nHeight := 40, oWnd := GetWndDefault(), cName := "star.fill"
     DEFAULT lResizable := .T., nAutoResize := 0
 
+    ::Super:New( nTop, nLeft, nWidth, nHeight, "" )
     ::oWnd    = oWnd
     ::bAction = bAction
     ::cName   = cName
-    
-    ::cId     := ""
     
     AAdd( aSwiftImages, Self )
     
@@ -80,7 +77,7 @@ METHOD SetName( cName ) CLASS TSwiftImage
 return nil
 
 METHOD SetColor( nColor ) CLASS TSwiftImage
-    SD_IMG_SET_COLOR( ::cId, clrToHex( nColor ) )
+    ::SetTextColor( nColor )
 return nil
 
 METHOD SetResizable( lResizable ) CLASS TSwiftImage

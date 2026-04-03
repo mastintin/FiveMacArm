@@ -1,61 +1,42 @@
 #include "FiveMac.ch"
+#include "SwiftControls.ch"
 
-static aSwiftTextFields := {}
+CLASS TSwiftTextField FROM TSwiftControl
 
-CLASS TSwiftTextField FROM TControl
-
-    DATA bOnChange
-    DATA cId
-    DATA cText, cPlaceholder
-
-    ACCESS Value      INLINE ::cText
+    ACCESS Value      INLINE ::hState["Value"]
     ASSIGN Value( c ) INLINE ::SetText( c )
-    
-    ACCESS Text       INLINE ::cText
-    ASSIGN Text( c )  INLINE ::SetText( c )
-    
-    ASSIGN OnChange( b ) INLINE ::bOnChange := b
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, oBatch )
+    ACCESS Placeholder       INLINE ::hState["Placeholder"]
+    ASSIGN Placeholder( c )  INLINE ::hState["Placeholder"] := c
+
+    ACCESS Caption      INLINE ::hState["Caption"]
+    ASSIGN Caption( c ) INLINE ::hState["Caption"] := c
+    
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bAction, nAutoResize, cId, cCaption )
     METHOD SetText( cText )
-    METHOD GetText()
-    METHOD GetConfig()
-    METHOD SetColor( nFg, nBg )
+    METHOD GetText()     INLINE ::hState["Value"]
     METHOD SetFontSize( nSize )
-    METHOD End()
     
     METHOD OnChange( cNewText )
+    METHOD End()
 
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, nAutoResize, oBatch ) CLASS TSwiftTextField
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bAction, nAutoResize, cId, cCaption ) CLASS TSwiftTextField
 
-    DEFAULT nWidth := 200, nHeight := 24, oWnd := GetWndDefault()
-    DEFAULT cText := "", cPlaceholder := "Enter text...", nAutoResize := 0
+    DEFAULT nWidth := 200, nHeight := 48, oWnd := GetWndDefault() // Mas alto por el VStack interno
+    DEFAULT cText := "", cPlaceholder := "Enter text...", nAutoResize := 0, cCaption := ""
+
+    ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
 
     ::oWnd       = oWnd
-    ::bOnChange  = bOnChange
-    ::cText      = cText
-    ::cPlaceholder = cPlaceholder
+    ::bAction    = bAction
     
-    ::cId := ""
-   
-    AAdd( aSwiftTextFields, Self )
-    
-    if oBatch == nil .and. oWnd != nil 
-        oBatch := oWnd:oSwiftBatch
-    endif
+    ::hState["Value"]       := cText
+    ::hState["Placeholder"] := cPlaceholder
+    ::hState["Caption"]     := cCaption
 
-    if oBatch != nil
-        oBatch:Add( Self )
-        // Note: Batch mode needs care if we want Swift to generate IDs, 
-        // as we only get them when the batch is created.
-        // For now, we can pre-generate if empty or keep it as is.
-    else
-        ::hWnd = SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd:hWnd, ::cId )
-        ::cId := SW_GET_ID( ::hWnd )
-        SwiftRegisterItem( ::cId, Self )
-    endif
+    ::Register( SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, cText, cCaption, cPlaceholder, oWnd:hWnd, ::cId ) )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -65,76 +46,54 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bOnChange, 
 
 return Self
 
-METHOD GetConfig() CLASS TSwiftTextField
-    local hConfig := {=>}
-    
-    hConfig["type"]        := "textfield"
-    hConfig["top"]         := ::nTop
-    hConfig["left"]        := ::nLeft
-    hConfig["width"]       := ::nWidth
-    hConfig["height"]      := ::nHeight
-    hConfig["text"]        := ::cText
-    hConfig["placeholder"] := ::cPlaceholder
-    hConfig["id"]          := ::cId
-    
-return hConfig
-
 METHOD SetText( cText ) CLASS TSwiftTextField
-    ::cText = cText
-    SD_TF_SET_TEXT( ::cId, cText )
-return nil
-
-METHOD GetText() CLASS TSwiftTextField
-    ::cText = SD_TF_GET_TEXT( ::cId )
-return ::cText
-
-METHOD SetColor( nFg, nBg ) CLASS TSwiftTextField
-    SD_TF_SET_COLORS( ::cId, clrToHex( nFg ), clrToHex( nBg ) )
+   ::hState["Value"] := cText
+   SD_TF_SET_TEXT( ::cId, cText )
 return nil
 
 METHOD SetFontSize( nSize ) CLASS TSwiftTextField
-    SD_TF_SET_FONT_SIZE( ::cId, nSize )
+   SD_TF_SET_FONT_SIZE( ::cId, nSize )
+return nil
+
+METHOD OnChange( cNewText ) CLASS TSwiftTextField
+   ::hState["Value"] := cNewText
+   if ::bAction != nil
+      Eval( ::bAction, cNewText, Self )
+   endif
 return nil
 
 METHOD End() CLASS TSwiftTextField
-    local nPos 
-    if !Empty( ::hWnd )
-        SD_TF_DESTROY( ::cId, ::hWnd )
-        SwiftUnregisterItem( ::cId )
-        nPos := AScan( aSwiftTextFields, { |o| o != nil .and. o:cId == ::cId } )
-        if nPos > 0
-            aSwiftTextFields[ nPos ] := nil
-        endif
-        ::cId := ""
-    endif
+   if !Empty( ::hWnd )
+      SD_TF_DESTROY( ::cId, ::hWnd )
+   endif
 return ::Super:End()
 
-METHOD OnChange( cNewText ) CLASS TSwiftTextField
-    ::cText := cNewText
-    if ::bOnChange != nil
-        Eval( ::bOnChange, cNewText, Self )
-    endif
-return nil
+//----------------------------------------------------------------------------//
 
 CLASS TSwiftTextEditor FROM TSwiftTextField
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd )
+
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId )
+    METHOD End()
+
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd ) CLASS TSwiftTextEditor
-    DEFAULT nWidth := 300, nHeight := 100, oWnd := GetWndDefault()
-    DEFAULT cText := ""
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId ) CLASS TSwiftTextEditor
 
-    ::oWnd      = oWnd
-    ::cText     = cText
+    DEFAULT nWidth := 300, nHeight := 150, oWnd := GetWndDefault(), cText := ""
+
+    ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
+
+    ::oWnd       = oWnd
+    ::Value      = cText
     
-    ::cId       := ""
-    
-    AAdd( aSwiftTextFields, Self )
-    
-    ::hWnd = SD_SWIFT_TEXTEDITOR_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cId )
-    ::cId := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cId, Self )
+    ::Register( SD_SWIFT_TEXTEDITOR_CREATE( ::nTop, ::nLeft, ::nWidth, ::nHeight, cText, oWnd:hWnd, ::cId ) )
 
     oWnd:AddControl( Self )
 
 return Self
+
+METHOD End() CLASS TSwiftTextEditor
+   if !Empty( ::hWnd )
+      SD_TF_DESTROY( ::cId, ::hWnd )
+   endif
+return ::Super:End()

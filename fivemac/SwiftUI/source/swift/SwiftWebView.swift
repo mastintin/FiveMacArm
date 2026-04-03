@@ -165,13 +165,12 @@ struct WebViewRepresentable: NSViewRepresentable {
 
 @objc(SwiftWebViewLoader)
 public class SwiftWebViewLoader: NSObject {
-    static var states: [String: SwiftWebViewState] = [:]
 
     @objc(makeWebViewWithId:)
     public static func makeWebView(id: String?) -> NSView {
         let finalId = (id == nil || id!.isEmpty) ? UUID().uuidString : id!
         let state = SwiftWebViewState(id: finalId)
-        states[finalId] = state
+        ViewRegistry.register(state, for: finalId)
         
         let view = SwiftWebView(state: state)
         ViewRegistry.register(view, for: finalId)
@@ -184,7 +183,7 @@ public class SwiftWebViewLoader: NSObject {
         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
         
         // Register the hostingView as a generic NSView object for operations like capturing PDF
-        ViewRegistry.registerObject(hostingView, for: finalId)
+        ViewRegistry.register(hostingView, for: finalId)
         
         return hostingView
     }
@@ -229,7 +228,7 @@ public func sw_webview_create(top: Double, left: Double, w: Double, h: Double, p
     let view = SwiftWebViewLoader.makeWebView(id: id)
     let finalId = view.identifier?.rawValue ?? id 
     
-    if let state = SwiftWebViewLoader.states[finalId] {
+    if let state = (ViewRegistry.get(finalId) as? SwiftWebViewState) {
         state.phbWebview = hb_itemNew(hbObject)
     }
     
@@ -245,14 +244,14 @@ public func sw_webview_create(top: Double, left: Double, w: Double, h: Double, p
 
 @HarbourDirect
 public func sw_webview_load(id: String, url: String) {
-    if let state = SwiftWebViewLoader.states[id] {
+    if let state = (ViewRegistry.get(id) as? SwiftWebViewState) {
         state.url = URL(string: url)
     }
 }
 
 @HarbourDirect
 public func sw_webview_load_html(id: String, html: String, baseUrl: String?) {
-    if let state = SwiftWebViewLoader.states[id] {
+    if let state = (ViewRegistry.get(id) as? SwiftWebViewState) {
         state.html = html
         if let base = baseUrl {
             state.baseURL = base.hasPrefix("http") ? URL(string: base) : URL(fileURLWithPath: base)
@@ -262,7 +261,7 @@ public func sw_webview_load_html(id: String, html: String, baseUrl: String?) {
 
 @HarbourDirect
 public func sw_webview_load_file(id: String, path: String) {
-    if let state = SwiftWebViewLoader.states[id] {
+    if let state = (ViewRegistry.get(id) as? SwiftWebViewState) {
         let fileURL = URL(fileURLWithPath: path)
         state.url = fileURL
     }
@@ -270,55 +269,55 @@ public func sw_webview_load_file(id: String, path: String) {
 
 @HarbourDirect
 public func sw_webview_go_back(id: String) {
-    SwiftWebViewLoader.states[id]?.pendingAction = .goBack
+    (ViewRegistry.get(id) as? SwiftWebViewState)?.pendingAction = .goBack
 }
 
 @HarbourDirect
 public func sw_webview_go_forward(id: String) {
-    SwiftWebViewLoader.states[id]?.pendingAction = .goForward
+    (ViewRegistry.get(id) as? SwiftWebViewState)?.pendingAction = .goForward
 }
 
 @HarbourDirect
 public func sw_webview_reload(id: String) {
-    SwiftWebViewLoader.states[id]?.pendingAction = .reload
+    (ViewRegistry.get(id) as? SwiftWebViewState)?.pendingAction = .reload
 }
 
 @HarbourDirect
 public func sw_webview_stop(id: String) {
-    SwiftWebViewLoader.states[id]?.pendingAction = .stopLoading
+    (ViewRegistry.get(id) as? SwiftWebViewState)?.pendingAction = .stopLoading
 }
 
 @HarbourDirect
 public func sw_webview_is_loading(id: String) -> Bool {
-    return SwiftWebViewLoader.states[id]?.isLoading ?? false
+    return (ViewRegistry.get(id) as? SwiftWebViewState)?.isLoading ?? false
 }
 
 @HarbourDirect
 public func sw_webview_progress(id: String) -> Int {
-    let progress = SwiftWebViewLoader.states[id]?.estimatedProgress ?? 0
+    let progress = (ViewRegistry.get(id) as? SwiftWebViewState)?.estimatedProgress ?? 0
     return Int(progress * 100)
 }
 
 @HarbourDirect
 public func sw_webview_eval(id: String, script: String) {
-    SwiftWebViewLoader.states[id]?.pendingAction = .evaluateJavaScript(script, nil)
+    (ViewRegistry.get(id) as? SwiftWebViewState)?.pendingAction = .evaluateJavaScript(script, nil)
 }
 
 @HarbourDirect
 public func sw_webview_eval_arg(id: String, method: String, arg: String) {
      let safeArg = arg.replacingOccurrences(of: "'", with: "\\'")
      let js = "\(method)('\(safeArg)')"
-     SwiftWebViewLoader.states[id]?.pendingAction = .evaluateJavaScript(js, nil)
+     (ViewRegistry.get(id) as? SwiftWebViewState)?.pendingAction = .evaluateJavaScript(js, nil)
 }
 
 @HarbourDirect
 public func sw_webview_set_zoom(id: String, zoom: Double) {
-    SwiftWebViewLoader.states[id]?.pendingAction = .setMagnification(zoom)
+    (ViewRegistry.get(id) as? SwiftWebViewState)?.pendingAction = .setMagnification(zoom)
 }
 
 @HarbourDirect
 public func sw_webview_save_pdf(id: String, path: String) {
-    if let state = SwiftWebViewLoader.states[id] {
+    if let state = (ViewRegistry.get(id) as? SwiftWebViewState) {
         state.pendingAction = .savePDF(URL(fileURLWithPath: path))
     }
 }

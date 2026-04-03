@@ -39,6 +39,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, aColumns, oWnd, nAutoResize ) CLASS TSw
             if Len( aColumns[n] ) >= 2; cJson += ',"min":' + AllTrim( Str( aColumns[n][2] ) ); endif
             if Len( aColumns[n] ) >= 3; cJson += ',"max":' + AllTrim( Str( aColumns[n][3] ) ); endif
         endcase
+        
         cJson += "}"
     next
     cJson += "]"

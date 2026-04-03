@@ -12,24 +12,17 @@
 #define TYPE_BUTTON          9
 #define TYPE_DIVIDER         10
 
-static aSwiftLists := {}
-
-// TSwiftList inherits from TSwiftVStack to get AddItem/AddBatch
 CLASS TSwiftList FROM TSwiftVStack
-    DATA cId
-    DATA nListIndex 
-    DATA bAction
+
     DATA cSelectedId
 
     ASSIGN Value( n )      INLINE ::SelectIndex( n )
     ACCESS Value()         INLINE ::cSelectedId
     
-    ASSIGN OnAction( b )   INLINE ::bAction := b
-
-    METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
+    METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize, cId )
     METHOD OnAction( cItemId )
     METHOD SelectIndex( nIndex )
-    METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha )
+    METHOD SetBackgroundColor( nClr, nAlpha )
     METHOD SetVibrancy( lOnOff )
     METHOD AddItem( nType, cContent, cSecondaryContent, cParentId )
     METHOD AddBatch( cJson, cParentId )
@@ -39,19 +32,16 @@ CLASS TSwiftList FROM TSwiftVStack
 
 ENDCLASS
 
-METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftList
+//----------------------------------------------------------------------------//
+
+METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize, cId ) CLASS TSwiftList
 
     DEFAULT nWidth := 200, nHeight := 200, oWnd := GetWndDefault(), nAutoResize := 0
 
+    ::Super:New( nRow, nCol, nWidth, nHeight, cId )
     ::oWnd := oWnd
-    ::cId  := ""
     
-    ::hWnd = SD_SWIFT_LIST_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId )
-    ::cId := SW_GET_ID( ::hWnd )
-   
-    SwiftRegisterItem( ::cId, Self )
-    AAdd( aSwiftLists, Self )
-    ::nListIndex := Len( aSwiftLists )
+    ::Register( SD_SWIFT_LIST_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId ) )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -65,80 +55,81 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftList
 
 return Self
 
+//----------------------------------------------------------------------------//
+
 METHOD OnAction( cItemId ) CLASS TSwiftList
     local oItem := SwiftGetItem( cItemId )
     
     ::cSelectedId := cItemId
 
-    // Si el elemento interno (ej. un botón en la fila) tiene su propia acción, la ejecutamos
     if oItem != nil .and. __ObjHasMsg( oItem, "BACTION" ) .and. oItem:bAction != nil
         Eval( oItem:bAction, cItemId, oItem )
         return nil 
     endif
 
-    // Si no, ejecutamos la acción de la lista (clic en la fila)
     if ::bAction != nil
         Eval( ::bAction, cItemId, Self )
     endif
 return nil
 
+//----------------------------------------------------------------------------//
+
 METHOD SelectIndex( nIndex ) CLASS TSwiftList
     SD_LST_SET_SELECTION( ::cId, hb_ntos( nIndex ) )
 return nil
 
-METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftList
-    local nClr 
-    DEFAULT nAlpha := 1.0
-    
-    if pcount() <= 2
-        nClr := nRed
-    else
-        nClr := nRGB( nRed, nGreen, nBlue )
-    endif
+//----------------------------------------------------------------------------//
 
-    SD_LST_SET_BGCOLOR_HEX( ::cId, clrToHex( nClr, nAlpha ) )
-return nil
+METHOD SetBackgroundColor( nClr, nAlpha ) CLASS TSwiftList
+return ::SetAccentColor( nClr, nAlpha )
+
+//----------------------------------------------------------------------------//
 
 METHOD SetVibrancy( lOnOff ) CLASS TSwiftList
     DEFAULT lOnOff := .T.
     if lOnOff
-        ::SetBackgroundColor( 0, 0, 0, 0.0 ) 
+        ::SetBackgroundColor( 0, 0.0 ) 
     endif 
 return nil
 
+//----------------------------------------------------------------------------//
+
 METHOD AddItem( nType, cContent, cSecondaryContent, cParentId ) CLASS TSwiftList
-return SD_LST_ADD_ITEM( ::cId, nType, cContent, cSecondaryContent, cParentId )
+return SD_LST_ADD_ITEM( ::cId, nType, cContent, If( cSecondaryContent != nil, cSecondaryContent, "" ), If( cParentId != nil, cParentId, "" ) )
+
+//----------------------------------------------------------------------------//
 
 METHOD AddBatch( cJson, cParentId ) CLASS TSwiftList
-return SD_LST_ADD_BATCH( ::cId, cJson, cParentId )
+return SD_LST_ADD_BATCH( ::cId, cJson, If( cParentId != nil, cParentId, "" ) )
+
+//----------------------------------------------------------------------------//
 
 METHOD AddListRow() CLASS TSwiftList
-    local cId
-    cId := SD_LST_ADD_ROW( ::cId )
+    local cId := SD_LST_ADD_ROW( ::cId )
 return TSwiftRow():New( Self, cId )
+
+//----------------------------------------------------------------------------//
 
 METHOD GetLastItemId() CLASS TSwiftList
 return SD_LST_GET_LAST_ITEM_ID( ::cId )
 
+//----------------------------------------------------------------------------//
+
+//----------------------------------------------------------------------------//
+
 METHOD End() CLASS TSwiftList
     if !Empty( ::hWnd )
         SD_LST_DESTROY( ::cId, ::hWnd )
-        SwiftUnregisterItem( ::cId )
-        if ::nListIndex > 0 .and. ::nListIndex <= Len( aSwiftLists )
-            aSwiftLists[ ::nListIndex ] := nil
-        endif
-        ::cId := ""
     endif
 return ::Super:End()
 
-// ---------------------------------------------------------
-// Clase TSwiftRow
-// ---------------------------------------------------------
+//----------------------------------------------------------------------------//
+// TSwiftRow
+//----------------------------------------------------------------------------//
 
-CREATE CLASS TSwiftRow
-    VAR oList    
-    VAR cId      
-    VAR oLastIcon 
+CLASS TSwiftRow FROM TSwiftControl
+    DATA oList
+    DATA oLastIcon
 
     METHOD New( oList, cId )
     METHOD AddIcon( cIcon )
@@ -150,11 +141,8 @@ CREATE CLASS TSwiftRow
     METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD SetFont( nSize, lBold )
     METHOD SetSpacing( nSpacing )
-    METHOD AddSpacing( nSpacing ) INLINE ::SetSpacing( nSpacing )
-    METHOD End() 
-
+    METHOD End()
 ENDCLASS
-
 
 METHOD New( oList, cId ) CLASS TSwiftRow
     ::oList := oList
@@ -165,12 +153,6 @@ METHOD AddIcon( cIcon ) CLASS TSwiftRow
     local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_SYSTEMIMAGE, cIcon, "", ::cId )
     ::oLastIcon := TSwiftListItem():New( cId, ::oList )
 return ::oLastIcon
-
-METHOD SetIconSize( nW, nH ) CLASS TSwiftRow
-    if ::oLastIcon != nil 
-        ::oLastIcon:SetSize( nW, nH )
-    endif 
-return nil
 
 METHOD AddText( cText ) CLASS TSwiftRow
     local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_TEXT, cText, "", ::cId )
@@ -191,14 +173,14 @@ METHOD SetSize( nW, nH ) CLASS TSwiftRow
     SD_LST_SET_ITEM_LAYOUT( ::oList:cId, ::cId, hb_ntos( nW ), hb_ntos( nH ), "-1" )
 return Self
 
+METHOD SetIconSize( nW, nH ) CLASS TSwiftRow
+    if ::oLastIcon != nil ; ::oLastIcon:SetSize( nW, nH ) ; endif
+return nil
+
 METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftRow
-    DEFAULT nAlphaFore := 1.0, nAlphaBack := 1.0
-    if nClrFore != nil
-        SD_LST_SET_ITEM_COLOR_HEX( ::oList:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
-    endif
-    if nClrBack != nil
-        SD_LST_SET_ITEM_BGCOLOR_HEX( ::oList:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
-    endif
+    DEFAULT nAlphaFore := 255, nAlphaBack := 255
+    if nClrFore != nil ; SD_LST_SET_ITEM_COLOR( ::oList:cId, ::cId, nClrFore, nAlphaFore ) ; endif
+    if nClrBack != nil ; SD_LST_SET_ITEM_BGCOLOR( ::oList:cId, ::cId, nClrBack, nAlphaBack ) ; endif
 return Self
 
 METHOD SetFont( nSize, lBold ) CLASS TSwiftRow
@@ -214,16 +196,14 @@ return Self
 METHOD End() CLASS TSwiftRow
     ::oLastIcon := nil
     ::oList := nil
-return nil
+return ::Super:End()
 
-// ---------------------------------------------------------
-// Clase TSwiftListItem
-// ---------------------------------------------------------
+//----------------------------------------------------------------------------//
+// TSwiftListItem
+//----------------------------------------------------------------------------//
 
-CLASS TSwiftListItem
+CLASS TSwiftListItem FROM TSwiftControl
     DATA oList
-    DATA cId
-    DATA bAction
 
     METHOD New( cId, oList )
     METHOD SetSize( nW, nH )
@@ -244,13 +224,9 @@ METHOD SetSize( nW, nH ) CLASS TSwiftListItem
 return Self
 
 METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftListItem
-    DEFAULT nAlphaFore := 1.0, nAlphaBack := 1.0
-    if nClrFore != nil
-        SD_LST_SET_ITEM_COLOR_HEX( ::oList:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
-    endif
-    if nClrBack != nil
-        SD_LST_SET_ITEM_BGCOLOR_HEX( ::oList:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
-    endif
+    DEFAULT nAlphaFore := 255, nAlphaBack := 255
+    if nClrFore != nil ; SD_LST_SET_ITEM_COLOR( ::oList:cId, ::cId, nClrFore, nAlphaFore ) ; endif
+    if nClrBack != nil ; SD_LST_SET_ITEM_BGCOLOR( ::oList:cId, ::cId, nClrBack, nAlphaBack ) ; endif
 return Self
 
 METHOD SetFont( nSize, lBold ) CLASS TSwiftListItem
@@ -259,7 +235,6 @@ METHOD SetFont( nSize, lBold ) CLASS TSwiftListItem
 return Self
 
 METHOD End() CLASS TSwiftListItem
-    SwiftUnregisterItem( ::cId )
     ::bAction := nil
     ::oList := nil
-return nil
+return ::Super:End()

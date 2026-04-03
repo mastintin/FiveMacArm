@@ -17,10 +17,10 @@ public class SwiftPDF: NSObject {
         
         DispatchQueue.main.async {
             // 1. Try generic NSView retrieval (Previous logical path)
-            let nsObject = ViewRegistry.getObject(for: id) as? NSView
+            let nsObject = ViewRegistry.get(id) as? NSView
             
             // 2. Try SwiftUI View retrieval (For ImageRenderer)
-            let swiftUIView = ViewRegistry.getView(for: id)
+            let swiftUIView = ViewRegistry.get(id)
             
             print("[SwiftPDF] Attempting PDF capture for ID: \(id)")
             

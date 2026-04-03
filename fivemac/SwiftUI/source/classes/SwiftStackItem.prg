@@ -32,11 +32,10 @@ CLASS TSwiftStackItem
     METHOD AddText( cText, bAction )
     METHOD AddSystemImage( cName )
     METHOD AddSpacer()
-    METHOD AddDivider()
     METHOD AddButton( cText, bAction )
+    METHOD AddToggle( cCaption, lOn, bAction, lSwitch, cId )
+    METHOD AddSlider( nVal, nMin, nMax, bAction, lGlass, cId )
     METHOD SetLastItemId( cId )
-    
-    // Styling
     
     // Advanced Containers
     METHOD AddGrid( aColumns ) 
@@ -45,12 +44,15 @@ CLASS TSwiftStackItem
     // Batch
     METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD AddBatch( aItems )
+
     METHOD SetSize( nWidth, nHeight )
     METHOD SetSpacing( nSpacing )
     METHOD SetText( cText )
+    METHOD GetText()
     METHOD SetFont( nSize, lBold )
     METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha )
+    METHOD SetRadius( nRadius )
     METHOD OnAction()
     METHOD End()
 
@@ -128,10 +130,8 @@ METHOD AddText( cText, bAction ) CLASS TSwiftStackItem
     cId := SD_ZSTK_ADD_TEXT_TO( oRoot:cId, cText, ::cId )
     endif
     
-    oItem := TSwiftStackItem():New( cId, Self )
-    if bAction != nil .and. !Empty( cId )
-    oItem:bAction := bAction
-    endif 
+    oItem := TSwiftLabelStack():New( cId, Self, cText )
+    if bAction != nil ; oItem:bAction := bAction ; endif 
 return oItem
 
 METHOD AddSystemImage( cName ) CLASS TSwiftStackItem
@@ -153,10 +153,37 @@ METHOD AddButton( cText, bAction ) CLASS TSwiftStackItem
     cId := SD_ZSTK_ADD_BUTTON_TO( oRoot:cId, cText, ::cId )
     endif
     
-    oItem := TSwiftStackItem():New( cId, Self )
-    if bAction != nil .and. !Empty( cId )
-    oItem:bAction := bAction
+    oItem := TSwiftButtonStack():New( cId, Self, cText, bAction )
+return oItem
+
+METHOD AddToggle( cCaption, lOn, bAction, lSwitch, cId ) CLASS TSwiftStackItem
+    local oRoot := ::Root()
+    local oItem
+    DEFAULT lOn := .F., lSwitch := .F.
+    
+    if oRoot:IsKindOf( "TSWIFTVSTACK" )
+       cId := SD_VSTK_ADD_TOGGLE( oRoot:cId, cId, cCaption, lOn, lSwitch, ::cId )
+    else
+       cId := SD_ZSTK_ADD_TOGGLE( oRoot:cId, cId, cCaption, lOn, lSwitch, ::cId )
     endif
+    
+    oItem := TSwiftToggleStack():New( cId, Self, cCaption, lOn, lSwitch )
+    if bAction != nil ; oItem:bAction := bAction ; endif
+return oItem
+
+METHOD AddSlider( nVal, nMin, nMax, bAction, lGlass, cId ) CLASS TSwiftStackItem
+    local oRoot := ::Root()
+    local oItem
+    DEFAULT nVal := 0, nMin := 0, nMax := 100, lGlass := .F.
+    
+    if oRoot:IsKindOf( "TSWIFTVSTACK" )
+       cId := SD_VSTK_ADD_SLIDER( oRoot:cId, cId, nVal, nMin, nMax, lGlass, ::cId )
+    else
+       cId := SD_ZSTK_ADD_SLIDER( oRoot:cId, cId, nVal, nMin, nMax, lGlass, ::cId )
+    endif
+    
+    oItem := TSwiftSliderStack():New( cId, Self, nVal, nMin, nMax, lGlass )
+    if bAction != nil ; oItem:bAction := bAction ; endif
 return oItem
 
 METHOD AddSpacer() CLASS TSwiftStackItem
@@ -344,31 +371,29 @@ return nil
 METHOD SetColor( nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     
-    DEFAULT nAlphaFore := 1.0
-    DEFAULT nAlphaBack := 1.0
+    DEFAULT nAlphaFore := 255
+    DEFAULT nAlphaBack := 255
 
     if oRoot:IsKindOf( "TSWIFTLIST" )
         if nClrFore != nil
-            SD_LST_SET_ITEM_COLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
+            SD_LST_SET_ITEM_COLOR( oRoot:cId, ::cId, nClrFore, nAlphaFore )
         endif
         if nClrBack != nil
-            SD_LST_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
+            SD_LST_SET_ITEM_BGCOLOR( oRoot:cId, ::cId, nClrBack, nAlphaBack )
         endif
     elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
         if nClrFore != nil
-        SD_ZSTK_SET_ITEM_COLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
+            SD_ZSTK_SET_ITEM_COLOR( oRoot:cId, ::cId, nClrFore, nAlphaFore )
         endif
-            
         if nClrBack != nil
-        SD_ZSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
+            SD_ZSTK_SET_ITEM_BGCOLOR( oRoot:cId, ::cId, nClrBack, nAlphaBack )
         endif
     else
         if nClrFore != nil
-        SD_VSTK_SET_ITEM_COLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrFore, nAlphaFore ) )
+            SD_VSTK_SET_ITEM_COLOR( oRoot:cId, ::cId, nClrFore, nAlphaFore )
         endif
-            
         if nClrBack != nil
-        SD_VSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClrBack, nAlphaBack ) )
+            SD_VSTK_SET_ITEM_BGCOLOR( oRoot:cId, ::cId, nClrBack, nAlphaBack )
         endif
     endif
 
@@ -377,7 +402,7 @@ return nil
 METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftStackItem
     local oRoot := ::Root()
     local nClr 
-    DEFAULT nAlpha := 1.0
+    DEFAULT nAlpha := 255
     
     if pcount() <= 2
     nClr   := nRed
@@ -386,11 +411,11 @@ METHOD SetBgColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftStackItem
     endif
 
     if oRoot:IsKindOf( "TSWIFTLIST" )
-        SD_LST_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClr, nAlpha ) )
+        SD_LST_SET_ITEM_BGCOLOR( oRoot:cId, ::cId, nClr, nAlpha )
     elseif oRoot:IsKindOf( "TSWIFTZSTACK" )
-        SD_ZSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClr, nAlpha ) )
+        SD_ZSTK_SET_ITEM_BGCOLOR( oRoot:cId, ::cId, nClr, nAlpha )
     else
-        SD_VSTK_SET_ITEM_BGCOLOR_HEX( oRoot:cId, ::cId, clrToHex( nClr, nAlpha ) )
+        SD_VSTK_SET_ITEM_BGCOLOR( oRoot:cId, ::cId, nClr, nAlpha )
     endif
 return nil
 

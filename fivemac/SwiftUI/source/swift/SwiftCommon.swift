@@ -1,36 +1,46 @@
 import SwiftUI
 import AppKit
+import HarbourMacro
 
 // MARK: - Registry for Dynamic Views (Fundamental)
 
 public class ViewRegistry {
-    private static var views: [String: Any] = [:]
-    private static var objects: [String: NSObject] = [:]
+    private static var states: [String: Any] = [:]
+    private static var objects: [String: Any] = [:]
 
-    public static func register(_ view: Any, for id: String) {
-        if let v = view as? any View {
-            views[id] = AnyView(v)
+    public static func register(_ item: Any, for id: String) {
+        if item is RGBAColorableState || item is StackStateProtocol {
+            states[id] = item
         } else {
-            views[id] = view
+            objects[id] = item
         }
     }
 
-    public static func getView(for id: String) -> Any? {
-        return views[id]
+    public static func get(_ id: String) -> Any? {
+        // Return whatever is available, prioritizing states for property updates
+        return states[id] ?? objects[id]
     }
-    
-    public static func registerObject(_ obj: NSObject, for id: String) {
-        objects[id] = obj
+
+    // Specialized helpers for type safety
+    public static func getState(for id: String) -> Any? {
+        return states[id]
     }
-    
-    public static func getObject(for id: String) -> NSObject? {
+
+    public static func getObject(for id: String) -> Any? {
         return objects[id]
     }
 
     public static func clean(id: String) {
-        views.removeValue(forKey: id)
+        states.removeValue(forKey: id)
         objects.removeValue(forKey: id)
     }
+}
+
+// MARK: - Protocol for Atomic Color Management
+
+public protocol RGBAColorableState: AnyObject {
+    func setAccentColorRGBA(color: Int, alpha: Int)
+    func setTextColorRGBA(color: Int, alpha: Int)
 }
 
 // MARK: - SwiftUI View Extensions (modify & if)
@@ -82,9 +92,115 @@ extension Color {
         return (Double(r)/255, Double(g)/255, Double(b)/255, Double(a)/255)
     }
 
-    public init(hbColor: Int) {
-        self.init(red: Double(hbColor & 0xFF)/255, green: Double((hbColor >> 8)&0xFF)/255, blue: Double((hbColor >> 16)&0xFF)/255)
+    public init(hbColor: Int, alpha: Int = 255) {
+        let a = Double(alpha) / 255.0
+        self.init(.sRGB, 
+                  red: Double(hbColor & 0xFF)/255, 
+                  green: Double((hbColor >> 8)&0xFF)/255, 
+                  blue: Double((hbColor >> 16)&0xFF)/255, 
+                  opacity: a)
     }
+}
+
+
+// MARK: - Stack Models & Utilities
+
+public struct GridItemSpec: Codable {
+    public let type: String // "fixed", "flexible", "adaptive"
+    public let size: Double?
+    public let min: Double?
+    public let max: Double?
+    public let spacing: Double?
+    public let caption: String?
+}
+
+public struct ColorRGBA: Codable {
+    public let r: Double
+    public let g: Double
+    public let b: Double
+    public let a: Double
+}
+
+@Observable
+public class StackItem: Identifiable {
+    public var id: String
+    public let type: ItemType
+    public var content: String
+    public let secondaryContent: String?
+    public var children: [StackItem] = []
+
+    // Grid Props
+    public var gridColumns: [GridItemSpec]? = nil
+
+    // Background & Foreground Color
+    public var bgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
+    public var fgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
+    public var itemHeight: Double? = nil
+    public var itemWidth: Double? = nil
+    public var spacing: Double? = nil
+    public var fontSize: Double? = nil
+    public var isBold: Bool = false
+    public var cornerRadius: Double? = nil
+
+    public init(type: ItemType, content: String, secondaryContent: String? = nil, id: String? = nil) {
+        self.id = id ?? UUID().uuidString
+        self.type = type
+        self.content = content
+        self.secondaryContent = secondaryContent
+    }
+
+    public enum ItemType: Int, Codable {
+        case text = 0
+        case systemImage = 1
+        case hstack = 2
+        case imageFile = 3
+        case vstack = 4
+        case hstackContainer = 5
+        case spacer = 6
+        case lazyVGrid = 7
+        case list = 8
+        case button = 9
+        case divider = 10
+        case toggle = 11
+        case slider = 12
+        case picker = 13
+        case datepicker = 14
+        case textfield = 15
+    }
+}
+
+public protocol StackStateProtocol: AnyObject {
+    var items: [StackItem] { get set }
+    var onAction: ((String) -> Void)? { get set }
+    var lastItem: StackItem? { get set }
+}
+
+public func mapSpecsToGridItems(_ specs: [GridItemSpec]) -> [GridItem] {
+    return specs.map { spec in
+        let spacing = spec.spacing.map { CGFloat($0) }
+        switch spec.type {
+        case "fixed":
+            return GridItem(.fixed(CGFloat(spec.size ?? 100)), spacing: spacing)
+        case "flexible":
+            return GridItem(.flexible(minimum: CGFloat(spec.min ?? 10), maximum: CGFloat(spec.max ?? .infinity)), spacing: spacing)
+        case "adaptive":
+            return GridItem(.adaptive(minimum: CGFloat(spec.min ?? 50), maximum: CGFloat(spec.max ?? .infinity)), spacing: spacing)
+        default:
+            return GridItem(.flexible())
+        }
+    }
+}
+
+public func findItem(in items: [StackItem], id: String) -> StackItem? {
+    for item in items {
+        if item.id == id {
+            return item
+        }
+        if let found = findItem(in: item.children, id: id) {
+            return found
+        }
+    }
+    return nil
 }
 
 // MARK: - Core Bridge Functions (Equivalent to Legacy .m)
@@ -147,6 +263,10 @@ func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Double, left
     contentView.addSubview(swiftView)
     swiftView.translatesAutoresizingMaskIntoConstraints = true
     swiftView.autoresizingMask = [.maxXMargin, .minYMargin]
+    
+    if let id = swiftView.identifier?.rawValue, !id.isEmpty {
+       ViewRegistry.register(swiftView, for: id)
+    }
 }
 
 @_cdecl("HB_FUN_CREATESWIFTVIEW")
@@ -209,4 +329,290 @@ public func swift_standalone_batch_create(_ p: UnsafeMutableRawPointer?) {
         hb_arraySet(pArray, HB_SIZE(index + 1), pHandle); hb_itemRelease(pHandle)
     }
     hb_itemReturnRelease(pArray)
+}
+
+// MARK: - Universal Atomic Bridges for TSwiftControl (RGBA)
+
+@HarbourDirect
+public func sw_set_colors_rgba(id: String, color: Int, alpha: Int) {
+    if let state = ViewRegistry.getState(for: id) as? RGBAColorableState {
+        state.setAccentColorRGBA(color: color, alpha: alpha)
+    }
+}
+
+@HarbourDirect
+public func sw_set_text_colors_rgba(id: String, color: Int, alpha: Int) {
+    if let state = ViewRegistry.getState(for: id) as? RGBAColorableState {
+        state.setTextColorRGBA(color: color, alpha: alpha)
+    }
+}
+
+@_cdecl("HB_FUN_SW_SET_POS")
+public func sw_set_pos_hb(_ p: UnsafeMutableRawPointer?) {
+    let pcount = hb_pcount()
+    guard pcount >= 1 else { return }
+    let id = hb_parc(1).map({ String(cString: $0) }) ?? ""
+    
+    let block = {
+        if let view = ViewRegistry.getObject(for: id) as? NSView,
+           let superview = view.superview {
+            var rect = view.frame
+            if pcount >= 2 && hb_param(2, HB_IT_DOUBLE) != nil {
+               let top = hb_parnd(2)
+               rect.origin.y = superview.isFlipped ? CGFloat(top) : (superview.frame.size.height - CGFloat(top) - rect.size.height)
+            }
+            if pcount >= 3 && hb_param(3, HB_IT_DOUBLE) != nil {
+               rect.origin.x = CGFloat(hb_parnd(3))
+            }
+            view.frame = rect
+        } else if ViewRegistry.get(id) is StackStateProtocol {
+            // Support for stack items
+        }
+    }
+    if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+}
+
+@_cdecl("HB_FUN_SW_SET_SIZE")
+public func sw_set_size_hb(_ p: UnsafeMutableRawPointer?) {
+    let pcount = hb_pcount()
+    guard pcount >= 1 else { return }
+    let id = hb_parc(1).map({ String(cString: $0) }) ?? ""
+    
+    let block = {
+        if let view = ViewRegistry.getObject(for: id) as? NSView {
+            var rect = view.frame
+            if pcount >= 2 && hb_param(2, HB_IT_DOUBLE) != nil {
+               rect.size.width = CGFloat(hb_parnd(2))
+            }
+            if pcount >= 3 && hb_param(3, HB_IT_DOUBLE) != nil {
+               rect.size.height = CGFloat(hb_parnd(3))
+            }
+            // If the parent is not flipped, the Y coordinate depends on the height
+            if let superview = view.superview, !superview.isFlipped {
+                rect.origin.y = rect.origin.y + view.frame.size.height - rect.size.height
+            }
+            view.frame = rect
+        }
+    }
+    if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+}
+
+@_cdecl("HB_FUN_SW_UPDATE_STATE")
+public func sw_update_state_hb(_ p: UnsafeMutableRawPointer?) {
+    _ = hb_parc(1).map({ String(cString: $0) }) ?? ""
+    // Future update logic
+    /* 
+    if let _ = hb_parc(2), ...
+    */
+}
+
+@HarbourDirect
+public func sw_get_item_text(rootId: String, itemId: String) -> String {
+    if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
+       if let item = findItem(in: state.items, id: itemId) {
+           return item.content
+       }
+    }
+    return ""
+}
+
+// MARK: - Recursive Item View (Stack Base)
+
+public struct RecursiveItemView: View {
+    public var item: StackItem
+    public var onAction: ((String) -> Void)?
+    public var index: Int
+    public var remoteIndex: Int? = nil 
+    public var selectedIndex: Int? = nil 
+    public var isInsideList: Bool = false 
+
+    public init(item: StackItem, onAction: ((String) -> Void)? = nil, index: Int, remoteIndex: Int? = nil, selectedIndex: Int? = nil, isInsideList: Bool = false) {
+        self.item = item
+        self.onAction = onAction
+        self.index = index
+        self.remoteIndex = remoteIndex
+        self.selectedIndex = selectedIndex
+        self.isInsideList = isInsideList
+    }
+
+    private func getBackground() -> some View {
+        Group {
+            if let bg = item.bgColor {
+                Color(red: bg.r, green: bg.g, blue: bg.b, opacity: bg.a)
+                    .cornerRadius(CGFloat(item.cornerRadius ?? 0))
+            } else {
+                Color.clear
+            }
+        }
+    }
+
+    private func getForegroundColor() -> Color? {
+        if let fg = item.fgColor {
+            return Color(red: fg.r, green: fg.g, blue: fg.b, opacity: fg.a)
+        }
+        return nil
+    }
+
+    public var body: some View {
+        HStack(spacing: 0) {  
+            switch item.type {
+            case .text:
+                Text(item.content)
+                    .font(item.fontSize.map { .system(size: CGFloat($0)) } ?? .body)
+                    .fontWeight(item.isBold ? .bold : .regular)
+                    .foregroundColor(getForegroundColor())
+                    .background(getBackground())
+                    .cornerRadius(CGFloat(item.cornerRadius ?? 0))
+            
+            case .systemImage:
+                Image(systemName: item.content)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: item.itemWidth.map { CGFloat($0) }, height: item.itemHeight.map { CGFloat($0) } ?? 24)
+                    .foregroundColor(getForegroundColor())
+                    .background(getBackground())
+                    .cornerRadius(CGFloat(item.cornerRadius ?? 0))
+            
+            case .imageFile:
+                if let nsImage = NSImage(contentsOfFile: item.content) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: item.itemWidth.map { CGFloat($0) }, height: item.itemHeight.map { CGFloat($0) } ?? 24)
+                        .background(getBackground())
+                        .cornerRadius(CGFloat(item.cornerRadius ?? 0))
+                } else {
+                    Text("Img error")
+                }
+            
+            case .hstack:
+                HStack(alignment: .center) {
+                    Image(systemName: item.secondaryContent ?? "")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
+                    Text(item.content)
+                        .font(item.fontSize.map { .system(size: CGFloat($0)) } ?? .body)
+                        .fontWeight(item.isBold ? .bold : .regular)
+                    Spacer()
+                }
+                .background(getBackground())
+                .cornerRadius(CGFloat(item.cornerRadius ?? 0))
+            
+            case .vstack:
+                VStack(alignment: .leading) {
+                    ForEach(0..<item.children.count, id: \.self) { childIndex in
+                        let child = item.children[childIndex]
+                        RecursiveItemView(item: child, onAction: onAction, index: childIndex, remoteIndex: remoteIndex ?? (index+1), selectedIndex: selectedIndex, isInsideList: isInsideList)
+                    }
+                }
+                .background(getBackground())
+            
+            case .hstackContainer:
+                HStack(alignment: .center, spacing: item.spacing.map { CGFloat($0) } ?? 8) {
+                    ForEach(0..<item.children.count, id: \.self) { childIndex in
+                        let child = item.children[childIndex]
+                        RecursiveItemView(item: child, onAction: onAction, index: 0, remoteIndex: remoteIndex, selectedIndex: selectedIndex, isInsideList: isInsideList)
+                    }
+                }
+                .frame(width: item.itemWidth.map { CGFloat($0) }, height: item.itemHeight.map { CGFloat($0) })
+                .background(getBackground())
+            
+            case .spacer:
+                Spacer()
+            
+            case .divider:
+                Rectangle().fill(Color.secondary.opacity(0.3)).frame(height: 1)
+            
+            case .lazyVGrid:
+                let specs = item.gridColumns ?? []
+                let columns = mapSpecsToGridItems(specs)
+                LazyVGrid(columns: columns, spacing: 20) {
+                    Section {
+                        ForEach(0..<item.children.count, id: \.self) { childIndex in
+                             let child = item.children[childIndex]
+                             RecursiveItemView(item: child, onAction: onAction, index: childIndex, remoteIndex: remoteIndex ?? (index+1), selectedIndex: selectedIndex, isInsideList: isInsideList)
+                        }
+                    } header: {
+                        if specs.contains(where: { $0.caption != nil }) {
+                            ForEach(0..<specs.count, id: \.self) { i in
+                                Text(specs[i].caption ?? "")
+                                    .fontWeight(.bold)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                    }
+                }
+                .background(getBackground())
+            
+            case .list:
+                List {
+                    ForEach(0..<item.children.count, id: \.self) { childIndex in
+                        let child = item.children[childIndex]
+                        RecursiveItemView(item: child, onAction: onAction, index: childIndex, remoteIndex: remoteIndex ?? (index+1), selectedIndex: selectedIndex, isInsideList: true)
+                    }
+                }
+            
+            case .button:
+                Button(action: {
+                    onAction?(item.id)
+                }) {
+                    Text(item.content)
+                        .font(item.fontSize.map { .system(size: CGFloat($0)) } ?? .body)
+                        .fontWeight(item.isBold ? .bold : .semibold)
+                        .padding(.horizontal, 15)
+                        .padding(.vertical, 8)
+                        .foregroundColor(item.fgColor.map { Color(red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) } ?? (item.bgColor != nil ? .white : .primary))
+                        .background(
+                            Group {
+                                 if let bg = item.bgColor {
+                                     Color(red: bg.r, green: bg.g, blue: bg.b, opacity: bg.a)
+                                 } else {
+                                     Color.accentColor
+                                 }
+                            }
+                        )
+                        .cornerRadius(CGFloat(item.cornerRadius ?? 8))
+                }
+                .buttonStyle(PlainButtonStyle())
+            
+            case .toggle:
+                if let toggleState = ViewRegistry.get(item.id) as? ToggleState {
+                    SwiftToggleView(state: toggleState)
+                }
+            
+            case .slider:
+                if let sliderState = ViewRegistry.get(item.id) as? SliderState {
+                    SwiftSliderView(state: sliderState)
+                }
+            
+            case .picker:
+                if let pickerState = ViewRegistry.get(item.id) as? PickerState {
+                    SwiftPickerView(state: pickerState)
+                }
+            
+            case .datepicker:
+                if let dateState = ViewRegistry.get(item.id) as? DatePickerState {
+                    SwiftDatePickerView(state: dateState)
+                }
+            
+            case .textfield:
+                if let tfState = ViewRegistry.get(item.id) as? TextFieldState {
+                    SwiftTextFieldView(state: tfState)
+                }
+            default:
+                EmptyView()
+            }
+        }
+        .foregroundColor(item.fgColor.map { Color(red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) } ?? (item.type == .button ? .white : .primary))
+        .contentShape(Rectangle())
+        .if(!isInsideList) { view in
+            view.simultaneousGesture(TapGesture().onEnded {
+                let type = item.type
+                if type == .text || type == .systemImage || type == .imageFile || type == .spacer || type == .hstack || type == .hstackContainer {
+                    onAction?(item.id)
+                }
+            })
+        }
+    }
 }

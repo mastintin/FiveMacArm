@@ -4,7 +4,7 @@ import Observation
 import HarbourMacro
 
 @Observable
-public class PickerState {
+public class PickerState: RGBAColorableState {
     var items: [String]
     var selection: String
     var isGlass: Bool
@@ -21,6 +21,18 @@ public class PickerState {
         self.showLabel = showLabel
         self.title = title
         self.placeholder = placeholder
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.accentColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
     }
 }
 
@@ -142,13 +154,13 @@ struct SwiftPickerView: View {
 
 @objc(SwiftPickerLoader)
 public class SwiftPickerLoader: NSObject {
-    
-    public static var states: [String: PickerState] = [:]
 
     public static func makePicker(title: String, items: [String], id: String, callback: ((String) -> Void)?) -> NSView {
          let finalId = id.isEmpty ? UUID().uuidString : id
          let state = PickerState(items: items, selection: items.first ?? "", title: title)
-         states[finalId] = state
+         
+         // Register state in central registry
+         ViewRegistry.register(state, for: finalId)
          
          let view = SwiftPickerView(state: state, callback: callback)
          ViewRegistry.register(view, for: finalId)
@@ -161,7 +173,6 @@ public class SwiftPickerLoader: NSObject {
     }
 
     public static func destroyPicker(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id)
         
         if viewPtr != 0 {
@@ -177,7 +188,7 @@ public class SwiftPickerLoader: NSObject {
 @HarbourDirect
 public func pkr_set_selection(id: String, selection: String) {
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.selection = selection
         }
     }
@@ -186,7 +197,7 @@ public func pkr_set_selection(id: String, selection: String) {
 @HarbourDirect
 public func pkr_set_glass(id: String, isGlass: Bool) {
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.isGlass = isGlass
         }
     }
@@ -195,7 +206,7 @@ public func pkr_set_glass(id: String, isGlass: Bool) {
 @HarbourDirect
 public func pkr_set_show_label(id: String, show: Bool) {
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.showLabel = show
         }
     }
@@ -204,7 +215,7 @@ public func pkr_set_show_label(id: String, show: Bool) {
 @HarbourDirect
 public func pkr_set_title(id: String, title: String) {
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.title = title
         }
     }
@@ -213,7 +224,7 @@ public func pkr_set_title(id: String, title: String) {
 @HarbourDirect
 public func pkr_set_colors(id: String, accentHex: String, textHex: String) {
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.accentColor = Color(hex: accentHex)
             state.textColor = Color(hex: textHex)
         }
@@ -222,13 +233,13 @@ public func pkr_set_colors(id: String, accentHex: String, textHex: String) {
 
 @HarbourDirect
 public func pkr_get_selection(id: String) -> String {
-    return SwiftPickerLoader.states[id]?.selection ?? ""
+    return (ViewRegistry.getState(for: id) as? PickerState)?.selection ?? ""
 }
 
 @HarbourDirect
 public func pkr_set_placeholder(id: String, placeholder: String) {
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.placeholder = placeholder
         }
     }
@@ -237,7 +248,7 @@ public func pkr_set_placeholder(id: String, placeholder: String) {
 @HarbourDirect
 public func pkr_set_array(id: String, items: [String]) {
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.items = items
             if !items.contains(state.selection) {
                 state.selection = items.first ?? ""
@@ -257,7 +268,7 @@ public func pkr_set_items(id: String, json: String) {
     }
 
     DispatchQueue.main.async {
-        if let state = SwiftPickerLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? PickerState {
             state.items = items
             if !items.contains(state.selection) {
                 state.selection = items.first ?? ""

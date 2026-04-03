@@ -1,118 +1,61 @@
 #include "FiveMac.ch"
 #include "SwiftControls.ch"
 
-static aSwiftLabels := {}
+CLASS TSwiftLabel FROM TSwiftControl
 
-CLASS TSwiftLabel FROM TControl
+    ACCESS Caption      INLINE ::hState["Caption"]
+    ASSIGN Caption( c ) INLINE ::SetText( c )
 
-    DATA cID
-    DATA cText
-    DATA bAction
-
-    ASSIGN OnClick( b ) INLINE ::bAction := b
-    ASSIGN OnAction( b ) INLINE ::bAction := b
-
-    ACCESS Text       INLINE ::cText
-    ASSIGN Text( c )  INLINE ::SetText( c )
-    
-    ACCESS Value      INLINE ::cText
-    ASSIGN Value( c ) INLINE ::SetText( c )
-    
-    ACCESS Prompt     INLINE ::cText
-    ASSIGN Prompt( c ) INLINE ::SetText( c )
-
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd )
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId )
     METHOD SetText( cText )
     METHOD SetFont( nSize )
-    METHOD SetColor( nColor )
-    METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
+    METHOD SetFont_Style( cStyle )
     METHOD SetAlignment( nAlign )
     METHOD OnAction()
-    METHOD End()   
+    METHOD End()
+      
 ENDCLASS
 
-METHOD OnAction() CLASS TSwiftLabel
-    if ::bAction != nil
-        Eval( ::bAction, Self )
-    endif
-return nil
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId ) CLASS TSwiftLabel
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, nAutoResize ) CLASS TSwiftLabel
+   DEFAULT nWidth := 100, nHeight := 40, oWnd := GetWndDefault(), cText := "Label"
 
-    DEFAULT nWidth := 100, nHeight := 20, oWnd := GetWndDefault(), cText := "Swift Label", nAutoResize := 0
+   ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
 
-    ::oWnd    = oWnd
-    ::cText   = cText
-    ::cID      := ""
+   ::oWnd    := oWnd
+   ::hState["Caption"] := cText
 
-    AAdd( aSwiftLabels, Self )
-    
+   ::Register( SD_SWIFT_LABEL_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cId ) )
 
-    // Pass ::cID (Param 7)
-    ::hWnd = SD_SWIFT_LABEL_CREATE( nTop, nLeft, nWidth, nHeight, cText, oWnd:hWnd, ::cID )
-    ::cID := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cID, Self )
-
-    if nAutoResize != 0
-        SWIFTAUTORESIZE( ::hWnd, nAutoResize )
-    endif
-
-    oWnd:AddControl( Self )
+   oWnd:AddControl( Self )
 
 return Self
 
 METHOD SetText( cText ) CLASS TSwiftLabel
-    ::cText := cText
-    SD_LBL_SET_TEXT( ::cID, cText )
+   ::hState["Caption"] := cText
+   SD_LBL_SET_TEXT( ::cId, cText )
 return nil
 
-METHOD SetFont( uVal ) CLASS TSwiftLabel
-    if ValType( uVal ) == "N"
-        SD_LBL_SET_FONT( ::cId, uVal )
-    else
-        SD_LBL_SET_FONT_STYLE( ::cId, uVal )
-    endif
+METHOD SetFont( nSize ) CLASS TSwiftLabel
+   SD_LBL_SET_FONT( ::cId, nSize )
 return nil
 
-
-METHOD SetColor( nText, nAlpha ) CLASS TSwiftLabel
-    LOCAL nAcc, nTxt
-   
-    DEFAULT nAlpha := 255 // Opaco por defecto
-    DEFAULT nText   := 0   // Negro por defecto si no se pasa nada
- 
-    if !Empty( ::cId )
-        // CASO 1: Colores numéricos (nRGB)
-        if ValType( nText ) == "N"
-            // Si queremos transparencia, usamos el macro de RGBA enviando un Int32
-            // Construimos un ARGB o RGBA. Usemos el bridge tgl_set_colors_int
-            SD_LBL_SET_COLORS_RGBA( ::cId, nText , nAlpha)  
-         
-            // CASO 2: Colores Hexadecimales (pueden traer el alfa en el string)
-        elseif ValType( nText ) == "C"
-            SD_LBL_SET_COLORS_HEX( ::cId, nText , nAlpha )
-        endif
-    endif
-return self
-
-//----------------------------------------
+METHOD SetFont_Style( cStyle ) CLASS TSwiftLabel
+   SD_LBL_SET_FONT_STYLE( ::cId, cStyle )
+return nil
 
 METHOD SetAlignment( nAlign ) CLASS TSwiftLabel
-    if !Empty( ::cId )
-        // 0: Left, 1: Center, 2: Right
-        SD_LBL_SET_ALIGN( ::cId, nAlign )
-    endif
-return self
+   SD_LBL_SET_ALIGN( ::cId, nAlign )
+return nil
+
+METHOD OnAction() CLASS TSwiftLabel
+   if ! Empty( ::bAction )
+      Eval( ::bAction, Self )
+   endif
+return nil
 
 METHOD End() CLASS TSwiftLabel
-    local nPos 
     if !Empty( ::hWnd )
         SD_LBL_DESTROY( ::cId, ::hWnd )
-        SwiftUnregisterItem( ::cID )
-        nPos := AScan( aSwiftLabels, { |o| o != nil .and. o:cID == ::cID } )
-        if nPos > 0
-            aSwiftLabels[ nPos ] := nil
-        endif
-        ::cID := ""
     endif
 return ::Super:End()

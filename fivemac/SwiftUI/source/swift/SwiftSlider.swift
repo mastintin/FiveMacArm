@@ -6,7 +6,7 @@ import HarbourMacro
 // State for the Slider
 
 @Observable
-public class SliderState {
+public class SliderState: RGBAColorableState {
     var value: Double
     var showValue: Bool
     var callback: ((Double) -> Void)?
@@ -17,11 +17,23 @@ public class SliderState {
     var fontSize: CGFloat = 12
     var isGlass: Bool = false
     
-    init(value: Double, showValue: Bool, isGlass: Bool, callback: ((Double) -> Void)?) {
+    init(value: Double = 0.0, showValue: Bool = true, isGlass: Bool = false, callback: ((Double) -> Void)? = nil) {
         self.value = value
         self.showValue = showValue
         self.isGlass = isGlass
         self.callback = callback
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.accentColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.foregroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
     }
 }
 
@@ -41,28 +53,14 @@ struct SwiftSliderView: View {
        
         VStack {
             if state.isGlass {
-                ZStack {
-                     // 1. Glass Rail (Background Track)
-                     Capsule()
-                         .fill(.ultraThinMaterial)
-                         .frame(height: 4)
-                         .shadow(color: .white.opacity(0.5), radius: 0, x: 0, y: 1)
-                    
-                     // 2. The Slider itself
-                     Slider(value: sliderBinding, in: 0...100)
-                        .modify { view in
-                            if #available(macOS 26.0, *) {
-                                view.glassEffect(.regular.interactive())
-                            } else {
-                                view
-                            }
-                        }
-                        .tint(.blue.opacity(0.8))
-                }
-                .contentShape(Capsule())
+                Slider(value: sliderBinding, in: 0...100)
+                    .glassEffect(.regular.interactive())
+                    .tint(state.accentColor)
             } else {
                  Slider(value: sliderBinding, in: 0...100)
+                    .tint(state.accentColor)
             }
+            
             if state.showValue {
                 Text("Value: \(Int(state.value))")
                     .font(.system(size: state.fontSize))
@@ -70,8 +68,6 @@ struct SwiftSliderView: View {
                     .foregroundColor(state.foregroundColor)
             }
         }
-        .accentColor(state.accentColor)
-       
         .padding()
         .background(
              Group {
@@ -89,17 +85,17 @@ struct SwiftSliderView: View {
 @objc(SwiftSliderLoader)
 public class SwiftSliderLoader: NSObject {
     
-    public static var states: [String: SliderState] = [:]
-    
     public static func makeSlider(value: Double, id: String, showValue: Bool, isGlass: Bool, callback: @escaping ((Double) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
         let state = SliderState(value: value, showValue: showValue, isGlass: isGlass, callback: callback)
-        states[finalId] = state
         
-        let view = SwiftSliderView(state: state)
-        ViewRegistry.register(view, for: finalId)
+        // Use central registry
+        ViewRegistry.register(state, for: finalId)
         
-        let hostingView = NSHostingView(rootView: view)
+        let sliderView = SwiftSliderView(state: state)
+        ViewRegistry.register(sliderView, for: finalId)
+        
+        let hostingView = NSHostingView(rootView: sliderView)
         hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         hostingView.wantsLayer = true
@@ -109,10 +105,16 @@ public class SwiftSliderLoader: NSObject {
         return hostingView
     }
 
+    public static func setShowValue(id: String, showValue: Bool) {
+        DispatchQueue.main.async {
+            if let state = ViewRegistry.getState(for: id) as? SliderState {
+                state.showValue = showValue
+            }
+        }
+    }
+
     public static func destroySlider(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id) 
-        
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
                 _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
@@ -126,7 +128,7 @@ public class SwiftSliderLoader: NSObject {
 @HarbourDirect
 public func sld_set_value(id: String, value: Double) {
     DispatchQueue.main.async {
-        if let state = SwiftSliderLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? SliderState {
             state.value = value
         }
     }
@@ -134,27 +136,14 @@ public func sld_set_value(id: String, value: Double) {
 
 @HarbourDirect
 public func sld_get_value(id: String) -> Double {
-    return SwiftSliderLoader.states[id]?.value ?? 0.0
+    return (ViewRegistry.getState(for: id) as? SliderState)?.value ?? 0.0
 }
 
 @HarbourDirect
-public func sld_set_accent_color(id: String, hex: String) {
-    DispatchQueue.main.async {
-        if let state = SwiftSliderLoader.states[id] {
-            state.accentColor = Color(hex: hex)
-        }
-    }
+public func sld_set_show_value(id: String, showValue: Bool) {
+    SwiftSliderLoader.setShowValue(id: id, showValue: showValue)
 }
 
-@HarbourDirect
-public func sld_set_colors(id: String, fgHex: String, bgHex: String) {
-    DispatchQueue.main.async {
-        if let state = SwiftSliderLoader.states[id] {
-            state.foregroundColor = Color(hex: fgHex)
-            state.backgroundColor = Color(hex: bgHex)
-        }
-    }
-}
 
 @HarbourDirect
 public func sld_destroy(id: String, viewPtr: Int64) {

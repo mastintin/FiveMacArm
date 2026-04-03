@@ -53,7 +53,7 @@ public class SwiftZStackLoader: NSObject {
          let state = SwiftZStackState()
          
          // Register in central registry
-         SwiftStackRegistry.sharedStates[finalId] = state
+         ViewRegistry.register(state, for: finalId)
          
          let view = SwiftZStackView(state: state)
          ViewRegistry.register(view, for: finalId)
@@ -67,7 +67,7 @@ public class SwiftZStackLoader: NSObject {
 
     @objc(setActionCallbackWithRootId:callback:)
     public static func setActionCallback(rootId: String, callback: @escaping (String) -> Void) {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             state.onAction = callback
         }
     }
@@ -75,7 +75,7 @@ public class SwiftZStackLoader: NSObject {
     public static func addItem(_ rootId: String, text: String) -> String {
         var newItemId = ""
         let block = {
-              if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+              if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                   let newItem = StackItem(type: .text, content: text, secondaryContent: nil)
                   newItemId = newItem.id
                   state.items.append(newItem)
@@ -89,7 +89,7 @@ public class SwiftZStackLoader: NSObject {
     public static func addSystemImage(_ rootId: String, systemName: String) -> String {
         var newItemId = ""
         let block = {
-              if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+              if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                  let newItem = StackItem(type: .systemImage, content: systemName, secondaryContent: nil)
                  newItemId = newItem.id
                  state.items.append(newItem)
@@ -103,7 +103,7 @@ public class SwiftZStackLoader: NSObject {
     public static func addFileImage(_ rootId: String, filePath: String) -> String {
         var newItemId = ""
         let block = {
-              if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+              if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                  let newItem = StackItem(type: .imageFile, content: filePath, secondaryContent: nil)
                  newItemId = newItem.id
                  state.items.append(newItem)
@@ -116,7 +116,7 @@ public class SwiftZStackLoader: NSObject {
     
     public static func removeAllItems(_ rootId: String) {
         let block = {
-              if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+              if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                   state.items.removeAll()
                   state.lastItem = nil
               }
@@ -142,7 +142,7 @@ public class SwiftZStackLoader: NSObject {
         var createdIds: [String] = []
         
         let block = {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+            if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                 let parentItem = (parentId != nil && parentId != "nil" && !parentId!.isEmpty) ? 
                                  findItem(in: state.items, id: parentId!) : nil
 
@@ -188,7 +188,7 @@ public class SwiftZStackLoader: NSObject {
     // Legacy support
     public static func setAlignment(_ rootId: String, alignment: Int) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+            if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                 state.alignment = alignment
             }
         }
@@ -196,7 +196,7 @@ public class SwiftZStackLoader: NSObject {
     
     public static func setBackgroundColor(_ rootId: String, red: Double, green: Double, blue: Double, alpha: Double) {
          DispatchQueue.main.async {
-             if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+             if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                  state.backgroundColor = Color(red: red, green: green, blue: blue, opacity: alpha)
              }
          }
@@ -204,7 +204,7 @@ public class SwiftZStackLoader: NSObject {
     
     public static func setForegroundColor(_ rootId: String, red: Double, green: Double, blue: Double, alpha: Double) {
          DispatchQueue.main.async {
-             if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+             if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
                  state.foregroundColor = Color(red: red, green: green, blue: blue, opacity: alpha)
              }
          }
@@ -212,7 +212,7 @@ public class SwiftZStackLoader: NSObject {
 
     public static func setItemColor(rootId: String, id: String, hex: String) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState,
+            if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
                let item = findItem(in: state.items, id: id) {
                 let color = Color(hex: hex)
                 var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
@@ -224,7 +224,7 @@ public class SwiftZStackLoader: NSObject {
 
     public static func setItemBgColor(rootId: String, id: String, hex: String) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState,
+            if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
                let item = findItem(in: state.items, id: id) {
                 let color = Color(hex: hex)
                 var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
@@ -235,7 +235,7 @@ public class SwiftZStackLoader: NSObject {
     }
     public static func setItemRadius(rootId: String, id: String, radius: CGFloat) {
         DispatchQueue.main.async {
-            if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState,
+            if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
                let item = findItem(in: state.items, id: id) {
                 item.cornerRadius = Double(radius)
             }
@@ -244,7 +244,7 @@ public class SwiftZStackLoader: NSObject {
 
     public static func setItemLayout(rootId: String, id: String, w: Double, h: Double, s: Double) {
          DispatchQueue.main.async {
-             if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState,
+             if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
                 let item = findItem(in: state.items, id: id) {
                  if w > 0 { item.itemWidth = w }
                  if h > 0 { item.itemHeight = h }
@@ -255,7 +255,7 @@ public class SwiftZStackLoader: NSObject {
 
     public static func setItemFont(rootId: String, id: String, size: CGFloat, isBold: Bool) {
          DispatchQueue.main.async {
-             if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState,
+             if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
                 let item = findItem(in: state.items, id: id) {
                  if size > 0 { item.fontSize = Double(size) }
                  item.isBold = isBold
@@ -265,7 +265,7 @@ public class SwiftZStackLoader: NSObject {
 
     public static func setItemText(rootId: String, id: String, text: String) {
          DispatchQueue.main.async {
-             if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState,
+             if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
                 let item = findItem(in: state.items, id: id) {
                  item.content = text
              }
@@ -334,7 +334,7 @@ public func swift_zstack_create(
 
 @HarbourDirect
 public func zstk_set_alignment(rootId: String, alignment: Int) {
-    if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+    if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
         DispatchQueue.main.async {
             state.alignment = alignment
         }
@@ -343,7 +343,7 @@ public func zstk_set_alignment(rootId: String, alignment: Int) {
 
 @HarbourDirect
 public func zstk_set_bgcolor_hex(rootId: String, hex: String) {
-    if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+    if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
         DispatchQueue.main.async {
             state.backgroundColor = Color(hex: hex)
         }
@@ -352,7 +352,7 @@ public func zstk_set_bgcolor_hex(rootId: String, hex: String) {
 
 @HarbourDirect
 public func zstk_set_fgcolor_hex(rootId: String, hex: String) {
-    if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+    if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
         DispatchQueue.main.async {
             state.foregroundColor = Color(hex: hex)
         }
@@ -367,6 +367,32 @@ public func zstk_set_item_color_hex(rootId: String, id: String, hex: String) {
 @HarbourDirect
 public func zstk_set_item_bgcolor_hex(rootId: String, id: String, hex: String) {
     SwiftZStackLoader.setItemBgColor(rootId: rootId, id: id, hex: hex)
+}
+
+@HarbourDirect
+public func zstk_set_item_color(rootId: String, id: String, color: Int, alpha: Int) {
+    DispatchQueue.main.async {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
+           let item = findItem(in: state.items, id: id) {
+            let colorObj = Color(hbColor: color, alpha: alpha)
+            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+            NSColor(colorObj).getRed(&r, green: &g, blue: &b, alpha: &a)
+            item.fgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+        }
+    }
+}
+
+@HarbourDirect
+public func zstk_set_item_bgcolor(rootId: String, id: String, color: Int, alpha: Int) {
+    DispatchQueue.main.async {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
+           let item = findItem(in: state.items, id: id) {
+            let colorObj = Color(hbColor: color, alpha: alpha)
+            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+            NSColor(colorObj).getRed(&r, green: &g, blue: &b, alpha: &a)
+            item.bgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+        }
+    }
 }
 
 @HarbourDirect
@@ -388,7 +414,7 @@ public func zstk_add_file_image(rootId: String, filePath: String) -> String {
 public func zstk_add_text_to(rootId: String, content: String, parentId: String?) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .text, content: content)
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
@@ -417,7 +443,7 @@ public func zstk_add_system_image_to(rootId: String, systemName: String, parentI
 public func zstk_add_button_to(rootId: String, text: String, parentId: String?) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .button, content: text)
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
@@ -436,7 +462,7 @@ public func zstk_add_button_to(rootId: String, text: String, parentId: String?) 
 public func zstk_add_spacer(rootId: String, parentId: String?) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .spacer, content: "")
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
@@ -455,7 +481,7 @@ public func zstk_add_spacer(rootId: String, parentId: String?) -> String {
 public func zstk_add_divider(rootId: String, parentId: String?) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .divider, content: "")
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
@@ -479,7 +505,7 @@ public func zstk_add_batch(rootId: String, json: String, parentId: String?) -> S
 public func zstk_add_list(rootId: String, parentId: String?) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .list, content: "")
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
@@ -498,7 +524,7 @@ public func zstk_add_list(rootId: String, parentId: String?) -> String {
 public func zstk_add_lazyvgrid(rootId: String, parentId: String?, columnsJson: String) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .lazyVGrid, content: "")
             if let data = columnsJson.data(using: .utf8),
                let specs = try? JSONDecoder().decode([GridItemSpec].self, from: data) {
@@ -540,7 +566,7 @@ public func zstk_set_item_text(rootId: String, id: String, text: String) {
 @HarbourDirect
 public func zstk_set_last_item_id(rootId: String, id: String) {
     DispatchQueue.main.async {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState,
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
            let item = state.lastItem {
             item.id = id
         }
@@ -549,7 +575,7 @@ public func zstk_set_last_item_id(rootId: String, id: String) {
 
 @HarbourDirect
 public func zstk_get_last_item_id(rootId: String) -> String {
-    if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+    if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
         return state.lastItem?.id ?? ""
     }
     return ""
@@ -559,7 +585,7 @@ public func zstk_get_last_item_id(rootId: String) -> String {
 public func zstk_add_vstack(rootId: String, parentId: String?) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .vstack, content: "")
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
@@ -578,7 +604,7 @@ public func zstk_add_vstack(rootId: String, parentId: String?) -> String {
 public func zstk_add_hstack(rootId: String, parentId: String?) -> String {
     var newItemId = ""
     let block = {
-        if let state = SwiftStackRegistry.sharedStates[rootId] as? SwiftZStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .hstackContainer, content: "")
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
@@ -594,8 +620,53 @@ public func zstk_add_hstack(rootId: String, parentId: String?) -> String {
 }
 
 @HarbourDirect
+public func zstk_add_toggle(rootId: String, id: String, caption: String, initialValue: Bool, isSwitch: Bool, parentId: String?) -> String {
+    var newItemId = ""
+    let block = {
+         let finalId = id.isEmpty ? UUID().uuidString : id
+         let state = ToggleState(isOn: initialValue, caption: caption, isSwitch: isSwitch, callback: nil)
+         ViewRegistry.register(state, for: finalId)
+         
+         if let rootState = ViewRegistry.get(rootId) as? SwiftZStackState {
+              let newItem = StackItem(type: .toggle, content: caption, id: finalId)
+              newItemId = newItem.id
+              rootState.lastItem = newItem
+              if let pId = parentId, let parent = findItem(in: rootState.items, id: pId) {
+                  parent.children.append(newItem)
+              } else {
+                  rootState.items.append(newItem)
+              }
+         }
+    }
+    if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
+    return newItemId
+}
+
+@HarbourDirect
+public func zstk_add_slider(rootId: String, id: String, value: Double, min: Double, max: Double, glass: Bool, parentId: String?) -> String {
+    var newItemId = ""
+    let block = {
+         let finalId = id.isEmpty ? UUID().uuidString : id
+         let state = SliderState(value: value, showValue: true, isGlass: glass, callback: nil)
+         ViewRegistry.register(state, for: finalId)
+         
+         if let rootState = ViewRegistry.get(rootId) as? SwiftZStackState {
+              let newItem = StackItem(type: .slider, content: "", id: finalId)
+              newItemId = newItem.id
+              rootState.lastItem = newItem
+              if let pId = parentId, let parent = findItem(in: rootState.items, id: pId) {
+                  parent.children.append(newItem)
+              } else {
+                  rootState.items.append(newItem)
+              }
+         }
+    }
+    if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
+    return newItemId
+}
+
+@HarbourDirect
 public func zstk_destroy(id: String, viewPtr: Int64) {
-    SwiftStackRegistry.sharedStates.removeValue(forKey: id)
     ViewRegistry.clean(id: id)
     
     if viewPtr != 0 {

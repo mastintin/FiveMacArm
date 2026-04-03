@@ -4,11 +4,10 @@ static aSwiftDatePickers := {}
 
 //----------------------------------------------------------------------------//
 
-CLASS TSwiftDatePicker FROM TControl
+CLASS TSwiftDatePicker FROM TSwiftControl
 
     DATA   bChange
     DATA   dDate
-    DATA   cID
 
     ACCESS Value      INLINE ::GetDate()
     ASSIGN Value( d ) INLINE ::SetDate( d )
@@ -23,7 +22,6 @@ CLASS TSwiftDatePicker FROM TControl
     METHOD SetDate( dDate )  
     METHOD GetDate()         
     
-    METHOD SetColor( nAccent, nText )
     METHOD SetEnabled( lEnabled ) INLINE SD_DTP_SET_ENABLED( ::cID, lEnabled )
     
     METHOD End()
@@ -40,17 +38,16 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, dDate, bChange, cTitle ) CLASS T
     DEFAULT dDate := Date()
     DEFAULT cTitle := ""
 
+    ::Super:New( nTop, nLeft, nWidth, nHeight, "" )
     ::oWnd    = oWnd
     ::dDate   = dDate
     ::bChange = bChange
 
-    ::cID := ""
-    
     AAdd( aSwiftDatePickers, Self )
 
-    ::hWnd = SD_SWIFT_DATEPICKER_CREATE( nTop, nLeft, nWidth, nHeight, DToS( dDate ), oWnd:hWnd, cTitle, ::cID )
-    ::cID := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cID, Self )
+    ::hWnd = SD_SWIFT_DATEPICKER_CREATE( nTop, nLeft, nWidth, nHeight, DToS( dDate ), oWnd:hWnd, cTitle, ::cId )
+    ::cId  := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cId, Self )
    
     oWnd:AddControl( Self )
 
@@ -73,7 +70,8 @@ return ::dDate
 //----------------------------------------------------------------------------//
 
 METHOD SetColor( nAccent, nText ) CLASS TSwiftDatePicker
-    SD_DTP_SET_COLORS( ::cID, clrToHex( nAccent ), clrToHex( nText ) )
+    if nAccent != nil ; ::SetAccentColor( nAccent ) ; endif
+    if nText != nil   ; ::SetTextColor( nText )   ; endif
 return nil
 
 //----------------------------------------------------------------------------//

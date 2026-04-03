@@ -4,13 +4,12 @@ static aSwiftPickers := {}
 
 //----------------------------------------------------------------------------//
 
-CLASS TSwiftPicker FROM TControl
+CLASS TSwiftPicker FROM TSwiftControl
 
     DATA   bChange
     DATA   bSetGet
     DATA   aItems
     DATA   cVarName
-    DATA   cID
 
     ACCESS Value      INLINE ::GetValue()
     ASSIGN Value( v ) INLINE ::Set( v )
@@ -24,13 +23,13 @@ CLASS TSwiftPicker FROM TControl
     METHOD Redefine( nId, oWnd, aItems, bChange, bSetGet, cVarName )
    
     METHOD SetItems( aItems ) 
-    METHOD Set( cValue )      INLINE SD_PKR_SET_SELECTION( ::cID, cValue )
-    METHOD SetGlass( lGlass ) INLINE SD_PKR_SET_GLASS( ::cID, lGlass )
-    METHOD SetShowLabel( lShow ) INLINE SD_PKR_SET_SHOW_LABEL( ::cID, lShow )
-    METHOD SetText( cText )      INLINE SD_PKR_SET_TITLE( ::cID, cText )
+    METHOD Set( cValue )      INLINE SD_PKR_SET_SELECTION( ::cId, cValue )
+    METHOD SetGlass( lGlass ) INLINE SD_PKR_SET_GLASS( ::cId, lGlass )
+    METHOD SetShowLabel( lShow ) INLINE SD_PKR_SET_SHOW_LABEL( ::cId, lShow )
+    METHOD SetText( cText )      INLINE SD_PKR_SET_TITLE( ::cId, cText )
     METHOD SetColor( nAccent, nText )
     METHOD GetValue()            
-    METHOD SetPlaceholder( cText ) INLINE SD_PKR_SET_PLACEHOLDER( ::cID, cText )
+    METHOD SetPlaceholder( cText ) INLINE SD_PKR_SET_PLACEHOLDER( ::cId, cText )
     METHOD End()
     METHOD SetAutoResize( nStyle ) INLINE ::_nAutoResize( nStyle )
    
@@ -47,19 +46,18 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bChange, bSetGet, cVarNa
     DEFAULT aItems := {}
     DEFAULT cTextLabel := "Categoría"
 
+    ::Super:New( nTop, nLeft, nWidth, nHeight, "" )
     ::oWnd    = oWnd
     ::aItems  = aItems
     ::bChange = bChange
     ::bSetGet = bSetGet
     ::cVarName = cVarName
 
-    ::cID := ""
-    
     AAdd( aSwiftPickers, Self )
 
-    ::hWnd = SD_SWIFT_PICKER_CREATE( nTop, nLeft, nWidth, nHeight, hb_jsonEncode( aItems ), oWnd:hWnd, cTextLabel, ::cID )
-    ::cID := SW_GET_ID( ::hWnd )
-    SwiftRegisterItem( ::cID, Self )
+    ::hWnd = SD_SWIFT_PICKER_CREATE( nTop, nLeft, nWidth, nHeight, hb_jsonEncode( aItems ), oWnd:hWnd, cTextLabel, ::cId )
+    ::cId := SW_GET_ID( ::hWnd )
+    SwiftRegisterItem( ::cId, Self )
     
     oWnd:AddControl( Self )
 
@@ -112,10 +110,11 @@ METHOD SetItems( uItems ) CLASS TSwiftPicker
 return nil
 
 METHOD GetValue() CLASS TSwiftPicker
-return SD_PKR_GET_SELECTION( ::cID )
+return SD_PKR_GET_SELECTION( ::cId )
 
 METHOD SetColor( nAccent, nText ) CLASS TSwiftPicker
-    SD_PKR_SET_COLORS( ::cID, clrToHex( nAccent ), clrToHex( nText ) )
+    if nAccent != nil ; ::SetAccentColor( nAccent ) ; endif
+    if nText != nil   ; ::SetTextColor( nText )   ; endif
 return nil
 
 METHOD End() CLASS TSwiftPicker

@@ -9,7 +9,8 @@ struct SwiftGridView: View {
     var body: some View {
         Group {
             ScrollView {
-                LazyVGrid(columns: mapSpecsToGridItems(state.gridColumns ?? []), spacing: CGFloat(state.spacing)) {
+                let specs = state.gridColumns ?? []
+                LazyVGrid(columns: mapSpecsToGridItems(specs), spacing: CGFloat(state.spacing)) {
                     ForEach(0..<state.items.count, id: \.self) { index in
                          let item = state.items[index]
                          RecursiveItemView(item: item, onAction: state.onAction, index: index)
@@ -21,10 +22,14 @@ struct SwiftGridView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             Group {
-                if state.useInvertedColor {
-                    Color.primary.colorInvert().opacity(state.alpha)
+                if state.useGlassEffect {
+                    Color.clear.glassEffect(.regular, in: RoundedRectangle(cornerRadius: 10))
                 } else {
-                    Color(red: state.red, green: state.green, blue: state.blue, opacity: state.alpha)
+                    if state.useInvertedColor {
+                        Color.primary.colorInvert()
+                    } else {
+                        state.backgroundColor
+                    }
                 }
             }
         )
@@ -46,10 +51,8 @@ public class SwiftGridLoader: NSObject {
              state.gridColumns = specs
          }
          
-         SwiftVStackLoader.lastCreatedState = state 
-         
-         // Register state for addItem/addBatch lookups
-         SwiftVStackLoader.states[finalId] = state
+         // Register state in central registry
+         ViewRegistry.register(state, for: finalId)
          
          let view = SwiftGridView(state: state)
          ViewRegistry.register(view, for: finalId)
@@ -63,7 +66,7 @@ public class SwiftGridLoader: NSObject {
 
     @objc(setActionCallbackWithRootId:callback:)
     public static func setActionCallback(rootId: String, callback: @escaping (String) -> Void) {
-        if let state = SwiftVStackLoader.states[rootId] as? SwiftVStackState {
+        if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
             state.onAction = callback
         }
     }

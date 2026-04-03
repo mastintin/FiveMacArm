@@ -4,16 +4,16 @@ import Observation
 import HarbourMacro
 
 @Observable
-public class SwiftImageState {
+public class SwiftImageState: RGBAColorableState {
     var systemName: String
     var name: String
     var filePath: String
     var resizable: Bool
     var contentMode: Int // 0: fit, 1: fill
-    var foregroundColor: Color?
+    var foregroundColor: Color = .primary
     var image: NSImage?
     
-    init(systemName: String = "", name: String = "", filePath: String = "", resizable: Bool = true, contentMode: Int = 0, foregroundColor: Color? = nil, image: NSImage? = nil) {
+    init(systemName: String = "", name: String = "", filePath: String = "", resizable: Bool = true, contentMode: Int = 0, foregroundColor: Color = .primary, image: NSImage? = nil) {
         self.systemName = systemName
         self.name = name
         self.filePath = filePath
@@ -21,6 +21,16 @@ public class SwiftImageState {
         self.contentMode = contentMode
         self.foregroundColor = foregroundColor
         self.image = image
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        // Not used for Images usually, but could be background?
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.foregroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
     }
 }
 
@@ -67,17 +77,16 @@ struct SwiftImageView: View {
 
 @objc(SwiftImageLoader)
 public class SwiftImageLoader: NSObject {
-    
-    public static var states: [String: SwiftImageState] = [:]
-
     public static func makeImage(systemName: String, name: String, filePath: String, id: String, callback: (() -> Void)?) -> NSView {
          let finalId = id.isEmpty ? UUID().uuidString : id
          let state = SwiftImageState(systemName: systemName, name: name, filePath: filePath)
-         states[finalId] = state
+         
+         // Register in central registry
+         ViewRegistry.register(state, for: finalId)
          
          let view = SwiftImageView(state: state, callback: callback)
          ViewRegistry.register(view, for: finalId)
-
+ 
          let hostingView = NSHostingView(rootView: view)
          hostingView.sizingOptions = []
          hostingView.translatesAutoresizingMaskIntoConstraints = false
@@ -86,7 +95,7 @@ public class SwiftImageLoader: NSObject {
     }
 
     public static func destroyImage(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
+        // Clean from registries
         ViewRegistry.clean(id: id)
         
         if viewPtr != 0 {
@@ -102,7 +111,7 @@ public class SwiftImageLoader: NSObject {
 @HarbourDirect
 public func img_set_system_name(id: String, name: String) {
     DispatchQueue.main.async {
-        if let state = SwiftImageLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? SwiftImageState {
             state.systemName = name
             state.name = ""
             state.filePath = ""
@@ -114,7 +123,7 @@ public func img_set_system_name(id: String, name: String) {
 @HarbourDirect
 public func img_set_name(id: String, name: String) {
     DispatchQueue.main.async {
-        if let state = SwiftImageLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? SwiftImageState {
             state.name = name
             state.systemName = ""
             state.filePath = ""
@@ -126,7 +135,7 @@ public func img_set_name(id: String, name: String) {
 @HarbourDirect
 public func img_set_file(id: String, path: String) {
     DispatchQueue.main.async {
-        if let state = SwiftImageLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? SwiftImageState {
             if let img = NSImage(contentsOfFile: path) {
                 state.image = img
             } else {
@@ -142,7 +151,7 @@ public func img_set_file(id: String, path: String) {
 @HarbourDirect
 public func img_set_color(id: String, hexColor: String) {
     DispatchQueue.main.async {
-        if let state = SwiftImageLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? SwiftImageState {
             state.foregroundColor = Color(hex: hexColor)
         }
     }
@@ -151,7 +160,7 @@ public func img_set_color(id: String, hexColor: String) {
 @HarbourDirect
 public func img_set_resizable(id: String, resizable: Bool) {
     DispatchQueue.main.async {
-        if let state = SwiftImageLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? SwiftImageState {
             state.resizable = resizable
         }
     }
@@ -160,7 +169,7 @@ public func img_set_resizable(id: String, resizable: Bool) {
 @HarbourDirect
 public func img_set_aspect_ratio(id: String, mode: Int) {
     DispatchQueue.main.async {
-        if let state = SwiftImageLoader.states[id] {
+        if let state = ViewRegistry.getState(for: id) as? SwiftImageState {
             state.contentMode = mode
         }
     }
@@ -237,7 +246,7 @@ public func swift_image_create(
 @HarbourDirect
 public func img_set_nsimage(id: String, imagePtr: Int64) {
     DispatchQueue.main.async {
-        if let state = SwiftImageLoader.states[id], imagePtr != 0 {
+        if let state = ViewRegistry.getState(for: id) as? SwiftImageState, imagePtr != 0 {
             if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(imagePtr)) {
                 let image = Unmanaged<NSImage>.fromOpaque(rawPtr).takeUnretainedValue()
                 state.image = image

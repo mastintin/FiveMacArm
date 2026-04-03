@@ -6,7 +6,7 @@ import HarbourMacro
 // State for the Toggle
 
 @Observable
-public class ToggleState {
+public class ToggleState: RGBAColorableState {
     var isOn: Bool
     var caption: String
     var isSwitch: Bool
@@ -19,6 +19,18 @@ public class ToggleState {
         self.caption = caption
         self.isSwitch = isSwitch
         self.callback = callback
+    }
+
+    public func setAccentColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.accentColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
+    }
+
+    public func setTextColorRGBA(color: Int, alpha: Int) {
+        DispatchQueue.main.async {
+            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+        }
     }
 }
 
@@ -34,7 +46,7 @@ struct SwiftToggleView: View {
                     .foregroundColor(state.textColor)
             }
             .toggleStyle(.switch) // Estilo Switch (iOS style)
-            .accentColor(state.accentColor)
+            .tint(state.accentColor)
             .padding(4)
             .onChange(of: state.isOn) { _, newValue in
                 state.callback?(newValue)
@@ -45,7 +57,7 @@ struct SwiftToggleView: View {
                     .foregroundColor(state.textColor)
             }
             .toggleStyle(.checkbox) // Estilo Checkbox (macOS standard)
-            .accentColor(state.accentColor)
+            .tint(state.accentColor)
             .padding(4)
             .onChange(of: state.isOn) { _, newValue in
                 state.callback?(newValue)
@@ -56,12 +68,13 @@ struct SwiftToggleView: View {
 
 @objc(SwiftToggleLoader)
 public class SwiftToggleLoader: NSObject {
-    public static var states: [String: ToggleState] = [:]
     
     public static func makeToggle(caption: String, isOn: Bool, id: String, isSwitch: Bool, callback: @escaping ((Bool) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
         let state = ToggleState(isOn: isOn, caption: caption, isSwitch: isSwitch, callback: callback)
-        states[finalId] = state
+        
+        // Use central registry
+        ViewRegistry.register(state, for: finalId)
         
         let view = SwiftToggleView(state: state)
         ViewRegistry.register(view, for: finalId)
@@ -74,9 +87,7 @@ public class SwiftToggleLoader: NSObject {
     }
 
     public static func destroyToggle(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id) 
-        
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
                 _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
@@ -84,34 +95,30 @@ public class SwiftToggleLoader: NSObject {
         }
     }
 
-    // Métodos de actualización rápida (UI Thread)
     public static func setValue(id: String, isOn: Bool) {
         DispatchQueue.main.async {
-            states[id]?.isOn = isOn
+            (ViewRegistry.getState(for: id) as? ToggleState)?.isOn = isOn
         }
     }
 
     public static func setCaption(id: String, caption: String) {
         DispatchQueue.main.async {
-            states[id]?.caption = caption
+            (ViewRegistry.getState(for: id) as? ToggleState)?.caption = caption
         }
     }
     
     // Versión ultra-rápida para Harbour (nRGB)
     public static func setColors(id: String, accentColor: Int, textColor: Int, alpha: Int) {
-        DispatchQueue.main.async {
-            if let state = states[id] {
-                let a = Double(alpha) / 255.0
-                state.accentColor = Color(hbColor: accentColor).opacity(a)
-                state.textColor = Color(hbColor: textColor).opacity(a)
-            }
+        if let state = ViewRegistry.getState(for: id) as? ToggleState {
+            state.setAccentColorRGBA(color: accentColor, alpha: alpha)
+            state.setTextColorRGBA(color: textColor, alpha: alpha)
         }
     }
     
     // Versión para Hexadecimal (Strings)
     public static func setColors(id: String, accentHex: String, textHex: String) {
         DispatchQueue.main.async {
-            if let state = states[id] {
+            if let state = ViewRegistry.getState(for: id) as? ToggleState {
                 state.accentColor = Color(hex: accentHex)
                 state.textColor = Color(hex: textHex)
             }
@@ -123,22 +130,32 @@ public class SwiftToggleLoader: NSObject {
 
 @HarbourDirect
 public func tgl_set_caption(id: String, caption: String) {
-    SwiftToggleLoader.setCaption(id: id, caption: caption)
+    DispatchQueue.main.async {
+        (ViewRegistry.getState(for: id) as? ToggleState)?.caption = caption
+    }
 }
 
 @HarbourDirect
 public func tgl_get_value(id: String) -> Bool {
-    return SwiftToggleLoader.states[id]?.isOn ?? false
+    return (ViewRegistry.getState(for: id) as? ToggleState)?.isOn ?? false
 }
 
 @HarbourDirect
 public func tgl_set_colors_rgba(id: String, accent: Int, text: Int, alpha: Int) {
-    SwiftToggleLoader.setColors(id: id, accentColor: accent, textColor: text, alpha: alpha)
+    if let state = ViewRegistry.getState(for: id) as? ToggleState {
+        state.setAccentColorRGBA(color: accent, alpha: alpha)
+        state.setTextColorRGBA(color: text, alpha: alpha)
+    }
 }
 
 @HarbourDirect
 public func tgl_set_colors_hex(id: String, accent: String, text: String) {
-    SwiftToggleLoader.setColors(id: id, accentHex: accent, textHex: text)
+    DispatchQueue.main.async {
+        if let state = ViewRegistry.getState(for: id) as? ToggleState {
+            state.accentColor = Color(hex: accent)
+            state.textColor = Color(hex: text)
+        }
+    }
 }
 
 @HarbourDirect

@@ -21,24 +21,9 @@ return
 #define SWIFT_TYPE_BUTTON        9
 #define SWIFT_TYPE_DIVIDER       10
 
-CLASS TSwiftZStack FROM TControl
-
-    DATA cID
-    DATA bAction
-    DATA hItems INIT {=>}
-    DATA aBatch INIT {}
-
-    ASSIGN OnAction( b )    INLINE ::bAction := b
-    
-    ASSIGN BgColor( c )     INLINE ::SetBackgroundColor( c )
-    ASSIGN FgColor( c )     INLINE ::SetForegroundColor( c )
-    
-    ASSIGN Alignment( n )   INLINE ::SetAlignment( n )
+CLASS TSwiftZStack FROM TSwiftVStack
 
     METHOD New( nRow, nCol, nWidth, nHeight, oWnd )
-    
-    METHOD RegItem( cId, oItem ) INLINE SwiftRegisterItem( cId, oItem )
-    METHOD GetItem( cId ) INLINE SwiftGetItem( cId ) 
     
     METHOD AddText( cText )
     METHOD AddButton( cText, bAction )
@@ -50,8 +35,8 @@ CLASS TSwiftZStack FROM TControl
     METHOD AddHStack( oParent )
     
     METHOD SetAlignment( nAlign )
-    METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha )
-    METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha )
+    METHOD SetBackgroundColor( nClr, nAlpha )
+    METHOD SetForegroundColor( nClr, nAlpha )
     
     METHOD AddGrid( aColumns ) // Returns Item
     METHOD AddList( oParent )  // Returns Item
@@ -70,8 +55,7 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize ) CLASS TSwiftZStack
     DEFAULT nHeight := 200
     DEFAULT oWnd := GetWndDefault(), nAutoResize := 0
 
-    ::oWnd = oWnd
-    ::cId := ""
+    ::Super:New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize )
     ::hItems := {=>}
     ::aBatch := {}
 
@@ -147,30 +131,12 @@ METHOD AddList( oParent ) CLASS TSwiftZStack
     cId := SD_ZSTK_ADD_LIST( ::cId, cParentId )
 return TSwiftStackItem():New( cId, Self )
 
-METHOD SetForegroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
-    local nClr 
-    DEFAULT nAlpha := 1.0
-    
-    if pcount() <= 2
-    nClr   := nRed
-    else
-    nClr := nRGB( nRed, nGreen, nBlue )
-    endif
-
-    SD_ZSTK_SET_FGCOLOR_HEX( ::cId, clrToHex( nClr, nAlpha ) )
+METHOD SetForegroundColor( nClr, nAlpha ) CLASS TSwiftZStack
+    ::SetTextColor( nClr, nAlpha )
 return nil
 
-METHOD SetBackgroundColor( nRed, nGreen, nBlue, nAlpha ) CLASS TSwiftZStack
-    local nClr 
-    DEFAULT nAlpha := 1.0
-    
-    if pcount() <= 2
-    nClr   := nRed
-    else
-    nClr := nRGB( nRed, nGreen, nBlue )
-    endif
-
-    SD_ZSTK_SET_BGCOLOR_HEX( ::cId, clrToHex( nClr, nAlpha ) )
+METHOD SetBackgroundColor( nClr, nAlpha ) CLASS TSwiftZStack
+    ::SetAccentColor( nClr, nAlpha )
 return nil
 
 METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftZStack
@@ -192,10 +158,16 @@ METHOD AddBatch( aItems ) CLASS TSwiftZStack
         "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
         
     if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
-    hItem["bgHex"] := clrToHex( aItems[n]["nClrBack"], If( hb_HHasKey( aItems[n], "nAlphaBack" ), aItems[n]["nAlphaBack"], nil ) )
+           hItem["bg"] := { "r" => nRGBRed( aItems[n]["nClrBack"] ) / 255.0, ;
+                            "g" => nRGBGreen( aItems[n]["nClrBack"] ) / 255.0, ;
+                            "b" => nRGBBlue( aItems[n]["nClrBack"] ) / 255.0, ;
+                            "a" => If( hb_HHasKey( aItems[n], "nAlphaBack" ) .and. aItems[n]["nAlphaBack"] != nil, aItems[n]["nAlphaBack"], 1.0 ) }
     endif
     if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
-    hItem["fgHex"] := clrToHex( aItems[n]["nClrFore"], If( hb_HHasKey( aItems[n], "nAlphaFore" ), aItems[n]["nAlphaFore"], nil ) )
+           hItem["fg"] := { "r" => nRGBRed( aItems[n]["nClrFore"] ) / 255.0, ;
+                            "g" => nRGBGreen( aItems[n]["nClrFore"] ) / 255.0, ;
+                            "b" => nRGBBlue( aItems[n]["nClrFore"] ) / 255.0, ;
+                            "a" => If( hb_HHasKey( aItems[n], "nAlphaFore" ) .and. aItems[n]["nAlphaFore"] != nil, aItems[n]["nAlphaFore"], 1.0 ) }
     endif
     AAdd( aJsonData, hItem )
     next
@@ -228,8 +200,3 @@ METHOD End() CLASS TSwiftZStack
    ::hWnd = nil
    ::cId  = ""
 return nil
-
-
-//---------------------------------------------------------//
-
-// TSwiftStackItem moved to SwiftStackItem.prg
