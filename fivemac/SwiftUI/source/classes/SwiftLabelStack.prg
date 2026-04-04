@@ -5,15 +5,38 @@
 
 CLASS TSwiftLabelStack FROM TSwiftStackItem
 
-    ACCESS Caption      INLINE ::GetText()
-    ASSIGN Caption( c ) INLINE ::SetText( c )
+    ACCESS Caption      INLINE ::hState["Caption"]
+    ASSIGN Caption( c ) INLINE ::SetCaption( c )
 
-    METHOD New( cId, oOwner, cCaption )
+    DATA hState INIT {=>}
+
+    METHOD New( oOwner, cCaption, cId, bAction )
+    METHOD SetCaption( cCaption )
     
 ENDCLASS
 
-METHOD New( cId, oOwner, cCaption ) CLASS TSwiftLabelStack
+METHOD New( oOwner, cCaption, cId, bAction ) CLASS TSwiftLabelStack
     
+    local oRoot := oOwner:Root()
+    local cParentId := If( oOwner:IsKindOf( "TSWIFTSTACKITEM" ), oOwner:cId, nil )
+
+    if oRoot == nil ; oRoot := oOwner ; endif
+
+    if oRoot:IsKindOf( "TSWIFTVSTACK" )
+       cId := SD_VSTK_ADD_TEXT_TO( oRoot:cId, cCaption, cParentId )
+    else
+       cId := SD_ZSTK_ADD_TEXT_TO( oRoot:cId, cCaption, cParentId )
+    endif
+
     ::Super:New( cId, oOwner )
     
+    ::hState := { "Caption" => cCaption }
+
+    if bAction != nil ; ::bAction := bAction ; endif
+
 return Self
+
+METHOD SetCaption( cCaption ) CLASS TSwiftLabelStack
+    ::hState["Caption"] := cCaption
+    ::SetText( cCaption )
+return nil

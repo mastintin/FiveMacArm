@@ -93,12 +93,20 @@ extension Color {
     }
 
     public init(hbColor: Int, alpha: Int = 255) {
-        let a = Double(alpha) / 255.0
-        self.init(.sRGB, 
-                  red: Double(hbColor & 0xFF)/255, 
-                  green: Double((hbColor >> 8)&0xFF)/255, 
-                  blue: Double((hbColor >> 16)&0xFF)/255, 
-                  opacity: a)
+        let r = Double(hbColor & 0xFF) / 255.0
+        let g = Double((hbColor >> 8) & 0xFF) / 255.0
+        let b = Double((hbColor >> 16) & 0xFF) / 255.0
+        
+        // Intelligence: Detect alpha from 4th byte (Byte 3) if present
+        var a = Double(alpha) / 255.0
+        let nativeAlpha = (hbColor >> 24) & 0xFF
+        
+        // Use nativeAlpha ONLY if it's present AND an explicit override wasn't passed (default 255)
+        if nativeAlpha > 0 && alpha == 255 {
+            a = Double(nativeAlpha) / 255.0
+        }
+        
+        self.init(.sRGB, red: r, green: g, blue: b, opacity: a)
     }
 }
 
@@ -141,6 +149,10 @@ public class StackItem: Identifiable {
     public var fontSize: Double? = nil
     public var isBold: Bool = false
     public var cornerRadius: Double? = nil
+    
+    // Absolute Coordinates (for ZStack/Window)
+    public var x: Double? = nil
+    public var y: Double? = nil
 
     public init(type: ItemType, content: String, secondaryContent: String? = nil, id: String? = nil) {
         self.id = id ?? UUID().uuidString
@@ -166,6 +178,7 @@ public class StackItem: Identifiable {
         case picker = 13
         case datepicker = 14
         case textfield = 15
+        case zstack = 16
     }
 }
 
@@ -590,7 +603,7 @@ public struct RecursiveItemView: View {
                 if let pickerState = ViewRegistry.get(item.id) as? PickerState {
                     SwiftPickerView(state: pickerState)
                 }
-            
+
             case .datepicker:
                 if let dateState = ViewRegistry.get(item.id) as? DatePickerState {
                     SwiftDatePickerView(state: dateState)

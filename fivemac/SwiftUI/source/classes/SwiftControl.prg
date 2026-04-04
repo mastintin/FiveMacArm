@@ -93,6 +93,7 @@ CLASS TSwiftControl FROM TControl
 
     // Registration
     METHOD Register( hPtr )
+    METHOD Root()
 
 ENDCLASS
 
@@ -159,6 +160,9 @@ METHOD Update( hNewState ) CLASS TSwiftControl
        hb_HMerge( ::hState, hNewState )
     endif
 return nil
+
+METHOD Root() CLASS TSwiftControl
+return Self
 
 METHOD End() CLASS TSwiftControl
     SwiftUnregisterItem( ::cId )

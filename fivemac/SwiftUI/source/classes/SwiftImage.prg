@@ -1,20 +1,17 @@
 #include "FiveMac.ch"
 #include "SwiftControls.ch"
 
-static aSwiftImages := {}
 
 CLASS TSwiftImage FROM TSwiftControl
 
-    DATA bAction
-    DATA cName
-
-    ACCESS Value       INLINE ::cName
+    ACCESS Value       INLINE ::hState["Name"]
     ASSIGN Value( c )  INLINE ::SetName( c )
     
-    ACCESS Name        INLINE ::cName
+    ACCESS Name        INLINE ::hState["Name"]
     ASSIGN Name( c )   INLINE ::SetName( c )
-    
-    ASSIGN OnClick( b ) INLINE ::bAction := b
+
+    ACCESS lResizable     INLINE ::hState["Resizable"]
+    ASSIGN lResizable( l ) INLINE ::SetResizable( l )
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable )
     METHOD OnAction()
@@ -25,6 +22,7 @@ CLASS TSwiftImage FROM TSwiftControl
     METHOD SetFile( cFile )
     METHOD SetAspectRatio( nMode )
     METHOD SetImage( pImage )
+    METHOD SetColor( nColor )
     METHOD End()
     METHOD SetAutoResize( nAutoResize ) INLINE if( nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
       
@@ -38,9 +36,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cName, oWnd, bAction, lResizable, nAut
     ::Super:New( nTop, nLeft, nWidth, nHeight, "" )
     ::oWnd    = oWnd
     ::bAction = bAction
-    ::cName   = cName
     
-    AAdd( aSwiftImages, Self )
+    ::hState["Name"] := cName
+    ::hState["Resizable"] := lResizable
     
     ::hWnd = SD_SWIFT_IMAGE_CREATE( nTop, nLeft, nWidth, nHeight, cName, oWnd:hWnd, ::cId )
     ::cId := SW_GET_ID( ::hWnd )
@@ -72,7 +70,7 @@ METHOD SetSystemName( cName ) CLASS TSwiftImage
 return nil
 
 METHOD SetName( cName ) CLASS TSwiftImage
-    ::cName := cName
+    ::hState["Name"] := cName
     SD_IMG_SET_NAME( ::cId, cName )
 return nil
 
@@ -81,6 +79,7 @@ METHOD SetColor( nColor ) CLASS TSwiftImage
 return nil
 
 METHOD SetResizable( lResizable ) CLASS TSwiftImage
+    ::hState["Resizable"] := lResizable
     SD_IMG_SET_RESIZABLE( ::cId, lResizable )
 return nil
 
@@ -99,8 +98,5 @@ return nil
 METHOD End() CLASS TSwiftImage
     if !Empty( ::hWnd )
         SD_IMG_DESTROY( ::cId, ::hWnd )
-        SwiftUnregisterItem( ::cId )
-        AScan( aSwiftImages, { |o, i| If( o != nil .and. o:cId == ::cId, aSwiftImages[ i ] := nil, ) } )
-        ::cId := ""
     endif
 return ::Super:End()

@@ -19,16 +19,26 @@ CLASS TSwiftSliderStack FROM TSwiftStackItem
 
     DATA hState INIT {=>}
 
-    METHOD New( cId, oOwner, nVal, nMin, nMax, lGlass )
+    METHOD New( oOwner, nVal, nMin, nMax, lGlass, cId, bAction )
     METHOD SetValue( nVal )
     METHOD OnChange( nVal )
 
 ENDCLASS
 
-METHOD New( oOwner, nVal, nMin, nMax, lGlass , bAction, cId ) CLASS TSwiftSliderStack
+METHOD New( oOwner, nVal, nMin, nMax, lGlass, cId, bAction ) CLASS TSwiftSliderStack
     
+    local oRoot := oOwner:Root()
+    local cParentId := If( oOwner:IsKindOf( "TSWIFTSTACKITEM" ), oOwner:cId, nil )
+
+    if oRoot == nil ; oRoot := oOwner ; endif
+
     DEFAULT nVal := 0, nMin := 0, nMax := 100, lGlass := .F.
-    cId := SD_VSTK_ADD_SLIDER( oOwner:cId, cId, nVal, nMin, nMax, lGlass )
+
+    if oRoot:IsKindOf( "TSWIFTVSTACK" )
+       cId := SD_VSTK_ADD_SLIDER( oRoot:cId, cId, nVal, nMin, nMax, lGlass, cParentId )
+    else
+       cId := SD_ZSTK_ADD_SLIDER( oRoot:cId, cId, nVal, nMin, nMax, lGlass, cParentId )
+    endif
 
     ::Super:New( cId, oOwner )
 

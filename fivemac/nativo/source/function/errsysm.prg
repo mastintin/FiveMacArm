@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------//
 
 proc ErrorSys()
-    ErrorBlock( { | e | ErrorDialog( e ) } )
+   ErrorBlock( { | e | ErrorDialog( e ) } )
 return
 
 //----------------------------------------------------------------------------//
@@ -29,7 +29,7 @@ static function ErrorDialog( oError ) // --> logical or quits App
    
    MemoWrit( AppPath() + "/error.log", cInfo )
    
-   DEFINE DIALOG oDlg TITLE "FiveMac - error system"
+   DEFINE DIALOG oDlg TITLE "FiveMac - error system" NOFLIPPED
    
    @ 298,  22 IMAGE oImg OF oDlg FILENAME ResPath() + "/fivetech.icns"
    
@@ -63,9 +63,9 @@ static function ArgsList( oError )
       cArgs += "Args:" + CRLF
       for n = 1 to Len( oError:Args )
          cArgs += "   [" + Str( n, 4 ) + "] = " + ValType( oError:Args[ n ] ) + ;
-                  "   " + cValToChar( oError:Args[ n ] ) + ;
-                  If( ValType( oError:Args[ n ] ) == "A", " length: " + AllTrim( Str( Len( oError:Args[ n ] ) ) ), "" ) + ;
-                  If( ValType( oError:Args[ n ] ) == "O", " ClassName: " + oError:Args[ n ]:ClassName(), "" ) + CRLF
+            "   " + cValToChar( oError:Args[ n ] ) + ;
+            If( ValType( oError:Args[ n ] ) == "A", " length: " + AllTrim( Str( Len( oError:Args[ n ] ) ) ), "" ) + ;
+            If( ValType( oError:Args[ n ] ) == "O", " ClassName: " + oError:Args[ n ]:ClassName(), "" ) + CRLF
       next
    elseif ValType( oError:Args ) == "C"
       cArgs += "Args:" + oError:Args + CRLF
@@ -83,7 +83,7 @@ static function CallStack()
    while ( n < 74 )
       if ! Empty( ProcName( n ) )
          cCalls += "Called from: " + ProcFile( n ) + " => " + Trim( ProcName( n ) ) + ;
-                   "( " + AllTrim( Str( ProcLine( n ) ) ) + " )" + CRLF
+            "( " + AllTrim( Str( ProcLine( n ) ) ) + " )" + CRLF
       endif
       n++
    end
@@ -110,10 +110,10 @@ function ErrorMessage( oError )
 
    do case
       case ! Empty( oError:filename )
-           cMessage += ": " + oError:filename
+         cMessage += ": " + oError:filename
            
       case ! Empty( oError:operation )
-          cMessage += ": " + oError:operation
+         cMessage += ": " + oError:operation
    endcase
 
 return cMessage

@@ -1,7 +1,25 @@
 import SwiftUI
 import AppKit
+import Observation
 import HarbourMacro
 
+// MARK: - State Management
+
+@Observable
+public class SwiftTabViewState {
+    public struct TabItem: Identifiable {
+        public let id: String
+        public let title: String
+        public let icon: String
+    }
+    
+    public var tabs: [TabItem] = []
+    public var selectedTabId: String = ""
+    
+    public init() {}
+}
+
+// MARK: - Views
 
 struct GenericNSViewWrapper: NSViewRepresentable {
     let view: NSView
@@ -11,24 +29,25 @@ struct GenericNSViewWrapper: NSViewRepresentable {
     }
     
     func updateNSView(_ nsView: NSView, context: Context) {
+        // No update needed as the view is managed by Harbour
     }
 }
 
 struct SwiftTabView: View {
-    var tabData: [(id: String, title: String, icon: String)]
-    @State private var selectedTab: String
-    
-    init(tabData: [(id: String, title: String, icon: String)]) {
-        self.tabData = tabData
-        _selectedTab = State(initialValue: tabData.first?.id ?? "")
-    }
+    var state: SwiftTabViewState
     
     var body: some View {
         VStack(spacing: 0) {
-            if !tabData.isEmpty {
-                Picker("", selection: $selectedTab) {
-                    ForEach(tabData, id: \.id) { item in
-                        Text(item.title).tag(item.id)
+            if !state.tabs.isEmpty {
+                Picker("", selection: Bindable(state).selectedTabId) {
+                    ForEach(state.tabs) { item in
+                        HStack {
+                            if !item.icon.isEmpty {
+                                Image(systemName: item.icon)
+                            }
+                            Text(item.title)
+                        }
+                        .tag(item.id)
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
@@ -37,12 +56,18 @@ struct SwiftTabView: View {
             }
             
             ZStack {
-                ForEach(tabData, id: \.id) { item in
-                    if selectedTab == item.id {
-                         if let nsView = ViewRegistry.get(item.id) as? NSView {
+                ForEach(state.tabs) { item in
+                    if state.selectedTabId == item.id {
+                        if let nsView = ViewRegistry.get(item.id) as? NSView {
                             GenericNSViewWrapper(view: nsView)
                         } else {
-                            Text("View \(item.id) not found")
+                            VStack {
+                                Spacer()
+                                Text("Content for '\(item.title)' (\(item.id)) not found")
+                                    .foregroundColor(.secondary)
+                                    .italic()
+                                Spacer()
+                            }
                         }
                     }
                 }
@@ -52,43 +77,54 @@ struct SwiftTabView: View {
     }
 }
 
+// MARK: - Loader & Bridge
+
 @objc(SwiftTabViewLoader)
 public class SwiftTabViewLoader: NSObject {
-    static var tabs: [(id: String, title: String, icon: String)] = []
     
-    @objc(addTabWithIndex:title:icon:)
-    public static func addTab(index: Int, title: String, icon: String) {
-        addTab(id: String(index), title: title, icon: icon)
+    @objc(createState:)
+    public static func createState(id: String) -> Any {
+        let state = SwiftTabViewState()
+        ViewRegistry.register(state, for: id)
+        return state
     }
 
-    public static func addTab(id: String, title: String, icon: String) {
-        tabs.append((id: id, title: title, icon: icon))
+    @objc(addTab:id:title:icon:)
+    public static func addTab(rootId: String, id: String, title: String, icon: String) {
+        let block = {
+            if let state = ViewRegistry.get(rootId) as? SwiftTabViewState {
+                state.tabs.append(SwiftTabViewState.TabItem(id: id, title: title, icon: icon))
+                if state.selectedTabId.isEmpty {
+                    state.selectedTabId = id
+                }
+            }
+        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
-    
-    @objc(makeTabView)
-    public static func makeTabView() -> NSView {
-        let view = SwiftTabView(tabData: tabs)
+
+    @objc(makeTabView:)
+    public static func makeTabView(id: String) -> NSView {
+        guard let state = ViewRegistry.get(id) as? SwiftTabViewState else {
+            return NSView()
+        }
+        let view = SwiftTabView(state: state)
         let hosting = NSHostingView(rootView: view)
+        ViewRegistry.register(hosting, for: id)
         hosting.translatesAutoresizingMaskIntoConstraints = false
         return hosting
     }
-    
-    @objc(clearTabs)
-    public static func clearTabs() {
-        tabs.removeAll()
-    }
 }
 
-// --- HARBOUR DIRECT BRIDGES ---
+// MARK: - Harbour Direct Bridges
 
 @HarbourDirect
-public func tab_clear() {
-    SwiftTabViewLoader.clearTabs()
+public func tab_create_state(id: String) {
+    _ = SwiftTabViewLoader.createState(id: id)
 }
 
 @HarbourDirect
-public func tab_add(id: String, title: String, icon: String) {
-    SwiftTabViewLoader.addTab(id: id, title: title, icon: icon)
+public func tab_add(rootId: String, id: String, title: String, icon: String) {
+    SwiftTabViewLoader.addTab(rootId: rootId, id: id, title: title, icon: icon)
 }
 
 @HarbourDirect
@@ -97,13 +133,14 @@ public func swift_tabview_create(
     left: Double, 
     width: Double, 
     height: Double,
-    parentPtr: Int64
+    parentPtr: Int64,
+    id: String
 ) -> Int64 {
     
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
         
-        let tabView = SwiftTabViewLoader.makeTabView()
+        let tabView = SwiftTabViewLoader.makeTabView(id: id)
         
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
@@ -134,7 +171,8 @@ public func swift_tabview_create(
 }
 
 @HarbourDirect
-public func tab_destroy(viewPtr: Int64) {
+public func tab_destroy(id: String, viewPtr: Int64) {
+    ViewRegistry.clean(id: id)
     if viewPtr != 0 {
         if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
             _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()

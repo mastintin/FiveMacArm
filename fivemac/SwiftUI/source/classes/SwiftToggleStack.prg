@@ -19,7 +19,7 @@ CLASS TSwiftToggleStack FROM TSwiftStackItem
 
     DATA hState INIT {=>}
 
-    METHOD New( cId, oOwner, cCaption, lOn, lSwitch )
+    METHOD New( oOwner, cCaption, lOn, lSwitch, cId, bAction )
     METHOD SetValue( lOn )
     METHOD SetCaption( cCaption )
     METHOD OnChange( lOn )
@@ -28,9 +28,19 @@ ENDCLASS
 
 METHOD New( oOwner, cCaption, lOn, lSwitch, cId, bAction ) CLASS TSwiftToggleStack
         
+    local oRoot := oOwner:Root()
+    local cParentId := If( oOwner:IsKindOf( "TSWIFTSTACKITEM" ), oOwner:cId, nil )
+
+    if oRoot == nil ; oRoot := oOwner ; endif
+
     DEFAULT lOn := .F., lSwitch := .F.
-    cId := SD_VSTK_ADD_TOGGLE( oOwner:cId, cId, cCaption, lOn, lSwitch )
- 
+
+    if oRoot:IsKindOf( "TSWIFTVSTACK" )
+       cId := SD_VSTK_ADD_TOGGLE( oRoot:cId, cId, cCaption, lOn, lSwitch, cParentId )
+    else
+       cId := SD_ZSTK_ADD_TOGGLE( oRoot:cId, cId, cCaption, lOn, lSwitch, cParentId )
+    endif
+
     ::Super:New( cId, oOwner )
     ::hState := {=>}
     ::hState["Caption"]  := cCaption

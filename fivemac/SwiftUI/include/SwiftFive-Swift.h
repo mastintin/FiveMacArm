@@ -460,9 +460,9 @@ SWIFT_CLASS("_TtC9SwiftFive18SwiftSpeechManager")
 
 SWIFT_CLASS_NAMED("SwiftTabViewLoader")
 @interface SwiftTabViewLoader : NSObject
-+ (void)addTabWithIndex:(NSInteger)index title:(NSString * _Nonnull)title icon:(NSString * _Nonnull)icon;
-+ (NSView * _Nonnull)makeTabView SWIFT_WARN_UNUSED_RESULT;
-+ (void)clearTabs;
++ (id _Nonnull)createState:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
++ (void)addTab:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id title:(NSString * _Nonnull)title icon:(NSString * _Nonnull)icon;
++ (NSView * _Nonnull)makeTabView:(NSString * _Nonnull)id SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
@@ -782,6 +782,8 @@ SWIFT_EXTERN void HB_FUN_SD_SW_WEBVIEW_STOP(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SWIFT_BUTTON_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_SD_SWIFT_BUTTON_CREATE_STATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SD_SWIFT_CHART_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SWIFT_DATEPICKER_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
@@ -816,7 +818,7 @@ SWIFT_EXTERN void HB_FUN_SD_SWIFT_ZSTACK_CREATE(void * _Nullable p) SWIFT_NOEXCE
 
 SWIFT_EXTERN void HB_FUN_SD_TAB_ADD(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN void HB_FUN_SD_TAB_CLEAR(void * _Nullable p) SWIFT_NOEXCEPT;
+SWIFT_EXTERN void HB_FUN_SD_TAB_CREATE_STATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_TAB_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
 
@@ -965,6 +967,12 @@ SWIFT_EXTERN void HB_FUN_SD_ZSTK_SET_LAST_ITEM_ID(void * _Nullable p) SWIFT_NOEX
 SWIFT_EXTERN void HB_FUN_CREATESWIFTVIEW(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN int8_t const * _Nullable sw_GetRootId_par(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void HB_FUN_SW_ADD_WINDOW_ITEM(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SW_APPRUN(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SW_CREATEWINDOW(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_GET_ID(void * _Nullable p) SWIFT_NOEXCEPT;
 

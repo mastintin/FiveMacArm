@@ -121,18 +121,7 @@ return oItem
 // --- Element Support ---
 
 METHOD AddText( cText, bAction ) CLASS TSwiftStackItem
-    local cId, oItem
-    local oRoot := ::Root()
-    
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SD_VSTK_ADD_TEXT_TO( oRoot:cId, cText, ::cId )
-    else
-    cId := SD_ZSTK_ADD_TEXT_TO( oRoot:cId, cText, ::cId )
-    endif
-    
-    oItem := TSwiftLabelStack():New( cId, Self, cText )
-    if bAction != nil ; oItem:bAction := bAction ; endif 
-return oItem
+return TSwiftLabelStack():New( Self, cText, nil, bAction )
 
 METHOD AddSystemImage( cName ) CLASS TSwiftStackItem
     local cId
@@ -145,46 +134,13 @@ METHOD AddSystemImage( cName ) CLASS TSwiftStackItem
 return TSwiftStackItem():New( cId, Self )
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftStackItem
-    local cId, oItem
-    local oRoot := ::Root()
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-    cId := SD_VSTK_ADD_BUTTON_ITEM( oRoot:cId, cText, ::cId )
-    else
-    cId := SD_ZSTK_ADD_BUTTON_TO( oRoot:cId, cText, ::cId )
-    endif
-    
-    oItem := TSwiftButtonStack():New( cId, Self, cText, bAction )
-return oItem
+return TSwiftButtonStack():New( Self, cText, nil, bAction )
 
 METHOD AddToggle( cCaption, lOn, bAction, lSwitch, cId ) CLASS TSwiftStackItem
-    local oRoot := ::Root()
-    local oItem
-    DEFAULT lOn := .F., lSwitch := .F.
-    
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-       cId := SD_VSTK_ADD_TOGGLE( oRoot:cId, cId, cCaption, lOn, lSwitch, ::cId )
-    else
-       cId := SD_ZSTK_ADD_TOGGLE( oRoot:cId, cId, cCaption, lOn, lSwitch, ::cId )
-    endif
-    
-    oItem := TSwiftToggleStack():New( cId, Self, cCaption, lOn, lSwitch )
-    if bAction != nil ; oItem:bAction := bAction ; endif
-return oItem
+return TSwiftToggleStack():New( Self, cCaption, lOn, lSwitch, cId, bAction )
 
 METHOD AddSlider( nVal, nMin, nMax, bAction, lGlass, cId ) CLASS TSwiftStackItem
-    local oRoot := ::Root()
-    local oItem
-    DEFAULT nVal := 0, nMin := 0, nMax := 100, lGlass := .F.
-    
-    if oRoot:IsKindOf( "TSWIFTVSTACK" )
-       cId := SD_VSTK_ADD_SLIDER( oRoot:cId, cId, nVal, nMin, nMax, lGlass, ::cId )
-    else
-       cId := SD_ZSTK_ADD_SLIDER( oRoot:cId, cId, nVal, nMin, nMax, lGlass, ::cId )
-    endif
-    
-    oItem := TSwiftSliderStack():New( cId, Self, nVal, nMin, nMax, lGlass )
-    if bAction != nil ; oItem:bAction := bAction ; endif
-return oItem
+return TSwiftSliderStack():New( Self, nVal, nMin, nMax, lGlass, cId, bAction )
 
 METHOD AddSpacer() CLASS TSwiftStackItem
     local oRoot := ::Root()

@@ -5,26 +5,45 @@
 
 CLASS TSwiftButtonStack FROM TSwiftStackItem
 
-    ACCESS Caption      INLINE ::GetText()
-    ASSIGN Caption( c ) INLINE ::SetText( c )
+    ACCESS Caption      INLINE ::hState["Caption"]
+    ASSIGN Caption( c ) INLINE ::SetCaption( c )
 
-    METHOD New( cId, oOwner, cCaption, bAction )
+    DATA hState INIT {=>}
+
+    METHOD New( oOwner, cCaption, cId, bAction )
+    METHOD SetCaption( cCaption )
     METHOD OnAction()
     
 ENDCLASS
 
-METHOD New( cId, oOwner, cCaption, bAction ) CLASS TSwiftButtonStack
+METHOD New( oOwner, cCaption, cId, bAction ) CLASS TSwiftButtonStack
     
+    local oRoot := oOwner:Root()
+    local cParentId := If( oOwner:IsKindOf( "TSWIFTSTACKITEM" ), oOwner:cId, nil )
+
+    if oRoot == nil ; oRoot := oOwner ; endif
+
+    if oRoot:IsKindOf( "TSWIFTVSTACK" )
+       cId := SD_VSTK_ADD_BUTTON_ITEM( oRoot:cId, cCaption, cParentId )
+    else
+       cId := SD_ZSTK_ADD_BUTTON_TO( oRoot:cId, cCaption, cParentId )
+    endif
+
     ::Super:New( cId, oOwner )
     
-    if bAction != nil
-        ::bAction := bAction
-    endif
+    ::hState := { "Caption" => cCaption }
+
+    if bAction != nil ; ::bAction := bAction ; endif
 
 return Self
 
+METHOD SetCaption( cCaption ) CLASS TSwiftButtonStack
+    ::hState["Caption"] := cCaption
+    ::SetText( cCaption )
+return nil
+
 METHOD OnAction() CLASS TSwiftButtonStack
     if ::bAction != nil
-        Eval( ::bAction, Self )
+        Eval( ::bAction, ::cId, Self )
     endif
 return nil

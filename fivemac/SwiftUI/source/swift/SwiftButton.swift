@@ -255,3 +255,10 @@ public func swift_button_create(
         }
     }
 }
+
+@HarbourDirect
+public func swift_button_create_state(id: String, caption: String) {
+    let finalId = id.isEmpty ? UUID().uuidString : id
+    let state = ButtonState(caption: caption)
+    ViewRegistry.register(state, for: finalId)
+}

@@ -117,7 +117,7 @@ public class SwiftVStackLoader: NSObject {
 
     @objc(setActionCallbackWithRootId:callback:)
     public static func setActionCallback(rootId: String, callback: @escaping (String) -> Void) {
-        if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+        if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
             state.onAction = callback
         }
     }
@@ -125,7 +125,7 @@ public class SwiftVStackLoader: NSObject {
     @objc(removeAllItems:)
     public static func removeAllItems(_ rootId: String) {
         let block = {
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                 state.items.removeAll()
                 state.lastItem = nil
             }
@@ -138,7 +138,7 @@ public class SwiftVStackLoader: NSObject {
     public static func addItem(_ rootId: String, content: String) -> String {
         var newItemId = ""
         let block = {
-                if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+                if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                     let newItem = StackItem(type: .text, content: content)
                     newItemId = newItem.id
                     state.items.append(newItem)
@@ -154,7 +154,7 @@ public class SwiftVStackLoader: NSObject {
      public static func addTextItem(_ rootId: String, content: String, parentId: String?) -> String {
          var newItemId = ""
          let block = {
-                if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+                if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                     let newItem = StackItem(type: .text, content: content)
                     newItemId = newItem.id
                     
@@ -176,7 +176,7 @@ public class SwiftVStackLoader: NSObject {
      public static func addSpacerItem(_ rootId: String, parentId: String?) -> String {
          var newItemId = ""
          let block = {
-                if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+                if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                     let newItem = StackItem(type: .spacer, content: "")
                     newItemId = newItem.id
                     
@@ -207,7 +207,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .systemImage, content: systemName, secondaryContent: nil)
              newItemId = newItem.id
              
-                if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+                if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                      if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                          parent.children.append(newItem)
                      } else {
@@ -225,7 +225,7 @@ public class SwiftVStackLoader: NSObject {
     public static func addHStackItem(_ rootId: String, text: String, systemName: String) -> String {
         var newItemId = ""
         let block = {
-                if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+                if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                     let newItem = StackItem(type: .hstack, content: text, secondaryContent: systemName)
                     newItemId = newItem.id
                     state.items.append(newItem)
@@ -334,7 +334,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .vstack, content: "")
              newItemId = newItem.id
              
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                       parent.children.append(newItem)
@@ -355,7 +355,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .hstackContainer, content: "")
              newItemId = newItem.id
              
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                       print("DEBUG: [Swift] Adding HStackContainer to parent \(pId)")
@@ -383,7 +383,7 @@ public class SwiftVStackLoader: NSObject {
              }
              newItemId = newItem.id
 
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                       parent.children.append(newItem)
@@ -405,7 +405,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .list, content: "")
              newItemId = newItem.id
              
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                       parent.children.append(newItem)
@@ -427,7 +427,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .text, content: text)
              newItemId = newItem.id
              
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                       parent.children.append(newItem)
@@ -448,7 +448,7 @@ public class SwiftVStackLoader: NSObject {
         let block = {
              let newItem = StackItem(type: .spacer, content: "")
              newItemId = newItem.id
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                       parent.children.append(newItem)
@@ -472,7 +472,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .toggle, content: caption, id: finalId)
              newItemId = newItem.id
              
-             if let rootState = ViewRegistry.get(rootId) as? SwiftVStackState {
+             if let rootState = ViewRegistry.get(rootId) as? StackStateProtocol {
                   rootState.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: rootState.items, id: pId) {
                       parent.children.append(newItem)
@@ -498,7 +498,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .slider, content: "", id: finalId)
              newItemId = newItem.id
              
-             if let rootState = ViewRegistry.get(rootId) as? SwiftVStackState {
+             if let rootState = ViewRegistry.get(rootId) as? StackStateProtocol {
                   rootState.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: rootState.items, id: pId) {
                       parent.children.append(newItem)
@@ -519,7 +519,7 @@ public class SwiftVStackLoader: NSObject {
         let block = {
              let newItem = StackItem(type: .divider, content: "")
              newItemId = newItem.id
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                  state.lastItem = newItem
                  if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                      parent.children.append(newItem)
@@ -540,7 +540,7 @@ public class SwiftVStackLoader: NSObject {
              let newItem = StackItem(type: .button, content: text)
              newItemId = newItem.id
              
-            if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
+            if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
                   state.lastItem = newItem
                   if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                       parent.children.append(newItem)
@@ -586,7 +586,7 @@ public class SwiftVStackLoader: NSObject {
 
     public static func setItemBgColor(rootId: String, id: String, color: Int, alpha: Int) {
         DispatchQueue.main.async {
-            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = SwiftFive.findItem(in: state.items, id: id) {
+            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
                 item.bgColor = (Double(color & 0xFF)/255, Double((color >> 8)&0xFF)/255, Double((color >> 16)&0xFF)/255, Double(alpha)/255)
             }
         }
@@ -594,7 +594,7 @@ public class SwiftVStackLoader: NSObject {
 
     public static func setItemFont(rootId: String, id: String, size: CGFloat, isBold: Bool) {
         DispatchQueue.main.async {
-            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = SwiftFive.findItem(in: state.items, id: id) {
+            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
                 item.fontSize = size > 0 ? Double(size) : nil
                 item.isBold = isBold
             }
@@ -603,7 +603,7 @@ public class SwiftVStackLoader: NSObject {
 
     public static func setItemRadius(rootId: String, id: String, radius: CGFloat) {
         DispatchQueue.main.async {
-            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = SwiftFive.findItem(in: state.items, id: id) {
+            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
                 item.cornerRadius = Double(radius)
             }
         }
@@ -612,7 +612,7 @@ public class SwiftVStackLoader: NSObject {
     @objc(setItemLayout:id:w:h:s:)
     public static func setItemLayout(rootId: String, id: String, w: Double, h: Double, s: Double) {
          DispatchQueue.main.async {
-             if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = SwiftFive.findItem(in: state.items, id: id) {
+             if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
                  if w > 0 { item.itemWidth = w }
                  if h > 0 { item.itemHeight = h }
                  if s >= 0 { item.spacing = s }
@@ -661,15 +661,15 @@ public func vstk_set_scroll(rootId: String, scrollable: Bool) {
 
 @HarbourDirect
 public func vstk_set_bgcolor(rootId: String, color: Int, alpha: Int) {
-    if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
-        DispatchQueue.main.async { state.backgroundColor = Color(hbColor: color, alpha: alpha) }
+    if let state = ViewRegistry.get(rootId) as? RGBAColorableState {
+        state.setAccentColorRGBA(color: color, alpha: alpha)
     }
 }
 
 @HarbourDirect
 public func vstk_set_fgcolor(rootId: String, color: Int, alpha: Int) {
-    if let state = ViewRegistry.get(rootId) as? SwiftVStackState {
-        DispatchQueue.main.async { state.textColor = Color(hbColor: color, alpha: alpha) }
+    if let state = ViewRegistry.get(rootId) as? RGBAColorableState {
+        state.setTextColorRGBA(color: color, alpha: alpha)
     }
 }
 

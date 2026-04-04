@@ -137,10 +137,7 @@ return aIds
 //----------------------------------------------------------------------------//
 
 METHOD AddText( cText, bAction ) CLASS TSwiftVStack
-    local cId := SD_VSTK_ADD_TEXT_TO( ::cId, cText, nil )
-    local oItem := TSwiftLabelStack():New( cId, Self, cText )
-    if bAction != nil ; oItem:bAction := bAction ; endif
-return oItem
+return TSwiftLabelStack():New( Self, cText, nil, bAction )
 
 //----------------------------------------------------------------------------//
 
@@ -149,30 +146,13 @@ METHOD AddImage( cName ) CLASS TSwiftVStack
 return TSwiftStackItem():New( cId, Self )
 
 METHOD AddButton( cText, bAction ) CLASS TSwiftVStack
-    local cId, oItem
-    cId := SD_VSTK_ADD_BUTTON_ITEM( ::cId, cText, nil )
-    oItem := TSwiftButtonStack():New( cId, Self, cText, bAction )
-return oItem
-
-//----------------------------------------------------------------------------//
-
-//----------------------------------------------------------------------------//
+return TSwiftButtonStack():New( Self, cText, nil, bAction )
 
 METHOD AddToggle( cCaption, lOn, bAction, lSwitch, cId ) CLASS TSwiftVStack
-    local oItem
-    //  DEFAULT lOn := .F., lSwitch := .F.
-    //  cId := SD_VSTK_ADD_TOGGLE( ::cId, cId, cCaption, lOn, lSwitch )
-    oItem := TSwiftToggleStack():New( Self, cCaption, lOn, lSwitch , cId, bAction)
-return oItem
-
-//----------------------------------------------------------------------------//
+return TSwiftToggleStack():New( Self, cCaption, lOn, lSwitch, cId, bAction )
 
 METHOD AddSlider( nVal, nMin, nMax, bAction, lGlass, cId ) CLASS TSwiftVStack
-    local oItem
-
-    oItem := TSwiftSliderStack():New( Self, nVal, nMin, nMax, lGlass , bAction, cId) 
-
-return oItem
+return TSwiftSliderStack():New( Self, nVal, nMin, nMax, lGlass, cId, bAction )
 
 //----------------------------------------------------------------------------//
 

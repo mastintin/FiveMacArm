@@ -6,6 +6,9 @@ CLASS TSwiftLabel FROM TSwiftControl
     ACCESS Caption      INLINE ::hState["Caption"]
     ASSIGN Caption( c ) INLINE ::SetText( c )
 
+    ACCESS Text         INLINE ::hState["Caption"]
+    ASSIGN Text( c )    INLINE ::SetText( c )
+
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId )
     METHOD SetText( cText )
     METHOD SetFont( nSize )

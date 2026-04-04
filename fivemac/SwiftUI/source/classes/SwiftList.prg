@@ -38,8 +38,10 @@ METHOD New( nRow, nCol, nWidth, nHeight, oWnd, nAutoResize, cId ) CLASS TSwiftLi
 
     DEFAULT nWidth := 200, nHeight := 200, oWnd := GetWndDefault(), nAutoResize := 0
 
-    ::Super:New( nRow, nCol, nWidth, nHeight, cId )
+    ::TSwiftControl:New( nRow, nCol, nWidth, nHeight, cId )
     ::oWnd := oWnd
+    ::aBatch := {}
+    ::aIds   := {}
     
     ::Register( SD_SWIFT_LIST_CREATE( nRow, nCol, nWidth, nHeight, oWnd:hWnd, ::cId ) )
 
@@ -120,8 +122,9 @@ return SD_LST_GET_LAST_ITEM_ID( ::cId )
 METHOD End() CLASS TSwiftList
     if !Empty( ::hWnd )
         SD_LST_DESTROY( ::cId, ::hWnd )
+        ::hWnd := nil
     endif
-return ::Super:End()
+return ::TSwiftControl:End()
 
 //----------------------------------------------------------------------------//
 // TSwiftRow
@@ -147,6 +150,7 @@ ENDCLASS
 METHOD New( oList, cId ) CLASS TSwiftRow
     ::oList := oList
     ::cId   := cId
+    SwiftRegisterItem( ::cId, Self )
 return Self
 
 METHOD AddIcon( cIcon ) CLASS TSwiftRow
