@@ -119,6 +119,11 @@ RETURN NIL
   - **Native Release Patterns**: Integrated `autorelease` and `removeFromSuperview` patterns in Objective-C wrappers, aligning with modern Cocoa memory management standards.
   - **SwiftUI Leak Fixes**: Resolved critical memory leaks in `TSwiftVStack`, `TSwiftList`, and `TSwiftButton` by ensuring correct de-registration from global internal registries.
   - **Advanced Image Handling**: New `Retain()` and `Release()` methods in `TImage` for manual control of native `NSImage` handles, plus automatic cleanup on control destruction.
+- **SwiftUI Modern Architecture (Atomic State)**:
+  - **TSwWindow (POC)**: New support for Pure SwiftUI windows with absolute positioning and direct state-driven initialization.
+  - **Atomic Initialization**: All modern controls now use a JSON-encoded state object during creation, eliminating visual "flicker" and ensuring all properties (colors, prominence, glass effects) are applied natively at the moment of instantiation.
+  - **Standardized Color Scale**: Unified opacity management using a **0-100 percentage scale** across Harbour, Swift, and C bridges, replacing the legacy 0-255 byte scale.
+  - **Intelligent Defaults**: UI elements now default to intuitive native styles (transparent backgrounds for stacks, solid black for text) driven directly by Harbour class logic for maximum predictability.
 - **Enhanced Robustness**:
   - Improved data validation and null-pointer checks in Objective-C wrappers to prevent `EXC_BAD_ACCESS` crashes.
   - Optimized Harbour Garbage Collector integration with manual `hb_gcAll(.T.)` calls during complex view transitions.

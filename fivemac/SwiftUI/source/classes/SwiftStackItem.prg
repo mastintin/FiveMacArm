@@ -11,7 +11,6 @@ CLASS TSwiftStackItem
     DATA aBatch      INIT {}
 
     ACCESS Text        INLINE ::GetText()
-    ASSIGN Text( c )   INLINE ::SetText( c )
     
     ASSIGN OnClick( b )  INLINE ::bAction := b
     ASSIGN OnAction( b ) INLINE ::bAction := b
@@ -32,6 +31,7 @@ CLASS TSwiftStackItem
     METHOD AddText( cText, bAction )
     METHOD AddSystemImage( cName )
     METHOD AddSpacer()
+    METHOD AddDivider()
     METHOD AddButton( cText, bAction )
     METHOD AddToggle( cCaption, lOn, bAction, lSwitch, cId )
     METHOD AddSlider( nVal, nMin, nMax, bAction, lGlass, cId )
@@ -222,7 +222,7 @@ return nil
 
 METHOD AddBatch( aItems ) CLASS TSwiftStackItem
     local aJsonData := {}
-    local aIds, n, cJson, cJsonIds
+    local aIds, n, cJson, cJsonIds, aRGBA
     local oTempItem, hItem
     local oRoot := ::Root()
     
@@ -235,17 +235,17 @@ METHOD AddBatch( aItems ) CLASS TSwiftStackItem
         "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
         
     if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
-    hItem["bg"] := { "r" => nRGBRed( aItems[n]["nClrBack"] ) / 255.0, ;
-        "g" => nRGBGreen( aItems[n]["nClrBack"] ) / 255.0, ;
-        "b" => nRGBBlue( aItems[n]["nClrBack"] ) / 255.0, ;
-        "a" => If( hb_HHasKey( aItems[n], "nAlphaBack" ) .and. aItems[n]["nAlphaBack"] != nil, aItems[n]["nAlphaBack"], 1.0 ) }
+        if aItems[n]["nClrBack"] == -2 .or. ( hb_HHasKey( aItems[n], "isProminent" ) .and. aItems[n]["isProminent"] )
+            hItem["isProminent"] := .T.
+        else
+            aRGBA := hb_ClrToRGBA( aItems[n]["nClrBack"], aItems[n]["nAlphaBack"] )
+            hItem["bgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
+        endif
     endif
         
     if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
-    hItem["fg"] := { "r" => nRGBRed( aItems[n]["nClrFore"] ) / 255.0, ;
-        "g" => nRGBGreen( aItems[n]["nClrFore"] ) / 255.0, ;
-        "b" => nRGBBlue( aItems[n]["nClrFore"] ) / 255.0, ;
-        "a" => If( hb_HHasKey( aItems[n], "nAlphaFore" ) .and. aItems[n]["nAlphaFore"] != nil, aItems[n]["nAlphaFore"], 1.0 ) }
+        aRGBA := hb_ClrToRGBA( aItems[n]["nClrFore"], aItems[n]["nAlphaFore"] )
+        hItem["fgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
     endif
     AAdd( aJsonData, hItem )
     next

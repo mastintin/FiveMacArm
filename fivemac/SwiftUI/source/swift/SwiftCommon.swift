@@ -39,8 +39,8 @@ public class ViewRegistry {
 // MARK: - Protocol for Atomic Color Management
 
 public protocol RGBAColorableState: AnyObject {
-    func setAccentColorRGBA(color: Int, alpha: Int)
-    func setTextColorRGBA(color: Int, alpha: Int)
+    func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int)
+    func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int)
 }
 
 // MARK: - SwiftUI View Extensions (modify & if)
@@ -92,6 +92,23 @@ extension Color {
         return (Double(r)/255, Double(g)/255, Double(b)/255, Double(a)/255)
     }
 
+    // Nueva función estática para desglosar colores para las pasarelas
+    public static func componentsFrom(hbColor: Int, alpha: Int = 255) -> (r: Int, g: Int, b: Int, a: Int) {
+        let r = hbColor & 0xFF
+        let g = (hbColor >> 8) & 0xFF
+        let b = (hbColor >> 16) & 0xFF
+        
+        let a = alpha
+        let nativeAlpha = (hbColor >> 24) & 0xFF
+        if nativeAlpha > 0 && alpha == 100 { 
+            return (r, g, b, Int(nativeAlpha)) 
+        }
+        
+        return (r, g, b, a)
+    }
+
+    // LEGACY / DEPRECATED: Intenta adivinar el color desde un entero empaquetado. 
+    // Usar el inicializador de 4 componentes (r:g:b:a) como nuevo estándar.
     public init(hbColor: Int, alpha: Int = 255) {
         let r = Double(hbColor & 0xFF) / 255.0
         let g = Double((hbColor >> 8) & 0xFF) / 255.0
@@ -123,14 +140,23 @@ public struct GridItemSpec: Codable {
 }
 
 public struct ColorRGBA: Codable {
-    public let r: Double
-    public let g: Double
-    public let b: Double
-    public let a: Double
+    public var r: Double
+    public var g: Double
+    public var b: Double
+    public var a: Double
+}
+
+extension ColorRGBA {
+    public init(r: Int, g: Int, b: Int, a: Int) {
+        self.r = Double(r)
+        self.g = Double(g)
+        self.b = Double(b)
+        self.a = Double(a)
+    }
 }
 
 @Observable
-public class StackItem: Identifiable {
+public class StackItem: Identifiable, Codable {
     public var id: String
     public let type: ItemType
     public var content: String
@@ -141,8 +167,8 @@ public class StackItem: Identifiable {
     public var gridColumns: [GridItemSpec]? = nil
 
     // Background & Foreground Color
-    public var bgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
-    public var fgColor: (r: Double, g: Double, b: Double, a: Double)? = nil
+    public var bgColor: ColorRGBA? = nil
+    public var fgColor: ColorRGBA? = nil
     public var itemHeight: Double? = nil
     public var itemWidth: Double? = nil
     public var spacing: Double? = nil
@@ -161,6 +187,7 @@ public class StackItem: Identifiable {
         self.secondaryContent = secondaryContent
     }
 
+    // MARK: - Enums
     public enum ItemType: Int, Codable {
         case text = 0
         case systemImage = 1
@@ -346,17 +373,48 @@ public func swift_standalone_batch_create(_ p: UnsafeMutableRawPointer?) {
 
 // MARK: - Universal Atomic Bridges for TSwiftControl (RGBA)
 
+// LEGACY: Estos puentes antiguos siguen funcionando con el formato empaquetado de Harbour para compatibilidad.
 @HarbourDirect
 public func sw_set_colors_rgba(id: String, color: Int, alpha: Int) {
     if let state = ViewRegistry.getState(for: id) as? RGBAColorableState {
-        state.setAccentColorRGBA(color: color, alpha: alpha)
+        // Usamos el inicializador legado para mantener la lógica exacta de antes
+        let a = Double(alpha) / 255.0
+        state.setAccentColorRGBA(r: Int(color & 0xFF), g: Int((color >> 8) & 0xFF), b: Int((color >> 16) & 0xFF), a: Int(a * 255))
+    }
+}
+
+@HarbourDirect
+public func set_accent_color(id: String, color: Int, alpha: Int) {
+    if let state = ViewRegistry.getState(for: id) as? RGBAColorableState {
+        if color == -2 {
+            state.setAccentColorRGBA(r: -2, g: 0, b: 0, a: 0)
+        } else {
+            let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+            state.setAccentColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
+        }
     }
 }
 
 @HarbourDirect
 public func sw_set_text_colors_rgba(id: String, color: Int, alpha: Int) {
     if let state = ViewRegistry.getState(for: id) as? RGBAColorableState {
-        state.setTextColorRGBA(color: color, alpha: alpha)
+        let a = Double(alpha) / 255.0
+        state.setTextColorRGBA(r: Int(color & 0xFF), g: Int((color >> 8) & 0xFF), b: Int((color >> 16) & 0xFF), a: Int(a * 255))
+    }
+}
+
+// NUEVO ESTÁNDAR: Puente directo con los 4 componentes desglosados (Sin ambigüedades)
+@HarbourDirect
+public func sw_set_colors_direct(id: String, r: Int, g: Int, b: Int, a: Int) {
+    if let state = ViewRegistry.getState(for: id) as? RGBAColorableState {
+        state.setAccentColorRGBA(r: r, g: g, b: b, a: a)
+    }
+}
+
+@HarbourDirect
+public func sw_set_text_colors_direct(id: String, r: Int, g: Int, b: Int, a: Int) {
+    if let state = ViewRegistry.getState(for: id) as? RGBAColorableState {
+        state.setTextColorRGBA(r: r, g: g, b: b, a: a)
     }
 }
 
@@ -451,7 +509,7 @@ public struct RecursiveItemView: View {
     private func getBackground() -> some View {
         Group {
             if let bg = item.bgColor {
-                Color(red: bg.r, green: bg.g, blue: bg.b, opacity: bg.a)
+                Color(rgba: bg)
                     .cornerRadius(CGFloat(item.cornerRadius ?? 0))
             } else {
                 Color.clear
@@ -461,7 +519,7 @@ public struct RecursiveItemView: View {
 
     private func getForegroundColor() -> Color? {
         if let fg = item.fgColor {
-            return Color(red: fg.r, green: fg.g, blue: fg.b, opacity: fg.a)
+            return Color(rgba: fg)
         }
         return nil
     }
@@ -575,19 +633,21 @@ public struct RecursiveItemView: View {
                         .fontWeight(item.isBold ? .bold : .semibold)
                         .padding(.horizontal, 15)
                         .padding(.vertical, 8)
-                        .foregroundColor(item.fgColor.map { Color(red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) } ?? (item.bgColor != nil ? .white : .primary))
+                        .foregroundColor(item.isProminent ? .white : (item.fgColor.map { Color(rgba: $0) } ?? (item.bgColor != nil ? .white : .primary)))
                         .background(
                             Group {
-                                 if let bg = item.bgColor {
-                                     Color(red: bg.r, green: bg.g, blue: bg.b, opacity: bg.a)
-                                 } else {
+                                 if item.isProminent {
                                      Color.accentColor
+                                 } else if let bg = item.bgColor {
+                                     Color(rgba: bg)
+                                 } else {
+                                     Color.clear
                                  }
                             }
                         )
                         .cornerRadius(CGFloat(item.cornerRadius ?? 8))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(BorderedButtonStyle())
             
             case .toggle:
                 if let toggleState = ViewRegistry.get(item.id) as? ToggleState {
@@ -617,7 +677,8 @@ public struct RecursiveItemView: View {
                 EmptyView()
             }
         }
-        .foregroundColor(item.fgColor.map { Color(red: $0.r, green: $0.g, blue: $0.b, opacity: $0.a) } ?? (item.type == .button ? .white : .primary))
+        .id(item.id)
+        .foregroundColor(item.fgColor.map { Color(rgba: $0) } ?? (item.type == .button ? (item.bgColor != nil ? .white : .primary) : .primary))
         .contentShape(Rectangle())
         .if(!isInsideList) { view in
             view.simultaneousGesture(TapGesture().onEnded {

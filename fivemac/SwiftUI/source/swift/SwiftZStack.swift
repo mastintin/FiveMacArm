@@ -125,12 +125,12 @@ public class SwiftZStackLoader: NSObject {
     }
 
     public static func addBatch(_ rootId: String, parentId: String?, json: String) -> String {
-        struct BatchInput: Codable {
+        struct BatchInput: Decodable {
             let type: Int
             let content: String
             let secondaryContent: String?
-            let bgHex: String?
-            let fgHex: String?
+            let bgColor: ColorRGBA?
+            let fgColor: ColorRGBA?
         }
         
         let decoder = JSONDecoder()
@@ -146,41 +146,24 @@ public class SwiftZStackLoader: NSObject {
                 let parentItem = (parentId != nil && parentId != "nil" && !parentId!.isEmpty) ? 
                                  findItem(in: state.items, id: parentId!) : nil
 
-                for item in batchItems {
-                    let newItem = StackItem(type: StackItem.ItemType(rawValue: item.type) ?? .text,
-                                           content: item.content,
-                                           secondaryContent: item.secondaryContent)
+                for itemIn in batchItems {
+                    let newItem = StackItem(type: StackItem.ItemType(rawValue: itemIn.type) ?? .text,
+                                           content: itemIn.content,
+                                           secondaryContent: itemIn.secondaryContent)
                     
-                    if let bgHex = item.bgHex {
-                        let color = Color(hex: bgHex)
-                        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-                        NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
-                        newItem.bgColor = (Double(r), Double(g), Double(b), Double(a))
-                    }
-                    if let fgHex = item.fgHex {
-                        let color = Color(hex: fgHex)
-                        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-                        NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
-                        newItem.fgColor = (Double(r), Double(g), Double(b), Double(a))
-                    }
-
-                    if let parent = parentItem {
-                        parent.children.append(newItem)
-                    } else {
-                        state.items.append(newItem)
-                    }
+                    if let bg = itemIn.bgColor { newItem.bgColor = bg }
+                    if let fg = itemIn.fgColor { newItem.fgColor = fg }
+                    
                     createdIds.append(newItem.id)
+                    state.lastItem = newItem
+                    if let p = parentItem { p.children.append(newItem) } else { state.items.append(newItem) }
                 }
             }
         }
         
         if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
         
-        let encoder = JSONEncoder()
-        if let idData = try? encoder.encode(createdIds),
-           let idString = String(data: idData, encoding: .utf8) {
-            return idString
-        }
+        if let encoded = try? JSONEncoder().encode(createdIds), let res = String(data: encoded, encoding: .utf8) { return res }
         
         return "[]"
     }
@@ -213,11 +196,9 @@ public class SwiftZStackLoader: NSObject {
     public static func setItemColor(rootId: String, id: String, hex: String) {
         DispatchQueue.main.async {
             if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
-               let item = findItem(in: state.items, id: id) {
-                let color = Color(hex: hex)
-                var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-                NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
-                item.fgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+               let item = findItem(in: state.items, id: id),
+                let c = Color.parseHexRGBA(hex) {
+                 item.fgColor = ColorRGBA(r: c.r*255, g: c.g*255, b: c.b*255, a: c.a*100)
             }
         }
     }
@@ -225,11 +206,9 @@ public class SwiftZStackLoader: NSObject {
     public static func setItemBgColor(rootId: String, id: String, hex: String) {
         DispatchQueue.main.async {
             if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
-               let item = findItem(in: state.items, id: id) {
-                let color = Color(hex: hex)
-                var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-                NSColor(color).getRed(&r, green: &g, blue: &b, alpha: &a)
-                item.bgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+               let item = findItem(in: state.items, id: id),
+                let c = Color.parseHexRGBA(hex) {
+                 item.bgColor = ColorRGBA(r: c.r*255, g: c.g*255, b: c.b*255, a: c.a*100)
             }
         }
     }
@@ -374,10 +353,8 @@ public func zstk_set_item_color(rootId: String, id: String, color: Int, alpha: I
     DispatchQueue.main.async {
         if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
            let item = findItem(in: state.items, id: id) {
-            let colorObj = Color(hbColor: color, alpha: alpha)
-            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-            NSColor(colorObj).getRed(&r, green: &g, blue: &b, alpha: &a)
-            item.fgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+            let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+            item.fgColor = ColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
         }
     }
 }
@@ -387,10 +364,8 @@ public func zstk_set_item_bgcolor(rootId: String, id: String, color: Int, alpha:
     DispatchQueue.main.async {
         if let state = ViewRegistry.get(rootId) as? SwiftZStackState,
            let item = findItem(in: state.items, id: id) {
-            let colorObj = Color(hbColor: color, alpha: alpha)
-            var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-            NSColor(colorObj).getRed(&r, green: &g, blue: &b, alpha: &a)
-            item.bgColor = (r: Double(r), g: Double(g), b: Double(b), a: Double(a))
+            let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+            item.bgColor = ColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
         }
     }
 }
@@ -440,11 +415,12 @@ public func zstk_add_system_image_to(rootId: String, systemName: String, parentI
 }
 
 @HarbourDirect
-public func zstk_add_button_to(rootId: String, text: String, parentId: String?) -> String {
+public func zstk_add_button_to(rootId: String, text: String, parentId: String?, isProminent: Bool) -> String {
     var newItemId = ""
     let block = {
         if let state = ViewRegistry.get(rootId) as? SwiftZStackState {
             let newItem = StackItem(type: .button, content: text)
+            newItem.isProminent = isProminent
             newItemId = newItem.id
             if let pId = parentId, let parent = findItem(in: state.items, id: pId) {
                 parent.children.append(newItem)

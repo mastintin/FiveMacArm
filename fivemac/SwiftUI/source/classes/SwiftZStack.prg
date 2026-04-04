@@ -145,31 +145,33 @@ METHOD AddItem( nType, cContent, bAction, cSecondary, nClrFore, nClrBack, nAlpha
         "nAlphaFore" => nAlphaFore, "nAlphaBack" => nAlphaBack } )
 return nil
 
-METHOD AddBatch( aItems ) CLASS TSwiftZStack
+METHOD AddBatch( aItems, cParentId ) CLASS TSwiftZStack
     local aJsonData := {}
-    local aIds, n, cJson, cJsonIds, oTempItem, hItem
+    local aIds, n, cJson, cJsonIds, oTempItem, hItem, aRGBA
    
     DEFAULT aItems := ::aBatch
     if Empty( aItems ) ; return {} ; endif
 
     for n := 1 to Len( aItems )
-    hItem := { "type" => aItems[n]["type"], ;
-        "content" => aItems[n]["content"], ;
-        "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
-        
-    if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
-           hItem["bg"] := { "r" => nRGBRed( aItems[n]["nClrBack"] ) / 255.0, ;
-                            "g" => nRGBGreen( aItems[n]["nClrBack"] ) / 255.0, ;
-                            "b" => nRGBBlue( aItems[n]["nClrBack"] ) / 255.0, ;
-                            "a" => If( hb_HHasKey( aItems[n], "nAlphaBack" ) .and. aItems[n]["nAlphaBack"] != nil, aItems[n]["nAlphaBack"], 1.0 ) }
-    endif
-    if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
-           hItem["fg"] := { "r" => nRGBRed( aItems[n]["nClrFore"] ) / 255.0, ;
-                            "g" => nRGBGreen( aItems[n]["nClrFore"] ) / 255.0, ;
-                            "b" => nRGBBlue( aItems[n]["nClrFore"] ) / 255.0, ;
-                            "a" => If( hb_HHasKey( aItems[n], "nAlphaFore" ) .and. aItems[n]["nAlphaFore"] != nil, aItems[n]["nAlphaFore"], 1.0 ) }
-    endif
-    AAdd( aJsonData, hItem )
+        hItem := { "type" => aItems[n]["type"], ;
+            "content" => aItems[n]["content"], ;
+            "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
+            
+        if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
+            if aItems[n]["nClrBack"] == -2 .or. ( hb_HHasKey( aItems[n], "isProminent" ) .and. aItems[n]["isProminent"] )
+                hItem["isProminent"] := .T.
+            else
+                aRGBA := hb_ClrToRGBA( aItems[n]["nClrBack"], aItems[n]["nAlphaBack"] )
+                hItem["bgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
+            endif
+        endif
+            
+        if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
+            aRGBA := hb_ClrToRGBA( aItems[n]["nClrFore"], aItems[n]["nAlphaFore"] )
+            hItem["fgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
+        endif
+            
+        AAdd( aJsonData, hItem )
     next
    
     cJson := hb_jsonEncode( aJsonData )

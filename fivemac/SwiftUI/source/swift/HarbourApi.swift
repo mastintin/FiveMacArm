@@ -83,6 +83,7 @@ public func hb_itemGetCPtr(_ pItem: PHB_ITEM?) -> String? {
 }
 
 public struct Harbour {
+    
     public static func ret(_ value: String) {
         value.withCString { ptr in hb_retc(ptr) }
     }

@@ -23,15 +23,15 @@ public class LabelState: RGBAColorableState {
         self.textColor = textColor
     }
 
-    public func setAccentColorRGBA(color: Int, alpha: Int) {
+    public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.accentColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.accentColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 
-    public func setTextColorRGBA(color: Int, alpha: Int) {
+    public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.textColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 }

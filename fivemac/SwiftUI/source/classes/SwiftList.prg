@@ -96,8 +96,10 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-METHOD AddItem( nType, cContent, cSecondaryContent, cParentId ) CLASS TSwiftList
-return SD_LST_ADD_ITEM( ::cId, nType, cContent, If( cSecondaryContent != nil, cSecondaryContent, "" ), If( cParentId != nil, cParentId, "" ) )
+METHOD AddItem( nType, cContent, cSecondaryContent, cParentId, nClrFore, nClrBack, nAlphaFore, nAlphaBack, lProminent ) CLASS TSwiftList
+    DEFAULT nClrFore := -1, nClrBack := -1, nAlphaFore := 100, nAlphaBack := 100, lProminent := .F.
+    if lProminent ; nClrBack := -2 ; endif
+return SD_LST_ADD_ITEM( ::cId, nType, cContent, If( cSecondaryContent != nil, cSecondaryContent, "" ), If( cParentId != nil, cParentId, "" ), nClrFore, nClrBack, nAlphaFore, nAlphaBack )
 
 //----------------------------------------------------------------------------//
 
@@ -153,22 +155,28 @@ METHOD New( oList, cId ) CLASS TSwiftRow
     SwiftRegisterItem( ::cId, Self )
 return Self
 
-METHOD AddIcon( cIcon ) CLASS TSwiftRow
-    local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_SYSTEMIMAGE, cIcon, "", ::cId )
+METHOD AddIcon( cIcon, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftRow
+    local cId
+    DEFAULT nClrFore := -1, nClrBack := -1, nAlphaFore := 100, nAlphaBack := 0
+    cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_SYSTEMIMAGE, cIcon, "", ::cId, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
     ::oLastIcon := TSwiftListItem():New( cId, ::oList )
 return ::oLastIcon
 
-METHOD AddText( cText ) CLASS TSwiftRow
-    local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_TEXT, cText, "", ::cId )
+METHOD AddText( cText, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftRow
+    local cId
+    DEFAULT nClrFore := -1, nClrBack := -1, nAlphaFore := 100, nAlphaBack := 0
+    cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_TEXT, cText, "", ::cId, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
 return TSwiftListItem():New( cId, ::oList )
 
 METHOD AddSpacer() CLASS TSwiftRow
-    local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_SPACER, "", "", ::cId )
+    local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_SPACER, "", "", ::cId, -1, -1, 100, 100 )
 return TSwiftListItem():New( cId, ::oList )
 
-METHOD AddButton( cContent, bAction ) CLASS TSwiftRow
-    local cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_BUTTON, cContent, "", ::cId )
-    local oItem := TSwiftListItem():New( cId, ::oList )
+METHOD AddButton( cContent, bAction, nClrFore, nClrBack, nAlphaFore, nAlphaBack ) CLASS TSwiftRow
+    local cId, oItem
+    DEFAULT nClrFore := -1, nClrBack := -1, nAlphaFore := 100, nAlphaBack := 0
+    cId := SD_LST_ADD_ITEM( ::oList:cId, TYPE_BUTTON, cContent, "", ::cId, nClrFore, nClrBack, nAlphaFore, nAlphaBack )
+    oItem := TSwiftListItem():New( cId, ::oList )
     if bAction != nil ; oItem:bAction := bAction ; endif
 return oItem
 

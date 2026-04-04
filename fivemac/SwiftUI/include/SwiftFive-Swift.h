@@ -503,7 +503,7 @@ SWIFT_CLASS_NAMED("SwiftVStackLoader")
 + (NSString * _Nonnull)addToggle:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy caption:(NSString * _Nonnull)caption initialValue:(BOOL)initialValue isSwitch:(BOOL)isSwitch parentId:(NSString * _Nullable)parentId;
 + (NSString * _Nonnull)addSlider:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id value:(double)value min:(double)min max:(double)max glass:(BOOL)glass parentId:(NSString * _Nullable)parentId;
 + (NSString * _Nonnull)addDivider:(NSString * _Nonnull)rootId dummy:(NSString * _Nonnull)dummy parentId:(NSString * _Nullable)parentId;
-+ (NSString * _Nonnull)addButtonItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId;
++ (NSString * _Nonnull)addButtonItem:(NSString * _Nonnull)rootId text:(NSString * _Nonnull)text parentId:(NSString * _Nullable)parentId isProminent:(BOOL)isProminent;
 + (void)setItemText:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id text:(NSString * _Nonnull)text;
 + (void)setItemColor:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id red:(double)red green:(double)green blue:(double)blue alpha:(double)alpha;
 + (void)setItemLayout:(NSString * _Nonnull)rootId id:(NSString * _Nonnull)id w:(double)w h:(double)h s:(double)s;
@@ -682,6 +682,8 @@ SWIFT_EXTERN void HB_FUN_SD_PKR_SET_SHOW_LABEL(void * _Nullable p) SWIFT_NOEXCEP
 
 SWIFT_EXTERN void HB_FUN_SD_PKR_SET_TITLE(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_SD_SET_ACCENT_COLOR(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SD_SLD_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SLD_GET_VALUE(void * _Nullable p) SWIFT_NOEXCEPT;
@@ -748,7 +750,11 @@ SWIFT_EXTERN void HB_FUN_SD_SW_ISCONNECTED(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SW_MSG_YES_NO(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_SD_SW_SET_COLORS_DIRECT(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SD_SW_SET_COLORS_RGBA(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_SET_TEXT_COLORS_DIRECT(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SW_SET_TEXT_COLORS_RGBA(void * _Nullable p) SWIFT_NOEXCEPT;
 

@@ -16,15 +16,15 @@ public class SwiftListState: StackStateProtocol, RGBAColorableState {
 
     public init() {}
 
-    public func setAccentColorRGBA(color: Int, alpha: Int) {
+    public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.backgroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.backgroundColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 
-    public func setTextColorRGBA(color: Int, alpha: Int) {
+    public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.textColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 }
@@ -150,7 +150,8 @@ public class SwiftListLoader: NSObject {
         DispatchQueue.main.async {
             if let state = ViewRegistry.get(rootId) as? SwiftListState,
                let item = findItem(in: state.items, id: id) {
-                item.fgColor = (Double(color & 0xFF)/255, Double((color >> 8)&0xFF)/255, Double((color >> 16)&0xFF)/255, Double(alpha)/255)
+                let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+                item.fgColor = ColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
             }
         }
     }
@@ -159,7 +160,8 @@ public class SwiftListLoader: NSObject {
         DispatchQueue.main.async {
             if let state = ViewRegistry.get(rootId) as? SwiftListState,
                let item = findItem(in: state.items, id: id) {
-                item.bgColor = (Double(color & 0xFF)/255, Double((color >> 8)&0xFF)/255, Double((color >> 16)&0xFF)/255, Double(alpha)/255)
+                let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+                item.bgColor = ColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
             }
         }
     }
@@ -247,13 +249,24 @@ public func lst_remove_all(rootId: String) {
 }
 
 @HarbourDirect
-public func lst_add_item(rootId: String, type: Int, content: String, secondary: String, parentId: String) -> String {
+public func lst_add_item(rootId: String, type: Int, content: String, secondary: String, parentId: String, clrFore: Int, clrBack: Int, alphaFore: Int, alphaBack: Int) -> String {
     var newItemId = ""
     let block = {
         if let state = ViewRegistry.get(rootId) as? SwiftListState {
             let itemType = StackItem.ItemType(rawValue: type) ?? .text
             let secContent = secondary.isEmpty ? nil : secondary
             let newItem = StackItem(type: itemType, content: content, secondaryContent: secContent)
+            
+            if clrBack == -2 {
+                newItem.isProminent = true
+            } else if clrBack != -1 { 
+                let c = Color.componentsFrom(hbColor: clrBack, alpha: alphaBack)
+                newItem.bgColor = ColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
+            }
+            if clrFore != -1 {
+                let c = Color.componentsFrom(hbColor: clrFore, alpha: alphaFore)
+                newItem.fgColor = ColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
+            }
             
             newItemId = newItem.id
             state.lastItem = newItem
@@ -275,12 +288,13 @@ public func lst_add_item(rootId: String, type: Int, content: String, secondary: 
 
 @HarbourDirect
 public func lst_add_batch(rootId: String, json: String, parentId: String?) -> String {
-    struct BatchInput: Codable {
+    struct BatchInput: Decodable {
         let type: Int
         let content: String
         let secondaryContent: String?
-        let bg: ColorRGBA?
-        let fg: ColorRGBA?
+        let bgColor: ColorRGBA?
+        let fgColor: ColorRGBA?
+        let isProminent: Bool?
     }
     
     let decoder = JSONDecoder()
@@ -299,8 +313,9 @@ public func lst_add_batch(rootId: String, json: String, parentId: String?) -> St
                 let newItemType = StackItem.ItemType(rawValue: itemIn.type) ?? .text
                 let newItem = StackItem(type: newItemType, content: itemIn.content, secondaryContent: itemIn.secondaryContent)
                 
-                if let bg = itemIn.bg { newItem.bgColor = (bg.r, bg.g, bg.b, bg.a) }
-                if let fg = itemIn.fg { newItem.fgColor = (fg.r, fg.g, fg.b, fg.a) }
+                if let bg = itemIn.bgColor { newItem.bgColor = bg }
+                if let fg = itemIn.fgColor { newItem.fgColor = fg }
+                if let isP = itemIn.isProminent { newItem.isProminent = isP }
                 
                 if let p = parentItem {
                     p.children.append(newItem)

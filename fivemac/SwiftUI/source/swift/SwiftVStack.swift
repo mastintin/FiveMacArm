@@ -23,15 +23,15 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState {
 
     public init() {}
 
-    public func setAccentColorRGBA(color: Int, alpha: Int) {
+    public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.backgroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.backgroundColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 
-    public func setTextColorRGBA(color: Int, alpha: Int) {
+    public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.textColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 }
@@ -532,12 +532,13 @@ public class SwiftVStackLoader: NSObject {
         return newItemId
     }
 
-    @objc(addButtonItem:text:parentId:)
+    @objc(addButtonItem:text:parentId:isProminent:)
     @discardableResult
-    public static func addButtonItem(_ rootId: String, text: String, parentId: String?) -> String {
+    public static func addButtonItem(_ rootId: String, text: String, parentId: String?, isProminent: Bool = false) -> String {
         var newItemId = ""
         let block = {
              let newItem = StackItem(type: .button, content: text)
+             newItem.isProminent = isProminent
              newItemId = newItem.id
              
             if let state = ViewRegistry.get(rootId) as? StackStateProtocol {
@@ -564,21 +565,42 @@ public class SwiftVStackLoader: NSObject {
     }
 
     @objc(setItemColor:id:red:green:blue:alpha:)
-    public static func setItemBackgroundColor(rootId: String, id: String, red: Double, green: Double, blue: Double, alpha: Double) {
+    public static func setItemBgColorRGB(rootId: String, id: String, red: Double, green: Double, blue: Double, alpha: Double) {
         let block = {
             if let state = (ViewRegistry.get(rootId) as? StackStateProtocol) {
                 if let item = findItem(in: state.items, id: id) {
-                    item.bgColor = (red, green, blue, alpha)
+                    item.bgColor = ColorRGBA(r: Int(red * 255), g: Int(green * 255), b: Int(blue * 255), a: Int(alpha * 255))
+                }
+            }
+        }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.sync { block() } }
+    }
+
+    public static func vstk_set_item_color(rootId: String, id: String, color: Int, alpha: Int) {
+        let block = {
+            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
+                if color == -2 {
+                    item.isProminent = true
+                } else {
+                    item.isProminent = false
+                    let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+                    item.fgColor = ColorRGBA(r: Double(c.r), g: Double(c.g), b: Double(c.b), a: Double(c.a))
                 }
             }
         }
         if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
-    public static func setItemColor(rootId: String, id: String, color: Int, alpha: Int) {
+    public static func vstk_set_item_bgcolor(rootId: String, id: String, color: Int, alpha: Int) {
         let block = {
             if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
-                item.fgColor = (Double(color & 0xFF)/255, Double((color >> 8)&0xFF)/255, Double((color >> 16)&0xFF)/255, Double(alpha)/255)
+                if color == -2 {
+                    item.isProminent = true
+                } else {
+                    item.isProminent = false
+                    let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+                    item.bgColor = ColorRGBA(r: Double(c.r), g: Double(c.g), b: Double(c.b), a: Double(c.a))
+                }
             }
         }
         if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
@@ -623,12 +645,14 @@ public class SwiftVStackLoader: NSObject {
     @objc(addBatch:parentId:json:)
     @discardableResult
     public static func addBatch(_ rootId: String, parentId: String?, json: String) -> String {
-        struct BatchInput: Codable {
+        struct BatchInput: Decodable {
             let type: Int
+            let id: String?
             let content: String
             let secondaryContent: String?
-            let bg: ColorRGBA?
-            let fg: ColorRGBA?
+            let bgColor: ColorRGBA?
+            let fgColor: ColorRGBA?
+            let isProminent: Bool?
         }
         let decoder = JSONDecoder()
         guard let data = json.data(using: .utf8), let batchItems = try? decoder.decode([BatchInput].self, from: data) else { return "[]" }
@@ -639,8 +663,9 @@ public class SwiftVStackLoader: NSObject {
             for itemIn in batchItems {
                 let newItemType = StackItem.ItemType(rawValue: itemIn.type) ?? .text
                 let newItem = StackItem(type: newItemType, content: itemIn.content, secondaryContent: itemIn.secondaryContent)
-                if let bg = itemIn.bg { newItem.bgColor = (bg.r, bg.g, bg.b, bg.a) }
-                if let fg = itemIn.fg { newItem.fgColor = (fg.r, fg.g, fg.b, fg.a) }
+                if let bg = itemIn.bgColor { newItem.bgColor = bg }
+                if let fg = itemIn.fgColor { newItem.fgColor = fg }
+                if let isP = itemIn.isProminent { newItem.isProminent = isP }
                 newIds.append(newItem.id)
                 state.lastItem = newItem 
                 if let p = parentItem { p.children.append(newItem) } else { state.items.append(newItem) }
@@ -695,12 +720,12 @@ public func vstk_set_item_text(rootId: String, id: String, text: String) {
 
 @HarbourDirect
 public func vstk_set_item_color(rootId: String, id: String, color: Int, alpha: Int) {
-    SwiftVStackLoader.setItemColor(rootId: rootId, id: id, color: color, alpha: alpha)
+    SwiftVStackLoader.vstk_set_item_color(rootId: rootId, id: id, color: color, alpha: alpha)
 }
 
 @HarbourDirect
 public func vstk_set_item_bgcolor(rootId: String, id: String, color: Int, alpha: Int) {
-    SwiftVStackLoader.setItemBgColor(rootId: rootId, id: id, color: color, alpha: alpha)
+    SwiftVStackLoader.vstk_set_item_bgcolor(rootId: rootId, id: id, color: color, alpha: alpha)
 }
 
 @HarbourDirect
@@ -754,8 +779,8 @@ public func vstk_add_vstack(rootId: String, parentId: String?) -> String {
 }
 
 @HarbourDirect
-public func vstk_add_button_item(rootId: String, text: String, parentId: String?) -> String {
-    return SwiftVStackLoader.addButtonItem(rootId, text: text, parentId: parentId)
+public func vstk_add_button_item(rootId: String, text: String, parentId: String?, isProminent: Bool) -> String {
+    return SwiftVStackLoader.addButtonItem(rootId, text: text, parentId: parentId, isProminent: isProminent)
 }
 
 @HarbourDirect

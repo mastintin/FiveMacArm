@@ -99,7 +99,7 @@ ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cId ) CLASS TSwiftControl
     ::hState  := { "Value" => nil, "Top" => nTop, "Left" => nLeft, "Width" => nWidth, "Height" => nHeight, ;
-                   "TextColor" => 0, "TextAlpha" => 255, "AccentColor" => 0, "AccentAlpha" => 255 }
+        "TextColor" => 0, "TextAlpha" => 100, "AccentColor" => 0, "AccentAlpha" => 0 }
     ::cId     := hb_defaultValue( cId, "" )
 return Self
 
@@ -112,26 +112,49 @@ METHOD Register( hPtr ) CLASS TSwiftControl
 return Self
 
 METHOD SetTextColor( nColor, nAlpha ) CLASS TSwiftControl
-     if nColor == NIL ; nColor := ::nClrText  ; endif
-     if nAlpha == NIL ; nAlpha := ::nAlphaText; endif
-     ::hState["TextColor"] := nColor
-     ::hState["TextAlpha"] := nAlpha
-     sd_sw_set_text_colors_rgba( ::cId, nColor, nAlpha )
+    LOCAL aRGBA 
+     
+    if nAlpha == NIL
+        nAlpha :=  ::nAlphaText
+    endif
+
+
+    if nColor == NIL
+        nColor := ::nClrText
+    endif
+
+    aRGBA := hb_ClrToRGBA( nColor, nAlpha ) 
+     
+    ::hState["TextColor"] := nColor
+    ::hState["TextAlpha"] := aRGBA[4]
+     
+    sd_sw_set_text_colors_direct( ::cId, aRGBA[1], aRGBA[2], aRGBA[3], aRGBA[4] )
 return self
 
 METHOD SetAccentColor( nColor, nAlpha ) CLASS TSwiftControl
-     if nColor == NIL ; nColor := ::nClrAcc  ; endif
-     if nAlpha == NIL ; nAlpha := ::nAlphaAcc; endif
-     ::hState["AccentColor"] := nColor
-     ::hState["AccentAlpha"] := nAlpha
-     sd_sw_set_colors_rgba( ::cId, nColor, nAlpha )
+    LOCAL aRGBA
+     
+    if nAlpha == NIL
+       nAlpha := ::nAlphaAcc
+    endif
+
+    if nColor == NIL
+       nColor := ::nClrAcc
+    endif
+     
+    aRGBA := hb_ClrToRGBA( nColor, nAlpha )
+     
+    ::hState["AccentColor"] := nColor
+    ::hState["AccentAlpha"] := aRGBA[4]
+     
+    sd_sw_set_colors_direct( ::cId, aRGBA[1], aRGBA[2], aRGBA[3], aRGBA[4] )
 return self
 
 METHOD SetPos( nTop, nLeft ) CLASS TSwiftControl
     if nTop != NIL  ; ::hState["Top"]  := nTop  ; endif
     if nLeft != NIL ; ::hState["Left"] := nLeft ; endif
     if !Empty( ::cId )
-       sw_set_pos( ::cId, nTop, nLeft )
+        sw_set_pos( ::cId, nTop, nLeft )
     endif
 return nil
 
@@ -139,7 +162,7 @@ METHOD SetSize( nWidth, nHeight ) CLASS TSwiftControl
     if nWidth != NIL  ; ::hState["Width"]  := nWidth ; endif
     if nHeight != NIL ; ::hState["Height"] := nHeight ; endif
     if !Empty( ::cId )
-       sw_set_size( ::cId, nWidth, nHeight )
+        sw_set_size( ::cId, nWidth, nHeight )
     endif
 return nil
 
@@ -151,13 +174,13 @@ return self
 METHOD Sync() CLASS TSwiftControl
     local cJson := hb_jsonEncode( ::hState )
     if !Empty( ::cId )
-       sw_update_state( ::cId, cJson ) 
+        sw_update_state( ::cId, cJson ) 
     endif
 return nil
 
 METHOD Update( hNewState ) CLASS TSwiftControl
     if ValType( hNewState ) == "H"
-       hb_HMerge( ::hState, hNewState )
+        hb_HMerge( ::hState, hNewState )
     endif
 return nil
 

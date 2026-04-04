@@ -21,15 +21,15 @@ public class ToggleState: RGBAColorableState {
         self.callback = callback
     }
 
-    public func setAccentColorRGBA(color: Int, alpha: Int) {
+    public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.accentColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.accentColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 
-    public func setTextColorRGBA(color: Int, alpha: Int) {
+    public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.textColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.textColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 }
@@ -110,8 +110,10 @@ public class SwiftToggleLoader: NSObject {
     // Versión ultra-rápida para Harbour (nRGB)
     public static func setColors(id: String, accentColor: Int, textColor: Int, alpha: Int) {
         if let state = ViewRegistry.getState(for: id) as? ToggleState {
-            state.setAccentColorRGBA(color: accentColor, alpha: alpha)
-            state.setTextColorRGBA(color: textColor, alpha: alpha)
+            let ac = Color.componentsFrom(hbColor: accentColor, alpha: alpha)
+            let tc = Color.componentsFrom(hbColor: textColor, alpha: alpha)
+            state.setAccentColorRGBA(r: ac.r, g: ac.g, b: ac.b, a: ac.a)
+            state.setTextColorRGBA(r: tc.r, g: tc.g, b: tc.b, a: tc.a)
         }
     }
     
@@ -143,8 +145,10 @@ public func tgl_get_value(id: String) -> Bool {
 @HarbourDirect
 public func tgl_set_colors_rgba(id: String, accent: Int, text: Int, alpha: Int) {
     if let state = ViewRegistry.getState(for: id) as? ToggleState {
-        state.setAccentColorRGBA(color: accent, alpha: alpha)
-        state.setTextColorRGBA(color: text, alpha: alpha)
+        let ac = Color.componentsFrom(hbColor: accent, alpha: alpha)
+        let tc = Color.componentsFrom(hbColor: text, alpha: alpha)
+        state.setAccentColorRGBA(r: ac.r, g: ac.g, b: ac.b, a: ac.a)
+        state.setTextColorRGBA(r: tc.r, g: tc.g, b: tc.b, a: tc.a)
     }
 }
 

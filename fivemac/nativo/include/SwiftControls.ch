@@ -8,8 +8,10 @@
     [ OF <oWnd> ] ;
     [ ACTION <uAction> ] ;
     [ AUTORESIZE <nAutoResize> ] ;
+    [ <glass: GLASS> ] ;
+    [ <prominent: PROMINENT> ] ;
     => ;
-    [ <oBtn> := ] TSwiftButton():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cCaption>, <oWnd>, [<{uAction}>], <nAutoResize> )
+    [ <oBtn> := ] TSwiftButton():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cCaption>, <oWnd>, [<{uAction}>], <nAutoResize>, NIL, <.glass.>, <.prominent.> )
 
 //----------------------------------------------------------------------------//
 

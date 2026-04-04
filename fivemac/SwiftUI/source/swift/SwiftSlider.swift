@@ -24,15 +24,15 @@ public class SliderState: RGBAColorableState {
         self.callback = callback
     }
 
-    public func setAccentColorRGBA(color: Int, alpha: Int) {
+    public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.accentColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.accentColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 
-    public func setTextColorRGBA(color: Int, alpha: Int) {
+    public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
-            self.foregroundColor = Color(hbColor: color).opacity(Double(alpha) / 255.0)
+            self.foregroundColor = Color(r: r, g: g, b: b, a: a)
         }
     }
 }

@@ -10,12 +10,16 @@ CLASS TSwiftButton FROM TSwiftControl
     
     ASSIGN OnClick( b ) INLINE ::bAction := b
     ASSIGN OnAction( b ) INLINE ::bAction := b
+    
+    ACCESS lProminent    INLINE ::hState["isProminent"]
+    ASSIGN lProminent( l ) INLINE ::hState["isProminent"] := l, ::SetProminent( l )
 
-    METHOD New( nTop, nCol, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId, lGlass )
+    METHOD New( nTop, nCol, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId, lGlass, lProminent )
     METHOD OnAction()
     METHOD SetRadius( nRadius )
     METHOD SetPadding( nPadding )
     METHOD SetGlass( lGlass )
+    METHOD SetProminent( lProminent )
     METHOD SetText( cText )
     METHOD SetImage( cImage ) 
     METHOD SetAutoResize( nAutoResize ) INLINE  if(nAutoResize != 0 , SWIFTAUTORESIZE( ::hWnd, nAutoResize ), )
@@ -23,19 +27,24 @@ CLASS TSwiftButton FROM TSwiftControl
       
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId, lGlass ) CLASS TSwiftButton
+METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId, lGlass, lProminent ) CLASS TSwiftButton
 
-    DEFAULT nWidth := 90, nHeight := 30, oWnd := GetWndDefault(), cPrompt := "SwiftBtn", nAutoResize := 0, lGlass := .F.
+    DEFAULT nWidth := 90, nHeight := 30, oWnd := GetWndDefault(), cPrompt := "SwiftBtn", nAutoResize := 0, lGlass := .F., lProminent := .F.
 
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
     
     ::bAction = bAction
     ::oWnd    = oWnd
-    ::hState["Caption"]   := cPrompt
-    ::hState["IsGlass"] := lGlass
-   
-    ::Register( SD_SWIFT_BUTTON_CREATE( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd:hWnd, ::cId ) )
     
+    ::hState["caption"]      := cPrompt
+    ::hState["isGlass"]      := lGlass
+    ::hState["isProminent"]  := lProminent
+    ::hState["cornerRadius"] := 8
+    ::hState["padding"]      := 0
+    ::hState["imageName"]    := ""
+   
+    ::Register( SD_SWIFT_BUTTON_CREATE( nTop, nLeft, nWidth, nHeight, hb_JsonEncode( ::hState ), oWnd:hWnd, ::cId ) )
+
     if lGlass
         ::SetGlass( lGlass )
     endif
@@ -43,6 +52,15 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, c
     oWnd:AddControl( Self )
 
 return Self
+
+METHOD SetProminent( lProminent ) CLASS TSwiftButton
+    ::hState["isProminent"] := lProminent
+    if lProminent
+        sd_set_accent_color( ::cId, -2, 100 )
+    else
+        sd_set_accent_color( ::cId, -1, 100 )
+    endif
+return nil
 
 METHOD SetText( cText ) CLASS TSwiftButton
     ::hState["Caption"] := cText
