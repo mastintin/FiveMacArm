@@ -36,11 +36,27 @@ public class ViewRegistry {
     }
 }
 
+// MARK: - Flipped Coordinate System (0,0 at Top-Left)
+
+extension NSView {
+    @objc open var isFlippedStyle: Bool { return true }
+}
+
+// For those views created within the bridge:
+public class FlippedView: NSView {
+    public override var isFlipped: Bool { return true }
+}
+
 // MARK: - Protocol for Atomic Color Management
 
 public protocol RGBAColorableState: AnyObject {
     func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int)
     func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int)
+}
+
+public protocol HexColorableState: AnyObject {
+    func setAccentColor(hex: String)
+    func setTextColor(hex: String)
 }
 
 // MARK: - SwiftUI View Extensions (modify & if)
@@ -379,8 +395,11 @@ public func sw_set_id_hb(_ p: UnsafeMutableRawPointer?) {
 func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Double, left: Double, w: Double, h: Double) {
     let targetView: NSView? = (parent as? NSWindow)?.contentView ?? (parent as? NSView)
     guard let contentView = targetView else { return }
-    let winHeight = contentView.frame.size.height
-    let cocoaY = contentView.isFlipped ? CGFloat(top) : (winHeight - CGFloat(top) - CGFloat(h))
+    
+    // FORZAMOS EL GIRO: Ignoramos si el contentView dice que es flipped o no.
+    // Fivemac SIEMPRE espera coordenadas (0,0) arriba a la izquierda.
+    let cocoaY = CGFloat(top) 
+    
     swiftView.frame = NSRect(x: CGFloat(left), y: cocoaY, width: CGFloat(w), height: CGFloat(h))
     contentView.addSubview(swiftView)
     swiftView.translatesAutoresizingMaskIntoConstraints = true

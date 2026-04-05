@@ -145,6 +145,10 @@ FIVEMAC_DRAGDROP_METHODS
   hb_vmPushNLL((HB_LONGLONG)win);
   hb_vmDo(3);
 
+  // RED DE SEGURIDAD: SI HARBOUR NO CONTESTA (.NIL.), DEVOLVEMOS YES
+  if (!HB_ISLOG(-1))
+    return YES;
+
   return hb_parl(-1);
 }
 

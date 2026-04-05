@@ -67,7 +67,7 @@ public struct ButtonInitialState: Codable {
     public let imagename: String?
 }
 
-// ESTILO PERSISTENTE CON DETECTOR DE FOCO DE VENTANA
+// ESTILO PERSISTENTE CON ACABADO DE SISTEMA
 struct PersistentButtonStyle: ButtonStyle {
     var bgColor: Color
     var fgColor: Color
@@ -75,12 +75,10 @@ struct PersistentButtonStyle: ButtonStyle {
     var padding: CGFloat
     var isGlass: Bool
     var styleName: String
-    var isActive: Bool // El estado de la ventana
+    var isActive: Bool 
 
     func makeBody(configuration: Configuration) -> some View {
         let isProminent = styleName.lowercased() == "prominent"
-        
-        // Colores dinámicos basados en el foco (como el Toggle)
         let finalBg = isActive ? 
             ((bgColor == .clear && isProminent) ? Color.accentColor : bgColor) : 
             (isProminent ? Color.gray.opacity(0.3) : .clear)
@@ -99,20 +97,9 @@ struct PersistentButtonStyle: ButtonStyle {
                          VisualEffectView(material: .hudWindow, blendingMode: .withinWindow)
                              .overlay(finalBg.opacity(isActive ? 0.7 : 0.2))
                              .clipShape(Capsule())
-                             .overlay(Capsule().stroke(isActive ? Color.clear : Color.gray.opacity(0.3), lineWidth: 0.5))
                     } else if isProminent || finalBg != .clear {
                          finalBg
                              .clipShape(isProminent ? AnyShape(Capsule()) : AnyShape(RoundedRectangle(cornerRadius: radius)))
-                             // Borde gris al perder el foco (estética Toggle)
-                             .overlay(
-                                 Group {
-                                     if isProminent {
-                                         Capsule().stroke(isActive ? Color.clear : Color.gray.opacity(0.4), lineWidth: 1)
-                                     } else {
-                                         RoundedRectangle(cornerRadius: radius).stroke(isActive ? Color.clear : Color.gray.opacity(0.3), lineWidth: 0.5)
-                                     }
-                                 }
-                             )
                     }
                 }
             )
@@ -121,8 +108,8 @@ struct PersistentButtonStyle: ButtonStyle {
             .shadow(color: Color.black.opacity(isProminent && isActive ? 0.2 : 0), radius: 1, x: 0, y: 1)
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-            .animation(.easeInOut(duration: 0.2), value: isActive)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
+            .animation(.easeInOut(duration: 0.2), value: isActive)
     }
 }
 
@@ -145,7 +132,6 @@ struct SwiftButtonView: View {
     @Bindable var state: ButtonState
     var callback: (() -> Void)?
     
-    // Detector de foco de ventana (estándar SwiftUI/AppKit)
     @Environment(\.controlActiveState) var windowState
 
     var body: some View {
@@ -170,7 +156,7 @@ struct SwiftButtonView: View {
                 padding: state.padding,
                 isGlass: state.isGlass,
                 styleName: state.style,
-                isActive: windowState != .inactive // Esto detecta si la ventana es inactiva
+                isActive: windowState != .inactive 
             )
         )
     }

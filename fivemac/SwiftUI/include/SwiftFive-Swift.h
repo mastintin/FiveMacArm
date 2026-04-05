@@ -344,6 +344,8 @@ extern "C" {
 #if __has_warning("-Watimport-in-framework-header")
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
+@import AppKit;
+@import Foundation;
 @import ObjectiveC;
 #endif
 
@@ -367,13 +369,24 @@ extern "C" {
 
 #if defined(__OBJC__)
 
+@class NSCoder;
+SWIFT_CLASS("_TtC9SwiftFive11FlippedView")
+@interface FlippedView : NSView
+@property (nonatomic, readonly, getter=isFlipped) BOOL flipped;
+- (nonnull instancetype)initWithFrame:(NSRect)frameRect OBJC_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithCoder:(NSCoder * _Nonnull)coder OBJC_DESIGNATED_INITIALIZER;
+@end
+
+@interface NSView (SWIFT_EXTENSION(SwiftFive))
+@property (nonatomic, readonly) BOOL isFlippedStyle;
+@end
+
 SWIFT_CLASS_NAMED("SwiftButtonLoader")
 @interface SwiftButtonLoader : NSObject
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 @end
 
 @class NSString;
-@class NSView;
 SWIFT_CLASS_NAMED("SwiftChartLoader")
 @interface SwiftChartLoader : NSObject
 + (NSView * _Nonnull)makeChart:(NSString * _Nonnull)id data:(NSString * _Nonnull)data type:(NSString * _Nonnull)type index:(NSInteger)index SWIFT_WARN_UNUSED_RESULT;
@@ -844,11 +857,11 @@ SWIFT_EXTERN void HB_FUN_SD_TGL_DESTROY(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_TGL_GET_VALUE(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_SD_TGL_SET_BG(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SD_TGL_SET_CAPTION(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN void HB_FUN_SD_TGL_SET_COLORS_HEX(void * _Nullable p) SWIFT_NOEXCEPT;
-
-SWIFT_EXTERN void HB_FUN_SD_TGL_SET_COLORS_RGBA(void * _Nullable p) SWIFT_NOEXCEPT;
+SWIFT_EXTERN void HB_FUN_SD_TGL_SET_FG(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_TGL_SET_VALUE(void * _Nullable p) SWIFT_NOEXCEPT;
 

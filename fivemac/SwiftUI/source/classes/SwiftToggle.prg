@@ -2,24 +2,26 @@
 
 CLASS TSwiftToggle FROM TSwiftControl
 
-    ACCESS Caption      INLINE ::hState["Caption"]
+    ACCESS Caption      INLINE ::hState["caption"]
     ASSIGN Caption( c ) INLINE ::SetCaption( c )
 
-    ACCESS Checked      INLINE ::hState["Value"]
+    ACCESS Checked      INLINE ::hState["ison"]
     ASSIGN Checked( l ) INLINE ::SetValue( l )
 
-    ACCESS Value        INLINE ::hState["Value"]
+    ACCESS Value        INLINE ::hState["ison"]
     ASSIGN Value( l )   INLINE ::SetValue( l )
 
-    ACCESS IsSwitch      INLINE ::hState["IsSwitch"]
-    ASSIGN IsSwitch( l ) INLINE ::hState["IsSwitch"] := l
+    ACCESS IsSwitch      INLINE ::hState["isswitch"]
+    ASSIGN IsSwitch( l ) INLINE ::hState["isswitch"] := l
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction, nAutoResize, cId )
     METHOD SetValue( lOn )
-    METHOD GetValue()
-    METHOD SetCaption(cCaption ) 
-    METHOD End() 
+    METHOD GetValue()   INLINE ::Value
+    METHOD SetCaption( cCaption ) 
+    METHOD SetTextColor( nColor, nAlpha )
+    METHOD SetAccentColor( nColor, nAlpha )
     METHOD OnChange( lOn )
+    METHOD End() 
     
 ENDCLASS
 
@@ -33,14 +35,14 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction,
 
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
     
-    ::hState["Caption"]     = cCaption
-    ::hState["Value"]       = lOn
-    ::hState["IsSwitch"]    = lSwitch
+    ::hState["caption"]     := cCaption
+    ::hState["ison"]        := lOn
+    ::hState["isswitch"]    := lSwitch
    
-    ::bAction  = bAction
-    ::oWnd     = oWnd
+    ::bAction  := bAction
+    ::oWnd     := oWnd
    
-    ::Register( SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, cCaption, lOn, oWnd:hWnd, ::cId, lSwitch ) )
+    ::Register( SD_SWIFT_TOGGLE_CREATE( nTop, nLeft, nWidth, nHeight, hb_JsonEncode( ::hState ), oWnd:hWnd, ::cId ) )
     
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -50,33 +52,38 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cCaption, lOn, lSwitch, oWnd, bAction,
 
 return Self
 
-//------------------------------------------
-
 METHOD SetValue( lOn ) CLASS TSwiftToggle
-    
     if ::Value != lOn
-        ::hState["Value"] := lOn
+        ::hState["ison"] := lOn
         SD_TGL_SET_VALUE( ::cId, lOn )
         if ::bAction != nil
-            Eval( ::bAction, lOn, self )
+            Eval( ::bAction, lOn, Self )
         endif
     endif
-
 return nil
 
-//----------------------------------------
-
-METHOD GetValue() CLASS TSwiftToggle
-return ::Value
-
-//-----------------------------------------
-
 METHOD SetCaption( cCaption ) CLASS TSwiftToggle
-    ::hState["Caption"] := cCaption
+    ::hState["caption"] := cCaption
     SD_TGL_SET_CAPTION( ::cId, cCaption )
 return nil
 
-// ---------------------------------------------------------------------------
+METHOD SetTextColor( nColor, nAlpha ) CLASS TSwiftToggle
+    local cHex 
+    if nColor != NIL 
+        cHex := ::InitialColorToHex( nColor, nAlpha )
+        ::hState["textcolor"] := cHex 
+        SD_TGL_SET_FG( ::cId, cHex )
+    endif
+return self
+
+METHOD SetAccentColor( nColor, nAlpha ) CLASS TSwiftToggle
+    local cHex 
+    if nColor != NIL 
+        cHex := ::InitialColorToHex( nColor, nAlpha )
+        ::hState["accentcolor"] := cHex 
+        SD_TGL_SET_BG( ::cId, cHex )
+    endif
+return self
 
 METHOD End() CLASS TSwiftToggle
     if !Empty( ::hWnd )
@@ -85,7 +92,7 @@ METHOD End() CLASS TSwiftToggle
 return ::Super:End()
 
 METHOD OnChange( lOn ) CLASS TSwiftToggle
-    ::hState["Value"] := lOn
+    ::hState["ison"] := lOn
     if ::bAction != nil
         Eval( ::bAction, lOn, Self )
     endif
