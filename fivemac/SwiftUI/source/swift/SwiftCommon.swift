@@ -65,14 +65,39 @@ extension View {
 
 extension Color {
     public init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        let cleanHex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted).lowercased()
+        
+        switch cleanHex {
+        case "": self = .clear; return
+        case "accent": self = .accentColor; return
+        case "primary": self = .primary; return
+        case "secondary": self = .secondary; return
+        case "clear": self = .clear; return
+        case "blue": self = .blue; return
+        case "red": self = .red; return
+        case "green": self = .green; return
+        case "yellow": self = .yellow; return
+        case "orange": self = .orange; return
+        case "purple": self = .purple; return
+        case "pink": self = .pink; return
+        case "mint": self = .mint; return
+        case "teal": self = .teal; return
+        case "cyan": self = .cyan; return
+        case "indigo": self = .indigo; return
+        case "brown": self = .brown; return
+        case "gray": self = .gray; return
+        case "white": self = .white; return
+        case "black": self = .black; return
+        default: break
+        }
+        
         var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
+        Scanner(string: cleanHex).scanHexInt64(&int)
         let a, r, g, b: UInt64
-        switch hex.count {
+        switch cleanHex.count {
         case 3: (a, r, g, b) = (255, (int >> 8)*17, (int>>4&0xF)*17, (int&0xF)*17)
         case 6: (a, r, g, b) = (255, int>>16, int>>8&0xFF, int&0xFF)
-        case 8: (a, r, g, b) = (int>>24, int>>16&0xFF, int>>8&0xFF, int&0xFF)
+        case 8: (r, g, b, a) = (int>>24, int>>16&0xFF, int>>8&0xFF, int&0xFF)
         default: (a, r, g, b) = (255, 0, 0, 0)
         }
         self.init(.sRGB, red: Double(r)/255, green: Double(g)/255, blue: Double(b)/255, opacity: Double(a)/255)
@@ -86,7 +111,7 @@ extension Color {
         switch hex.count {
         case 3: (a, r, g, b) = (255, (int >> 8)*17, (int>>4&0xF)*17, (int&0xF)*17)
         case 6: (a, r, g, b) = (255, int>>16, int>>8&0xFF, int&0xFF)
-        case 8: (a, r, g, b) = (int>>24, int>>16&0xFF, int>>8&0xFF, int&0xFF)
+        case 8: (r, g, b, a) = (int>>24, int>>16&0xFF, int>>8&0xFF, int&0xFF)
         default: return nil
         }
         return (Double(r)/255, Double(g)/255, Double(b)/255, Double(a)/255)

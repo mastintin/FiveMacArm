@@ -11,28 +11,28 @@ public class ButtonState: RGBAColorableState {
     var cornerRadius: CGFloat
     var padding: CGFloat
     var isGlass: Bool
-    var isProminent: Bool = false
+    var style: String
     var imageName: String
 
-    init(caption: String, backgroundColor: Color = .clear, foregroundColor: Color = .primary, cornerRadius: CGFloat = 8, padding: CGFloat = 0, isGlass: Bool = false, imageName: String = "", isProminent: Bool = false) {
+    init(caption: String, backgroundColor: Color = .clear, foregroundColor: Color = .primary, cornerRadius: CGFloat = 8, padding: CGFloat = 0, isGlass: Bool = false, imageName: String = "", style: String = "plain") {
         self.caption = caption
         self.backgroundColor = backgroundColor
         self.foregroundColor = foregroundColor
         self.cornerRadius = cornerRadius
         self.padding = padding
         self.isGlass = isGlass
-        self.isProminent = isProminent
+        self.style = style
         self.imageName = imageName
     }
 
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
         DispatchQueue.main.async {
             if r == -2 {
-                self.isProminent = true
+                self.style = "prominent"
                 self.backgroundColor = .accentColor
                 self.foregroundColor = .white
             } else {
-                self.isProminent = false
+                self.style = "plain"
                 self.backgroundColor = Color(r: r, g: g, b: b, a: a)
             }
         }
@@ -47,13 +47,13 @@ public class ButtonState: RGBAColorableState {
 
 public struct ButtonInitialState: Codable {
     public let caption: String
-    public let bgColor: ColorRGBA?
-    public let fgColor: ColorRGBA?
-    public let cornerRadius: Double?
+    public let bgcolor: String?
+    public let textcolor: String?
+    public let cornerradius: Double?
     public let padding: Double?
-    public let isGlass: Bool?
-    public let isProminent: Bool?
-    public let imageName: String?
+    public let isglass: Bool?
+    public let style: String?
+    public let imagename: String?
 }
 
 struct SwiftButtonView: View {
@@ -81,49 +81,47 @@ struct SwiftButtonView: View {
              .contentShape(Capsule())
              .ifAvailable_glassEffect()
         } else {
-             if state.isProminent {
-                 Button(action: { self.callback?() }) {
-                     HStack {
-                         if !state.imageName.isEmpty {
-                             Image(systemName: state.imageName)
-                         }
-                         Text(state.caption)
+             Button(action: { self.callback?() }) {
+                 HStack {
+                     if !state.imageName.isEmpty {
+                         Image(systemName: state.imageName)
                      }
-                     .padding(state.padding > 0 ? state.padding : 10)
-                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                     Text(state.caption)
                  }
-                 .buttonStyle(BorderedProminentButtonStyle())
-                 .foregroundColor(.white)
-                 .cornerRadius(state.cornerRadius)
-             } else {
-                 Button(action: { self.callback?() }) {
-                     HStack {
-                         if !state.imageName.isEmpty {
-                             Image(systemName: state.imageName)
-                         }
-                         Text(state.caption)
-                     }
-                     .padding(state.padding > 0 ? state.padding : 10)
-                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                     .background(state.backgroundColor)
-                     .cornerRadius(state.cornerRadius)
-                 }
-                 .buttonStyle(BorderedButtonStyle())
-                 .foregroundColor(state.foregroundColor)
-                 .contentShape(Rectangle())
+                 .padding(state.padding > 0 ? state.padding : 10)
+                 .frame(maxWidth: .infinity, maxHeight: .infinity)
              }
+             .swiftDynamicButtonStyle(state: state)
+             .cornerRadius(state.cornerRadius)
+             .contentShape(Rectangle())
         }
     }
 }
 
 extension View {
     @ViewBuilder
-    func ifAvailable_glassEffect() -> some View {
-        if #available(macOS 26.0, *) {
-             self.glassEffect(.regular, in: Capsule())
-        } else {
-            self
+    func swiftDynamicButtonStyle(state: ButtonState) -> some View {
+        switch state.style.lowercased() {
+        case "prominent":
+            self.buttonStyle(.borderedProminent)
+                .tint(state.backgroundColor == .clear ? nil : state.backgroundColor)
+                .foregroundColor(.white)
+        case "bordered":
+            self.buttonStyle(.bordered)
+        case "link":
+            self.buttonStyle(.link)
+        case "borderless":
+            self.buttonStyle(.borderless)
+        default:
+            self.buttonStyle(.plain)
+                .background(state.backgroundColor)
+                .foregroundColor(state.foregroundColor)
         }
+    }
+
+    @ViewBuilder
+    func ifAvailable_glassEffect() -> some View {
+        self.glassEffect(.regular, in: Capsule())
     }
 }
 
@@ -135,17 +133,26 @@ public class SwiftButtonLoader: NSObject {
          
          let decoder = JSONDecoder()
          let initialState = (try? decoder.decode(ButtonInitialState.self, from: json.data(using: .utf8) ?? Data()))
-         ?? ButtonInitialState(caption: "SwiftBtn", bgColor: nil, fgColor: nil, cornerRadius: nil, padding: nil, isGlass: nil, isProminent: false, imageName: nil)
+         ?? ButtonInitialState(caption: "SwiftBtn", bgcolor: nil, textcolor: nil, cornerradius: nil, padding: nil, isglass: nil, style: nil, imagename: nil)
+
+         let c = initialState.caption
+         let bg = Color(hex: initialState.bgcolor ?? "clear")
+         let fg = Color(hex: initialState.textcolor ?? "primary")
+         let rad = CGFloat(initialState.cornerradius ?? 8)
+         let pad = CGFloat(initialState.padding ?? 0)
+         let glass = initialState.isglass ?? false
+         let img = initialState.imagename ?? ""
+         let styl = initialState.style ?? "plain"
 
          let state = ButtonState(
-            caption: initialState.caption,
-            backgroundColor: initialState.bgColor.map { Color(rgba: $0) } ?? .clear,
-            foregroundColor: initialState.fgColor.map { Color(rgba: $0) } ?? .primary,
-            cornerRadius: CGFloat(initialState.cornerRadius ?? 8),
-            padding: CGFloat(initialState.padding ?? 0),
-            isGlass: initialState.isGlass ?? false,
-            imageName: initialState.imageName ?? "",
-            isProminent: initialState.isProminent ?? false
+            caption: c,
+            backgroundColor: bg,
+            foregroundColor: fg,
+            cornerRadius: rad,
+            padding: pad,
+            isGlass: glass,
+            imageName: img,
+            style: styl
          )
          
          // Register in central registries
@@ -169,6 +176,11 @@ public class SwiftButtonLoader: NSObject {
                 _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
             }
         }
+    }
+
+    public static func setStyle(id: String, style: String) {
+        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.style = style } }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public static func setText(id: String, text: String) {
@@ -215,8 +227,18 @@ public func btn_set_text(id: String, text: String) {
 }
 
 @HarbourDirect
+public func btn_set_style(id: String, style: String) {
+    SwiftButtonLoader.setStyle(id: id, style: style)
+}
+
+@HarbourDirect
 public func btn_set_fg(id: String, hex: String) {
     SwiftButtonLoader.setForegroundColor(id: id, hex: hex)
+}
+
+@HarbourDirect
+public func btn_set_bg(id: String, hex: String) {
+    SwiftButtonLoader.setBackgroundColor(id: id, hex: hex)
 }
 
 @HarbourDirect

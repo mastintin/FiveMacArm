@@ -46,9 +46,9 @@ FUNCTION hb_ClrToRGBA( uColor, nAlpha, nBlue, nOptAlpha )
     ENDIF
     
     IF hb_IsString( uColor )
-        // --- LÓGICA HEXADECIMAL ---
-        cHex := AllTrim( uColor )
-        IF Left( cHex, 1 ) == "#" ; cHex := SubStr( cHex, 2 ) ; ENDIF
+    // --- LÓGICA HEXADECIMAL ---
+    cHex := AllTrim( uColor )
+    IF Left( cHex, 1 ) == "#" ; cHex := SubStr( cHex, 2 ) ; ENDIF
         
         IF Len( cHex ) == 3  // Formato #RGB
             r := hb_HexToNum( SubStr( cHex, 1, 1 ) + SubStr( cHex, 1, 1 ) )
@@ -80,7 +80,7 @@ FUNCTION hb_ClrToRGBA( uColor, nAlpha, nBlue, nOptAlpha )
         a := iif( nAlpha <= 1.0 .and. nAlpha > 0, Int( nAlpha * 255 ), nAlpha )
     ENDIF
     
-    RETURN { r, g, b, a }
+RETURN { r, g, b, a }
 
 FUNCTION clrToHex( nVal, nAlpha )
     LOCAL r, g, b, a
@@ -111,3 +111,36 @@ FUNCTION clrToHex( nVal, nAlpha )
 FUNCTION cMacColor( nVal )
     // Dividimos entre 255 para obtener el decimal que espera Apple (0.0 a 1.0)
 RETURN hb_ValToStr( nVal / 255 ) 
+
+// -------------------------------------------------------------------------------- //
+// UNIVERSAL COLOR GOD (THE LEGACY TO MODER BRIDGE)
+// Returns: A HEX STRING "RRGGBBAA"
+// -------------------------------------------------------------------------------- //
+function xColorToHex( xColor, nAlpha )
+    local cHex := ""
+    local nR, nG, nB
+    
+    hb_default( @nAlpha, 100 ) // Default Opaque
+    
+    do case
+
+        case ValType( xColor ) == "N" // Scenario: BGR Classic (Harbour Int)
+            nR := hb_bitAnd( xColor, 0xFF )
+            nG := hb_bitAnd( hb_bitShift( xColor, -8 ), 0xFF )
+            nB := hb_bitAnd( hb_bitShift( xColor, -16 ), 0xFF )
+            cHex := hb_numToHex( nR, 2 ) + hb_numToHex( nG, 2 ) + hb_numToHex( nB, 2 )
+            
+        case ValType( xColor ) == "A" // Scenario 2: RGB Array [R, G, B]
+            cHex := hb_numToHex( xColor[ 1 ], 2 ) + hb_numToHex( xColor[ 2 ], 2 ) + hb_numToHex( xColor[ 3 ], 2 )
+            
+        case ValType( xColor ) == "C" // Scenario 3: HTML Hex String "#RRGGBB"
+            cHex := strTran( xColor, "#", "" )
+            if len( cHex ) > 6
+                cHex := left( cHex, 6 )
+            endif
+    endcase
+    
+    // Add Alpha (0-100 to 00-FF hex)
+    cHex += hb_numToHex( Round( ( nAlpha / 100 ) * 255, 0 ), 2 )
+    
+return upper( cHex )

@@ -87,29 +87,30 @@ METHOD AddBatch( aItems ) CLASS TSwiftVStack
     local aJsonData := {}
     local aIds, n, cJson, cJsonIds
     local hItem, oTempItem
-   
+    local aRGBA
+    
     if Empty( aItems ) ; return {} ; endif
 
     for n := 1 to Len( aItems )
-    hItem := { "type" => aItems[n]["type"], ;
-        "content" => aItems[n]["content"], ;
-        "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
+        hItem := { "type" => aItems[n]["type"], ;
+            "content" => aItems[n]["content"], ;
+            "secondaryContent" => If( hb_HHasKey( aItems[n], "secondaryContent" ), aItems[n]["secondaryContent"], nil ) }
         
-    if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
-        if aItems[n]["nClrBack"] == -2 .or. ( hb_HHasKey( aItems[n], "isProminent" ) .and. aItems[n]["isProminent"] )
-            hItem["isProminent"] := .T.
-        else
-            aRGBA := hb_ClrToRGBA( aItems[n]["nClrBack"], aItems[n]["nAlphaBack"] )
-            hItem["bgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
+        if hb_HHasKey( aItems[n], "nClrBack" ) .and. aItems[n]["nClrBack"] != nil
+            if aItems[n]["nClrBack"] == -2 .or. ( hb_HHasKey( aItems[n], "isProminent" ) .and. aItems[n]["isProminent"] )
+                hItem["isProminent"] := .T.
+            else
+                aRGBA := hb_ClrToRGBA( aItems[n]["nClrBack"], aItems[n]["nAlphaBack"] )
+                hItem["bgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
+            endif
         endif
-    endif
         
-    if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
-        aRGBA := hb_ClrToRGBA( aItems[n]["nClrFore"], aItems[n]["nAlphaFore"] )
-        hItem["fgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
-    endif
+        if hb_HHasKey( aItems[n], "nClrFore" ) .and. aItems[n]["nClrFore"] != nil
+            aRGBA := hb_ClrToRGBA( aItems[n]["nClrFore"], aItems[n]["nAlphaFore"] )
+            hItem["fgColor"] := { "r" => aRGBA[1], "g" => aRGBA[2], "b" => aRGBA[3], "a" => aRGBA[4] }
+        endif
         
-    AAdd( aJsonData, hItem )
+        AAdd( aJsonData, hItem )
     next
    
     cJson := hb_jsonEncode( aJsonData )

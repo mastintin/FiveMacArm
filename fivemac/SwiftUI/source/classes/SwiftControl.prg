@@ -1,5 +1,11 @@
 #include "FiveMac.ch"
 
+// Lista de colores semánticos vivos de Apple (SwiftUI)
+static s_aSwiftSemanticColors := { "accent", "primary", "secondary", "clear", ;
+                                   "blue", "red", "green", "yellow", "orange", ;
+                                   "purple", "pink", "mint", "teal", "cyan", ;
+                                   "indigo", "brown", "gray", "white", "black" }
+
 // TSwiftControl: The base class for all SwiftUI controls in FiveMac
 // Centralizes state management (Hash) and common lifecycle events.
 
@@ -77,6 +83,7 @@ CLASS TSwiftControl FROM TControl
     METHOD GetValue()    VIRTUAL  // To be implemented by subclasses
     METHOD SetTextColor( nColor, nAlpha )
     METHOD SetAccentColor( nColor, nAlpha )
+    METHOD InitialColorToHex( nColor, nAlpha )
     METHOD SetPos( nTop, nLeft )
     METHOD SetSize( nWidth, nHeight )
     METHOD SetColor( nFg, nBg, nAlphaFg, nAlphaBg )
@@ -102,6 +109,12 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cId ) CLASS TSwiftControl
         "TextColor" => 0, "TextAlpha" => 100, "AccentColor" => 0, "AccentAlpha" => 0 }
     ::cId     := hb_defaultValue( cId, "" )
 return Self
+
+METHOD InitialColorToHex( nColor, nAlpha ) CLASS TSwiftControl
+    if ValType( nColor ) == "C" .and. AScan( s_aSwiftSemanticColors, lower( nColor ) ) > 0
+        return lower( nColor )
+    endif
+return xColorToHex( nColor, nAlpha )
 
 METHOD Register( hPtr ) CLASS TSwiftControl
     if !Empty( hPtr )
@@ -135,11 +148,11 @@ METHOD SetAccentColor( nColor, nAlpha ) CLASS TSwiftControl
     LOCAL aRGBA
      
     if nAlpha == NIL
-       nAlpha := ::nAlphaAcc
+        nAlpha := ::nAlphaAcc
     endif
 
     if nColor == NIL
-       nColor := ::nClrAcc
+        nColor := ::nClrAcc
     endif
      
     aRGBA := hb_ClrToRGBA( nColor, nAlpha )
