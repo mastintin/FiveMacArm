@@ -4,7 +4,7 @@ import Observation
 import HarbourMacro
 
 @Observable
-public class ButtonState: RGBAColorableState {
+public class ButtonState: HexColorableState {
     var caption: String
     var backgroundColor: Color
     var foregroundColor: Color
@@ -25,8 +25,19 @@ public class ButtonState: RGBAColorableState {
         self.imageName = imageName
     }
 
+    public func setAccentColor(hex: String) {
+        let block = { self.backgroundColor = Color(hex: hex) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+    }
+
+    public func setTextColor(hex: String) {
+        let block = { self.foregroundColor = Color(hex: hex) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+    }
+
+    // LEGACY RGBA methods
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
-        DispatchQueue.main.async {
+        let block = {
             if r == -2 {
                 self.style = "prominent"
                 self.backgroundColor = .accentColor
@@ -36,12 +47,12 @@ public class ButtonState: RGBAColorableState {
                 self.backgroundColor = Color(r: r, g: g, b: b, a: a)
             }
         }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
-        DispatchQueue.main.async {
-            self.foregroundColor = Color(r: r, g: g, b: b, a: a)
-        }
+        let block = { self.foregroundColor = Color(r: r, g: g, b: b, a: a) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 }
 
@@ -56,112 +67,144 @@ public struct ButtonInitialState: Codable {
     public let imagename: String?
 }
 
-struct SwiftButtonView: View {
-    var state: ButtonState
-    var callback: (() -> Void)?
-    
-    var body: some View {
-        if state.isGlass {
-             Button(action: { self.callback?() }) {
-                 HStack {
-                     if !state.imageName.isEmpty {
-                         Image(systemName: state.imageName)
-                     }
-                     Text(state.caption)
-                 }
-                 .padding(.horizontal, 12)
-                 .padding(.vertical, 8)
-                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                 .background(state.backgroundColor.opacity(0.8))
-                 .clipShape(Capsule())
-                 .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 0.5))
-             }
-             .buttonStyle(PlainButtonStyle())
-             .foregroundColor(state.foregroundColor)
-             .contentShape(Capsule())
-             .ifAvailable_glassEffect()
-        } else {
-             Button(action: { self.callback?() }) {
-                 HStack {
-                     if !state.imageName.isEmpty {
-                         Image(systemName: state.imageName)
-                     }
-                     Text(state.caption)
-                 }
-                 .padding(state.padding > 0 ? state.padding : 10)
-                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-             }
-             .swiftDynamicButtonStyle(state: state)
-             .cornerRadius(state.cornerRadius)
-             .contentShape(Rectangle())
-        }
+// ESTILO PERSISTENTE CON DETECTOR DE FOCO DE VENTANA
+struct PersistentButtonStyle: ButtonStyle {
+    var bgColor: Color
+    var fgColor: Color
+    var radius: CGFloat
+    var padding: CGFloat
+    var isGlass: Bool
+    var styleName: String
+    var isActive: Bool // El estado de la ventana
+
+    func makeBody(configuration: Configuration) -> some View {
+        let isProminent = styleName.lowercased() == "prominent"
+        
+        // Colores dinámicos basados en el foco (como el Toggle)
+        let finalBg = isActive ? 
+            ((bgColor == .clear && isProminent) ? Color.accentColor : bgColor) : 
+            (isProminent ? Color.gray.opacity(0.3) : .clear)
+            
+        let finalFg = isActive ? 
+            ((isProminent && fgColor == .primary) ? Color.white : fgColor) :
+            (isProminent ? Color.gray : fgColor.opacity(0.6))
+
+        configuration.label
+            .font(.system(size: 13, weight: isProminent ? .medium : .regular))
+            .padding(padding > 0 ? padding : 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(
+                Group {
+                    if isGlass {
+                         VisualEffectView(material: .hudWindow, blendingMode: .withinWindow)
+                             .overlay(finalBg.opacity(isActive ? 0.7 : 0.2))
+                             .clipShape(Capsule())
+                             .overlay(Capsule().stroke(isActive ? Color.clear : Color.gray.opacity(0.3), lineWidth: 0.5))
+                    } else if isProminent || finalBg != .clear {
+                         finalBg
+                             .clipShape(isProminent ? AnyShape(Capsule()) : AnyShape(RoundedRectangle(cornerRadius: radius)))
+                             // Borde gris al perder el foco (estética Toggle)
+                             .overlay(
+                                 Group {
+                                     if isProminent {
+                                         Capsule().stroke(isActive ? Color.clear : Color.gray.opacity(0.4), lineWidth: 1)
+                                     } else {
+                                         RoundedRectangle(cornerRadius: radius).stroke(isActive ? Color.clear : Color.gray.opacity(0.3), lineWidth: 0.5)
+                                     }
+                                 }
+                             )
+                    }
+                }
+            )
+            .foregroundColor(finalFg)
+            .cornerRadius(isGlass || isProminent ? 0 : radius)
+            .shadow(color: Color.black.opacity(isProminent && isActive ? 0.2 : 0), radius: 1, x: 0, y: 1)
+            .opacity(configuration.isPressed ? 0.8 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isActive)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
-extension View {
-    @ViewBuilder
-    func swiftDynamicButtonStyle(state: ButtonState) -> some View {
-        switch state.style.lowercased() {
-        case "prominent":
-            self.buttonStyle(.borderedProminent)
-                .tint(state.backgroundColor == .clear ? nil : state.backgroundColor)
-                .foregroundColor(.white)
-        case "bordered":
-            self.buttonStyle(.bordered)
-        case "link":
-            self.buttonStyle(.link)
-        case "borderless":
-            self.buttonStyle(.borderless)
-        default:
-            self.buttonStyle(.plain)
-                .background(state.backgroundColor)
-                .foregroundColor(state.foregroundColor)
-        }
+struct VisualEffectView: NSViewRepresentable {
+    let material: NSVisualEffectView.Material
+    let blendingMode: NSVisualEffectView.BlendingMode
+
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let view = NSVisualEffectView()
+        view.material = material
+        view.blendingMode = blendingMode
+        view.state = .followsWindowActiveState
+        return view
     }
 
-    @ViewBuilder
-    func ifAvailable_glassEffect() -> some View {
-        self.glassEffect(.regular, in: Capsule())
+    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
+}
+
+struct SwiftButtonView: View {
+    @Bindable var state: ButtonState
+    var callback: (() -> Void)?
+    
+    // Detector de foco de ventana (estándar SwiftUI/AppKit)
+    @Environment(\.controlActiveState) var windowState
+
+    var body: some View {
+        Button(action: { 
+             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                 self.callback?() 
+             }
+        }) {
+             HStack(spacing: 8) {
+                 if !state.imageName.isEmpty {
+                     Image(systemName: state.imageName)
+                         .font(.system(size: 14))
+                 }
+                 Text(state.caption)
+             }
+        }
+        .buttonStyle(
+            PersistentButtonStyle(
+                bgColor: state.backgroundColor,
+                fgColor: state.foregroundColor,
+                radius: state.cornerRadius,
+                padding: state.padding,
+                isGlass: state.isGlass,
+                styleName: state.style,
+                isActive: windowState != .inactive // Esto detecta si la ventana es inactiva
+            )
+        )
     }
 }
 
 @objc(SwiftButtonLoader)
 public class SwiftButtonLoader: NSObject {
+    
+    public static var states: [String: ButtonState] = [:]
 
     public static func makeButton(id: String, json: String, callback: @escaping () -> Void) -> NSView {
          let finalId = id.isEmpty ? UUID().uuidString : id
-         
          let decoder = JSONDecoder()
          let initialState = (try? decoder.decode(ButtonInitialState.self, from: json.data(using: .utf8) ?? Data()))
          ?? ButtonInitialState(caption: "SwiftBtn", bgcolor: nil, textcolor: nil, cornerradius: nil, padding: nil, isglass: nil, style: nil, imagename: nil)
 
-         let c = initialState.caption
-         let bg = Color(hex: initialState.bgcolor ?? "clear")
-         let fg = Color(hex: initialState.textcolor ?? "primary")
-         let rad = CGFloat(initialState.cornerradius ?? 8)
-         let pad = CGFloat(initialState.padding ?? 0)
-         let glass = initialState.isglass ?? false
-         let img = initialState.imagename ?? ""
-         let styl = initialState.style ?? "plain"
-
          let state = ButtonState(
-            caption: c,
-            backgroundColor: bg,
-            foregroundColor: fg,
-            cornerRadius: rad,
-            padding: pad,
-            isGlass: glass,
-            imageName: img,
-            style: styl
+            caption: initialState.caption,
+            backgroundColor: Color(hex: initialState.bgcolor ?? "clear"),
+            foregroundColor: Color(hex: initialState.textcolor ?? "primary"),
+            cornerRadius: CGFloat(initialState.cornerradius ?? 8),
+            padding: CGFloat(initialState.padding ?? 0),
+            isGlass: initialState.isglass ?? false,
+            imageName: initialState.imagename ?? "",
+            style: initialState.style ?? "plain"
          )
          
-         // Register in central registries
+         states[finalId] = state
          ViewRegistry.register(state, for: finalId)
          
          let view = SwiftButtonView(state: state, callback: callback)
-         ViewRegistry.register(view, for: finalId)
-         
          let hostingView = NSHostingView(rootView: view)
+         hostingView.wantsLayer = true
+         hostingView.layerContentsRedrawPolicy = .beforeViewResize
          hostingView.sizingOptions = [] 
          hostingView.translatesAutoresizingMaskIntoConstraints = false
          hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
@@ -169,8 +212,8 @@ public class SwiftButtonLoader: NSObject {
     }
 
     public static func destroyButton(id: String, viewPtr: Int64) {
+        states.removeValue(forKey: id)
         ViewRegistry.clean(id:id) 
-        
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
                 _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
@@ -178,88 +221,26 @@ public class SwiftButtonLoader: NSObject {
         }
     }
 
-    public static func setStyle(id: String, style: String) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.style = style } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
-
-    public static func setText(id: String, text: String) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.caption = text } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
-
-    public static func setBackgroundColor(id: String, hex: String) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.backgroundColor = Color(hex: hex) } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
-
-    public static func setForegroundColor(id: String, hex: String) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.foregroundColor = Color(hex: hex) } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
-
-    public static func setCornerRadius(id: String, radius: Double) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.cornerRadius = CGFloat(radius) } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
-    
-    public static func setPadding(id: String, padding: Double) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.padding = CGFloat(padding) } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
-
-    public static func setGlass(id: String, isGlass: Bool) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.isGlass = isGlass } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
-
-    public static func setImage(id: String, imageName: String) {
-        let block = { if let state = ViewRegistry.getState(for: id) as? ButtonState { state.imageName = imageName } }
-        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
-    }
+    public static func setText(id: String, text: String) { states[id]?.caption = text }
+    public static func setStyle(id: String, style: String) { states[id]?.style = style }
+    public static func setBackgroundColor(id: String, hex: String) { states[id]?.setAccentColor(hex: hex) }
+    public static func setForegroundColor(id: String, hex: String) { states[id]?.setTextColor(hex: hex) }
+    public static func setCornerRadius(id: String, radius: Double) { DispatchQueue.main.async { states[id]?.cornerRadius = CGFloat(radius) } }
+    public static func setPadding(id: String, padding: Double) { DispatchQueue.main.async { states[id]?.padding = CGFloat(padding) } }
+    public static func setGlass(id: String, isGlass: Bool) { DispatchQueue.main.async { states[id]?.isGlass = isGlass } }
+    public static func setImage(id: String, imageName: String) { DispatchQueue.main.async { states[id]?.imageName = imageName } }
 }
 
 // --- HARBOUR BRIDGE MACROS ---
 
-@HarbourDirect
-public func btn_set_text(id: String, text: String) {
-    SwiftButtonLoader.setText(id: id, text: text)
-}
-
-@HarbourDirect
-public func btn_set_style(id: String, style: String) {
-    SwiftButtonLoader.setStyle(id: id, style: style)
-}
-
-@HarbourDirect
-public func btn_set_fg(id: String, hex: String) {
-    SwiftButtonLoader.setForegroundColor(id: id, hex: hex)
-}
-
-@HarbourDirect
-public func btn_set_bg(id: String, hex: String) {
-    SwiftButtonLoader.setBackgroundColor(id: id, hex: hex)
-}
-
-@HarbourDirect
-public func btn_set_radius(id: String, radius: Double) {
-    SwiftButtonLoader.setCornerRadius(id: id, radius: radius)
-}
-
-@HarbourDirect
-public func btn_set_padding(id: String, padding: Double) {
-    SwiftButtonLoader.setPadding(id: id, padding: padding)
-}
-
-@HarbourDirect
-public func btn_set_glass(id: String, isGlass: Bool) {
-    SwiftButtonLoader.setGlass(id: id, isGlass: isGlass)
-}
-
-@HarbourDirect
-public func btn_set_image(id: String, image: String) {
-    SwiftButtonLoader.setImage(id: id, imageName: image)
-}
+@HarbourDirect public func btn_set_text(id: String, text: String) { SwiftButtonLoader.setText(id: id, text: text) }
+@HarbourDirect public func btn_set_style(id: String, style: String) { SwiftButtonLoader.setStyle(id: id, style: style) }
+@HarbourDirect public func btn_set_fg(id: String, hex: String) { SwiftButtonLoader.setForegroundColor(id: id, hex: hex) }
+@HarbourDirect public func btn_set_bg(id: String, hex: String) { SwiftButtonLoader.setBackgroundColor(id: id, hex: hex) }
+@HarbourDirect public func btn_set_radius(id: String, radius: Double) { SwiftButtonLoader.setCornerRadius(id: id, radius: radius) }
+@HarbourDirect public func btn_set_padding(id: String, padding: Double) { SwiftButtonLoader.setPadding(id: id, padding: padding) }
+@HarbourDirect public func btn_set_glass(id: String, isGlass: Bool) { SwiftButtonLoader.setGlass(id: id, isGlass: isGlass) }
+@HarbourDirect public func btn_set_image(id: String, image: String) { SwiftButtonLoader.setImage(id: id, imageName: image) }
 
 @HarbourDirect
 public func btn_destroy(id: String, viewPtr: Int64) {
@@ -280,15 +261,9 @@ public func swift_button_create(
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
         let finalId = id.isEmpty ? UUID().uuidString : id
-        
         let callback: () -> Void = {
-            let sendToHarbour = {
+            DispatchQueue.main.async {
                 SwiftBridge.onAction(finalId)
-            }
-            if Thread.isMainThread {
-                sendToHarbour()
-            } else {
-                DispatchQueue.main.async { sendToHarbour() }
             }
         }
 
@@ -300,28 +275,12 @@ public func swift_button_create(
 
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
-            
-            applySwiftViewLayout(
-                swiftView: buttonView, 
-                parent: parentObj, 
-                top: top, 
-                left: left, 
-                w: width, 
-                h: height
-            )
-            
-            let viewPtr = Unmanaged.passRetained(buttonView).toOpaque()
-            viewAddress = Int64(Int(bitPattern: viewPtr))
+            applySwiftViewLayout(swiftView: buttonView, parent: parentObj, top: top, left: left, w: width, h: height)
+            viewAddress = Int64(Int(bitPattern: Unmanaged.passRetained(buttonView).toOpaque()))
         }
         
         return viewAddress
     }
 
-    if Thread.isMainThread {
-        return executeCreation()
-    } else {
-        return DispatchQueue.main.sync {
-            return executeCreation()
-        }
-    }
+    if Thread.isMainThread { return executeCreation() } else { return DispatchQueue.main.sync { executeCreation() } }
 }
