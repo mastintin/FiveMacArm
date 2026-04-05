@@ -38,6 +38,7 @@ function Main()
   oList:AddItem( 9, "Yellow/Black Button", {|| MsgInfo( "Yellow" ) }, nil, CLR_BLACK, CLR_YELLOW )
    
   // NEW: Alpha support testing
+  oList:AddItem( 9, "PROMINENT BUTTON (lProminent)", {|| MsgInfo( "Prominent!" ) }, nil, nil, nil, nil, nil, .T. )
   oList:AddItem( 9, "Blue 50% Alpha", {|| MsgInfo( "50% Alpha" ) }, nil, CLR_WHITE, nColor, 1.0, 0.5 )
   oList:AddItem( 0, "Green Text 30% Alpha", nil, nil, CLR_GREEN, nil, 0.3 )
    

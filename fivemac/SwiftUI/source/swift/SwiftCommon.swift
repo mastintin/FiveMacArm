@@ -110,6 +110,7 @@ extension Color {
     // LEGACY / DEPRECATED: Intenta adivinar el color desde un entero empaquetado. 
     // Usar el inicializador de 4 componentes (r:g:b:a) como nuevo estándar.
     public init(hbColor: Int, alpha: Int = 255) {
+        // Standard Harbour RGB order: Byte 0=R, Byte 1=G, Byte 2=B
         let r = Double(hbColor & 0xFF) / 255.0
         let g = Double((hbColor >> 8) & 0xFF) / 255.0
         let b = Double((hbColor >> 16) & 0xFF) / 255.0
@@ -118,12 +119,21 @@ extension Color {
         var a = Double(alpha) / 255.0
         let nativeAlpha = (hbColor >> 24) & 0xFF
         
-        // Use nativeAlpha ONLY if it's present AND an explicit override wasn't passed (default 255)
         if nativeAlpha > 0 && alpha == 255 {
             a = Double(nativeAlpha) / 255.0
         }
         
         self.init(.sRGB, red: r, green: g, blue: b, opacity: a)
+    }
+
+    // NEW: Strict RGBA Component-based initializer (The New Standard)
+    public init(r: Int, g: Int, b: Int, a: Int) {
+        self.init(red: Double(r)/255.0, green: Double(g)/255.0, blue: Double(b)/255.0, opacity: Double(a)/100.0)
+    }
+
+    // Inicializador directo desde nuestra estructura de transferencia
+    public init(rgba: ColorRGBA) {
+        self.init(red: rgba.r/255.0, green: rgba.g/255.0, blue: rgba.b/255.0, opacity: rgba.a/100.0)
     }
 }
 
@@ -175,10 +185,57 @@ public class StackItem: Identifiable, Codable {
     public var fontSize: Double? = nil
     public var isBold: Bool = false
     public var cornerRadius: Double? = nil
+    public var isProminent: Bool = false
     
     // Absolute Coordinates (for ZStack/Window)
     public var x: Double? = nil
     public var y: Double? = nil
+
+    private enum CodingKeys: String, CodingKey {
+        case id, type, content, secondaryContent, children, gridColumns, bgColor, fgColor, itemHeight, itemWidth, spacing, fontSize, isBold, cornerRadius, isProminent, x, y
+    }
+
+    public required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = (try? container.decode(String.self, forKey: .id)) ?? UUID().uuidString
+        type = try container.decode(ItemType.self, forKey: .type)
+        content = try container.decode(String.self, forKey: .content)
+        secondaryContent = try? container.decode(String.self, forKey: .secondaryContent)
+        children = (try? container.decode([StackItem].self, forKey: .children)) ?? []
+        gridColumns = try? container.decode([GridItemSpec].self, forKey: .gridColumns)
+        bgColor = try? container.decode(ColorRGBA.self, forKey: .bgColor)
+        fgColor = try? container.decode(ColorRGBA.self, forKey: .fgColor)
+        itemHeight = try? container.decode(Double.self, forKey: .itemHeight)
+        itemWidth = try? container.decode(Double.self, forKey: .itemWidth)
+        spacing = try? container.decode(Double.self, forKey: .spacing)
+        fontSize = try? container.decode(Double.self, forKey: .fontSize)
+        isBold = (try? container.decode(Bool.self, forKey: .isBold)) ?? false
+        cornerRadius = try? container.decode(Double.self, forKey: .cornerRadius)
+        isProminent = (try? container.decode(Bool.self, forKey: .isProminent)) ?? false
+        x = try? container.decode(Double.self, forKey: .x)
+        y = try? container.decode(Double.self, forKey: .y)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(type, forKey: .type)
+        try container.encode(content, forKey: .content)
+        try container.encode(secondaryContent, forKey: .secondaryContent)
+        try container.encode(children, forKey: .children)
+        try container.encode(gridColumns, forKey: .gridColumns)
+        try container.encode(bgColor, forKey: .bgColor)
+        try container.encode(fgColor, forKey: .fgColor)
+        try container.encode(itemHeight, forKey: .itemHeight)
+        try container.encode(itemWidth, forKey: .itemWidth)
+        try container.encode(spacing, forKey: .spacing)
+        try container.encode(fontSize, forKey: .fontSize)
+        try container.encode(isBold, forKey: .isBold)
+        try container.encode(cornerRadius, forKey: .cornerRadius)
+        try container.encode(isProminent, forKey: .isProminent)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+    }
 
     public init(type: ItemType, content: String, secondaryContent: String? = nil, id: String? = nil) {
         self.id = id ?? UUID().uuidString

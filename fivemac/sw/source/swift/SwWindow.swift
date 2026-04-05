@@ -1,7 +1,16 @@
 import SwiftUI
 import AppKit
+import Observation
+import HarbourMacro
 
 // MARK: - Native Window Bridge for SwiftUI
+
+@HarbourDirect
+public func swift_button_create_state(id: String, caption: String) {
+    let finalId = id.isEmpty ? UUID().uuidString : id
+    let state = ButtonState(caption: caption)
+    ViewRegistry.register(state, for: finalId)
+}
 
 // Storage to keep delegates alive
 private var windowDelegates: [String: NSWindowDelegate] = [:]

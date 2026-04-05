@@ -606,14 +606,6 @@ public class SwiftVStackLoader: NSObject {
         if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
-    public static func setItemBgColor(rootId: String, id: String, color: Int, alpha: Int) {
-        DispatchQueue.main.async {
-            if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
-                item.bgColor = (Double(color & 0xFF)/255, Double((color >> 8)&0xFF)/255, Double((color >> 16)&0xFF)/255, Double(alpha)/255)
-            }
-        }
-    }
-
     public static func setItemFont(rootId: String, id: String, size: CGFloat, isBold: Bool) {
         DispatchQueue.main.async {
             if let state = (ViewRegistry.get(rootId) as? StackStateProtocol), let item = findItem(in: state.items, id: id) {
@@ -687,14 +679,16 @@ public func vstk_set_scroll(rootId: String, scrollable: Bool) {
 @HarbourDirect
 public func vstk_set_bgcolor(rootId: String, color: Int, alpha: Int) {
     if let state = ViewRegistry.get(rootId) as? RGBAColorableState {
-        state.setAccentColorRGBA(color: color, alpha: alpha)
+        let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+        state.setAccentColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
     }
 }
 
 @HarbourDirect
 public func vstk_set_fgcolor(rootId: String, color: Int, alpha: Int) {
     if let state = ViewRegistry.get(rootId) as? RGBAColorableState {
-        state.setTextColorRGBA(color: color, alpha: alpha)
+        let c = Color.componentsFrom(hbColor: color, alpha: alpha)
+        state.setTextColorRGBA(r: c.r, g: c.g, b: c.b, a: c.a)
     }
 }
 

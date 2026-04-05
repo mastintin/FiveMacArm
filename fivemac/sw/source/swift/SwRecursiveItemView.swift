@@ -22,7 +22,7 @@ public struct SwRecursiveItemView: View {
 
             case .text:
                 Text(item.content)
-                    .foregroundStyle(Color(red: item.fgColor?.r ?? 0, green: item.fgColor?.g ?? 0, blue: item.fgColor?.b ?? 0))
+                    .foregroundStyle(item.fgColor.map { Color(rgba: $0) } ?? .primary)
                 
             default:
                 EmptyView()
