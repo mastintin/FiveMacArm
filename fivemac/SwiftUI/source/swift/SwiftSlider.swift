@@ -3,44 +3,90 @@ import AppKit
 import Observation
 import HarbourMacro
 
-// State for the Slider
+// MARK: - State for the Slider
 
 @Observable
-public class SliderState: RGBAColorableState {
+public class SliderState: HexColorableState, RGBAColorableState {
     var value: Double
+    var minValue: Double
+    var maxValue: Double
     var showValue: Bool
+    var accentColor: Color
+    var backgroundColor: Color
+    var foregroundColor: Color
+    var isBold: Bool
+    var fontSize: CGFloat
+    var isGlass: Bool
     var callback: ((Double) -> Void)?
-    var accentColor: Color = .blue
-    var backgroundColor: Color = .clear
-    var foregroundColor: Color = .primary
-    var isBold: Bool = false
-    var fontSize: CGFloat = 12
-    var isGlass: Bool = false
-    
-    init(value: Double = 0.0, showValue: Bool = true, isGlass: Bool = false, callback: ((Double) -> Void)? = nil) {
+
+    init(
+        value: Double = 0.0,
+        minValue: Double = 0.0,
+        maxValue: Double = 100.0,
+        showValue: Bool = true,
+        accentColor: Color = .blue,
+        backgroundColor: Color = .clear,
+        foregroundColor: Color = .primary,
+        isBold: Bool = false,
+        fontSize: CGFloat = 12,
+        isGlass: Bool = false,
+        callback: ((Double) -> Void)? = nil
+    ) {
         self.value = value
+        self.minValue = minValue
+        self.maxValue = maxValue
         self.showValue = showValue
+        self.accentColor = accentColor
+        self.backgroundColor = backgroundColor
+        self.foregroundColor = foregroundColor
+        self.isBold = isBold
+        self.fontSize = fontSize
         self.isGlass = isGlass
         self.callback = callback
     }
 
+    // Modern Hex Color support
+    public func setAccentColor(hex: String) {
+        let block = { self.accentColor = Color(hex: hex) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+    }
+
+    public func setTextColor(hex: String) {
+        let block = { self.foregroundColor = Color(hex: hex) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+    }
+
+    // Legacy RGBA support
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
-        DispatchQueue.main.async {
-            self.accentColor = Color(r: r, g: g, b: b, a: a)
-        }
+        let block = { self.accentColor = Color(r: r, g: g, b: b, a: a) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
-        DispatchQueue.main.async {
-            self.foregroundColor = Color(r: r, g: g, b: b, a: a)
-        }
+        let block = { self.foregroundColor = Color(r: r, g: g, b: b, a: a) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 }
 
-// SwiftUI View for the Slider
+// MARK: - Initial State Decodable
+
+public struct SliderInitialState: Codable {
+    public let value: Double
+    public let min: Double?
+    public let max: Double?
+    public let showvalue: Bool?
+    public let accentcolor: String?
+    public let bgcolor: String?
+    public let textcolor: String?
+    public let fontsize: Double?
+    public let isbold: Bool?
+    public let isglass: Bool?
+}
+
+// MARK: - SwiftUI View for the Slider
 
 struct SwiftSliderView: View {
-    var state: SliderState
+    @Bindable var state: SliderState
 
     var body: some View {
         let sliderBinding = Binding(
@@ -51,50 +97,68 @@ struct SwiftSliderView: View {
             }
         )
        
-        VStack {
-            if state.isGlass {
-                Slider(value: sliderBinding, in: 0...100)
-                    .glassEffect(.regular.interactive())
-                    .tint(state.accentColor)
-            } else {
-                 Slider(value: sliderBinding, in: 0...100)
-                    .tint(state.accentColor)
-            }
+        VStack(spacing: 8) {
+            Slider(value: sliderBinding, in: state.minValue...state.maxValue)
+                .controlSize(.small)
+                .tint(state.accentColor)
+                .if(state.isGlass) { view in
+                    view.shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
+                }
             
             if state.showValue {
-                Text("Value: \(Int(state.value))")
-                    .font(.system(size: state.fontSize))
-                    .fontWeight(state.isBold ? .bold : .regular)
+                Text("\(Int(state.value))")
+                    .font(.system(size: state.fontSize, weight: state.isBold ? .bold : .regular))
                     .foregroundColor(state.foregroundColor)
             }
         }
-        .padding()
+        .padding(8)
         .background(
              Group {
                  if state.isGlass {
-                     Color.clear
+                     VisualEffectView(material: .hudWindow, blendingMode: .withinWindow)
+                         .cornerRadius(8)
                  } else {
-                    state.backgroundColor
-                     .cornerRadius(8)
+                     state.backgroundColor
+                         .cornerRadius(8)
                  }
              }
         )
     }
 }
 
+// MARK: - Loader & Memory Management
+
 @objc(SwiftSliderLoader)
 public class SwiftSliderLoader: NSObject {
     
-    public static func makeSlider(value: Double, id: String, showValue: Bool, isGlass: Bool, callback: @escaping ((Double) -> Void)) -> NSView {
+    // Strong retention for memory stability
+    public static var states: [String: SliderState] = [:]
+
+    public static func makeSlider(id: String, json: String, callback: @escaping ((Double) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
-        let state = SliderState(value: value, showValue: showValue, isGlass: isGlass, callback: callback)
         
-        // Use central registry
+        let decoder = JSONDecoder()
+        let initial = (try? decoder.decode(SliderInitialState.self, from: json.data(using: .utf8) ?? Data()))
+        ?? SliderInitialState(value: 0.0, min: 0, max: 100, showvalue: true, accentcolor: nil, bgcolor: nil, textcolor: nil, fontsize: 12, isbold: false, isglass: false)
+
+        let state = SliderState(
+            value: initial.value,
+            minValue: initial.min ?? 0.0,
+            maxValue: initial.max ?? 100.0,
+            showValue: initial.showvalue ?? true,
+            accentColor: Color(hex: initial.accentcolor ?? "blue"),
+            backgroundColor: Color(hex: initial.bgcolor ?? "clear"),
+            foregroundColor: Color(hex: initial.textcolor ?? "primary"),
+            isBold: initial.isbold ?? false,
+            fontSize: CGFloat(initial.fontsize ?? 12),
+            isGlass: initial.isglass ?? false,
+            callback: callback
+        )
+        
+        states[finalId] = state
         ViewRegistry.register(state, for: finalId)
         
         let sliderView = SwiftSliderView(state: state)
-        ViewRegistry.register(sliderView, for: finalId)
-        
         let hostingView = NSHostingView(rootView: sliderView)
         hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
@@ -105,15 +169,8 @@ public class SwiftSliderLoader: NSObject {
         return hostingView
     }
 
-    public static func setShowValue(id: String, showValue: Bool) {
-        DispatchQueue.main.async {
-            if let state = ViewRegistry.getState(for: id) as? SliderState {
-                state.showValue = showValue
-            }
-        }
-    }
-
     public static func destroySlider(id: String, viewPtr: Int64) {
+        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id) 
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
@@ -121,29 +178,22 @@ public class SwiftSliderLoader: NSObject {
             }
         }
     }
-}
 
-// --- HARBOUR BRIDGE MACROS ---
-
-@HarbourDirect
-public func sld_set_value(id: String, value: Double) {
-    DispatchQueue.main.async {
-        if let state = ViewRegistry.getState(for: id) as? SliderState {
-            state.value = value
-        }
+    public static func setValue(id: String, value: Double) {
+        DispatchQueue.main.async { states[id]?.value = value }
     }
 }
 
-@HarbourDirect
-public func sld_get_value(id: String) -> Double {
-    return (ViewRegistry.getState(for: id) as? SliderState)?.value ?? 0.0
-}
+// MARK: - Harbour Bridge Macros
 
-@HarbourDirect
-public func sld_set_show_value(id: String, showValue: Bool) {
-    SwiftSliderLoader.setShowValue(id: id, showValue: showValue)
-}
+@HarbourDirect public func sld_set_value(id: String, value: Double) { SwiftSliderLoader.setValue(id: id, value: value) }
+@HarbourDirect public func sld_get_value(id: String) -> Double { return SwiftSliderLoader.states[id]?.value ?? 0.0 }
 
+@HarbourDirect 
+public func sld_set_accent_color(id: String, hex: String) { SwiftSliderLoader.states[id]?.setAccentColor(hex: hex) }
+
+@HarbourDirect 
+public func sld_set_text_color(id: String, hex: String) { SwiftSliderLoader.states[id]?.setTextColor(hex: hex) }
 
 @HarbourDirect
 public func sld_destroy(id: String, viewPtr: Int64) {
@@ -156,11 +206,9 @@ public func swift_slider_create(
     left: Double, 
     width: Double, 
     height: Double,
-    value: Double, 
+    json: String, 
     parentPtr: Int64,
-    id: String,
-    showValue: Bool,
-    isGlass: Bool
+    id: String
     ) -> Int64 {
     
     func executeCreation() -> Int64 {
@@ -168,49 +216,25 @@ public func swift_slider_create(
         let finalId = id.isEmpty ? UUID().uuidString : id
         
         let callback: (Double) -> Void = { newValue in
-            let sendToHarbour = {
+            DispatchQueue.main.async {
                 SwiftBridge.onChange(finalId, newValue)
-            }
-
-            if Thread.isMainThread {
-               sendToHarbour()
-            } else {
-                DispatchQueue.main.async { sendToHarbour() }
             }
         }
 
         let sliderView = SwiftSliderLoader.makeSlider(
-            value: value, 
-            id: finalId, // Pasamos el ID ya generado
-            showValue: showValue,
-            isGlass: isGlass,
+            id: finalId, 
+            json: json,
             callback: callback
         )
 
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
-            
-            applySwiftViewLayout(
-                swiftView: sliderView, 
-                parent: parentObj, 
-                top: top, 
-                left: left, 
-                w: width, 
-                h: height
-            )
-            
-            let viewPtr = Unmanaged.passRetained(sliderView).toOpaque()
-            viewAddress = Int64(Int(bitPattern: viewPtr))
+            applySwiftViewLayout(swiftView: sliderView, parent: parentObj, top: top, left: left, w: width, h: height)
+            viewAddress = Int64(Int(bitPattern: Unmanaged.passRetained(sliderView).toOpaque()))
         }
         
         return viewAddress
     }
 
-    if Thread.isMainThread {
-        return executeCreation()
-    } else {
-        return DispatchQueue.main.sync {
-            return executeCreation()
-        }
-    }
+    if Thread.isMainThread { return executeCreation() } else { return DispatchQueue.main.sync { executeCreation() } }
 }
