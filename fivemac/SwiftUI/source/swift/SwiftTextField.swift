@@ -3,79 +3,118 @@ import AppKit
 import Observation
 import HarbourMacro
 
+// MARK: - State for the TextField
+
 @Observable
-public class TextFieldState: RGBAColorableState {
-    var text: String = ""
-    var caption: String = ""
-    var placeholder: String = ""
-    var fontSize: CGFloat = 13.0
-    
-    var onAction: ((String) -> Void)? = nil
-    var id: String = ""
-    var textColor: Color = .primary
-    var backgroundColor: Color = .clear
-    
-    init(text: String = "", caption: String = "", placeholder: String = "", id: String = "", callback: ((String) -> Void)? = nil) {
+public class TextFieldState: HexColorableState, RGBAColorableState {
+    var text: String
+    var caption: String
+    var placeholder: String
+    var fontSize: CGFloat
+    var textColor: Color 
+    var backgroundColor: Color 
+    var isSecure: Bool 
+    var id: String
+    var onAction: ((String) -> Void)?
+
+    init(
+        text: String = "", 
+        caption: String = "", 
+        placeholder: String = "", 
+        id: String = "", 
+        fontSize: CGFloat = 13.0,
+        textColor: Color = .primary,
+        backgroundColor: Color = .clear,
+        isSecure: Bool = false,
+        callback: ((String) -> Void)? = nil
+    ) {
         self.text = text
         self.caption = caption
         self.placeholder = placeholder
         self.id = id
+        self.fontSize = fontSize
+        self.textColor = textColor
+        self.backgroundColor = backgroundColor
+        self.isSecure = isSecure
         self.onAction = callback
     }
 
+    // Modern Hex Color support
+    public func setAccentColor(hex: String) {
+        let block = { self.backgroundColor = Color(hex: hex) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+    }
+
+    public func setTextColor(hex: String) {
+        let block = { self.textColor = Color(hex: hex) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+    }
+
+    // Legacy RGBA support
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {
-        DispatchQueue.main.async {
-            self.backgroundColor = Color(r: r, g: g, b: b, a: a)
-        }
+        let block = { self.backgroundColor = Color(r: r, g: g, b: b, a: a) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 
     public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
-        DispatchQueue.main.async {
-            self.textColor = Color(r: r, g: g, b: b, a: a)
-        }
+        let block = { self.textColor = Color(r: r, g: g, b: b, a: a) }
+        if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
     }
 }
 
+// MARK: - Initial State Decodable
+
+public struct TextFieldInitialState: Codable {
+    public let text: String
+    public let caption: String?
+    public let placeholder: String?
+    public let fontsize: Double?
+    public let textcolor: String?
+    public let bgcolor: String?
+    public let issecure: Bool?
+}
+
+// MARK: - SwiftUI View for the TextField
+
 struct SwiftTextFieldView: View {
-    var state: TextFieldState
+    @Bindable var state: TextFieldState
     
     var body: some View {
-        let textBinding = Binding(
-            get: { state.text },
-            set: { state.text = $0 }
-        )
-        
         VStack(alignment: .leading, spacing: 2) {
             if !state.caption.isEmpty {
                 Text(state.caption)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            TextField(state.placeholder, text: textBinding, onEditingChanged: { isEditing in
-                if !isEditing {
-                    state.onAction?(state.text)
+            
+            Group {
+                if state.isSecure {
+                    SecureField(state.placeholder, text: $state.text)
+                } else {
+                    TextField(state.placeholder, text: $state.text)
                 }
-            }, onCommit: {
-                state.onAction?(state.text)
-            })
+            }
             .font(.system(size: state.fontSize))
             .foregroundColor(state.textColor)
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .background(state.backgroundColor)
+            .onChange(of: state.text) { _, newValue in
+                 // Notificar a Harbour en tiempo real opcionalmente
+                 // o esperar al onCommit según la clase Harbour.
+                 state.onAction?(newValue)
+            }
         }
+        .padding(2)
     }
 }
 
+// MARK: - SwiftUI View for the TextEditor (Multi-line)
+
 struct SwiftTextEditorView: View {
-    var state: TextFieldState
+    @Bindable var state: TextFieldState
     
     var body: some View {
-        let textBinding = Binding(
-            get: { state.text },
-            set: { state.text = $0 }
-        )
-        
-        TextEditor(text: textBinding)
+        TextEditor(text: $state.text)
             .font(.system(size: state.fontSize))
             .foregroundColor(state.textColor)
             .scrollContentBackground(.hidden)
@@ -83,50 +122,55 @@ struct SwiftTextEditorView: View {
             .onChange(of: state.text) { _, newValue in
                 state.onAction?(newValue)
             }
+            .padding(4)
+            .border(Color.gray.opacity(0.2), width: 0.5)
     }
 }
+
+// MARK: - Loader & Memory Management
 
 @objc(SwiftTextFieldLoader)
 public class SwiftTextFieldLoader: NSObject {
 
-    public static func makeTextField(text: String, caption: String, placeholder: String, id: String, callback: @escaping ((String) -> Void)) -> NSView {
+    public static func makeTextField(id: String, json: String, isEditor: Bool = false, callback: @escaping ((String) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
-        let state = TextFieldState(text: text, caption: caption, placeholder: placeholder, id: finalId, callback: callback)
         
-        // Register in central registry
+        let decoder = JSONDecoder()
+        let initial = (try? decoder.decode(TextFieldInitialState.self, from: json.data(using: .utf8) ?? Data()))
+        ?? TextFieldInitialState(text: "", caption: nil, placeholder: nil, fontsize: 13.0, textcolor: nil, bgcolor: nil, issecure: false)
+
+        let state = TextFieldState(
+            text: initial.text,
+            caption: initial.caption ?? "",
+            placeholder: initial.placeholder ?? "",
+            id: finalId,
+            fontSize: CGFloat(initial.fontsize ?? 13.0),
+            textColor: Color(hex: initial.textcolor ?? "primary"),
+            backgroundColor: Color(hex: initial.bgcolor ?? "clear"),
+            isSecure: initial.issecure ?? false,
+            callback: callback
+        )
+        
         ViewRegistry.register(state, for: finalId)
         
-        let view = SwiftTextFieldView(state: state)
-        ViewRegistry.register(view, for: finalId)
+        let hostingView: NSHostingView<AnyView>
+        if isEditor {
+            hostingView = NSHostingView(rootView: AnyView(SwiftTextEditorView(state: state)))
+        } else {
+            hostingView = NSHostingView(rootView: AnyView(SwiftTextFieldView(state: state)))
+        }
         
-        let hostingView = NSHostingView(rootView: view)
         hostingView.sizingOptions = []
         hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
         hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
-        return hostingView
-    }
-
-    public static func makeTextEditor(text: String, id: String, callback: @escaping ((String) -> Void)) -> NSView {
-        let finalId = id.isEmpty ? UUID().uuidString : id
-        let state = TextFieldState(text: text, id: finalId, callback: callback)
         
-        // Register in central registry
-        ViewRegistry.register(state, for: finalId)
-        
-        let view = SwiftTextEditorView(state: state)
-        ViewRegistry.register(view, for: finalId)
-        ViewRegistry.register(state, for: finalId)
-
-        let hostingView = NSHostingView(rootView: view)
-        hostingView.sizingOptions = []
-        hostingView.translatesAutoresizingMaskIntoConstraints = false
-        hostingView.identifier = NSUserInterfaceItemIdentifier(finalId)
         return hostingView
     }
 
     public static func destroyTextField(id: String, viewPtr: Int64) {
         ViewRegistry.clean(id: id) 
-        
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
                 _ = Unmanaged<AnyObject>.fromOpaque(rawPtr).takeRetainedValue()
@@ -135,43 +179,40 @@ public class SwiftTextFieldLoader: NSObject {
     }
 }
 
-// --- HARBOUR BRIDGE MACROS ---
+// MARK: - Harbour Bridge Macros
 
-@HarbourDirect
-public func tf_set_text(id: String, text: String) {
-    let block = {
-        if let state = ViewRegistry.getState(for: id) as? TextFieldState {
-            state.text = text
-        }
-    }
-    if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+@HarbourDirect 
+@_cdecl("SD_TF_SET_TEXT")
+public func tf_set_text(id: String, text: String) { 
+    DispatchQueue.main.async { (ViewRegistry.getState(for: id) as? TextFieldState)?.text = text } 
+}
+
+@HarbourDirect 
+@_cdecl("SD_TF_GET_TEXT")
+public func tf_get_text(id: String) -> String { 
+    return (ViewRegistry.getState(for: id) as? TextFieldState)?.text ?? "" 
+}
+
+@HarbourDirect 
+@_cdecl("SD_TF_SET_ACCENT_COLOR")
+public func tf_set_accent_color(id: String, hex: String) { 
+    (ViewRegistry.getState(for: id) as? TextFieldState)?.setAccentColor(hex: hex) 
+}
+
+@HarbourDirect 
+@_cdecl("SD_TF_SET_TEXT_COLOR")
+public func tf_set_text_color(id: String, hex: String) { 
+    (ViewRegistry.getState(for: id) as? TextFieldState)?.setTextColor(hex: hex) 
 }
 
 @HarbourDirect
-public func tf_get_text(id: String) -> String {
-    return (ViewRegistry.getState(for: id) as? TextFieldState)?.text ?? ""
+@_cdecl("SD_TF_SET_FONT_SIZE")
+public func tf_set_font_size(id: String, size: Double) { 
+    DispatchQueue.main.async { (ViewRegistry.getState(for: id) as? TextFieldState)?.fontSize = CGFloat(size) } 
 }
 
 @HarbourDirect
-public func tf_set_colors(id: String, fgHex: String, bgHex: String) {
-    DispatchQueue.main.async {
-        if let state = ViewRegistry.getState(for: id) as? TextFieldState {
-            state.textColor = Color(hex: fgHex)
-            state.backgroundColor = Color(hex: bgHex)
-        }
-    }
-}
-
-@HarbourDirect
-public func tf_set_font_size(id: String, size: Double) {
-    DispatchQueue.main.async {
-        if let state = ViewRegistry.getState(for: id) as? TextFieldState {
-            state.fontSize = CGFloat(size)
-        }
-    }
-}
-
-@HarbourDirect
+@_cdecl("SD_TF_DESTROY")
 public func tf_destroy(id: String, viewPtr: Int64) {
     SwiftTextFieldLoader.destroyTextField(id: id, viewPtr: viewPtr)
 }
@@ -182,9 +223,7 @@ public func swift_textfield_create(
     left: Double, 
     width: Double, 
     height: Double,
-    text: String, 
-    caption: String,
-    placeholder: String,
+    json: String, 
     parentPtr: Int64,
     id: String
     ) -> Int64 {
@@ -192,53 +231,24 @@ public func swift_textfield_create(
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
         let finalId = id.isEmpty ? UUID().uuidString : id
-        
         let callback: (String) -> Void = { newText in
-            let sendToHarbour = {
+            DispatchQueue.main.async {
                 SwiftBridge.onChange(finalId, newText)
-            }
-
-            if Thread.isMainThread {
-               sendToHarbour()
-            } else {
-                DispatchQueue.main.async { sendToHarbour() }
             }
         }
 
-        let fieldView = SwiftTextFieldLoader.makeTextField(
-            text: text, 
-            caption: caption,
-            placeholder: placeholder,
-            id: finalId,
-            callback: callback
-        )
+        let fieldView = SwiftTextFieldLoader.makeTextField(id: finalId, json: json, isEditor: false, callback: callback)
 
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
-            
-            applySwiftViewLayout(
-                swiftView: fieldView, 
-                parent: parentObj, 
-                top: top, 
-                left: left, 
-                w: width, 
-                h: height
-            )
-            
-            let viewPtr = Unmanaged.passRetained(fieldView).toOpaque()
-            viewAddress = Int64(Int(bitPattern: viewPtr))
+            applySwiftViewLayout(swiftView: fieldView, parent: parentObj, top: top, left: left, w: width, h: height)
+            viewAddress = Int64(Int(bitPattern: Unmanaged.passRetained(fieldView).toOpaque()))
         }
         
         return viewAddress
     }
 
-    if Thread.isMainThread {
-        return executeCreation()
-    } else {
-        return DispatchQueue.main.sync {
-            return executeCreation()
-        }
-    }
+    if Thread.isMainThread { return executeCreation() } else { return DispatchQueue.main.sync { executeCreation() } }
 }
 
 @HarbourDirect
@@ -247,7 +257,7 @@ public func swift_texteditor_create(
     left: Double, 
     width: Double, 
     height: Double,
-    text: String, 
+    json: String, 
     parentPtr: Int64,
     id: String
     ) -> Int64 {
@@ -255,49 +265,22 @@ public func swift_texteditor_create(
     func executeCreation() -> Int64 {
         var viewAddress: Int64 = 0
         let finalId = id.isEmpty ? UUID().uuidString : id
-        
         let callback: (String) -> Void = { newText in
-            let sendToHarbour = {
+            DispatchQueue.main.async {
                 SwiftBridge.onChange(finalId, newText)
-            }
-
-            if Thread.isMainThread {
-               sendToHarbour()
-            } else {
-                DispatchQueue.main.async { sendToHarbour() }
             }
         }
 
-        let fieldView = SwiftTextFieldLoader.makeTextEditor(
-            text: text, 
-            id: finalId,
-            callback: callback
-        )
+        let editorView = SwiftTextFieldLoader.makeTextField(id: finalId, json: json, isEditor: true, callback: callback)
 
         if let rawPtr = UnsafeMutableRawPointer(bitPattern: Int(parentPtr)) {
             let parentObj = Unmanaged<NSObject>.fromOpaque(rawPtr).takeUnretainedValue()
-            
-            applySwiftViewLayout(
-                swiftView: fieldView, 
-                parent: parentObj, 
-                top: top, 
-                left: left, 
-                w: width, 
-                h: height
-            )
-            
-            let viewPtr = Unmanaged.passRetained(fieldView).toOpaque()
-            viewAddress = Int64(Int(bitPattern: viewPtr))
+            applySwiftViewLayout(swiftView: editorView, parent: parentObj, top: top, left: left, w: width, h: height)
+            viewAddress = Int64(Int(bitPattern: Unmanaged.passRetained(editorView).toOpaque()))
         }
         
         return viewAddress
     }
 
-    if Thread.isMainThread {
-        return executeCreation()
-    } else {
-        return DispatchQueue.main.sync {
-            return executeCreation()
-        }
-    }
+    if Thread.isMainThread { return executeCreation() } else { return DispatchQueue.main.sync { executeCreation() } }
 }

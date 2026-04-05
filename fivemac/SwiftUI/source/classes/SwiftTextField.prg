@@ -3,40 +3,44 @@
 
 CLASS TSwiftTextField FROM TSwiftControl
 
-    ACCESS Value      INLINE ::hState["Value"]
+    ACCESS Value      INLINE ::hState["text"]
     ASSIGN Value( c ) INLINE ::SetText( c )
 
-    ACCESS Placeholder       INLINE ::hState["Placeholder"]
-    ASSIGN Placeholder( c )  INLINE ::hState["Placeholder"] := c
+    ACCESS Placeholder       INLINE ::hState["placeholder"]
+    ASSIGN Placeholder( c )  INLINE ::hState["placeholder"] := c
 
-    ACCESS Caption      INLINE ::hState["Caption"]
-    ASSIGN Caption( c ) INLINE ::hState["Caption"] := c
+    ACCESS Caption      INLINE ::hState["caption"]
+    ASSIGN Caption( c ) INLINE ::hState["caption"] := c
     
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bAction, nAutoResize, cId, cCaption )
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bAction, nAutoResize, cId, cCaption, lSecure )
     METHOD SetText( cText )
-    METHOD GetText()     INLINE ::hState["Value"]
+    METHOD GetText()     INLINE ::hState["text"]
     METHOD SetFontSize( nSize )
+    METHOD SetTextColor( nColor, nAlpha )
+    METHOD SetAccentColor( nColor, nAlpha )
     
     METHOD OnChange( cNewText )
     METHOD End()
 
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bAction, nAutoResize, cId, cCaption ) CLASS TSwiftTextField
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bAction, nAutoResize, cId, cCaption, lSecure ) CLASS TSwiftTextField
 
-    DEFAULT nWidth := 200, nHeight := 48, oWnd := GetWndDefault() // Mas alto por el VStack interno
-    DEFAULT cText := "", cPlaceholder := "Enter text...", nAutoResize := 0, cCaption := ""
+    DEFAULT nWidth := 200, nHeight := 48, oWnd := GetWndDefault() 
+    DEFAULT cText := "", cPlaceholder := "Enter text...", nAutoResize := 0, cCaption := "", lSecure := .F.
 
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
 
     ::oWnd       = oWnd
     ::bAction    = bAction
     
-    ::hState["Value"]       := cText
-    ::hState["Placeholder"] := cPlaceholder
-    ::hState["Caption"]     := cCaption
+    ::hState["text"]        := cText
+    ::hState["placeholder"] := cPlaceholder
+    ::hState["caption"]     := cCaption
+    ::hState["issecure"]    := lSecure
+    ::hState["fontsize"]    := 13
 
-    ::Register( SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, cText, cCaption, cPlaceholder, oWnd:hWnd, ::cId ) )
+    ::Register( SD_SWIFT_TEXTFIELD_CREATE( nTop, nLeft, nWidth, nHeight, hb_JsonEncode( ::hState ), oWnd:hWnd, ::cId ) )
 
     if nAutoResize != 0
         SWIFTAUTORESIZE( ::hWnd, nAutoResize )
@@ -46,21 +50,46 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, cPlaceholder, oWnd, bAction, nA
 
 return Self
 
+//----------------------------------------------------------------------------//
+
 METHOD SetText( cText ) CLASS TSwiftTextField
-   ::hState["Value"] := cText
+   ::hState["text"] := cText
    SD_TF_SET_TEXT( ::cId, cText )
 return nil
 
+//----------------------------------------------------------------------------//
+
 METHOD SetFontSize( nSize ) CLASS TSwiftTextField
+   ::hState["fontsize"] := nSize
    SD_TF_SET_FONT_SIZE( ::cId, nSize )
 return nil
 
+//----------------------------------------------------------------------------//
+
+METHOD SetTextColor( nColor, nAlpha ) CLASS TSwiftTextField
+    local cHex := ::InitialColorToHex( nColor, nAlpha )
+    ::hState["textcolor"] := cHex
+    SD_TF_SET_TEXT_COLOR( ::cId, cHex )
+return self
+
+//----------------------------------------------------------------------------//
+
+METHOD SetAccentColor( nColor, nAlpha ) CLASS TSwiftTextField
+    local cHex := ::InitialColorToHex( nColor, nAlpha )
+    ::hState["bgcolor"] := cHex
+    SD_TF_SET_ACCENT_COLOR( ::cId, cHex )
+return self
+
+//----------------------------------------------------------------------------//
+
 METHOD OnChange( cNewText ) CLASS TSwiftTextField
-   ::hState["Value"] := cNewText
+   ::hState["text"] := cNewText
    if ::bAction != nil
       Eval( ::bAction, cNewText, Self )
    endif
 return nil
+
+//----------------------------------------------------------------------------//
 
 METHOD End() CLASS TSwiftTextField
    if !Empty( ::hWnd )
@@ -72,21 +101,23 @@ return ::Super:End()
 
 CLASS TSwiftTextEditor FROM TSwiftTextField
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId )
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, bAction )
     METHOD End()
 
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId ) CLASS TSwiftTextEditor
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, bAction ) CLASS TSwiftTextEditor
 
     DEFAULT nWidth := 300, nHeight := 150, oWnd := GetWndDefault(), cText := ""
 
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
 
     ::oWnd       = oWnd
-    ::Value      = cText
+    ::bAction    = bAction
+    ::hState["text"] := cText
+    ::hState["fontsize"] := 13
     
-    ::Register( SD_SWIFT_TEXTEDITOR_CREATE( ::nTop, ::nLeft, ::nWidth, ::nHeight, cText, oWnd:hWnd, ::cId ) )
+    ::Register( SD_SWIFT_TEXTEDITOR_CREATE( nTop, nLeft, nWidth, nHeight, hb_JsonEncode( ::hState ), oWnd:hWnd, ::cId ) )
 
     oWnd:AddControl( Self )
 

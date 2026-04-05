@@ -4,10 +4,10 @@
 CLASS TSwiftSlider FROM TSwiftControl
 
     ACCESS ShowValue      INLINE ::hState["showvalue"]
-    ASSIGN ShowValue( l ) INLINE ( ::hState["showvalue"] := l, ::Update() )
+    ASSIGN ShowValue( l ) INLINE ( ::hState["showvalue"] := l )
 
     ACCESS Glass          INLINE ::hState["isglass"]
-    ASSIGN Glass( l )     INLINE ( ::hState["isglass"] := l, ::Update() )
+    ASSIGN Glass( l )     INLINE ( ::hState["isglass"] := l )
 
     ACCESS Value          INLINE ::hState["value"]
     ASSIGN Value( n )     INLINE ::SetValue( n )
@@ -16,8 +16,8 @@ CLASS TSwiftSlider FROM TSwiftControl
     METHOD SetValue( nValue )
     METHOD GetValue()
     METHOD OnChange( nValue )
-    METHOD SetAccentColor( cHex )
-    METHOD SetTextColor( cHex )
+    METHOD SetAccentColor( nColor, nAlpha )
+    METHOD SetTextColor( nColor, nAlpha )
     METHOD End()
     
 ENDCLASS
@@ -29,7 +29,6 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAct
     DEFAULT lGlass := .F.
     DEFAULT oWnd := GetWndDefault()
     DEFAULT nAutoResize := 0
-    DEFAULT cId := "sld_" + hb_NumToHex( hb_Random() )
 
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
 
@@ -42,6 +41,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, lShowValue, lGlass, oWnd, bAct
     ::hState["min"]       = 0
     ::hState["max"]       = 100
    
+    // Registro y obtención del ID real desde la vista Swift
     ::Register( SD_SWIFT_SLIDER_CREATE( nTop, nLeft, nWidth, nHeight, hb_JsonEncode( ::hState ), oWnd:hWnd, ::cId ) )
     
     if nAutoResize != 0
@@ -77,17 +77,19 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-METHOD SetAccentColor( cHex ) CLASS TSwiftSlider
+METHOD SetAccentColor( nColor, nAlpha ) CLASS TSwiftSlider
+    local cHex := ::InitialColorToHex( nColor, nAlpha )
     ::hState["accentcolor"] := cHex
     SD_SLD_SET_ACCENT_COLOR( ::cId, cHex )
-return nil
+return self
 
 //----------------------------------------------------------------------------//
 
-METHOD SetTextColor( cHex ) CLASS TSwiftSlider
+METHOD SetTextColor( nColor, nAlpha ) CLASS TSwiftSlider
+    local cHex := ::InitialColorToHex( nColor, nAlpha )
     ::hState["textcolor"] := cHex
     SD_SLD_SET_TEXT_COLOR( ::cId, cHex )
-return nil
+return self
 
 //----------------------------------------------------------------------------//
 

@@ -131,9 +131,6 @@ struct SwiftSliderView: View {
 @objc(SwiftSliderLoader)
 public class SwiftSliderLoader: NSObject {
     
-    // Strong retention for memory stability
-    public static var states: [String: SliderState] = [:]
-
     public static func makeSlider(id: String, json: String, callback: @escaping ((Double) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
         
@@ -155,7 +152,6 @@ public class SwiftSliderLoader: NSObject {
             callback: callback
         )
         
-        states[finalId] = state
         ViewRegistry.register(state, for: finalId)
         
         let sliderView = SwiftSliderView(state: state)
@@ -170,7 +166,6 @@ public class SwiftSliderLoader: NSObject {
     }
 
     public static func destroySlider(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id) 
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
@@ -180,20 +175,20 @@ public class SwiftSliderLoader: NSObject {
     }
 
     public static func setValue(id: String, value: Double) {
-        DispatchQueue.main.async { states[id]?.value = value }
+        DispatchQueue.main.async { (ViewRegistry.getState(for: id) as? SliderState)?.value = value }
     }
 }
 
 // MARK: - Harbour Bridge Macros
 
 @HarbourDirect public func sld_set_value(id: String, value: Double) { SwiftSliderLoader.setValue(id: id, value: value) }
-@HarbourDirect public func sld_get_value(id: String) -> Double { return SwiftSliderLoader.states[id]?.value ?? 0.0 }
+@HarbourDirect public func sld_get_value(id: String) -> Double { return (ViewRegistry.getState(for: id) as? SliderState)?.value ?? 0.0 }
 
 @HarbourDirect 
-public func sld_set_accent_color(id: String, hex: String) { SwiftSliderLoader.states[id]?.setAccentColor(hex: hex) }
+public func sld_set_accent_color(id: String, hex: String) { (ViewRegistry.getState(for: id) as? SliderState)?.setAccentColor(hex: hex) }
 
 @HarbourDirect 
-public func sld_set_text_color(id: String, hex: String) { SwiftSliderLoader.states[id]?.setTextColor(hex: hex) }
+public func sld_set_text_color(id: String, hex: String) { (ViewRegistry.getState(for: id) as? SliderState)?.setTextColor(hex: hex) }
 
 @HarbourDirect
 public func sld_destroy(id: String, viewPtr: Int64) {

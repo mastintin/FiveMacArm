@@ -5,7 +5,7 @@ function Main()
 
    local oWnd, oSld1, oSld2, oSld3, oSay
 
-   DEFINE WINDOW oWnd TITLE "SwiftUI Modern Slider Test" ;
+   DEFINE WINDOW oWnd TITLE "SwiftUI Modern Slider Debug" ;
       SIZE 450, 500
 
    @ 400, 50 SWIFTSLIDER oSld1 VAR 50 ;

@@ -165,8 +165,6 @@ struct SwiftButtonView: View {
 @objc(SwiftButtonLoader)
 public class SwiftButtonLoader: NSObject {
     
-    public static var states: [String: ButtonState] = [:]
-
     public static func makeButton(id: String, json: String, callback: @escaping () -> Void) -> NSView {
          let finalId = id.isEmpty ? UUID().uuidString : id
          let decoder = JSONDecoder()
@@ -184,7 +182,6 @@ public class SwiftButtonLoader: NSObject {
             style: initialState.style ?? "plain"
          )
          
-         states[finalId] = state
          ViewRegistry.register(state, for: finalId)
          
          let view = SwiftButtonView(state: state, callback: callback)
@@ -198,7 +195,6 @@ public class SwiftButtonLoader: NSObject {
     }
 
     public static func destroyButton(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id:id) 
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
@@ -207,14 +203,30 @@ public class SwiftButtonLoader: NSObject {
         }
     }
 
-    public static func setText(id: String, text: String) { states[id]?.caption = text }
-    public static func setStyle(id: String, style: String) { states[id]?.style = style }
-    public static func setBackgroundColor(id: String, hex: String) { states[id]?.setAccentColor(hex: hex) }
-    public static func setForegroundColor(id: String, hex: String) { states[id]?.setTextColor(hex: hex) }
-    public static func setCornerRadius(id: String, radius: Double) { DispatchQueue.main.async { states[id]?.cornerRadius = CGFloat(radius) } }
-    public static func setPadding(id: String, padding: Double) { DispatchQueue.main.async { states[id]?.padding = CGFloat(padding) } }
-    public static func setGlass(id: String, isGlass: Bool) { DispatchQueue.main.async { states[id]?.isGlass = isGlass } }
-    public static func setImage(id: String, imageName: String) { DispatchQueue.main.async { states[id]?.imageName = imageName } }
+    public static func setText(id: String, text: String) { 
+        (ViewRegistry.getState(for: id) as? ButtonState)?.caption = text 
+    }
+    public static func setStyle(id: String, style: String) { 
+        (ViewRegistry.getState(for: id) as? ButtonState)?.style = style 
+    }
+    public static func setBackgroundColor(id: String, hex: String) { 
+        (ViewRegistry.getState(for: id) as? ButtonState)?.setAccentColor(hex: hex) 
+    }
+    public static func setForegroundColor(id: String, hex: String) { 
+        (ViewRegistry.getState(for: id) as? ButtonState)?.setTextColor(hex: hex) 
+    }
+    public static func setCornerRadius(id: String, radius: Double) { 
+        DispatchQueue.main.async { (ViewRegistry.getState(for: id) as? ButtonState)?.cornerRadius = CGFloat(radius) } 
+    }
+    public static func setPadding(id: String, padding: Double) { 
+        DispatchQueue.main.async { (ViewRegistry.getState(for: id) as? ButtonState)?.padding = CGFloat(padding) } 
+    }
+    public static func setGlass(id: String, isGlass: Bool) { 
+        DispatchQueue.main.async { (ViewRegistry.getState(for: id) as? ButtonState)?.isGlass = isGlass } 
+    }
+    public static func setImage(id: String, imageName: String) { 
+        DispatchQueue.main.async { (ViewRegistry.getState(for: id) as? ButtonState)?.imageName = imageName } 
+    }
 }
 
 // --- HARBOUR BRIDGE MACROS ---

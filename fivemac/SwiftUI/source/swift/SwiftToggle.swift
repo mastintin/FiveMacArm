@@ -84,8 +84,6 @@ struct SwiftToggleView: View {
 @objc(SwiftToggleLoader)
 public class SwiftToggleLoader: NSObject {
     
-    public static var states: [String: ToggleState] = [:]
-
     public static func makeToggle(id: String, json: String, callback: @escaping ((Bool) -> Void)) -> NSView {
         let finalId = id.isEmpty ? UUID().uuidString : id
         
@@ -103,8 +101,6 @@ public class SwiftToggleLoader: NSObject {
         if let acc = initial.accentcolor { state.setAccentColor(hex: acc) }
         if let txt = initial.textcolor { state.setTextColor(hex: txt) }
 
-        // Retención fuerte e inmortalidad
-        states[finalId] = state
         ViewRegistry.register(state, for: finalId)
         
         let view = SwiftToggleView(state: state)
@@ -118,7 +114,6 @@ public class SwiftToggleLoader: NSObject {
     }
 
     public static func destroyToggle(id: String, viewPtr: Int64) {
-        states.removeValue(forKey: id)
         ViewRegistry.clean(id: id) 
         if viewPtr != 0 {
             if let rawPtr = UnsafeRawPointer(bitPattern: Int(viewPtr)) {
@@ -127,16 +122,24 @@ public class SwiftToggleLoader: NSObject {
         }
     }
 
-    public static func setValue(id: String, isOn: Bool) { states[id]?.isOn = isOn }
-    public static func setCaption(id: String, caption: String) { states[id]?.caption = caption }
-    public static func setAccentColor(id: String, hex: String) { states[id]?.setAccentColor(hex: hex) }
-    public static func setTextColor(id: String, hex: String) { states[id]?.setTextColor(hex: hex) }
+    public static func setValue(id: String, isOn: Bool) { 
+        (ViewRegistry.getState(for: id) as? ToggleState)?.isOn = isOn 
+    }
+    public static func setCaption(id: String, caption: String) { 
+        (ViewRegistry.getState(for: id) as? ToggleState)?.caption = caption 
+    }
+    public static func setAccentColor(id: String, hex: String) { 
+        (ViewRegistry.getState(for: id) as? ToggleState)?.setAccentColor(hex: hex) 
+    }
+    public static func setTextColor(id: String, hex: String) { 
+        (ViewRegistry.getState(for: id) as? ToggleState)?.setTextColor(hex: hex) 
+    }
 }
 
 // --- HARBOUR BRIDGE MACROS ---
 
 @HarbourDirect public func tgl_set_caption(id: String, caption: String) { SwiftToggleLoader.setCaption(id: id, caption: caption) }
-@HarbourDirect public func tgl_get_value(id: String) -> Bool { return SwiftToggleLoader.states[id]?.isOn ?? false }
+@HarbourDirect public func tgl_get_value(id: String) -> Bool { return (ViewRegistry.getState(for: id) as? ToggleState)?.isOn ?? false }
 @HarbourDirect public func tgl_set_value(id: String, value: Bool ) { SwiftToggleLoader.setValue(id: id, isOn: value ) }
 @HarbourDirect public func tgl_set_fg(id: String, hex: String) { SwiftToggleLoader.setTextColor(id: id, hex: hex) }
 @HarbourDirect public func tgl_set_bg(id: String, hex: String) { SwiftToggleLoader.setAccentColor(id: id, hex: hex) }
