@@ -1,0 +1,774 @@
+#include <fivemac.h>
+#include <scintilla.h>
+
+#define WM_COMMAND 1001
+// #define WM_NOTIFY 1002
+
+enum IBDisplay {
+  IBShowZoom = 0x01,
+  IBShowCaretPosition = 0x02,
+  IBShowStatusText = 0x04,
+  IBShowAll = 0xFF
+};
+
+typedef enum {
+  IBNZoomChanged,   // The user selected another zoom value.
+  IBNCaretChanged,  // The caret in the editor changed.
+  IBNStatusChanged, // The application set a new status message.
+} NotificationType;
+
+// --- ESTO VA AQUÍ ---
+@interface NSView (ScintillaTextInput)
+- (void)insertText:(id)string replacementRange:(NSRange)replacementRange;
+@end
+
+@interface ScintillaView : NSView {
+}
+
+- (void)rightMouseDown:(NSEvent *)theEvent;
+
+- (void)setGeneralProperty:(int)property
+                 parameter:(long)parameter
+                     value:(long)value;
+
+- (void)setColorProperty:(int)property
+               parameter:(long)parameter
+                   value:(NSColor *)value;
+
+- (void)setLexerProperty:(NSString *)property value:(NSString *)value;
+
+- (long)getGeneralProperty:(int)property
+                 parameter:(long)parameter
+                     extra:(long)extra;
+
+- (long)getGeneralProperty:(int)property parameter:(long)parameter;
+
+- (long)getGeneralProperty:(int)property;
+
+- (void)setString:(NSString *)aString;
+
+- (void)setFontName:(NSString *)font
+               size:(int)size
+               bold:(BOOL)bold
+             italic:(BOOL)italic;
+
+typedef void (*SciNotifyFunc)(id window, unsigned int iMessage,
+                              unsigned long wParam, unsigned long lParam);
+
+- (void)registerNotifyCallback:(id)window value:(SciNotifyFunc)callback;
+
+@end
+
+struct Sci_CharacterRange {
+  long cpMin;
+  long cpMax;
+};
+
+struct Sci_TextRange {
+  struct Sci_CharacterRange chrg;
+  char *lpstrText;
+};
+
+typedef struct {
+  struct Sci_CharacterRange chrg;
+  char *lpstrText;
+  struct Sci_CharacterRange chrgText;
+} TEXTTOFIND;
+
+static PHB_SYMB symFMH = NULL;
+
+void NotifyFunc(id sv, unsigned int iMessage, unsigned long wParam,
+                unsigned long lParam) {
+  // WM_COMMAND: HIWORD (wParam) = notification code, LOWORD (wParam) = 0 (no
+  // control ID), lParam = ScintillaCocoa*
+
+  // WM_NOTIFY: wParam = 0 (no control ID), lParam = ptr to SCNotification
+  // structure, with hwndFrom set to ScintillaCocoa*
+
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  if (wParam == 0) {
+    hb_vmPushSymbol(symFMH);
+    hb_vmPushNil();
+    hb_vmPushNLL((HB_LONGLONG)[sv window]);
+    hb_vmPushLong(WM_SCINOTIFY);
+    hb_vmPushNLL((HB_LONGLONG)sv);
+    hb_vmPushLong((HB_LONG)wParam);
+    hb_vmPushLong((HB_LONG)lParam);
+    hb_vmDo(5);
+  } else {
+    hb_vmPushSymbol(symFMH);
+    hb_vmPushNil();
+    hb_vmPushNLL((HB_LONGLONG)[sv window]);
+    hb_vmPushLong(WM_COMMAND);
+    hb_vmPushNLL((HB_LONGLONG)sv);
+    hb_vmPushLong((HB_LONG)wParam);
+    hb_vmPushLong((HB_LONG)lParam);
+    hb_vmDo(5);
+  }
+}
+
+/*
+- ( void ) rightMouseDown : ( NSEvent * ) theEvent
+{
+    NSPoint point = [ theEvent locationInWindow ];
+
+    if( symFMH == NULL )
+    symFMH = hb_dynsymSymbol( hb_dynsymFindName( "_FMH" ) );
+
+    hb_vmPushSymbol( symFMH );
+    hb_vmPushNil();
+    hb_vmPushNLL( ( HB_LONG ) [ self window ] );
+    hb_vmPushNLL( WM_RBUTTONDOWN );
+    hb_vmPushNLL( ( HB_LONG ) [ self window ] );
+    hb_vmPushNLL( point.y );
+    hb_vmPushNLL( point.x );
+    hb_vmDo( 5 );
+}
+*/
+
+// -----------------------------------------------------------------------------------------
+@interface MyScintillaView : ScintillaView
+@end
+
+@implementation MyScintillaView
+
+- (void)mouseDown:(NSEvent *)theEvent {
+  NSPoint p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+
+  // INTERCEPT ALL CLICKS (Universal Fix)
+  // Scintilla Native Logic is broken by SplitView (Offset Bug).
+  // We handle ALL clicks manually via Harbour to ensure correct Local Coords.
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9999); // Manual Sidebar Handler
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushLong((HB_LONG)p.x);
+  hb_vmPushLong((HB_LONG)p.y);
+  hb_vmDo(5);
+  return; // STOP PROPAGATION (No super mouseDown)
+}
+
+- (void)mouseDragged:(NSEvent *)theEvent {
+  NSPoint p = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9997); // Manual Drag Handler
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushLong((HB_LONG)p.x);
+  hb_vmPushLong((HB_LONG)p.y);
+  hb_vmDo(5);
+}
+
+- (void)insertText:(id)insertString {
+  NSLog(@"[MyScintillaView] insertText: %@", insertString);
+  [self handleCustomInput:insertString];
+  [super insertText:insertString];
+}
+
+- (void)insertText:(id)insertString replacementRange:(NSRange)replacementRange {
+  NSLog(@"[MyScintillaView] insertText:replacementRange: %@", insertString);
+  [self handleCustomInput:insertString];
+
+  // Check if super responds (it should if it conforms to NSTextInputClient)
+  if ([super respondsToSelector:@selector(insertText:replacementRange:)]) {
+    [super insertText:insertString replacementRange:replacementRange];
+  }
+}
+
+- (void)handleCustomInput:(id)insertString {
+  // Check for Newline (Enter Key)
+  if ([insertString isKindOfClass:[NSString class]] &&
+      ([insertString isEqualToString:@"\n"] ||
+       [insertString isEqualToString:@"\r"])) {
+    NSLog(@"[MyScintillaView] Newline Detected via handleCustomInput");
+
+    if (symFMH == NULL)
+      symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+    hb_vmPushSymbol(symFMH);
+    hb_vmPushNil();
+    hb_vmPushNLL((HB_LONGLONG)[self window]);
+    hb_vmPushLong(9996);
+    hb_vmPushNLL((HB_LONGLONG)self);
+    hb_vmPushLong(0);
+    hb_vmPushLong(0);
+    hb_vmDo(5);
+  }
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+  NSLog(@"[MyScintillaView] performKeyEquivalent: %d", [event keyCode]);
+  return [super performKeyEquivalent:event];
+}
+
+- (void)flagsChanged:(NSEvent *)event {
+  NSLog(@"[MyScintillaView] flagsChanged");
+  [super flagsChanged:event];
+}
+
+- (void)doCommandBySelector:(SEL)selector {
+  NSLog(@"[MyScintillaView] doCommandBySelector: %@",
+        NSStringFromSelector(selector));
+  [super doCommandBySelector:selector];
+}
+
+- (void)keyDown:(NSEvent *)theEvent {
+  NSLog(@"[MyScintillaView] keyDown: %d", [theEvent keyCode]);
+  [super keyDown:theEvent];
+}
+
+- (BOOL)acceptsFirstResponder {
+  NSLog(@"[MyScintillaView] acceptsFirstResponder");
+  return YES;
+}
+
+- (BOOL)becomeFirstResponder {
+  NSLog(@"[MyScintillaView] becomeFirstResponder");
+  return YES;
+}
+
+- (BOOL)canBecomeKeyView {
+  return YES;
+}
+
+- (NSView *)hitTest:(NSPoint)aPoint {
+  // Always intercept hitTest to ensure we get the mouseDown
+  return self;
+}
+
+- (BOOL)isFlipped {
+  return YES;
+}
+
+- (void)triggerTab {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9995); // Code for TAB
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushLong(0);
+  hb_vmPushLong(0);
+  hb_vmDo(5);
+}
+
+- (void)triggerAutoComplete {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9994); // Code for Ctrl+Space
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushLong(0);
+  hb_vmPushLong(0);
+  hb_vmDo(5);
+}
+
+- (void)triggerAutoIndent {
+  NSLog(@"[MyScintillaView] Triggering AutoIndent (Delayed)");
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FSCI"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNLL((HB_LONGLONG)[self window]);
+  hb_vmPushLong(9996);
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmPushNLL(0);
+  hb_vmPushNLL(0);
+  hb_vmDo(5);
+}
+
+@end
+// -----------------------------------------------------------------------------------------
+
+HB_FUNC(SCICREATE) {
+
+  NSRect newFrame =
+      NSMakeRect(hb_parnl(2), hb_parnl(1), hb_parnl(3), hb_parnl(4));
+  NSWindow *window = (NSWindow *)hb_parnll(5);
+
+  // Use Subclass with Fixes
+  MyScintillaView *sv =
+      [[[MyScintillaView alloc] initWithFrame:newFrame] autorelease];
+  [GetView(window) addSubview:sv];
+
+  [sv registerNotifyCallback:(id)sv value:NotifyFunc];
+
+  // Install Local Event Monitor for this App
+  // This ensures we catch Enter even if the Responder Chain is acting up.
+  // Install Local Event Monitor for this App
+  // Debug Mode: Log ALL keys and First Responder Class
+  [NSEvent
+      addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown
+                                   handler:^(NSEvent *theEvent) {
+                                     unsigned short kc = [theEvent keyCode];
+                                     NSWindow *win = [theEvent window];
+                                     NSResponder *first = [win firstResponder];
+
+                                     BOOL isScintilla = (first == sv);
+                                     if (!isScintilla &&
+                                         [first isKindOfClass:[NSView class]]) {
+                                       isScintilla = [(NSView *)first
+                                           isDescendantOf:
+                                               sv]; // Check if focused view is
+                                                    // inside ScintillaView
+                                     }
+
+                                     NSLog(@"[Monitor] Key: %d | WinMatch: %d "
+                                           @"| ValidFocus: %d | FR Class: %@",
+                                           kc, (win == [sv window]),
+                                           isScintilla, [first className]);
+
+                                     if (kc == 36 ||
+                                         kc == 76) { // Return or Numpad Enter
+                                       if (win == [sv window]) {
+                                         if (isScintilla) {
+                                           NSLog(
+                                               @"[Monitor] Enter MATCHED for "
+                                               @"Scintilla (Descendant/Self)");
+                                           [sv performSelector:@selector
+                                               (triggerAutoIndent)
+                                                    withObject:nil
+                                                    afterDelay:0.01];
+                                         }
+                                       }
+                                     }
+
+                                     if (kc == 48) { // Tab
+                                       if (win == [sv window]) {
+                                         if (isScintilla) {
+                                           // NSLog(@"[Monitor] Tab MATCHED for
+                                           // Scintilla"); // Cleaned
+                                           [sv performSelector:@selector
+                                               (triggerTab)
+                                                    withObject:nil
+                                                    afterDelay:0.01];
+                                           return (
+                                               NSEvent *)nil; // Consume event!
+                                                              // Cast required.
+                                         }
+                                       }
+                                     }
+                                     if (kc == 49) { // Space
+                                       NSUInteger flags =
+                                           [theEvent modifierFlags];
+                                       if (flags & NSEventModifierFlagControl) {
+                                         NSLog(
+                                             @"[Monitor] Ctrl+Space DETECTED!");
+                                         if (win == [sv window]) {
+                                           if (isScintilla) {
+                                             NSLog(@"[Monitor] Triggering "
+                                                   @"AutoComplete...");
+                                             [sv performSelector:@selector
+                                                 (triggerAutoComplete)
+                                                      withObject:nil
+                                                      afterDelay:0.01];
+                                             return (NSEvent *)nil;
+                                           }
+                                         }
+                                       }
+                                     }
+                                     return theEvent;
+                                   }];
+
+  hb_retnll((HB_LONGLONG)sv);
+}
+
+HB_FUNC(SCIFINDTEXT) {
+  bool lresult;
+
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+
+  [sv setGeneralProperty:SCI_SEARCHANCHOR parameter:0 value:0];
+
+  long matchStart = [sv getGeneralProperty:SCI_GETSELECTIONSTART parameter:0];
+  long matchEnd = [sv getGeneralProperty:SCI_GETSELECTIONEND parameter:0];
+
+  [sv setGeneralProperty:SCI_FINDINDICATORFLASH
+               parameter:matchStart
+                   value:matchEnd];
+  // [sv setGeneralProperty: SCI_FINDINDICATORSHOW parameter: matchStart
+  // value:matchEnd ];
+
+  lresult = ([sv getGeneralProperty:SCI_SEARCHNEXT
+                          parameter:0
+                              extra:(long)hb_NSSTRING_par(2)] != -1);
+
+  hb_retl(lresult);
+}
+
+HB_FUNC(SCISETTEXT) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+
+  [sv setString:hb_NSSTRING_par(2)];
+}
+
+HB_FUNC(SCISETFONT) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+
+  [sv setFontName:hb_NSSTRING_par(2)
+             size:hb_parnl(3)
+             bold:hb_parl(4)
+           italic:hb_parl(5)];
+}
+
+HB_FUNC(SCIGETKEYWORDS) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  const char *keyWords = [hb_NSSTRING_par(2) UTF8String];
+
+  hb_retnll([sv getGeneralProperty:SCI_SETKEYWORDS
+                         parameter:hb_parnl(3)
+                             extra:(long)keyWords]);
+}
+
+HB_FUNC(SCISEND) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+
+  hb_retnll([sv
+      getGeneralProperty:hb_parnl(2)
+               parameter:HB_ISCHAR(3) ? (long)hb_parc(3) : hb_parnl(3)
+                   extra:HB_ISCHAR(4) ? (long)hb_parc(4) : hb_parnl(4)]);
+}
+
+HB_FUNC(SCISETCOLORPROP) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  int fBlue = hb_parni(4);
+  int fGreen = hb_parni(5);
+  int fRed = hb_parni(6);
+  float falpha = hb_parni(7);
+
+  NSColor *color = [NSColor colorWithDeviceRed:fRed / 255.0
+                                         green:fGreen / 255.0
+                                          blue:fBlue / 255.0
+                                         alpha:falpha / 100.0];
+
+  [sv setColorProperty:hb_parnl(2) parameter:hb_parnl(3) value:color];
+}
+
+HB_FUNC(SCISETLEXERPROP) {
+  NSString *cProp = hb_NSSTRING_par(2);
+  NSString *cValue = hb_NSSTRING_par(3);
+
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  [sv setLexerProperty:cProp value:cValue];
+}
+
+HB_FUNC(SCIGETONEPROP) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  hb_retnll([sv getGeneralProperty:hb_parnl(2)]);
+}
+
+HB_FUNC(SCIGETPROP) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+
+  hb_retnll([sv
+      getGeneralProperty:hb_parnl(2)
+               parameter:hb_parnl(3)
+                   extra:HB_ISCHAR(4) ? (long)hb_parc(4) : hb_parnl(4)]);
+}
+
+HB_FUNC(SCISEARCHBACKWARD) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  char *szText = (char *)hb_parc(2);
+  unsigned long dwSearchFlags = hb_parnl(3);
+  long ulMinSel;
+  long lPos;
+  TEXTTOFIND tf;
+
+  tf.lpstrText = szText;
+  ulMinSel = [sv getGeneralProperty:SCI_GETSELECTIONSTART parameter:0];
+
+  if (ulMinSel >= 0)
+    tf.chrg.cpMin = ulMinSel - 1;
+  else
+    tf.chrg.cpMin = [sv getGeneralProperty:SCI_GETCURRENTPOS parameter:0] - 1;
+
+  tf.chrg.cpMax = 0;
+  lPos = [sv getGeneralProperty:SCI_FINDTEXT
+                      parameter:dwSearchFlags
+                          extra:(long)&tf];
+
+  if (lPos >= 0) {
+    [sv setGeneralProperty:SCI_GOTOPOS parameter:lPos value:0];
+    [sv setGeneralProperty:SCI_SETSEL
+                 parameter:tf.chrgText.cpMin
+                     value:tf.chrgText.cpMax];
+    [sv getGeneralProperty:SCI_FINDTEXT
+                 parameter:dwSearchFlags
+                     extra:(long)&tf];
+
+    long matchStart = [sv getGeneralProperty:SCI_GETSELECTIONSTART parameter:0];
+    long matchEnd = [sv getGeneralProperty:SCI_GETSELECTIONEND parameter:0];
+
+    [sv setGeneralProperty:SCI_FINDINDICATORFLASH
+                 parameter:matchStart
+                     value:matchEnd];
+
+    hb_retl(TRUE);
+    return;
+  }
+
+  hb_retl(FALSE);
+}
+
+HB_FUNC(SCISEARCHFORWARD) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  char *szText = (char *)hb_parc(2);
+  unsigned long dwSearchFlags = hb_parnl(3);
+  long lPos;
+  TEXTTOFIND tf;
+
+  tf.lpstrText = szText;
+  tf.chrg.cpMin =
+      [sv getGeneralProperty:SCI_GETCURRENTPOS parameter:0 extra:0] + 1;
+  tf.chrg.cpMax = [sv getGeneralProperty:SCI_GETLENGTH parameter:0 extra:0];
+  lPos = [sv getGeneralProperty:SCI_FINDTEXT
+                      parameter:dwSearchFlags
+                          extra:(long)&tf];
+
+  if (lPos >= 0) {
+    [sv setGeneralProperty:SCI_GOTOPOS parameter:lPos value:0];
+    [sv setGeneralProperty:SCI_SETSEL
+                 parameter:tf.chrgText.cpMin
+                     value:tf.chrgText.cpMax];
+
+    long matchStart = [sv getGeneralProperty:SCI_GETSELECTIONSTART parameter:0];
+    long matchEnd = [sv getGeneralProperty:SCI_GETSELECTIONEND parameter:0];
+
+    [sv setGeneralProperty:SCI_FINDINDICATORFLASH
+                 parameter:matchStart
+                     value:matchEnd];
+
+    hb_retl(TRUE);
+    return;
+  }
+
+  hb_retl(FALSE);
+}
+
+HB_FUNC(SCIGETSELTEXT) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  unsigned long dwLen =
+      [sv getGeneralProperty:SCI_GETSELECTIONEND parameter:0 extra:0] -
+      [sv getGeneralProperty:SCI_GETSELECTIONSTART parameter:0 extra:0];
+  char *buffer = (char *)hb_xgrab(dwLen + 1);
+
+  [sv setGeneralProperty:SCI_GETSELTEXT parameter:0 value:(long)buffer];
+
+  hb_retclen(buffer, dwLen);
+  hb_xfree(buffer);
+}
+
+HB_FUNC(SCIGETTEXT) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  unsigned long dwLen = [sv getGeneralProperty:SCI_GETLENGTH
+                                     parameter:0
+                                         extra:0];
+  char *buffer = (char *)hb_xgrab(dwLen + 1);
+
+  [sv setGeneralProperty:SCI_GETTEXT parameter:dwLen + 1 value:(long)buffer];
+
+  hb_retclen(buffer, dwLen);
+  hb_xfree(buffer);
+}
+
+HB_FUNC(SCIGETTEXTRANGE) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  int nStart = hb_parni(2);
+  int nEnd = hb_parni(3);
+
+  if (sv) {
+    int len = nEnd - nStart;
+    if (len > 0) {
+      char *buffer = (char *)malloc(len + 1);
+      struct Sci_TextRange tr;
+      tr.chrg.cpMin = nStart;
+      tr.chrg.cpMax = nEnd;
+      tr.lpstrText = buffer;
+
+      [sv setGeneralProperty:SCI_GETTEXTRANGE parameter:0 value:(long)&tr];
+
+      hb_retc(buffer);
+      free(buffer);
+    } else {
+      hb_retc("");
+    }
+  } else {
+    hb_retc("");
+  }
+}
+
+HB_FUNC(SCIREGIMAGE) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  int nType = hb_parni(2);
+  char *cXpm = (char *)hb_parc(3);
+
+  [sv setGeneralProperty:SCI_REGISTERIMAGE parameter:nType value:(long)cXpm];
+}
+
+HB_FUNC(SCIREGIMAGEFROMFILE) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  int nType = hb_parni(2);
+  NSString *path = hb_NSSTRING_par(3);
+
+  NSError *error = nil;
+  NSString *content = [NSString stringWithContentsOfFile:path
+                                                encoding:NSUTF8StringEncoding
+                                                   error:&error];
+
+  if (content) {
+    const char *cXpm = [content UTF8String];
+    NSLog(@"[Scintilla] Loading XPM type %d len %lu: %.50s...", nType,
+          (unsigned long)[content length], cXpm);
+    [sv setGeneralProperty:SCI_REGISTERIMAGE parameter:nType value:(long)cXpm];
+    hb_retl(YES);
+  } else {
+    NSLog(@"Error reading XPM file: %@", [error localizedDescription]);
+    hb_retl(NO);
+  }
+}
+
+// Define minimal SCNotification if missing
+struct SCNotification_Local {
+  struct {
+    void *hwndFrom;
+    unsigned long idFrom;
+    unsigned int code;
+  } nmhdr;
+  long position; // Changed to long (8 bytes) for correct alignment on 64-bit
+  int ch;
+  int modifiers;
+  int modificationType;
+  const char *text;
+};
+
+HB_FUNC(SCIGETNOTIFYTEXT) {
+  struct SCNotification_Local *p = (struct SCNotification_Local *)hb_parnll(1);
+  if (p && p->text)
+    hb_retc((char *)p->text);
+  else
+    hb_retc("");
+}
+HB_FUNC(SCIGETLINE) {
+  ScintillaView *sv = (ScintillaView *)hb_parnll(1);
+  unsigned long ulLine = hb_parnl(2) - 1;
+  unsigned long dwLen = [sv getGeneralProperty:SCI_LINELENGTH
+                                     parameter:ulLine
+                                         extra:0];
+  char *buffer = (char *)hb_xgrab(dwLen + 1);
+
+  [sv setGeneralProperty:SCI_GETLINE parameter:ulLine value:(long)buffer];
+
+  hb_retclen(buffer, dwLen);
+  hb_xfree(buffer);
+}
+
+HB_FUNC(SCICOPY) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSArray *objects = [[NSArray alloc] initWithObjects:hb_NSSTRING_par(1), nil];
+
+  [pasteboard clearContents];
+
+  hb_retl([pasteboard writeObjects:objects]);
+#endif
+}
+
+HB_FUNC(SCIPASTE) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+  NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+  NSArray *objects = [[NSArray alloc] initWithObjects:[NSString class], nil];
+  NSDictionary *options = [NSDictionary dictionary];
+  NSArray *copiedItems = [pasteboard readObjectsForClasses:objects
+                                                   options:options];
+
+  if (copiedItems != nil) {
+    NSString *string = [copiedItems objectAtIndex:0];
+
+    hb_retc([string cStringUsingEncoding:NSUTF8StringEncoding]);
+  } else
+    hb_ret();
+#endif
+}
+
+struct NotifyHeader // This matches the Win32 NMHDR structure
+{
+  void *hwndFrom;       // environment specific window handle/pointer
+  unsigned long idFrom; // CtrlID of the window issuing the notification
+  unsigned int code;    // The SCN_* notification code
+};
+
+typedef struct {
+  struct NotifyHeader nmhdr;
+  int position;
+  /* SCN_STYLENEEDED, SCN_DOUBLECLICK, SCN_MODIFIED, SCN_MARGINCLICK, */
+  /* SCN_NEEDSHOWN, SCN_DWELLSTART, SCN_DWELLEND, SCN_CALLTIPCLICK, */
+  /* SCN_HOTSPOTCLICK, SCN_HOTSPOTDOUBLECLICK, SCN_HOTSPOTRELEASECLICK, */
+  /* SCN_INDICATORCLICK, SCN_INDICATORRELEASE, */
+  /* SCN_USERLISTSELECTION, SCN_AUTOCSELECTION */
+
+  int ch; /* SCN_CHARADDED, SCN_KEY */
+  int modifiers;
+  /* SCN_KEY, SCN_DOUBLECLICK, SCN_HOTSPOTCLICK, SCN_HOTSPOTDOUBLECLICK, */
+  /* SCN_HOTSPOTRELEASECLICK, SCN_INDICATORCLICK, SCN_INDICATORRELEASE, */
+
+  int modificationType; /* SCN_MODIFIED */
+  const char *text;
+  /* SCN_MODIFIED, SCN_USERLISTSELECTION, SCN_AUTOCSELECTION, SCN_URIDROPPED */
+
+  int length;               /* SCN_MODIFIED */
+  int linesAdded;           /* SCN_MODIFIED */
+  int message;              /* SCN_MACRORECORD */
+  unsigned long wParam;     /* SCN_MACRORECORD */
+  unsigned long lParam;     /* SCN_MACRORECORD */
+  int line;                 /* SCN_MODIFIED */
+  int foldLevelNow;         /* SCN_MODIFIED */
+  int foldLevelPrev;        /* SCN_MODIFIED */
+  int margin;               /* SCN_MARGINCLICK */
+  int listType;             /* SCN_USERLISTSELECTION */
+  int x;                    /* SCN_DWELLSTART, SCN_DWELLEND */
+  int y;                    /* SCN_DWELLSTART, SCN_DWELLEND */
+  int token;                /* SCN_MODIFIED with SC_MOD_CONTAINER */
+  int annotationLinesAdded; /* SCN_MODIFIED with SC_MOD_CHANGEANNOTATION */
+  int updated;              /* SCN_UPDATEUI */
+} SCNotification;
+
+HB_FUNC(SCNCODE) {
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
+
+  hb_retnll(notification->nmhdr.code);
+}
+
+HB_FUNC(SCNCH) {
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
+
+  hb_retnll(notification->ch);
+}
+
+HB_FUNC(SCNMARGIN) {
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
+
+  hb_retnll(notification->margin);
+}
+
+HB_FUNC(SCNPOS) {
+  SCNotification *notification = (SCNotification *)hb_parnll(1);
+
+  hb_retnll(notification->position);
+}

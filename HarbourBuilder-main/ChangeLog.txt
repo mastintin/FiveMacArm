@@ -1,0 +1,1735 @@
+HarbourBuilder - Cross-platform visual IDE for Harbour
+=======================================================
+
+2026-04-05 (Session 10f: IDE polish, autocomplete, error handling, form events)
+
+  PALETTE & RADIOBUTTON FIXES:
+  - Rearranged palette.bmp to match CT_ constants (Memo icon at pos 3 shifted
+    CheckBox/ComboBox/GroupBox/RadioButton off by one)
+  - RadioButton: NSRadioButton→NSButtonTypeRadio, black text attribute, height default 20
+
+  TOOLBAR TOGGLE FORM/CODE:
+  - New "Form" button after Run (with separator) toggles between design form and
+    code editor using UI_FormIsKeyWindow() to detect which is active/frontmost
+  - Custom form/window icon (blue title bar, traffic light dots, form fields)
+
+  CODE EDITOR AUTOCOMPLETE (`:` trigger):
+  - Scintilla dropdown when typing `:` after a variable name
+  - 4 resolution strategies: Self→current CLASS, DATA comment, assignment pattern,
+    naming convention (oForm→TForm, oButton→TButton, etc.)
+  - CE_FindClassMembers() combines standard class members + user DATA/ACCESS/METHOD
+    from the editor via CE_CollectUserData()
+  - Follows INHERIT and FROM clauses for user classes (TForm1→TForm)
+  - SCI_AUTOCSETORDER=SC_ORDER_PERFORMSORT to handle unsorted combined lists
+
+  TAPPLICATION ERROR HANDLER:
+  - ErrorBlock() in TApplication:Run() installs AppShowError() as global handler
+  - Follows Harbour errorsys.prg: EG_ZERODIV→return 0, EG_LOCK→retry,
+    EG_OPEN/EG_APPENDLOCK→NetErr()+default
+  - MAC_RuntimeErrorDialog: NSAlert with scrollable mono memo, Copy to Clipboard,
+    dynamic buttons (Quit + Retry if canRetry + Default if canDefault)
+  - Quit calls MAC_AppTerminate() ([NSApp terminate:nil]) then ErrorLevel(1); QUIT
+
+  FORM ONCLICK AT RUNTIME:
+  - HBFormContentView subclass with mouseDown:/mouseUp: handlers
+  - Fires FOnClick, FOnMouseDown, FOnMouseUp on the form at runtime (not design mode)
+
+  MSGINFO IMPROVEMENTS:
+  - Accepts any value type: nil→"nil", ""→'""', N→Str, L→".T."/".F.",
+    D→DToC, A→"{Array(n)}", O→"{Object:ClassName}", B→"{Block}"
+  - Default title "Information" instead of empty string
+
+  SAVE BEFORE OPEN:
+  - TBOpen() prompts MsgYesNoCancel() when forms are open before loading a project
+
+  README:
+  - Antonio Linares link updated to https://github.com/FiveTechSoft
+
+2026-04-05 (Session 10e: Project Save/Load, TMemo support)
+
+  PROJECT SAVE/LOAD:
+  - RestoreFormFromCode() parser: recreates visual controls from .prg code
+    (Button, Label, Edit, CheckBox, ComboBox, GroupBox, ListBox, RadioButton, Memo)
+  - Non-visual components serialize as COMPONENT TYPE n, restore via UI_DropNonVisual
+  - TBOpen() properly closes existing design forms before loading (UI_FormHide)
+
+  TMEMO:
+  - New TMemo class in classes.prg with UI_MemoNew() in cocoa_core.m
+  - MEMO command in hbbuilder.ch for xBase-style creation
+  - RegenerateFormCode serializes Memo controls (was falling to comment)
+  - RestoreFormFromCode parses MEMO lines on project load
+
+2026-04-05 (Session 10d: Bundle Run/Debug fixes, Inspector UX)
+
+  RUN/DEBUG FROM BUNDLE:
+  - Fix path resolution for backends, scintilla, framework files when running
+    from .app bundle (detect Resources/ vs source tree layout)
+  - Fix debug build: hbbuilder.ch not found in bundle (same path issue)
+  - Remove gtgui.o dependency (gtgui.c not in Harbour install)
+  - Use HB_GT_NUL_DEFAULT instead of HB_GT_GUI_DEFAULT for user apps
+
+  INSPECTOR:
+  - Inspector window brings all IDE windows to front (NSWindowDelegate)
+  - Event double-click: cursor now lands at correct line and column (indent)
+  - Fix CRLF vs LF mismatch in generated handler code on macOS
+
+2026-04-05 (Session 10c: macOS .app Bundle)
+
+  APP BUNDLE:
+  - build_mac.sh creates HbBuilder.app with icon, Info.plist, all resources
+  - Harbour anchor logo as .icns app icon (16x16 to 512x512)
+  - ResPath() helper: finds resources in bundle or relative path
+  - App is self-contained and can be moved to any folder
+  - Resources embedded: toolbar, palette, menu icons, harbour sources, Scintilla
+
+2026-04-05 (Session 10b: Linux GTK3 Parity with macOS/Windows)
+
+  PHASE A - macOS PARITY:
+  - Form designer Undo/Redo (UI_FORMUNDOPUSH, UI_FORMUNDO)
+  - Copy/Paste controls (UI_FORMCOPYSELECTED, UI_FORMPASTECONTROLS, UI_FORMGETCLIPCOUNT)
+  - CodeEditorShowFindBar exposed as HB_FUNC
+  - Tab Order dialog (UI_FORMTABORDERDIALOG) with Move Up/Down and reorder
+
+  PHASE B - ADDITIONAL CONTROLS (Win32 parity):
+  - RadioButton (UI_RADIOBUTTONNEW) with Checked, GroupName
+  - BitBtn (UI_BITBTNNEW) with Glyph, Layout, Spacing
+  - Image (UI_IMAGENEW) with Picture, Stretch, Center, Proportional
+  - Shape (UI_SHAPENEW) with Shape type, PenColor, PenWidth, BrushColor
+  - Bevel (UI_BEVELNEW) with BevelStyle, BevelShape
+  - RichEdit (UI_RICHEDITNEW) with WordWrap, ScrollBars
+  - ListView (UI_LISTVIEWNEW, UI_LISTVIEWADDCOLUMN) with ViewStyle, GridLines
+  - Browse data grid (UI_BROWSENEW, UI_BROWSEADDCOL) with columns, RowHeight
+
+  BUILD SYSTEM:
+  - Progress dialog (GTK_ProgressOpen/Step/Close) during project build
+  - Build error dialog (GTK_BuildErrorDialog) with selectable/copyable text
+  - build_gtk.sh installs binary + Scintilla libs to bin/
+  - SETDPIAWARE stub for GTK3 (shared classes.prg compatibility)
+  - SQLite3 libs (-lhbsqlit3 -lsddsqlt3 -lrddsql -lsqlite3) in user project linking
+  - Fixed cProjDir path (harbourbuilder instead of hbcpp)
+
+  NON-VISUAL COMPONENTS:
+  - Non-visual controls (Timer, Dialogs, DB, AI, Threading, Internet, ERP, Printing)
+    appear as 28x28 palette icon on the form, movable but not resizable
+  - Auto-drop: click palette icon -> component placed directly (no rubber band)
+  - Palette icon cache (s_paletteIcons[]) for rendering on form
+  - IsNonVisualControl() helper for design mode behavior
+
+  MENU ICONS:
+  - UI_MenuSetBitmapByPos() — 16x16 PNG icons on menu items (GTK3)
+  - All menus have icons: File, Edit, Search, View, Project, Run, Format, Tools, Help
+  - 59 menu icon PNGs from Lazarus IDE icon set
+
+  AUTO-SETUP:
+  - Auto-download and build Harbour if not found in ~/harbour
+  - Progress dialog during download (git clone) and compilation (make)
+  - Error dialog with manual install instructions on failure
+  - Auto-detect Harbour layout (bin/linux/gcc/ vs bin/)
+  - build_gtk.sh also auto-detects Harbour layout
+
+  SMART REBUILD:
+  - Hash-based skip: if code unchanged and UserApp exists, run directly
+  - nLastHash persists across Run clicks within same session
+
+  IDE INTEGRATION (hbbuilder_linux.prg):
+  - Non-visual controls show dashed blue border + 4 corner dots always (no click needed)
+  - Edit menu: Form Undo, Copy Controls, Paste Controls
+  - Format menu: Tab Order...
+  - Toolbar Row 1: New, Open, Save | Cut, Copy, Paste | Undo, Redo | Run (matches Windows)
+  - Toolbar Row 2: Debug | Step, Over, Go, Stop | Exit (matches Windows)
+  - Toolbar/palette splitter at 308px for button visibility
+  - Form designer always resizable in design mode
+  - Inspector width +20px for better readability
+  - All new controls registered in inspector (GetAllProps/SetProp)
+
+2026-04-05 (Session 10a: macOS Parity Update)
+
+  macOS IDE brought to full feature parity with Windows (217 vs 162 HB_FUNC).
+
+  AUTO-SETUP:
+  - Auto-downloads and builds Harbour from GitHub on first Run (F9)
+  - Progress dialog with animated bar during download and build
+  - MAC_ShellExecLive: runs shell commands while keeping UI responsive
+  - Detects both Harbour layouts (bin/darwin/clang/ and bin/)
+  - No hardcoded paths: uses $HOME/harbour and HB_DirBase()
+  - Error dialog with manual install instructions if setup fails
+
+  MENU ICONS:
+  - 44 PNG menu item bitmaps matching Windows (File, Edit, Search, etc.)
+  - UI_MENUSETBITMAPBYPOS fully implemented (was stub)
+
+  NEW NATIVE CONTROLS (10 constructors):
+  - UI_IMAGENEW, UI_SHAPENEW, UI_BEVELNEW
+  - UI_LISTBOXNEW, UI_RADIOBUTTONNEW, UI_PROGRESSBARNEW
+  - UI_TREEVIEWNEW, UI_LISTVIEWNEW, UI_BITBTNNEW, UI_RICHEDITNEW
+
+  TBROWSE DATA GRID (7 functions):
+  - NSTableView-based grid with columns, cell data, footer, events
+  - UI_BROWSENEW, UI_BROWSEADDCOL, UI_BROWSESETCELL, UI_BROWSEGETCELL
+  - UI_BROWSESETFOOTER, UI_BROWSEREFRESH, UI_BROWSEONEVENT
+
+  GIT INTEGRATION (10 functions + panel UI):
+  - GIT_EXEC, GIT_ISREPO, GIT_STATUS, GIT_LOG, GIT_DIFF
+  - GIT_CURRENTBRANCH, GIT_BRANCHLIST, GIT_REMOTELIST, GIT_STASHLIST, GIT_BLAME
+  - MAC_GITPANEL: Source Control window with branch, changes list, commit message
+  - MAC_GITSETBRANCH, MAC_GITSETCHANGES, MAC_GITGETMESSAGE, MAC_GITCLEARMESSAGE
+
+  BUILD SYSTEM (matching Windows):
+  - Progress dialog with 7-step bar and status text
+  - Build Error dialog: monospaced log, Copy to Clipboard + Close buttons
+  - Smart rebuild: hash-based skip when code unchanged
+  - Full link chain: cocoa_core + cocoa_editor + Scintilla + SQLite3
+  - Removed editor message panel dependency for build output
+
+  THREADING (13 functions):
+  - UI_THREADSTART, UI_THREADWAIT, UI_THREADSLEEP (usleep)
+  - UI_MUTEXCREATE/LOCK/UNLOCK/DESTROY (pthread_mutex)
+  - UI_CRITICALSECTIONCREATE/ENTER/LEAVE/DESTROY (recursive mutex)
+  - UI_ATOMICINCREMENT, UI_ATOMICDECREMENT (__sync builtins)
+
+  NETWORKING (8 functions - placeholders matching Windows):
+  - UI_TCPCONNECT, UI_TCPSEND, UI_TCPRECV, UI_TCPCLOSE
+  - UI_HTTPGET, UI_HTTPPOST, UI_WEBSERVERSTART, UI_WEBSERVERSTOP
+
+  NON-VISUAL COMPONENTS (matching Windows/C++Builder):
+  - Auto-drop: click in palette drops immediately, no click on form needed
+  - Shows palette icon image (from palette.bmp), not text
+  - Fixed 32x32, movable with mouse, no resize allowed
+  - Auto-layout in 40px grid at bottom of form (8 columns)
+
+  INSPECTOR:
+  - Combo shows "oForm1 AS TForm1", "oButton1 AS TButton" (matching Windows)
+
+  OTHER:
+  - UI_MENUSETBITMAPBYPOS, UI_STACKTOOLBARS (stubs)
+  - SETDPIAWARE stub (macOS handles Retina natively)
+  - Toolbar row 2 matches Windows (Debug, Step, Over, Go, Stop, Exit)
+  - Palette splitter moved +62px right for better layout
+  - Suppress AppKit cursor warnings on modern macOS
+
+2026-04-05 (Session 9: Windows IDE Polish + MSVC + Form Size Fix)
+
+  MULTI-COMPILER SUPPORT:
+  - Auto-detection: scans MSVC 2019/2022 (Community/BuildTools/Professional)
+    and BCC (bcc77c/bcc77/bcc82/bcc55) with 15 toolset versions
+  - Tools > Select C Compiler: choose between all detected compilers
+  - TBRun() uses dynamic paths from GetCompilerInfo(), no hardcoded paths
+  - Response files (.rsp) for cl.exe and link.exe (spaces in paths)
+  - Windows SDK 'shared' include dir (winapifamily.h)
+  - /NODEFAULTLIB:LIBCMT for MSVC, cw32mt.lib for BCC
+  - Compiler shown in IDE title bar on first build
+
+  FORM SIZE FIX:
+  - Root cause: SetProcessDPIAware() called too late, after GT init
+  - Fix: C++ static constructor calls SetProcessDPIAware() before main()
+  - Both IDE and UserApp get identical non-client metrics
+  - Width/Height stored as window rect (not client area)
+  - SetProp("nLeft"/"nTop") auto-disables FCenter
+
+  FORM DESIGNER:
+  - Resize works: fixed OnActivate stealing focus during NC resize
+  - WM_ACTIVATEAPP: restores IDE only when switching from other apps
+  - FSizable default TRUE (like Delphi/C++Builder)
+  - Non-visual components: auto-drop with palette icon, no resize, drag OK
+  - Inspector shows "oForm1 AS TForm1", "oTimer1 AS Timer"
+  - SubclassChildren() skip already-subclassed (was stack overflow crash)
+
+  BUILD SYSTEM:
+  - Progress dialog: 7-step ProgressBar with status text
+  - Error dialog: resizable, monospace, Copy to Clipboard button
+  - Smart rebuild: hash-based skip when code+compiler unchanged
+  - Delete old .obj/.exe before build (prevents format mismatch)
+  - Each .cpp compiled separately with explicit -o path
+  - INIT PROCEDURE _InitDPI in generated code
+  - DPI manifest resource (app.manifest) available
+
+  MENU BITMAPS:
+  - 45 Lazarus IDE icons (16x16 PNG) via GDI+ flat API
+  - LoadPngAsBitmap() + UI_MenuSetBitmapByPos()
+  - Assigned to File/Edit/Search/View/Project/Run/Tools/Git/Help
+
+  TOOLBAR:
+  - Dual toolbar: Row 1 (file/edit) + Row 2 (debug) with StackToolBars()
+  - Exit button added to debug row
+  - Removed duplicate Run button from row 2
+  - Focus on startup via W32_SetFocus (SetForegroundWindow + SetFocus)
+
+  APPBAR:
+  - SW_SHOWMAXIMIZED with WM_GETMINMAXINFO (-10px DWM compensation)
+  - WM_SYSCOMMAND blocks SC_RESTORE/SC_MOVE/SC_SIZE
+  - WM_NCLBUTTONDBLCLK blocked (prevents un-maximize)
+
+  GIT INTEGRATION:
+  - 11 backend functions: GIT_Exec, Status, Log, Diff, BranchList,
+    CurrentBranch, Blame, IsRepo, RemoteList, StashList
+  - Source Control panel: W32_GitPanel with branch, changes, commit
+  - Git menu: 17 items (Init/Clone/Status/Commit/Push/Pull/Branch/Stash/Log)
+  - Git palette tab: 10 components (CT 121-130)
+
+  NEW COMPONENTS:
+  - AI tab: Whisper (CT 110), Embeddings (CT 111) + brand-colored icons
+  - Connectivity tab: Python, Swift, Go, Node, Rust, Java, DotNet, Lua, Ruby
+    with official language logos in palette
+  - Git tab: GitRepo, GitCommit, GitBranch, GitLog, GitDiff, etc.
+  - Palette: 130 components in 16 tabs
+
+  INSPECTOR:
+  - COL_NAME_W: 95 → 145px (wider property names)
+  - InspectorOpen() calls INS_BringToFront when already open
+  - Combo format: "oForm1 AS TForm1", "oTimer1 AS Timer"
+
+  CODE GENERATION:
+  - "local oForm1  // AS TForm1" with separate New() and CreateForm()
+  - Non-visual: "// ::oTimer1 := Timer():New( Self )" (commented)
+  - SetDPIAware() via INIT PROCEDURE + C++ static constructor
+  - FontName/FontSize in generated CreateForm()
+
+2026-04-04 (Session 8c: Git Integration)
+
+  GIT BACKEND (hbbridge.cpp, +11 HB_FUNC):
+  GIT_Exec() ........... run any git command, capture stdout via CreateProcess
+  GIT_Status() ......... parse `git status --porcelain` → { {cStatus, cFile}, ... }
+  GIT_Log() ............ parse `git log --format` → { {cHash, cAuthor, cDate, cMsg}, ... }
+  GIT_Diff() ........... get unified diff output for file or all
+  GIT_BranchList() ..... list branches with current marker
+  GIT_CurrentBranch() .. get HEAD branch name
+  GIT_Blame() .......... get blame output for a file
+  GIT_IsRepo() ......... check if directory is a git repo
+  GIT_RemoteList() ..... list remotes with URLs
+  GIT_StashList() ...... list stash entries
+
+  GIT PANEL UI (hbbridge.cpp, +6 HB_FUNC):
+  W32_GitPanel() ....... dark-themed Source Control window
+  W32_GitSetBranch() ... update branch label
+  W32_GitSetChanges() .. populate changes ListView
+  W32_GitGetMessage() .. get commit message text
+  W32_GitClearMessage()  clear commit message
+  - Layout: branch label, changes ListView (St|File), commit message
+    edit with placeholder, action buttons (Refresh/Commit/Push/Pull/Stash)
+
+  GIT MENU (17 items):
+  - Init Repository, Clone
+  - Status (opens panel), Commit, Push, Pull
+  - Branch Create/Switch/Merge
+  - Stash, Stash Pop
+  - Log/History, Diff, Blame
+
+  SOURCE CONTROL PALETTE TAB (10 components, CT 121-130):
+  GitRepo, GitCommit, GitBranch, GitLog, GitDiff,
+  GitRemote, GitStash, GitTag, GitBlame, GitMerge
+
+  IDE WIRING (hbbuilder_win.prg):
+  GitRefreshPanel() ... refresh branch + changes from GIT_Status
+  GitCommit() ......... stage all + commit with message
+  GitPush/Pull() ...... push/pull with output
+  GitBranchSwitch() ... list dialog to switch branches
+  GitStash/Pop() ...... stash/pop changes
+  GitLogShow() ........ show last 30 commits
+  GitDiffShow() ....... show diff in message box
+
+  FIX: InspectorOpen() now calls INS_BringToFront (View > Inspector)
+
+  PALETTE: 120 → 130 components, 15 → 16 tabs
+
+2026-04-04 (Session 8b: Connectivity Tab + AI components)
+
+  NEW COMPONENTS:
+  CT_WHISPER (110) ....... speech-to-text via OpenAI Whisper API
+  CT_EMBEDDINGS (111) .... vector embeddings for semantic search / RAG
+  CT_PYTHON (112) ........ C API embedding (Py_Initialize, PyRun_SimpleString)
+  CT_SWIFT (113) ......... Obj-C bridging header + @objc interop
+  CT_GO (114) ............ cgo FFI (import "C")
+  CT_NODE (115) .......... child_process / N-API addon
+  CT_RUST (116) .......... C ABI (extern "C" + #[no_mangle])
+  CT_JAVA (117) .......... JNI (JNI_CreateJavaVM)
+  CT_DOTNET (118) ........ COM Interop / CLR hosting
+  CT_LUA (119) ........... lua_State embedding (< 300KB runtime)
+  CT_RUBY (120) .......... C extension API (rb_define_method)
+
+  NEW TAB: "Connectivity" (9 components)
+  - Language/runtime interop: call Python, Swift, Go, Node, Rust,
+    Java, .NET, Lua, Ruby from Harbour via their native C FFI APIs
+  - Added to palette on all 3 platforms (Windows, Linux, macOS)
+
+  WHY THESE LANGUAGES:
+  - Python: #1 for AI/ML (TensorFlow, PyTorch), data science (pandas)
+  - Swift: native macOS/iOS, required for Apple frameworks
+  - Go: dominant in microservices, CLIs, cloud infrastructure
+  - Node: npm ecosystem (2M+ packages), Electron, real-time
+  - Rust: memory-safe systems code, WASM target, growing fast
+  - Java: enterprise standard, Android, massive library ecosystem
+  - DotNet: Windows enterprise (.NET/C#, WPF, Entity Framework)
+  - Lua: ultra-lightweight (300KB), ideal for user scripting/plugins
+  - Ruby: expressive DSLs, web (Rails), DevOps tooling
+
+  PALETTE: 111 → 120 components, 14 → 15 tabs
+
+2026-04-04 (Session 8: Windows Parity - Full IDE feature parity across 3 platforms)
+
+  DEBUGGER ENGINE (hbbridge.cpp, +12 HB_FUNC):
+  IDE_DebugStart() ...... launch .hrb with VM debug hook + pause callback
+  IDE_DebugGo() ......... continue execution (DBG_RUNNING)
+  IDE_DebugStep() ....... step into next line (DBG_STEPPING)
+  IDE_DebugStepOver() ... step over (tracks call depth via hb_dbg_ProcLevel)
+  IDE_DebugStop() ....... stop debug session (DBG_STOPPED)
+  IDE_DebugAddBreakpoint()  add module:line breakpoint (max 64)
+  IDE_DebugClearBreakpoints() clear all breakpoints
+  IDE_DebugGetState() ... return current state (0-5)
+  IDE_DebugGetLine() .... return current source line
+  IDE_DebugGetModule() .. return current module name
+  IDE_DebugGetLocals() .. inspect local variables (up to 30, with type)
+  - State machine: IDLE → RUNNING/STEPPING/STEPOVER → PAUSED → STOPPED
+  - Win32 message pump during pause (PeekMessage loop, keeps UI responsive)
+  - Harbour VM hook via hb_dbg_SetEntry() + hbapidbg.h
+
+  DEBUG PANEL UI (hbbridge.cpp, +4 HB_FUNC):
+  W32_DebugPanel() ...... dark-themed window with 5-tab notebook
+  W32_DebugUpdateLocals() populate Locals ListView from Harbour array
+  W32_DebugUpdateStack()  populate Call Stack ListView
+  W32_DebugSetStatus() .. update status label text
+  - Tabs: Watch, Locals (Name/Value/Type), Call Stack (#/Function/Module/Line),
+    Breakpoints (File/Line/Enabled), Output (monospace Consolas edit)
+  - Toolbar: ▶ Run, ↓ Step, → Over, ■ Stop + status label
+  - Dark theme: RGB(37,37,38) background, RGB(212,212,212) text
+  - Dark title bar via DwmSetWindowAttribute DWMWA_USE_IMMERSIVE_DARK_MODE
+
+  FORM CLIPBOARD & UNDO (hbbridge.cpp, +7 HB_FUNC):
+  UI_FormCopySelected() . copy selected controls to clipboard (max 32)
+  UI_FormPasteControls()  paste with 16px offset, auto-select pasted controls
+  UI_FormGetClipCount() . return clipboard item count
+  UI_FormUndoPush() ..... save snapshot to 50-step circular undo stack
+  UI_FormUndo() ......... restore positions/sizes from previous snapshot
+  UI_FormClearChildren()  remove all child controls from form
+  UI_FormTabOrderDialog() display tab order list dialog
+
+  REPORT DESIGNER (hbbridge.cpp, +10 HB_FUNC):
+  RPT_DesignerOpen() .... dark-themed window with GDI band/field rendering
+  RPT_DesignerClose() ... hide designer window
+  RPT_SetReport() ....... reserved for Harbour object binding
+  RPT_AddBand() ......... add band with auto-color by type (7 types)
+  RPT_AddField() ........ add field to band with position/size
+  RPT_GetSelected() ..... return {nBandIdx, nFieldIdx, cBandName, cFieldName}
+  RPT_GetBandProps() .... return inspector-compatible property array (5 props)
+  RPT_GetFieldProps() ... return inspector-compatible property array (8 props)
+  RPT_SetBandProp() ..... update band property + trigger redraw
+  RPT_SetFieldProp() .... update field property + trigger redraw
+  - Toolbar: Add Band (popup menu, 7 types), Add Field, Delete, Preview
+  - GDI rendering: ruler, colored band strips, field rectangles, selection handles
+  - Mouse: click margin → select band, click field → select, drag → move,
+    drag separator → resize band height
+  - Band colors: Header=#4A90D9, Detail=#808080, Footer=#4A90D9,
+    GroupHeader=#6BBF6B, PageHeader=#D4A843, Summary=#B464B4
+
+  REPORT PREVIEW (hbbridge.cpp, +7 HB_FUNC):
+  RPT_PreviewOpen() ..... dark window with white page rendering
+  RPT_PreviewClose() .... hide preview window
+  RPT_PreviewAddPage() .. start new page
+  RPT_PreviewDrawText().. add text with font/color/bold/italic
+  RPT_PreviewDrawRect().. add rectangle (filled or outline)
+  RPT_PreviewDrawLine().. add line with color/width
+  RPT_PreviewRender() ... trigger GDI rendering of all draw commands
+  - Zoom: 25% to 400% in 25% steps
+  - Page navigation: |< First, < Prev, > Next, >| Last
+  - White page with drop shadow, dashed margin lines
+  - Dark title bar, page label "Page N / M (zoom%)"
+
+  IDE MENUS & TOOLBAR (hbbuilder_win.prg):
+  - View > Debugger menu item
+  - Run > Debug, Continue, Stop menu items (was only Run/Step)
+  - Edit > Undo Design, Copy Controls, Paste Controls
+  - Format > Tab Order dialog
+  - Tools > Dark Mode toggle, Report Designer
+  - Second toolbar row: Run, Debug, Step, Over, Go, Stop
+  - TBDebugRun(): compile .hrb + launch IDE_DebugStart with callback
+  - OnDebugPause(): update locals display on breakpoint hit
+  - OpenReportDesigner(): opens designer with 3 default bands
+  - ToggleDarkMode(): toggle DwmSetWindowAttribute dark mode
+
+  BUILD SYSTEM (build_win.bat):
+  - Added tcontrol.cpp and tcontrols.cpp compilation steps
+  - Added libs: gtwin.lib, hbsqlit3.lib, sqlite3.lib, hbdebug.lib
+  - Changed cw32.lib → cw32mt.lib (multithreaded CRT for sqlite3)
+  - Result: BUILD SUCCESS, 0 compile errors, 0 link errors
+  - Output: bin/hbbuilder_win.exe (1.9 MB)
+
+2026-04-04 (Session 7: Visual Report Designer - Tasks 1-5 COMPLETE)
+
+  REPORT PREVIEW WINDOW (gtk3_core.c, +520 lines):
+  RPT_PreviewOpen() ..... singleton window with dark theme, page rendering
+  RPT_PreviewAddPage() .. start new page in preview
+  RPT_PreviewDrawText().. add text element with font/color to page
+  RPT_PreviewDrawRect().. add rectangle (filled or outline)
+  RPT_PreviewDrawLine().. add line with color/width
+  RPT_PreviewRender() ... trigger Cairo rendering of all draw commands
+  RPT_PreviewClose() .... hide preview window
+
+  PREVIEW FEATURES:
+  - White page with drop shadow on dark background
+  - Dashed margin lines
+  - Page navigation: First/Prev/Next/Last
+  - Zoom: 25% to 400% in 25% steps
+  - Cairo rendering: text, rectangles, lines
+  - Connected to designer Preview button
+
+  XCOMMAND MACROS (hbbuilder.ch):
+  DEFINE REPORT oRpt TITLE "..." DATASOURCE oDS
+  DEFINE BAND oBand NAME "Header" HEIGHT 40 OF oRpt
+  REPORT TEXT oFld PROMPT "Title" AT 5, 10 SIZE 180, 20 FONT "Sans", 18 BOLD OF oBand
+  REPORT DATA oFld FIELD "NAME" AT 1, 10 SIZE 80, 14 OF oBand
+  REPORT PREVIEW oRpt
+  REPORT PRINT oRpt
+
+  HELPER FUNCTIONS (classes.prg):
+  RPT_NewTextField() ... handles optional font/alignment parameters
+  RPT_NewDataField() ... same for data-bound fields
+  TReport:Preview() .... renders bands to preview window
+
+  EXAMPLE: samples/projects/printing/report_visual_example.prg
+  - 4 bands (Header/PageHeader/Detail/Footer)
+  - Static text + data-bound fields
+  - Code generation output verified
+
+2026-04-04 (Session 7a: Visual Report Designer - Tasks 1-3)
+------------------------------------------------------------
+
+REPORT DESIGNER WINDOW (gtk3_core.c, +656 lines):
+  RPT_DesignerOpen() .... singleton dark-themed GTK window (800x600)
+  RPT_DesignerClose() ... hide window
+  RPT_AddBand() ......... add band with auto-color by type
+  RPT_AddField() ........ add field to band, returns index
+  RPT_GetSelected() ..... returns {nBandIdx, nFieldIdx, cBandName, cFieldName}
+
+  CAIRO RENDERING:
+  - Ruler at top with mm marks (0 to page width)
+  - Bands as horizontal colored strips:
+    Header=#4A90D9 (blue), Detail=#808080 (gray), Footer=#4A90D9 (blue),
+    GroupHeader=#6BBF6B (green), PageHeader=#D4A843 (gold)
+  - Band name label rotated 90° in left margin strip (20px)
+  - Fields as rectangles with text/[FieldName] labels
+  - Selected field: blue border + 4 corner handles
+  - Band height drag handle at bottom separator
+
+  TOOLBAR:
+  - "Add Band" dropdown (7 types), "Add Field", "Delete", "Preview"
+  - Dark theme consistent with IDE
+
+  MOUSE INTERACTION:
+  - Click margin → select band
+  - Click field → select field (blue handles)
+  - Drag field → move within band
+  - Drag band separator → resize band height
+
+INSPECTOR INTEGRATION (gtk3_core.c):
+  RPT_GetBandProps() .... returns {cName, nHeight, lPrintOnEveryPage,
+                           lKeepTogether, lVisible} as inspector-compatible array
+  RPT_GetFieldProps() ... returns {cName, cText, cFieldName, nLeft, nTop,
+                           nWidth, nHeight, nAlignment} for inspector display
+  RPT_SetBandProp() ..... update band property + trigger redraw
+  RPT_SetFieldProp() .... update field property + trigger redraw
+
+IDE WIRING (hbbuilder_linux.prg):
+  - Tools > Report Designer menu item
+  - OpenReportDesigner() opens designer with 3 default bands
+    (Header + title field, Detail + 2 data fields, Footer)
+
+2026-04-04 (Session 7a: Report Designer Data Model)
+----------------------------------------------------
+
+REPORT DATA MODEL (classes.prg):
+  TReport .............. report container with band management
+                          AddDesignBand, RemoveDesignBand, GetDesignBand
+                          GenerateCode: produces CLASS..ENDCLASS with full
+                          band/field structure as Harbour source code
+  TReportBand .......... report band (Title/Header/Detail/Group/Footer/Summary)
+                          Properties: cName, nType, nHeight, nTop, lVisible,
+                          nBackColor, nForeColor, lRepeatOnPage, cGroupExpr
+                          Field management: AddField, RemoveField, GetField
+  TReportField ......... field within a band
+                          Properties: cName, cFieldName, cExpression, cText,
+                          nLeft, nTop, nWidth, nHeight, nAlign, cFontName,
+                          nFontSize, lFontBold, lFontItalic, nForeColor,
+                          nBackColor, cFormat, cType (text/field/expression/
+                          image/barcode/line/box/shape)
+
+UNIT TESTS (tests/test_report.prg):
+  7 test groups, comprehensive coverage:
+  - Band Creation: TReportBand constructor, defaults
+  - Field Addition: AddField, field count, retrieval
+  - Band Properties: type, height, visibility, colors, repeat, group
+  - Field Properties: position, size, font, colors, alignment, format
+  - Field Data Binding: field name, expression, type variants
+  - Report Band Management: AddDesignBand, RemoveDesignBand, GetDesignBand
+  - Code Generation: GenerateCode produces valid CLASS structure
+
+BUILD:
+  tests/build_test_report.sh ... compiles and runs report tests
+  tests/ui_stubs.c ............. UI function stubs for headless testing
+
+
+2026-04-03 (Session 5c: Database Testing + Bug Fixes)
+-------------------------------------------------------
+
+TESTED & VERIFIED:
+  dbf_example.prg ...... PASS - creates DBF, inserts 5 records,
+                          reads all fields, shows table structure
+  sqlite_example.prg ... PASS - creates table, transactions, 5 inserts,
+                          queries with ORDER BY/WHERE, TableExists, LastInsertId
+
+BUG FIXES:
+  - LOCAL declarations moved to top of functions (Harbour requirement)
+  - Added REQUEST DBFCDX, DBFNTX for RDD driver registration
+  - Fixed sqlite3_open() to pass .T. flag (create file if not exists)
+  - Fixed sqlite3_exec() return type check (ValType guard)
+  - Simplified TSQLite:Query() to use sqlite3_column_text for all types
+  - Fixed sample code to use hb_ValToStr() instead of Str() for text columns
+
+BUILD:
+  - Added build_test.sh for compiling DB examples with GTK3 backend
+  - Updated .gitignore to exclude DB build artifacts (.o, .dbf, .sqlite, binaries)
+  - Added -lhbsqlit3 -lsddsqlt3 -lrddsql -lsqlite3 to linker
+
+
+2026-04-03 (Session 5b: Database Components + Data Controls)
+--------------------------------------------------------------
+
+DATABASE COMPONENTS (classes.prg - non-visual, Data Access tab):
+  TDatabase ........... abstract base class with unified API:
+                         Open/Close/Execute/Query/Tables/IsConnected/LastError
+  TDBFTable ........... native DBF/NTX/CDX via Harbour RDD (20+ methods:
+                         GoTop/Skip/Seek/Append/Delete/FieldGet/FieldPut/
+                         RecNo/RecCount/Eof/Structure/CreateIndex)
+  TSQLite ............. SQLite3 via hbsqlit3 (Execute/Query/CreateTable/
+                         BeginTransaction/Commit/Rollback/LastInsertId)
+  TMySQL .............. stub (needs libmysqlclient-dev)
+  TMariaDB ........... inherits TMySQL (wire-compatible)
+  TPostgreSQL ........ stub (needs libpq-dev)
+  TFirebird .......... stub (needs firebird-dev)
+  TSQLServer ......... stub (needs freetds-dev)
+  TOracle ............ stub (needs Oracle Instant Client)
+  TMongoDB ........... stub (needs libmongoc-dev)
+
+  Architecture: all inherit TDatabase, same API. Changing backend = one line.
+
+DATA CONTROLS (classes.prg - visual, Data Controls tab):
+  TDataSource ........ binds TDatabase to visual controls
+                        MoveFirst/Prev/Next/Last/Append/Delete/Save/Refresh
+  TDBControl ......... base class (RefreshFromDB/WriteToDB)
+  TDBText ............ label displaying field value
+  TDBEdit ............ editable entry bound to field
+  TDBComboBox ........ combo bound to field
+  TDBCheckBox ........ check button bound to logical field
+  TDBNavigator ....... 7 buttons (First/Prior/Next/Last/Insert/Remove/Post)
+
+GTK3 WIDGETS (gtk3_core.c - Data Controls):
+  HBDBGrid ........... GtkTreeView with 4 resizable columns + grid lines
+  HBDBNavigator ...... GtkButtonBox with 7 navigation buttons
+  HBDBText ........... GtkLabel bound to field
+  HBDBEdit ........... GtkEntry bound to field
+  HBDBComboBox ....... GtkComboBoxText bound to field
+  HBDBCheckBox ....... GtkCheckButton bound to logical field
+  HBDBImage .......... GtkFrame + GtkImage for blob/path fields
+
+SAMPLE PROJECTS (samples/projects/database/):
+  dbf_example.prg .......... create/write/read DBF with TDBFTable
+  sqlite_example.prg ....... SQL tables, transactions, queries with TSQLite
+  portable_example.prg ..... same API across all backends
+  datacontrols_example.prg . TDataSource + TDBNavigator + bound controls
+
+BUILD: added -lhbsqlit3 -lsddsqlt3 -lrddsql -lsqlite3 to linker.
+
+
+2026-04-04 (Session 6: macOS Scintilla + Full IDE Parity + Lazarus Features)
+------------------------------------------------------------------------------
+
+macOS: Complete Scintilla 5.5.3 + Lexilla 5.4.0 integration, in-process
+debugger, professional IDE features, and full platform parity.
+
+  SCINTILLA CODE EDITOR (replaces NSTextView):
+  - Compiled from source as static libraries (libscintilla.a + liblexilla.a)
+  - New cocoa_editor.mm (Objective-C++) separate from cocoa_core.m
+  - C++ lexer via Lexilla CreateLexer("cpp") for Harbour syntax
+  - VS Code Dark+ colour scheme, Menlo 15pt font
+  - Line numbers (48px), code folding (16px, box style), indentation guides
+  - Harbour-aware folding: function/class/if/for/while/switch/begin/#pragma
+
+  KEYBOARD SHORTCUTS (NSEvent local monitor):
+  - Cmd+/ toggle comment, Cmd+Shift+D duplicate, Cmd+Shift+K delete line
+  - Cmd+L select line, Cmd+G goto line (dialog), Cmd+Space auto-complete
+  - F12 go-to-definition (function/procedure/method/class)
+  - Cmd+0..9 toggle bookmarks, Cmd+Shift+0..9 jump to bookmark
+
+  EDITOR FEATURES:
+  - Bracket matching: (), [], {} highlighted yellow; bad brackets red
+  - Bookmarks with arrow markers in margin
+  - Code snippets (Tab expansion): forn, iff, cls, func, proc, whil, swit, tryx
+  - Auto-indent on Enter (SCN_CHARADDED)
+  - Auto-complete popup (150+ Harbour keywords/functions)
+  - Status bar: Ln/Col/INS/OVR/Lines/Chars/UTF-8 (SCN_UPDATEUI)
+
+  BUILD ERROR PARSING (Messages Panel):
+  - NSTableView at bottom of editor: File | Line | Type | Message
+  - Click error row → jumps to line + red background marker
+  - Parses Harbour errors: file.prg(123) Error/Warning
+  - Parses clang errors: file.c:123:45: error/warning
+  - TBRun integration: clear/parse/display at each build step
+
+  IN-PROCESS DEBUGGER (.hrb bytecode):
+  - State machine: IDLE → STEPPING → PAUSED → RUNNING/STEPOVER → STOPPED
+  - hb_dbg_SetEntry() VM hook on every source line
+  - NSRunLoop event processing during pause (UI responsive)
+  - IDE_DebugGetLocals: variable inspection via hb_dbg_vmVarLGet
+  - Professional panel: toolbar (Run/Pause/Step/Over/Stop) + 5 tabs
+    (Watch/Locals/Call Stack/Breakpoints/Output)
+  - TBDebugRun: harbour -gh -b → .hrb → IDE_DebugStart
+
+  FORM DESIGNER IMPROVEMENTS:
+  - Copy/Paste controls (UI_FormCopySelected/PasteControls, +16px offset)
+  - Align/Distribute (8 modes): Left/Right/Top/Bottom/CenterH/CenterV/SpaceH/SpaceV
+  - Format menu with all alignment options
+
+  INSPECTOR IMPROVEMENTS:
+  - Dropdown editors for enum properties (NSMenu popup):
+    BorderStyle, Position, WindowState, FormStyle, Cursor
+
+  IDE PANELS (5 native Cocoa, replacing MsgInfo stubs):
+  - Debugger: toolbar + 5-tab NSTabView with NSTableView data sources
+  - AI Assistant: Ollama chat, 6 models, async HTTP
+  - Project Inspector: NSOutlineView
+  - Editor Colors: 4 presets (Dark/Light/Monokai/Solarized) live-applied
+  - Project Options: 4-tab dialog (Harbour/Compiler/Linker/Directories)
+
+  TOOLBAR:
+  - Multi-toolbar support (up to 4 rows, stacked vertically)
+  - Row 1: New/Open/Save | Cut/Copy/Paste | Undo/Redo | Run (toolbar.bmp)
+  - Row 2: Run/Debug | Step/Over/Go/Stop (toolbar_debug.bmp)
+  - Compact 20x20 icons, 28x28 buttons
+
+  MENU/TOOLBAR COMPLETION:
+  - All menu items functional (zero MsgInfo stubs)
+  - All toolbar buttons functional
+  - Clipboard: Undo/Redo/Cut/Copy/Paste via Scintilla API
+  - Save As, Add/Remove from Project, Install/New Component
+  - Debug Step Into/Over with smart state check (IDE_DebugGetState)
+  - Dark mode app-wide (NSAppearanceNameDarkAqua)
+
+  INCREMENTAL BUILD (build_mac.sh):
+  - needs_rebuild() checks file timestamps
+  - Only recompiles changed sources (.prg/.m/.mm)
+  - Second build runs instantly (0 compilations)
+  - Added -lhbsqlit3 -lsqlite3 for database support
+
+  DATABASE VERIFIED ON macOS:
+  - DBF: create, insert 5 records, read, structure — PASS
+  - SQLite: create table, transactions, queries, LastInsertId — PASS
+  - build_test_mac.sh for database examples
+
+  TEST SUITES:
+  - tests/test_save_load.prg: 12 tests (MemoWrit/Read, .hbp format,
+    form code gen, save/load cycle, path spaces, large file, unicode)
+
+  FILES ADDED:
+  - backends/cocoa/cocoa_editor.mm .... Scintilla editor (Obj-C++)
+  - resources/scintilla_src/ .......... Scintilla + Lexilla source
+  - tests/test_save_load.prg .......... 12 save/load tests
+  - tests/build_test_save_load.sh ..... Test build script
+  - samples/projects/database/build_test_mac.sh . DB example build
+
+  FILES MODIFIED:
+  - backends/cocoa/cocoa_core.m ....... multi-toolbar, copy/paste, align,
+                                        dropdown editors, removed NSTextView
+  - backends/cocoa/cocoa_inspector.m .. dropdown 'D' type for enums
+  - samples/build_mac.sh .............. incremental build, Scintilla linking
+  - samples/hbbuilder_macos.prg ....... all features wired, 0 stubs
+
+
+2026-04-03 (Session 5: Linux full IDE + Debugger Engine + Windows parity)
+--------------------------------------------------------------------------
+
+LINUX SCINTILLA INTEGRATION:
+  - Replaced GtkTextView editor with Scintilla 5.6.1 + Lexilla 5.4.8
+  - Dynamic loading via dlopen() of libscintilla.so / liblexilla.so
+  - build_scintilla.sh downloads and compiles from source
+  - Full feature set: syntax highlighting, code folding, auto-complete,
+    find/replace bar, auto-indent, status bar, all keyboard shortcuts
+
+LINUX IDE PANELS & DIALOGS (6 new, all native GTK3):
+  - GTK_SetDarkMode ......... GTK dark theme toggle (Tools > Dark Mode)
+  - GTK_DebugPanel .......... 5-tab debugger (Watch/Locals/Call Stack/Breakpoints/Output)
+                               Professional toolbar: Run, Pause, Step Into, Step Over, Stop
+                               Dark themed, monospace fonts, resizable columns
+  - GTK_AIAssistantPanel .... Ollama chat with model selector, curl integration
+  - GTK_ProjectInspector .... TreeView with parent/child hierarchy
+  - GTK_EditorSettingsDialog  Font, 9 color buttons, presets, preview
+  - GTK_ProjectOptionsDialog  4 tabs (Harbour/C Compiler/Linker/Directories)
+
+LINUX EDITOR OPERATIONS (7 new CodeEditor HB_FUNCs):
+  - CodeEditorUndo, CodeEditorRedo, CodeEditorCut, CodeEditorCopy,
+    CodeEditorPaste, CodeEditorFind, CodeEditorReplace
+  - Find bar: properly shows/hides replace widgets per mode
+
+LINUX MENU/TOOLBAR COMPLETION:
+  - All 36 menu items functional (zero MsgInfo stubs)
+  - All 9 toolbar buttons functional
+  - Added: Save As, Add/Remove from Project, Install/New Component,
+    Step Over/Into, Environment Options, Dark Mode toggle
+
+INTEGRATED DEBUGGER ENGINE (gtk3_core.c):
+  - In-process debugging via .hrb bytecode (harbour -gh -b)
+  - hb_dbg_SetEntry() VM hook intercepts every source line
+  - gtk_main_iteration() keeps UI responsive while paused
+  - IDE_DebugStart/Go/Step/StepOver/Stop control commands
+  - IDE_DebugAddBreakpoint/ClearBreakpoints
+  - IDE_DebugGetLocals: introspects local variables via hb_dbg_vmVarLGet
+  - OnDebugPause callback updates Locals and Call Stack tabs
+  - NOTE: HRB pcode does not trigger debug hooks (VM limitation);
+    future: pipe-based debug agent for compiled executables
+
+DEBUGGER UNIT TEST SUITE (tests/test_debugger.prg):
+  - 16 tests across 5 groups, all passing
+  - State machine, breakpoint management, HRB compilation,
+    debug execution, variable inspection
+  - Build script: tests/build_test_debugger.sh
+
+TWO-ROW TOOLBAR:
+  - Row 1: New, Open, Save | Cut, Copy, Paste | Undo, Redo (original icons)
+  - Row 2: Run, Debug | Step Into, Step Over, Continue, Stop (debug icons)
+  - Compact 20x20 icon size, multiple toolbar support (up to 4 rows)
+  - toolbar_debug.bmp: 6 generated icons for debug operations
+
+WINDOWS PARITY:
+  - 7 CodeEditor HB_FUNCs added (Undo/Redo/Cut/Copy/Paste/Find/Replace)
+  - All 35 menu items + 9 toolbar buttons functional (zero stubs)
+  - Added: Save As, Add/Remove from Project, Install/New Component,
+    Step Over/Into, Environment Options
+
+FILES ADDED:
+  - build_scintilla.sh .............. Linux Scintilla build script
+  - resources/libscintilla.so ....... Scintilla 5.6.1 (Linux x86_64)
+  - resources/liblexilla.so ......... Lexilla 5.4.8 (Linux x86_64)
+  - resources/toolbar_debug.bmp ..... 6 debug toolbar icons (32x32 strip)
+  - tests/test_debugger.prg ........ 16 debugger unit tests
+  - tests/build_test_debugger.sh ... Test build script
+
+FILES MODIFIED:
+  - backends/gtk3/gtk3_core.c ....... Scintilla editor, 6 panels, debugger engine,
+                                       multi-toolbar support, editor operations
+  - samples/hbbuilder_linux.prg ..... All stubs replaced, debug UI, two toolbars
+  - samples/hbbuilder_win.prg ....... All stubs replaced, editor operations
+  - README.md ....................... Platform parity tables, debugger docs
+
+
+2026-04-04 (Session 6: macOS Scintilla Integration + IDE Panels)
+-----------------------------------------------------------------
+
+macOS: Complete Scintilla 5.5.3 + Lexilla 5.4.0 integration, replacing
+NSTextView-based editor. Plus 5 native Cocoa IDE panels/dialogs, keyboard
+shortcuts, auto-indent, dark mode, and find bar.
+
+  SCINTILLA CODE EDITOR (replaces NSTextView):
+  - Downloaded & compiled Scintilla 5.5.3 + Lexilla 5.4.0 as static libraries
+    * libscintilla.a (1.9 MB) + liblexilla.a (2.4 MB)
+    * Build script: resources/scintilla_src/build_scintilla_mac.sh
+  - New file: backends/cocoa/cocoa_editor.mm (Objective-C++ for Scintilla)
+    * Separate from cocoa_core.m (pure Objective-C) to avoid C++17 conflicts
+  - C++ lexer via Lexilla CreateLexer("cpp") for Harbour syntax
+  - Same colour scheme as Windows (VS Code Dark+ inspired):
+    Keywords blue bold, Commands teal, Comments green italic,
+    Strings orange, Numbers light green, Preprocessor magenta
+  - Line numbers margin (48px), code folding margin (16px, box style)
+  - Indentation guides (SC_IV_LOOKBOTH)
+  - UTF-8 (SC_CP_UTF8), tab width 3, Menlo 15pt font
+
+  KEYBOARD SHORTCUTS (via NSEvent local monitor):
+  - Cmd+/ ............ Toggle line comment (//)
+  - Cmd+Shift+D ...... Duplicate line (SCI_LINEDUPLICATE)
+  - Cmd+Shift+K ...... Delete line (SCI_LINEDELETE)
+  - Cmd+L ............ Select entire line
+  - Cmd+G ............ Go to line (input dialog)
+  - Cmd+Space ........ Auto-complete popup (150+ Harbour keywords/functions)
+  - Cmd+F ............ Find (menu-driven)
+  - Cmd+H ............ Find & Replace (menu-driven)
+
+  SCINTILLA NOTIFICATIONS (HBSciDelegate):
+  - SCN_CHARADDED ..... Auto-indent on Enter (copies previous line indentation)
+  - SCN_MARGINCLICK ... Fold/unfold on margin click (SCI_TOGGLEFOLD)
+
+  DARK MODE:
+  - MAC_SetAppDarkMode(.T.) .... app-wide NSAppearanceNameDarkAqua
+  - MAC_SetAllDarkMode(.T.) .... all visible windows
+  - Applied automatically on IDE startup
+
+  DEBUGGER PANEL (MAC_DebugPanel):
+  - Singleton floating window, 500x350, dark Aqua appearance
+  - NSTabView with 5 tabs:
+    * Watch ......... NSTableView (Name/Value/Type columns)
+    * Locals ........ NSTableView (Name/Value/Type columns)
+    * Call Stack .... NSTableView (Level/Location columns)
+    * Breakpoints ... NSTableView (File/Line/Enabled columns)
+    * Output ........ NSTextView, monospace, dark theme, read-only
+  - Menu: View > Debugger
+
+  AI ASSISTANT PANEL (MAC_AIAssistantPanel):
+  - Singleton floating window, 420x550, dark Aqua appearance
+  - Model selector NSPopUpButton: codellama, llama3, deepseek-coder,
+    mistral, phi3, gemma2
+  - Chat output: read-only NSTextView, monospace, dark theme
+  - Input NSTextField with Send + Clear buttons
+  - Ollama integration: async HTTP POST to localhost:11434/api/generate
+  - JSON response parsing via NSJSONSerialization
+  - Menu: Tools > AI Assistant
+
+  PROJECT INSPECTOR (MAC_ProjectInspector):
+  - Singleton floating window, 260x400, dark Aqua appearance
+  - NSOutlineView with tree hierarchy
+  - Menu: View > Project Inspector
+
+  EDITOR COLORS DIALOG (MAC_EditorColorsDialog):
+  - Modal NSAlert with 4 preset theme buttons:
+    Dark (VS Code Dark+), Light, Monokai, Solarized
+  - Live application to Scintilla editor via SCI_STYLESETFORE/BACK
+  - Updates all syntax styles, caret, selection, gutter, fold markers
+  - Menu: Tools > Editor Colors
+
+  PROJECT OPTIONS DIALOG (MAC_ProjectOptionsDialog):
+  - Modal NSAlert with NSTabView accessory (4 tabs):
+    * Harbour ...... directory, compiler flags
+    * C Compiler ... compiler name, flags
+    * Linker ....... flags, libraries
+    * Directories .. project dir, output dir, include paths
+  - Pre-populated with actual macOS build settings
+  - Menu: Project > Options
+
+  HARBOUR-AWARE CODE FOLDING (CE_UpdateHarbourFolding):
+  - Custom fold levels for Harbour blocks (not just C++ lexer defaults)
+  - Fold openers: function, procedure, method, class, if, do, for, switch,
+    begin, while, #pragma begindump
+  - Fold closers: return, endclass, endif, enddo, next, endswitch, endcase,
+    end, #pragma enddump
+  - CE_LineStartsWithCI(): case-insensitive line-start matching with
+    whitespace skip and word-boundary check
+  - Called on every text change (SCN_MODIFIED) and tab switch
+
+  STATUS BAR (CE_UpdateStatusBar):
+  - NSTextField at bottom of code editor window
+  - Shows: Ln X, Col Y | INS/OVR | Lines: N | Chars: N | UTF-8
+  - Updated on every cursor/selection change (SCN_UPDATEUI)
+  - Dark theme: gray text on dark background (#242426)
+  - Monospace 11pt font
+
+  BUG FIX:
+  - Run menu item now calls TBRun() instead of MsgInfo("Run") placeholder
+
+  BUILD SYSTEM:
+  - build_mac.sh updated: compiles cocoa_editor.mm with -std=c++17
+  - Links -lscintilla -llexilla -framework QuartzCore
+  - Auto-builds Scintilla static libs if not present
+
+  FILES ADDED:
+  - backends/cocoa/cocoa_editor.mm ....... Scintilla editor (Objective-C++)
+  - resources/scintilla_src/ ............. Scintilla 5.5.3 + Lexilla 5.4.0 source
+  - resources/scintilla_src/build_scintilla_mac.sh .. static library build script
+  - resources/scintilla_src/build/libscintilla.a .... compiled static library
+  - resources/scintilla_src/build/liblexilla.a ...... compiled static library
+
+  FILES MODIFIED:
+  - backends/cocoa/cocoa_core.m .......... removed NSTextView editor code,
+                                           EnsureNSApp made non-static
+  - samples/build_mac.sh ................. Scintilla includes + linking
+  - samples/hbbuilder_macos.prg .......... menu wiring, dark mode, Run fix
+
+
+2026-04-03 (Session 5: Linux IDE Panels, Dialogs, Dark Mode)
+--------------------------------------------------------------
+
+LINUX: 6 native GTK3 panels/dialogs replacing MsgInfo() placeholders
+
+  DARK MODE:
+  - GTK_SetDarkMode( lEnable ) ... sets gtk-application-prefer-dark-theme
+  - Off by default, toggle from Tools > Dark Mode menu
+  - ToggleDarkMode() in hbbuilder_linux.prg with static lDark state
+
+  DEBUGGER PANEL (GTK_DebugPanel):
+  - Floating utility window, 400x300, singleton pattern (hide on close)
+  - GtkNotebook with 5 tabs:
+    * Watch ......... 3-column TreeView (Name/Value/Type)
+    * Locals ........ 3-column TreeView with sample data (oForm, nCount, cName)
+    * Call Stack .... 2-column TreeView (Level/Location)
+    * Breakpoints .. 3-column TreeView (File/Line/Enabled)
+    * Output ........ read-only monospace GtkTextView
+  - Menu: View > Debugger (was MsgInfo placeholder)
+
+  AI ASSISTANT PANEL (GTK_AIAssistantPanel):
+  - Floating utility window, 420x550, singleton pattern
+  - Model selector ComboBox: codellama, llama3, deepseek-coder, mistral, phi3, gemma2
+  - Chat output: read-only GtkTextView, monospace, dark theme, word wrap
+  - Input entry with Send button + Enter key binding
+  - Clear button to reset chat
+  - Ollama integration via curl to localhost:11434/api/generate
+  - JSON response parsing via python3
+  - Status bar: Ready/Sending/Error + model + endpoint
+  - Menu: Tools > AI Assistant (was MsgInfo placeholder)
+
+  PROJECT INSPECTOR (GTK_ProjectInspector):
+  - Floating utility window, 250x400, singleton pattern
+  - GtkTreeStore with parent/child hierarchy from Harbour array
+  - Items starting with 2 spaces become children of previous parent
+  - All nodes auto-expanded on open
+  - Rebuilds tree when called with new array
+  - Menu: View > Project Inspector (was MsgInfo placeholder)
+
+  EDITOR COLORS DIALOG (GTK_EditorSettingsDialog):
+  - Modal GtkDialog, 480x500
+  - Font name entry + size spinner (default: Monospace 14)
+  - 9 GtkColorButton rows:
+    Background, Text, Keywords, Commands, Comments,
+    Strings, Preprocessor, Numbers, Selection
+  - Default colors: VS Code Dark+ theme
+  - Preset buttons: Dark, Light, Monokai, Solarized
+  - Live preview with sample Harbour code
+  - OK/Cancel buttons
+  - Menu: Tools > Editor Colors (was MsgInfo placeholder)
+
+  PROJECT OPTIONS DIALOG (GTK_ProjectOptionsDialog):
+  - Modal GtkDialog, 520x440
+  - GtkNotebook with 4 tabs:
+    * Harbour ...... directory, compiler flags, warnings checkbox, debug checkbox
+    * C Compiler ... directory, flags, optimization checkbox
+    * Linker ....... flags, libraries (multiline text)
+    * Directories .. project dir, output dir, include paths, library paths
+  - Accepts 10 string parameters for defaults
+  - OK/Cancel buttons
+  - Menu: Project > Options (was MsgInfo placeholder)
+
+  FILES MODIFIED:
+  - backends/gtk3/gtk3_core.c .... +580 lines (6 new HB_FUNC functions)
+  - samples/hbbuilder_linux.prg .. replaced 5 MsgInfo stubs with native calls,
+                                    added ToggleDarkMode(), Dark Mode menu item
+
+
+2026-04-03 (Session 4: Linux Scintilla Integration)
+----------------------------------------------------
+
+LINUX: Replaced GtkTextView code editor with Scintilla in gtk3_core.c
+
+  The GTK3 code editor has been completely rewritten to use Scintilla via
+  dynamically-loaded shared libraries (libscintilla.so + liblexilla.so),
+  matching the Windows Scintilla implementation from Session 3.
+
+  REPLACED (GtkTextView manual code removed):
+  - CE_HighlightCode() ........ manual token-by-token syntax highlighting
+  - on_gutter_draw() .......... manual Cairo line number rendering
+  - on_editor_buffer_changed() . re-highlight on every keystroke
+  - on_editor_vadjust_changed()  gutter sync on scroll
+  - s_keywords[] / s_commands[]  static keyword/command arrays
+  - CE_IsKeyword() / CE_IsCommand() / CE_IsWordChar()
+  - GtkTextBuffer tags (comment/string/keyword/command/preproc)
+
+  NEW - Scintilla GTK integration:
+  - InitScintilla() ........... dlopen() libscintilla.so + liblexilla.so
+                                Searches: ../resources/, ./resources/, system path
+  - ConfigureScintilla() ...... C/C++ lexer, Harbour keywords, VS Code Dark+ colors
+  - UpdateHarbourFolding() .... Harbour-aware fold levels (function/if/for/class)
+  - CE_ShowAutoComplete() ..... Ctrl+Space with all Harbour keywords + functions
+  - CE_FindNext() ............. SCI_SEARCHINTARGET with wrap-around + match count
+  - CE_ReplaceCurrent() ....... Replace current match
+  - CE_ReplaceAll() ........... Replace all matches with count
+  - CE_ShowFindBar() .......... GTK find/replace bar with dark theme
+  - UpdateStatusBar() ......... Ln/Col, INS/OVR, lines, chars, UTF-8
+  - on_sci_notify() ........... SCN_CHARADDED (auto-indent), SCN_UPDATEUI,
+                                SCN_MODIFIED (fold update), SCN_MARGINCLICK
+  - on_sci_key_press() ........ All keyboard shortcuts (Ctrl+F, Ctrl+H, Ctrl+/,
+                                Ctrl+Shift+D, Ctrl+Shift+K, Ctrl+L, Ctrl+G,
+                                Ctrl+Space, F3/Shift+F3, Esc)
+
+  FEATURES (now matching Windows):
+  - Scintilla lexer-based syntax highlighting (no manual parsing)
+  - Native line numbers margin (no Cairo drawing)
+  - Code folding with box-style markers
+  - Indentation guides
+  - Auto-indent on Enter
+  - Auto-complete popup (Ctrl+Space)
+  - Find/Replace bar with match count
+  - Status bar (Ln/Col/INS/UTF-8)
+  - All keyboard shortcuts from Windows version
+
+  ALL HB_FUNC FUNCTIONS UPDATED:
+  - CODEEDITORCREATE .......... creates Scintilla widget via scintilla_new()
+  - CODEEDITORSETTEXT ......... SCI_SETTEXT
+  - CODEEDITORGETTEXT ......... SCI_GETTEXT
+  - CODEEDITORDESTROY ......... proper cleanup with tab text free
+  - CODEEDITORADDTAB .......... (unchanged, tab management is GTK)
+  - CODEEDITORSETTABTEXT ...... SCI_SETTEXT + UpdateHarbourFolding
+  - CODEEDITORGETTABTEXT ...... SCI_GETTEXT from active, heap for others
+  - CODEEDITORSELECTTAB ....... SaveCurrentTabText + SCI_SETTEXT
+  - CODEEDITORCLEARTABS ....... SCI_SETTEXT ""
+  - CODEEDITORONTABCHANGE ..... (unchanged)
+  - CODEEDITORAPPENDTEXT ...... SCI_ADDTEXT
+  - CODEEDITORINSERTAFTER ..... SCI_GETTEXT + strcasestr + SCI_ADDTEXT
+  - CODEEDITORGOTOFUNCTION .... SCI_GOTOPOS + SCI_SCROLLCARET
+  - CODEEDITORBRINGTOFRONT .... (unchanged)
+  - CODEEDITORGETTEXT2 ........ SCI_GETTEXT
+
+  FILES MODIFIED:
+  - backends/gtk3/gtk3_core.c ... complete code editor rewrite
+  - samples/build_gtk.sh ........ updated for Scintilla .so copy + step count
+
+  FILES ADDED:
+  - build_scintilla.sh .......... downloads + builds Scintilla 5.6.1 + Lexilla 5.4.8
+                                  from source for Linux GTK3
+
+  RESOLVED FROM PENDING:
+  - Linux: compile libscintilla, replace GtkTextView in gtk3_core.c [DONE]
+
+  STILL PENDING:
+  - macOS: compile ScintillaView framework, replace NSTextView in cocoa_core.m
+
+
+2026-04-03 (Session 3: Scintilla Code Editor)
+----------------------------------------------
+
+MAJOR: Replaced RichEdit with Scintilla 5.6.1 + Lexilla 5.4.8
+
+  Code editor completely rewritten to use Scintilla — the same editing
+  component used by Notepad++, SciTE, Code::Blocks, and many professional IDEs.
+  This replaces the RichEdit-based editor which had unreliable syntax coloring.
+
+  SYNTAX HIGHLIGHTING (automatic via C/C++ lexer + Harbour keywords):
+  - Keywords ......... bright blue, bold (function, local, if, return, class...)
+  - Commands ......... teal/cyan (DEFINE, FORM, BUTTON, ACTIVATE...)
+  - Comments ......... green, italic (// and /* */)
+  - Strings .......... orange ("..." and '...')
+  - Numbers .......... light green (123, 0xFF)
+  - Preprocessor ..... magenta (#include, #define, #xcommand)
+  - Operators ........ light gray
+  - Default text ..... light gray on dark background (RGB 30,30,30)
+
+  BUILT-IN FEATURES (no manual code needed):
+  - Line numbers with dark gutter (replaced manual GutterPaint/double-buffer)
+  - Code folding with box-style markers (click margin to fold/unfold)
+  - Indentation guides (visual vertical lines)
+  - UTF-8 support (SCI_SETCODEPAGE SC_CP_UTF8)
+  - Auto-indent on Enter (preserves previous line indentation)
+  - Native auto-complete popup (Ctrl+Space) with all Harbour keywords + functions
+
+  KEYBOARD SHORTCUTS (all preserved from RichEdit version):
+  - Ctrl+F ........... Find bar
+  - Ctrl+H ........... Find & Replace bar
+  - Ctrl+Space ....... Auto-complete
+  - Ctrl+/ ........... Toggle line comment (//)
+  - Ctrl+Shift+D ..... Duplicate line (SCI_LINEDUPLICATE)
+  - Ctrl+Shift+K ..... Delete line (SCI_LINEDELETE)
+  - Ctrl+L ........... Select entire line
+  - Ctrl+G ........... Go to position
+  - F3 / Shift+F3 .... Find Next / Previous
+  - Esc .............. Close find bar
+
+  FIND/REPLACE (rewritten for Scintilla API):
+  - Uses SCI_SEARCHINTARGET instead of EM_FINDTEXT
+  - Forward and backward search with wrap-around
+  - Total match count displayed in status label
+
+  REMOVED (~300 lines of manual code):
+  - HighlightCode() .... manual token-by-token highlighting
+  - SetRichColor() ..... EM_SETCHARFORMAT per range
+  - GutterPaint() ...... manual line number painting with double-buffer
+  - GutterSync() ....... gutter invalidation on scroll
+  - GutterWndProc() .... separate gutter window class
+  - CodeEditSubProc() .. RichEdit subclass for keyboard interception
+  - IsKeyword() ........ manual keyword lookup
+  - IsCommand() ........ manual command lookup
+  - s_keywords[] ....... static keyword array (now in SCI_SETKEYWORDS)
+  - s_commands[] ....... static command array (now in SCI_SETKEYWORDS)
+
+  NEW FUNCTIONS:
+  - InitScintilla() ........ loads Scintilla.dll + Lexilla.dll from resources/
+  - ConfigureScintilla() ... sets lexer, keywords, colors, margins, folding
+
+  FILES ADDED:
+  - resources/Scintilla.dll .... Scintilla 5.6.1 (32-bit PE32, 824 KB)
+  - resources/Lexilla.dll ...... Lexilla 5.4.8 (32-bit PE32, 1100 KB)
+  - resources/scintilla/ ....... Full source code for all platforms
+      scintilla_src/scintilla/win32/ ... Windows build files
+      scintilla_src/scintilla/cocoa/ ... macOS framework + Xcode project
+      scintilla_src/scintilla/gtk/ ..... Linux GTK3 build files
+      lexilla_src/lexilla/ ............ Lexer library source
+  - build_win.bat .............. Windows build script
+
+  FIXED (BCC32 C-mode compatibility):
+  - Non-const RECT initializers in W32_GeneratePaletteIcons
+  - Non-const RECT initializers in W32_GenerateToolbarIcons
+  - Declaration-after-statement in SCN_CHARADDED handler
+  - Non-const array initializer in PO_HideAll
+
+  TRACE LOGGING:
+  - scintilla_trace.log: DLL loading, window creation, configuration
+
+  PENDING:
+  - macOS: compile ScintillaView framework, replace NSTextView in cocoa_core.m
+  - Linux: compile libscintilla, replace GtkTextView in gtk3_core.c
+
+
+2026-04-03 (Session 2: Debugger, AI Assistant, ERP, Printing, Search, Dark Mode, Docs)
+--------------------------------------------------------------------------------------
+
+IDE FEATURES:
+- Dark mode: Windows 10/11 dark title bars via DwmSetWindowAttribute (DWMWA_USE_IMMERSIVE_DARK_MODE=20)
+- Project Options dialog: 4 tabs (Harbour/C Compiler/Linker/Directories) with all build settings
+- Editor Colors dialog: 9 syntax colors, font name/size, presets (Dark/Light/Monokai/Solarized), preview
+- Project Inspector: dockable TreeView showing project structure (View > Project Inspector)
+- Debugger panel: 5 tabs (Watch/Locals/Call Stack/Breakpoints/Output) with ListView (Name/Value/Type)
+- Debug menu: Toggle Breakpoint, Clear Breakpoints
+- AI Assistant panel: Ollama integration, model selector (codellama/llama3/deepseek-coder/mistral/phi3/gemma2),
+  chat output, input field, send button, status bar. Supports Ollama (localhost:11434) + LM Studio (localhost:1234)
+- Code Editor Find bar: Ctrl+F (find), Ctrl+H (replace), F3/Shift+F3 (next/prev), Esc (close),
+  match count display, Next/Prev/Close buttons, Replace/Replace All
+
+COMPONENT PALETTE - expanded from 86 to 109 controls:
+- Data Controls tab (8): TBrowse, TDBGrid, TDBNavigator, TDBText, TDBEdit, TDBComboBox, TDBCheckBox, TDBImage
+  * TBrowse: full C++ class with BROWSECOLUMN struct (Title/FieldName/Width/Align/Editable/Visible/Sortable/
+    HeaderClr/FooterClr/FooterText/Format), 10 events (OnCellClick/OnCellDblClick/OnHeaderClick/OnSort/
+    OnScroll/OnCellEdit/OnCellPaint/OnRowSelect/OnKeyDown/OnColumnResize), DataSource for virtual mode,
+    ShowHeaders/ShowFooters/ShowGridLines/AltRowColors. Native Win32 ListView in Report mode.
+  * HB_FUNC bridge: UI_BrowseNew, UI_BrowseAddCol, UI_BrowseSetCell, UI_BrowseGetCell,
+    UI_BrowseSetFooter, UI_BrowseRefresh, UI_BrowseOnEvent
+
+- Internet tab expanded (9): +TWebServer(71), TWebSocket(72), THttpClient(73), TFtpClient(74),
+  TSmtpClient(75), TTcpServer(76), TTcpClient(77), TUdpSocket(78)
+  * TWebServer: enables building professional web apps — set Port, handle OnRequest, serve static files
+  * Full networking stack for desktop + server applications
+
+- Printing tab (8 new): TPrinter(102), TReport(103), TLabels(104), TPrintPreview(105),
+  TPageSetup(106), TPrintDialog(107), TReportViewer(108), TBarcodePrinter(109)
+  * TReport: visual band-based designer (FastReport/R&R quality) with Title/Header/Detail/Group/Footer bands
+
+- ERP tab (12 new): TPreprocessor(90), TScriptEngine(91), TReportDesigner(92), TBarcode(93),
+  TPDFGenerator(94), TExcelExport(95), TAuditLog(96), TPermissions(97), TCurrency(98),
+  TTaxEngine(99), TDashboard(100), TScheduler(101)
+  * Enterprise components for building business applications, accounting, CRM, ERP systems
+
+- Threading tab (8): TThread(63), TMutex(64), TSemaphore(65), TCriticalSection(66),
+  TThreadPool(67), TAtomicInt(68), TCondVar(69), TChannel(70)
+
+MENU SYNC (all 3 platforms):
+- Run menu: +Toggle Breakpoint, +Clear Breakpoints
+- Tools menu: +Editor Colors, +AI Assistant
+- View menu: +Project Inspector, +Debugger
+- Help menu: +Documentation, +Quick Start, +Controls Reference (opens HTML docs in browser)
+
+DOCUMENTATION (DeepWiki style):
+- docs/ folder with professional HTML documentation system
+- docs/assets/css/docs.css: 400+ lines CSS (dark/light theme, sidebar, tables, code blocks,
+  info boxes, badges, collapsible sections, responsive, Mermaid diagrams)
+- docs/assets/js/docs.js: theme toggle, search, copy code, active navigation
+- 14 documentation pages created:
+  * index.html: overview with architecture Mermaid diagram, 109 controls table
+  * quickstart.html: 5-step getting started guide with workflow diagram
+  * architecture.html: 5-layer arch, platform backends, CT_ types, file structure,
+    event system sequence diagram, two-way tools flowchart, build pipeline diagram
+  * controls-standard.html: 11 controls with properties/events/platform widgets/code examples
+  * controls-additional.html: 10 controls documented
+  * controls-native.html: 9 platform-specific controls
+  * controls-system.html: Timer, PaintBox
+  * controls-dialogs.html: 6 dialog controls
+  * controls-database.html: 9 database components with common properties/events
+  * controls-datacontrols.html: 8 data-aware controls with full TBrowse documentation
+  * controls-internet.html: 9 networking controls with web server example
+  * controls-threading.html: 8 threading controls with producer-consumer example
+  * controls-ai.html: 7 AI controls with Transformer diagram, Ollama example
+  * controls-erp.html: 12 ERP components documented
+- docs/en/, docs/es/, docs/pt/ structure (EN complete, ES/PT templates)
+
+BACKENDS (GTK3 + Cocoa):
+- All new CT_ defines (53-109) added to gtk3_core.c and cocoa_core.m
+- All new controls registered in backend creation tables with default sizes
+- Drop handlers (aNames arrays) updated for all new control types
+
+TOTAL: 14 palette tabs, 109 control types, 3 platforms, all compiling
+
+2026-04-03 (Session 1: Windows rewrite, full C++Builder palette, AI tab, 3-platform sync)
+------------------------------------------------------------------------------------------
+WINDOWS IDE REWRITE (hbbuilder_win.prg):
+- Complete rewrite to match macOS/Linux feature parity
+- Multi-form project management (aForms array, nActiveForm)
+- Tabbed code editor (Tab Control + RichEdit, per-tab text buffers)
+- Two-way code sync: designer <-> code editor (SyncDesignerToCode)
+- Project operations: New Application, Open (.hbp), Save, Build & Run (BCC32)
+- Event handler generation (double-click in inspector Events tab)
+- Component palette drop handling with auto-naming
+- About dialog with PNG logo via GDI+ (W32_AboutDialog)
+- File dialogs: W32_OpenFileDialog, W32_SaveFileDialog (GetOpenFileName/GetSaveFileName)
+- W32_SelectFromList (modal dialog with ListBox for View > Forms)
+- W32_ShellExec (CreateProcess with pipe capture for build output)
+- Code editor functions: SetTabText, GetTabText, AddTab, SelectTab, ClearTabs,
+  OnTabChange, AppendText, GotoFunction, BringToFront
+- Title changed from "hbcpp" to "HbBuilder"
+- Resource paths changed from hardcoded c:\ide\ to relative ../resources/
+
+TFORM PROPERTIES (16 new, matching macOS/Linux):
+- nBorderStyle, nBorderIcons, nBorderWidth, nPosition, nWindowState
+- nFormStyle (SetWindowPos HWND_TOPMOST for fsStayOnTop)
+- nCursor, lKeyPreview, lShowHint, cHint, lAutoScroll, lDoubleBuffered
+- lAlphaBlend + nAlphaBlendValue (WS_EX_LAYERED + SetLayeredWindowAttributes)
+- nClientWidth, nClientHeight (GetClientRect, read-only)
+- cFontName, nFontSize (LOGFONT extraction)
+- All in UI_SETPROP, UI_GETPROP, UI_GETALLPROPS
+
+TFORM EVENTS (17 new):
+- OnDblClick (WM_LBUTTONDBLCLK), OnCreate (after Show), OnDestroy (WM_DESTROY)
+- OnShow/OnHide (WM_SHOWWINDOW), OnCloseQuery (WM_CLOSE before OnClose)
+- OnActivate/OnDeactivate (WM_ACTIVATE), OnResize (WM_SIZE)
+- OnKeyDown (WM_KEYDOWN), OnKeyUp (WM_KEYUP), OnKeyPress (WM_CHAR)
+- OnMouseDown, OnMouseUp, OnMouseMove, OnMouseWheel (WM_MOUSEWHEEL)
+- OnPaint (available via SetFormEvent)
+- UI_GETALLEVENTS: full event introspection per control type (Form, Button, Edit, etc.)
+- TForm::SetFormEvent(), TForm::ReleaseFormEvents() methods
+
+INSPECTOR ENHANCEMENTS:
+- INS_SetOnEventDblClick, INS_SetOnPropChanged callbacks
+- pOnPropChanged fires after every InsApplyValue (two-way sync)
+
+C++ CORE - NEW CONTROL CLASSES (all with native Win32 CreateParams):
+Standard: TMemo (EDIT+ES_MULTILINE), TPanel (STATIC+SS_SUNKEN),
+  TListBox (LISTBOX), TRadioButton (BS_AUTORADIOBUTTON), TScrollBar (SCROLLBAR)
+Additional: TBitBtn, TSpeedButton (BS_FLAT), TImage (SS_BITMAP),
+  TShape (SS_OWNERDRAW), TBevel (SS_ETCHEDFRAME), TMaskEdit, TStringGrid (ListView),
+  TScrollBox, TStaticText (SS_SIMPLE+SS_SUNKEN), TLabeledEdit
+Win32: TTabControl2 (WC_TABCONTROL), TTreeView (WC_TREEVIEW+TVS_HASLINES),
+  TListView (WC_LISTVIEW+LVS_REPORT), TProgressBar (PROGRESS_CLASS),
+  TRichEdit (RichEdit20A), TTrackBar (TRACKBAR_CLASS), TUpDown (UPDOWN_CLASS),
+  TDateTimePicker (DATETIMEPICK_CLASS), TMonthCalendar (MONTHCAL_CLASS)
+System: TPaintBox (SS_OWNERDRAW)
+- CreateControlByType factory updated for all new types
+- HB_FUNC bridge: UI_ListBoxNew, UI_RadioButtonNew, UI_BitBtnNew, UI_ImageNew,
+  UI_ShapeNew, UI_BevelNew, UI_TreeViewNew, UI_ListViewNew, UI_ProgressBarNew,
+  UI_RichEditNew (+ all new types)
+
+HBBRIDGE.CPP:
+- UI_SETDESIGNFORM (static s_designForm)
+- UI_FORMBRINGTOFRONT (SetWindowPos HWND_TOP)
+- UI_FORMONCOMPONENTDROP (PHB_ITEM callback storage)
+
+COMPONENT PALETTE - 9 TABS, 62 CONTROLS (all 3 platforms):
+Standard (11): Label, Edit, Memo, Button, CheckBox, RadioButton, ListBox,
+  ComboBox, GroupBox, Panel, ScrollBar
+Additional (10): BitBtn, SpeedButton, Image, Shape, Bevel, MaskEdit,
+  StringGrid, ScrollBox, StaticText, LabeledEdit
+Win32/Cocoa/GTK3 (9): TabControl, TreeView, ListView, ProgressBar, RichEdit,
+  TrackBar, UpDown, DateTimePicker, MonthCalendar
+System (2): Timer, PaintBox
+Dialogs (6): OpenDialog, SaveDialog, FontDialog, ColorDialog, FindDialog, ReplaceDialog
+Data Access (9): DBFTable, MySQL, MariaDB, PostgreSQL, SQLite, Firebird,
+  SQLServer, Oracle, MongoDB
+Internet (1): WebView
+AI (7): OpenAI, Gemini, Claude, DeepSeek, Grok, Ollama, Transformer
+
+GTK3 BACKEND (gtk3_core.c):
+- 40+ CT_ defines matching all platforms
+- 20+ HBXxx_CreateWidget functions using native GTK3 widgets:
+  GtkTextView (Memo/RichEdit), GtkFrame (Panel/Bevel), GtkTreeView (ListBox/TreeView/
+  ListView/StringGrid), GtkRadioButton, GtkScrollbar, GtkProgressBar, GtkNotebook
+  (TabControl), GtkScale (TrackBar), GtkSpinButton (UpDown), GtkCalendar (MonthCalendar),
+  GtkDrawingArea (Shape/PaintBox), GtkImage
+- Generic HBForm_CreateControlOfType with table-driven default sizes for all types
+
+COCOA BACKEND (cocoa_core.m):
+- 40+ CT_ defines matching all platforms
+- Generic createViewInParent with 25+ native Cocoa views:
+  NSTextView (Memo/RichEdit), NSBox (Panel/Bevel), NSTableView (ListBox/ListView/
+  StringGrid), NSOutlineView (TreeView), NSRadioButton, NSScroller, NSProgressIndicator,
+  NSTabView (TabControl), NSSlider (TrackBar), NSStepper (UpDown), NSDatePicker
+  (DateTimePicker/MonthCalendar), NSImageView, NSButton (BitBtn/SpeedButton)
+- Generic HBForm_CreateControlOfType with table-driven defaults
+
+TRANSFORMER EXAMPLES (samples/projects/transformer/):
+- attention_visualizer.prg: Attention weight heatmap visualization
+- text_generator.prg: Autoregressive generation with temperature control
+- train_from_scratch.prg: Training loop with loss curve visualization
+- tokenizer_explorer.prg: Interactive BPE tokenization
+- attention_is_all_you_need.prg: Complete paper walkthrough step by step
+- sentiment_analyzer.prg: BERT-style encoder classification
+- translator_demo.prg: Encoder-decoder with cross-attention
+
+BUILD SYSTEM:
+- build_cpp.bat: bcc32c -> bcc32, CPPDIR -> c:\HarbourBuilder\cpp, +gdiplus.lib
+
+2026-04-02 (HbBuilder: save/load projects, inspector fixes, no-terminal Run)
+-----------------------------------------------------------------------------
+- Save/Load projects: .hbp project file + per-form .prg files
+  * TBSave: writes Project1.hbp index + Project1.prg + FormN.prg files
+  * TBOpen: reads .hbp, recreates all forms + editor tabs
+- No-terminal Run: gtgui.c + gt_dummy.c stub replaces gttrm dependency
+  * User app launches as .app bundle via open(1) — no Terminal window
+  * REQUEST HB_GT_GUI_DEFAULT in generated main.prg
+- Inspector inline editing fixed: dispatch_async for doubleAction conflict
+  * Double-click on Properties tab opens inline editor
+  * Double-click on Events tab generates METHOD handler
+- cText edit updates form title bar (CT_FORM check in UI_SETPROP)
+- nClrPane updates dot grid background color (HBDotGridView::bgColor)
+- Form move updates Left/Top: windowDidMove delegate + SyncDesignerToCode
+- Form move/resize refreshes inspector (OnResize callback)
+- nLeft/nTop via UI_SetProp sets FPosition=POS_DESIGNED (runtime positioning)
+- Initial form code reflects actual coordinates (SyncDesignerToCode after Show)
+- View > Code Editor menu item (CodeEditorBringToFront)
+- TForm: Color ACCESS/ASSIGN (alias for nClrPane)
+- Window background uses FBgColor if set (createWindowWithRunLoop)
+- WireDesignForm: centralized callback wiring (OnSelChange + OnComponentDrop + OnResize)
+- About dialog: "Harbour Builder 1.0"
+
+2026-04-02 (HbBuilder: Run, two-way tools, dot grid, TApplication)
+-------------------------------------------------------------------
+- Run button (F9): full compile+link+execute pipeline
+  * Saves all .prg files to /tmp/hbbuilder_build
+  * Compiles user code + framework with Harbour + clang
+  * Links with Cocoa + Harbour libs, launches in Terminal.app
+  * Build log with step-by-step progress, error dialog on failure
+  * MAC_ShellExec: NSTask-based shell command execution
+- TApplication class: Title, aForms, CreateForm (calls form's CreateForm),
+  Run (activates main form)
+- TForm: added Title ACCESS/ASSIGN (alias for Text, C++Builder compat)
+- Two-way tools (Borland pattern): designer ←→ code sync
+  * RegenerateFormCode: reads live form + all children, regenerates complete code
+  * SyncDesignerToCode: called on control move/resize, property edit, component drop
+  * INS_SetOnPropChanged: inspector callback after any property change
+  * OnComponentDrop simplified: just names the control, SyncDesignerToCode does the rest
+- Design-time dot grid (classic C++Builder):
+  * HBDotGridView: dedicated NSView with 8px dot pattern
+  * Added to form's contentView in design mode
+  * Grid snap changed from 4px to 8px (drag, resize, drop, arrow keys)
+- File renames: commands.ch → hbbuilder.ch, hbcpp_macos.prg → hbbuilder_macos.prg
+- About dialog: added "Vibe coded 100% using Claude Code"
+
+2026-04-02 (HbBuilder: multi-form, editor tabs, About dialog)
+--------------------------------------------------------------
+- Multi-form project support (C++Builder style):
+  * aForms array tracks { cName, oForm, cCode, nX, nY } per form
+  * File > New Form: creates Form2, Form3... with own design window + code
+  * View > Forms...: MAC_SelectFromList dialog to switch between forms
+  * SwitchToForm: hides current, shows selected, updates editor + inspector
+  * DestroyAllForms on IDE close
+  * Each form generates its own FormN.prg code (CLASS TFormN FROM TForm)
+  * Project1.prg auto-updated with oApp:CreateForm() for each form
+- Code editor tabs (NSSegmentedControl):
+  * Tab bar above editor: Project1.prg + FormN.prg tabs
+  * CodeEditorAddTab, CodeEditorSetTabText, CodeEditorGetTabText,
+    CodeEditorSelectTab, CodeEditorClearTabs, CodeEditorOnTabChange
+  * Tab content saved/restored on switch, Aqua appearance for readability
+  * Clicking a form tab switches to that form's designer
+- About HbBuilder dialog:
+  * MAC_AboutDialog with logo image support
+  * Harbour ship logo (128x128 PNG, generated)
+  * Shows: HbBuilder 1.0, (c) The Harbour Project, Harbour 3.2, C++Builder inspired
+
+2026-04-02 (HbBuilder: toolbar actions, palette drop, button icon)
+------------------------------------------------------------------
+- Toolbar buttons: New (reset form+editor), Open (NSOpenPanel), Save (NSSavePanel), Run (show JSON)
+- Component palette drop: click palette icon -> crosshair cursor -> draw rectangle on form -> control created
+  * Palette buttons wired to palBtnClicked: which sets FPendingControlType on design form
+  * Overlay mouseDown/mouseUp handles rubber band in drop mode, creates control at drawn rect
+  * s_designForm global + UI_SetDesignForm() to target the correct form for drops
+  * UI_FormOnComponentDrop callback fires Harbour block with type, position and size
+  * OnComponentDrop: auto-names controls (Button1, Edit1...), inserts DATA + creation code in editor
+  * UI_FormClearChildren: removes all child controls from form (for New button)
+- MAC_OpenFileDialog / MAC_SaveFileDialog: NSOpenPanel/NSSavePanel with UTType (modern API)
+- Button palette icon: replaced application_form.png with custom 3D button icon ("OK")
+- Palette Standard tab: reduced to 6 implemented controls (removed ListBox, Radio)
+- resources/icons/button.png: new 16x16 button icon for palette
+
+2026-04-02 (HbBuilder: TForm properties, events, inspector tabs, code generation)
+----------------------------------------------------------------------------------
+- Renamed IDE to "HbBuilder" (title bar, macOS app menu, executable name)
+- TForm: added 15 C++Builder properties with full backend support
+  * BorderStyle (bsNone/bsSingle/bsSizeable/bsDialog/bsToolWindow/bsSizeToolWin)
+  * BorderIcons (biSystemMenu/biMinimize/biMaximize/biHelp bitmask)
+  * Position (poDesigned/poScreenCenter/poDesktopCenter/poMainFormCenter)
+  * WindowState (wsNormal/wsMinimized/wsMaximized) - live get/set
+  * FormStyle (fsNormal/fsStayOnTop) - sets NSFloatingWindowLevel
+  * AlphaBlend + AlphaBlendValue (0-255) - window transparency
+  * KeyPreview, ShowHint, Hint, AutoScroll, DoubleBuffered
+  * BorderWidth, Cursor, ClientWidth/ClientHeight (read-only)
+- TForm: added 17 C++Builder events with NSWindowDelegate wiring
+  * Lifecycle: OnCreate, OnDestroy, OnShow, OnHide, OnCloseQuery,
+    OnActivate, OnDeactivate
+  * Layout: OnResize (windowDidResize), OnPaint
+  * Keyboard: OnKeyDown, OnKeyUp, OnKeyPress
+  * Mouse: OnMouseDown, OnMouseUp, OnMouseMove, OnDblClick, OnMouseWheel
+  * OnCloseQuery returns .T./.F. to allow/prevent close
+- Constants in commands.ch: bs*, bi*, po*, ws*, fs*, cr* (C++Builder names)
+- Inspector: Properties/Events tab selector (NSSegmentedControl)
+  * Events tab shows all events per control type grouped by category
+  * Column headers change: Property/Value vs Event/Handler
+- Inspector: double-click event generates METHOD handler (C++Builder pattern)
+  * Handler name: ComponentName + EventWithoutOn (e.g. Button1Click)
+  * Inserts METHOD declaration in CLASS block
+  * Appends METHOD implementation with separator lines
+  * If handler exists, jumps to it in code editor
+- Code editor: new functions CodeEditorAppendText, CodeEditorGotoFunction,
+  CodeEditorInsertAfter for IDE code generation support
+- UI_GetAllEvents: returns event list per control type (TForm 19 events,
+  TButton/TEdit/TCheckBox/TComboBox/TLabel/TGroupBox with appropriate events)
+- Code generation follows C++Builder OOP pattern:
+  * Project1.prg with TApplication that creates TForm1
+  * Form1.prg with CLASS TForm1 FROM TForm (DATAs + METHODs)
+  * Empty form designer on startup (like File > New > VCL Forms Application)
+- Palette icon indices: filled for all tabs (Additional 9-11, Data Access 12-13,
+  Data Controls 14-15) on macOS, Linux and Win32
+- build_mac.sh: executable renamed from hbcpp_macos to HbBuilder
+
+2026-04-01 (Icon images fix)
+----------------------------
+- Fixed magenta transparency mask for BMP icon strips on macOS
+  * Replaced NSBitmapImageRep colorAtX/setColor approach (fails on BMP
+    without alpha channel) with direct CGBitmapContext RGBA pixel manipulation
+  * Magenta pixels (R>240, G<16, B>240) correctly replaced with transparent
+- Fixed Retina display icon count bug
+  * NSImage size returns points (scaled by DPI), not pixels
+  * Changed to CGImageGetWidth/Height for actual pixel dimensions
+  * Fixes toolbar.bmp (288x32) being read as 192x21 → only 6 of 9 icons
+- Fixed duplicate window creation when Show() called before Activate()
+  * createWindowWithRunLoop now reuses existing NSWindow if already created
+  * Re-creates children to pick up toolbar/palette added after Show()
+- Toolbar icon images stored in FIconImages and applied at createViewInParent
+  * Solves timing issue: UI_ToolBarLoadImages called before view exists
+  * Icons auto-applied when toolbar view is actually created
+- Extracted SliceBmpStrip() helper: shared by toolbar and palette image loading
+  * Loads BMP strip, slices into 32xH tiles, applies magenta transparency
+  * Eliminates code duplication between UI_ToolBarLoadImages/UI_PaletteLoadImages
+- Toolbar buttons: 40x40 borderless with 28x28 icon images (Silk icon set)
+- Palette buttons: 32x32 icons with magenta transparency
+
+2026-04-01 (Windows IDE update)
+-------------------------------
+- Windows IDE: full C++Builder layout with 4 independent windows
+  * New hbcpp_win32.prg: feature parity with macOS/Linux IDE
+  * Dynamic screen-based positioning (W32_GetScreenWidth/Height/GetWindowBottom)
+  * Menu bar with 9 menus (File, Edit, Search, View, Project, Run, Component,
+    Tools, Help) using separate variables per popup
+  * Toolbar with Silk icon set (famfamfam, CC BY 2.5): New, Open, Save, Cut,
+    Copy, Paste, Undo, Redo, Run - 32x32 icons loaded from BMP strip
+  * Component Palette: square buttons (maximized height), 4 tabs
+  * Code Editor: RichEdit with dark theme, Consolas 15pt, VS Code-style
+    syntax highlighting, line number gutter
+  * Object Inspector: dynamic positioning via INS_SetPos
+  * Form Designer: 400x340, centered in editor area
+  * New C++ features:
+    - TToolBar::LoadImages(): loads BMP strip into ImageList, replaces text
+      buttons with icon-only buttons
+    - UI_ToolBarLoadImages() bridge function
+    - TForm::AttachToolBar() creates toolbar immediately if form has HWND
+    - TForm::CreateHandle() guard against duplicate creation
+    - TComponentPalette::ShowTab() creates square buttons (height = area)
+    - INS_SETPOS() for Win32 inspector window positioning
+    - W32_GetWindowBottom() for dynamic layout calculations
+  * Resources: toolbar.bmp (9 Silk icons), individual PNGs in resources/icons/
+  * README updated: 4-window layout, 3 IDE files per platform
+
+2026-04-01
+----------
+- Linux IDE: full Borland C++Builder-style layout with 4 independent windows
+  * New hbcpp_linux.prg: complete IDE equivalent to macOS version
+  * App title: "hbcpp (GUI framework for Harbour)"
+  * Main IDE bar: full-width window with menu bar, speedbar (toolbar),
+    component palette (GtkNotebook with tabs), all in one horizontal strip
+  * Component Palette: GtkNotebook with real tabs and buttons
+    Tabs: Standard, Additional, Data Access, Data Controls
+    Buttons with tooltips and OnSelect callback
+  * Code Editor: GtkTextView with dark theme (VS Code colors #1E1E1E),
+    syntax highlighting for Harbour/xBase (keywords bold blue, commands
+    teal, strings orange, comments green, preprocessor purple,
+    logical literals), line number gutter with Cairo drawing,
+    scroll-synced gutter repaint
+  * Inspector combo: GtkComboBoxText control selector at top of inspector
+    (INS_ComboAdd, INS_ComboSelect, INS_ComboClear, INS_SetFormCtrl,
+    INS_SetOnComboSel, INS_SetPos) - synced with design form selection
+  * StatusBar: GtkStatusbar with context ID (replaces stub)
+  * UI_FormSelectCtrl: real implementation for programmatic selection
+  * Layout: Inspector left column, Code Editor right (background),
+    Form Designer floating centered on top of editor
+    Positions calculated from GTK_GetWindowBottom() for pixel-perfect alignment
+  * New bridge functions: GTK_GetScreenWidth, GTK_GetScreenHeight,
+    GTK_GetWindowBottom, CodeEditorCreate, CodeEditorSetText,
+    CodeEditorGetText, CodeEditorDestroy
+  * build_gtk.sh: accepts optional program name parameter
+    ./build_gtk.sh (builds hbcpp_linux), ./build_gtk.sh test_design_gtk
+  * inspector_gtk.prg: added InspectorPopulateCombo function
+
+- macOS IDE: full Borland C++Builder-style layout with 4 independent windows
+  * Renamed to hbcpp_macos (binary) / hbcpp_macos.prg (source)
+  * App title: "hbcpp (GUI framework for Harbour)"
+  * Main IDE bar: borderless full-width window (no title bar, no shadow)
+    Toolbar with 32px buttons + draggable splitter + component palette
+  * Component Palette: NSSegmentedControl tabs at bottom, 52x50 buttons
+    Tabs: Standard, Additional, Data Access, Data Controls
+    Real implementation replacing stubs (PalShowTab, HBSplitterView)
+  * Code Editor: NSTextView with dark theme (VS Code colors), syntax
+    highlighting for Harbour/xBase (keywords, commands, strings, comments,
+    preprocessor, logical literals), line number gutter (HBGutterView),
+    scroll-synced gutter, Cmd+Z undo, find bar
+  * Inspector combo: control selection dropdown (INS_ComboAdd, INS_ComboSelect,
+    INS_ComboClear, INS_SetFormCtrl, INS_SetOnComboSel, INS_SetPos)
+    Synced with design form selection changes
+  * Layout: Inspector left column, Code Editor right (background),
+    Form Designer floating centered on top of editor
+    Positions calculated from MAC_GetWindowBottom() for pixel-perfect alignment
+  * Menu accelerators: explicit ACCEL parameter (not & convention)
+    Standard macOS shortcuts: Cmd+N/O/S/Z/X/C/V/F/H/R/Q
+  * New bridge functions: MAC_GetScreenWidth, MAC_GetScreenHeight,
+    MAC_GetWindowBottom, MAC_MsgBox
+  * Fixed compilation: forward declarations for HBToolBar, PALDATA,
+    HBSplitterView; replaced LONG_PTR with __bridge ARC casts;
+    moved MAX_MENUITEMS/MAX_TOOLBTNS defines before first use
+  * commands.ch: MENUITEM now supports optional ACCEL clause
+  * classes.prg: TMenuPopup:AddItem accepts optional cAccel parameter
+
+- IDE main window with C++Builder-like layout (3 independent windows)
+  * Main IDE bar: thin top strip with menu bar, speedbar (toolbar),
+    component palette (TabControl with Standard/Additional tabs),
+    and status bar (position, Modified, form dimensions)
+  * Object Inspector: separate floating tool window positioned at left
+  * Design Form: separate floating window positioned at right
+  * All 3 windows are independent top-level windows sharing one message loop
+  * TForm:Show() creates/shows window without entering message loop
+  * TForm:Activate() enters the message loop (main window only)
+  * FMainWindow flag: only main window posts WM_QUIT on close
+  * Secondary windows hide on close instead of destroying
+
+- Added TToolBar control with compact speedbar layout
+  * Win32 TOOLBARCLASSNAME with CCS_NOPARENTALIGN | CCS_NORESIZE
+  * Auto-sized to content width (not full form width)
+  * Text buttons with tooltips: New, Open, Save, Cut, Copy, Paste, etc.
+  * Per-button OnClick callbacks via Harbour codeblocks
+  * Bridge: UI_ToolBarNew, UI_ToolBtnAdd, UI_ToolBtnAddSep, UI_ToolBtnOnClick
+  * Harbour class TToolBar + xBase commands DEFINE TOOLBAR / BUTTON / SEPARATOR
+
+- Added TComponentPalette with native TabControl
+  * Win32 WC_TABCONTROL positioned right of speedbar
+  * Multiple tabs (Standard, Additional) with component buttons
+  * Tab change via TCN_SELCHANGE notification
+  * Buttons represent control types (Label, Edit, Button, CheckBox, etc.)
+  * Bridge: UI_PaletteNew, UI_PaletteAddTab, UI_PaletteAddComp
+
+- Added menu bar support to TForm
+  * Win32 HMENU with popup menus and menu items
+  * Per-item OnClick callbacks via Harbour codeblocks
+  * Bridge: UI_MenuBarCreate, UI_MenuPopupAdd, UI_MenuItemAddEx, UI_MenuSepAdd
+  * Harbour class TMenuPopup + xBase commands DEFINE MENUBAR/POPUP/MENUITEM
+
+- Added StatusBar to TForm
+  * Win32 STATUSCLASSNAME with 3 panels (position, status, dimensions)
+  * Auto-created during CreateAllChildren when FHasStatusBar is set
+  * Bridge: UI_StatusBarCreate, UI_StatusBarSetText
+  * Live updates on selection change
+
+- Added form positioning and style properties
+  * UI_FormSetPos(hForm, nLeft, nTop) - screen position
+  * FSizable: WS_OVERLAPPEDWINDOW with resize borders
+  * FAppBar: WS_OVERLAPPED without thick resize border (IDE top bar)
+  * FCenter: CW_USEDEFAULT position when TRUE, explicit position when FALSE
+  * Harbour: TForm:Sizable, TForm:AppBar, commands SIZABLE/APPBAR
+
+- Updated all 3 backends (Win32, Cocoa, GTK3)
+  * Cocoa: HBToolBar with NSButton row, NSMenu/NSMenuItem for menus,
+    NSTabView-ready palette, FSizable/FAppBar window styles,
+    showOnly method (no [NSApp run]), UI_FormSetPos with Y-flip
+  * GTK3: HBToolBar with GtkToolbar, GtkMenuBar/GtkMenuItem for menus,
+    FSizable/FAppBar via gtk_window_set_resizable,
+    HBForm_Show (no gtk_main), UI_FormSetPos via gtk_window_move
+  * Same Harbour code (test_design.prg) works on all platforms
+
+- Design mode adjustments for toolbar offset
+  * FClientTop: vertical offset below toolbar/palette
+  * Grid dots start at FClientTop
+  * Mouse coordinates adjusted by -FClientTop for design operations
+  * SetWindowPos calls add +FClientTop for physical positioning
+  * PaintSelectionHandles adds FClientTop to Y coordinates
+
+- Added Linux GTK3 backend
+  * gtk3_core.c: full reimplementation of C++ core using GTK3
+    GtkWindow, GtkFixed for absolute positioning, all controls
+    (Label, Edit, Button, CheckBox, ComboBox, GroupBox)
+  * Design mode with GtkOverlay + GtkDrawingArea + Cairo
+    Drag, resize with 8 handles, multi-selection, arrow keys
+  * gtk3_inspector.c: property inspector using GtkTreeView/GtkListStore
+    Color picker via GtkColorChooserDialog
+    Font picker via GtkFontChooserDialog
+    Category collapse/expand via double-click
+  * inspector_gtk.prg: Harbour wrapper for GTK3 inspector
+  * test_design_gtk.prg: design-mode sample for Linux
+  * build_gtk.sh: build script with auto-detection of Harbour paths
+  * Same Harbour OOP layer (classes.prg, commands.ch) works unchanged
+  * Prerequisite: sudo apt install libgtk-3-dev
+  * Build and run:
+      cd samples
+      ./build_gtk.sh
+      ./test_design_gtk
+
+- Moved screenshot images to images/ folder
+  * images/MacOS.png, images/gtk3.png, images/linux.png
+  * Updated README.md to reference new paths
+
+2026-03-31
+----------
+- Cocoa inspector: nClrPane editable with "..." button and NSColorPanel
+  * Click on nClrPane value or "..." button opens macOS standard color picker
+  * Color swatch shown as cell background in the value column
+  * Continuous color updates applied in real-time via UI_SetProp
+
+- Cocoa inspector: oFont editable with "..." button and NSFontPanel
+  * Click on oFont value or "..." button opens macOS standard font panel
+  * Font displayed as "FontName,Size", applied via UI_SetProp
+  * Initial font pre-selected in the font panel from current value
+
+- Cocoa inspector: category collapse/expand via single-click
+  * Click on category header (Appearance, Position, etc.) toggles collapse
+  * Shows "+" when collapsed, "-" when expanded
+
+- Fixed NSPopUpButton (ComboBox) positioning on macOS
+  * Win32 combobox height is dropdown height, not control height
+  * NSPopUpButton uses fixed intrinsic height (26px) instead of passed height
+  * Fixes mispositioned combobox at startup
+
+- Added macOS Cocoa/AppKit backend
+  * cocoa_core.m: full reimplementation of C++ core (TControl, TForm, all controls)
+    using NSView/NSWindow with flipped coordinates (top-left origin like Win32)
+  * cocoa_inspector.m: property inspector using NSTableView
+    Exports: INS_Create, INS_RefreshWithData, INS_BringToFront, INS_Destroy
+  * inspector_mac.prg: Harbour wrapper for Cocoa inspector
+  * test_design_mac.prg: design-mode sample for macOS
+  * build_mac.sh: build script using clang + Harbour for macOS
+  * Same Harbour OOP layer (classes.prg, commands.ch) works unchanged
+
+- Added nClrPane (background color) property to all controls
+  * Form: changes background brush and design-mode grid
+  * Controls: handled via WM_CTLCOLOR* messages from parent form
+  * Buttons: uses BS_OWNERDRAW + WM_DRAWITEM for custom background
+  * Inspector shows color value with "..." button to open ChooseColor dialog
+
+- Added oFont property to all controls
+  * Displays as "FontName,Size" in inspector
+  * "..." button opens ChooseFont dialog
+  * Form font change propagates to all children
+  * Individual control font can be set independently
+
+- Applied Hungarian notation to all property names
+  * String: cName, cText, cClassName, cFontName
+  * Number: nLeft, nTop, nWidth, nHeight, nFontSize, nItemIndex, nItemCount
+  * Logical: lVisible, lEnabled, lTabStop, lCenter, lDefault, lCancel,
+             lReadOnly, lPassword, lChecked
+  * Color: nClrPane
+  * Font: oFont
+
+- Inspector: color/font picker button fix
+  * Button subclassed with InsBtnProc to handle click directly
+  * Fixes issue where WM_COMMAND was swallowed by parent ListView
+  * WM_KILLFOCUS ignores focus transfer to "..." button
+
+- Initial project structure with C++ core and Harbour bridge
+  * TControl base class with property system
+  * TForm with design mode (drag, resize, rubber band selection, arrow keys)
+  * TLabel, TEdit, TButton, TCheckBox, TComboBox, TGroupBox controls
+  * Property inspector with collapsible categories and live updates
+  * Overlay-based selection handles (layered window, per-pixel alpha)
+  * Multi-backend: Win32 GUI, Console TUI, Web/HTML5 Canvas
+  * JSON serialization of form layouts
+  * OOP Harbour wrappers (classes.prg) over C++ core
+  * xBase-style command syntax (commands.ch)
+  * Build system for BCC77C + Harbour
