@@ -1,395 +1,42 @@
 #include "FiveMac.ch"
 #include "Scintilla.ch"
-#include "Colors.ch"
+#include "FiveMac.ch"
 
-#define SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR 2634
-#define SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE 1
-#define SCI_SETAUTOMATICFOLD 2663
-#define SC_AUTOMATICFOLD_CLICK 0x0002
+static lKeywordsLoaded := .F.
+static oHbDocs
 
-#define markerBookmark    1
-#define IBNCaretChanged 1
-
+EXTERNAL SCISETGLOBALKEYWORDS
+EXTERNAL SCISETGLOBALDOCS
+EXTERNAL SCISETGLOBALSNIPPETS
 #include "fmsgs.h"
-
-#define CLR_VSBAR  Rgb( 207, 214, 228 )
 
 //----------------------------------------------------------------------------//
 
 CLASS TScintilla FROM TControl
 
    DATA hWnd
-   
-   DATA aCopys
-   DATA aKey             AS ARRAY INIT {}
-
-   DATA nTextColor       INIT CLR_BLUE
-   DATA nBackColor       INIT nRgb( 170, 170, 170 )
-   DATA nClrPane
-
-   DATA nTColorLin       INIT CLR_BLUE
-   DATA nBColorLin       INIT CLR_VSBAR
-
-   DATA nMargLeft
-   DATA nMargRight
-   DATA nSpacLin
+   DATA oSnippets
    
    DATA cFileName
    DATA cFilePath
-   
-   DATA cLastFind
-   DATA bChange
-   DATA bCharAdded
-   DATA oRowItem, oColItem
-   DATA nSetStyle
-   DATA lLinTabs
-   DATA aBookMarker    INIT {}
-   DATA aMarkerHand      INIT {}
-   DATA nLastPos         INIT 0
-   DATA nManualAnchor    INIT 0
-
-   DATA lIndicators      INIT .F.
-   
-   DATA lFolding
-   
-   DATA cLexer
-   DATA cListFuncs
-
-   DATA cCComment        INIT { CLR_GRAY, CLR_WHITE, SC_CASE_MIXED, } //HGRAY
-   DATA cCCommentLin     INIT { CLR_GRAY, CLR_WHITE, SC_CASE_MIXED, }
-   DATA cCString         INIT { CLR_HRED, CLR_WHITE, SC_CASE_MIXED, }
-   DATA cCNumber         INIT { CLR_RED, CLR_WHITE, SC_CASE_MIXED, }
-   DATA cCOperator       INIT { CLR_BLUE, CLR_WHITE, SC_CASE_MIXED, }
-   DATA cCBraces         INIT { CLR_BLUE, CLR_YELLOW, SC_CASE_MIXED, }
-   DATA cCBraceBad       INIT { CLR_HRED, CLR_YELLOW, SC_CASE_MIXED, }
-   DATA cCIdentif        INIT { CLR_GREEN, CLR_WHITE, SC_CASE_MIXED, } //MAGENTA
-   DATA cCKeyw1          INIT { METRO_ORANGE, CLR_WHITE, SC_CASE_MIXED, } //CYAN
-   DATA cCKeyw2          INIT { METRO_ORANGE, CLR_WHITE, SC_CASE_MIXED, } // METRO_BROWN
-   DATA cCKeyw3          INIT { METRO_BROWN, CLR_WHITE, SC_CASE_MIXED, }  // CLR_BLUE
-   DATA cCKeyw4          INIT { CLR_BLUE, CLR_WHITE, SC_CASE_MIXED, } //METRO_CYAN
-   DATA cCKeyw5          INIT { METRO_CYAN, CLR_WHITE, SC_CASE_MIXED, } //METRO_MAUVE   // STEEL
-
+   DATA aMarkerHand, aBookMarker
+   DATA nManualAnchor
+   DATA lLinTabs, lIndicators
 
    CLASSDATA cLineBuffer
 
    METHOD New( nTop, nLeft, nBottom, nRight, oWnd )
  
    METHOD AddText( cText )          INLINE ::Send( SCI_ADDTEXT, len( cText ), cText )
-   METHOD AddTextCRLF( cText )      INLINE ::Send( SCI_ADDTEXT, Len( cText )+2, cText+CRLF )
-
-   METHOD AutoIndent()
-
-   METHOD Backtab()                 INLINE ::Send( SCI_BACKTAB )
-
-   METHOD BookmarkClearAll()
-   METHOD BookmarkNext( lForwardScan, lSelect )
-
-   METHOD BraceBadLight( nPos )                INLINE ::Send( SCI_BRACEBADLIGHT, nPos )
-   METHOD BraceHighLight( nPos1, nPos2 )       INLINE ::Send( SCI_BRACEHIGHLIGHT, nPos1, nPos2 )
-   METHOD BraceMatch( nPos )                   INLINE SciGetProp( ::hWnd, SCI_BRACEMATCH, nPos )
-
-   METHOD CallTipCancel()                      INLINE ::Send( SCI_CALLTIPCANCEL )
-
-   METHOD CallTipShow( nPos, cText )           INLINE ::Send( SCI_CALLTIPSHOW, nPos, cText )
-
-   METHOD CanRedo()                           INLINE ::Send( SCI_CANREDO ) != 0
-   METHOD CanUndo()                           INLINE ::Send( SCI_CANUNDO ) != 0
-   METHOD Cancel ()                           INLINE ::Send( SCI_CANCEL )
-
-   METHOD CharAdded( nChar )
-
-   METHOD Charleft ()                         INLINE ::Send( SCI_CHARLEFT )
-   METHOD Charleftextend ()                   INLINE ::Send( SCI_CHARLEFTEXTEND )
-   METHOD Charleftrectextend ()               INLINE ::Send( SCI_CHARLEFTRECTEXTEND )
-   METHOD Charright ()                        INLINE ::Send( SCI_CHARRIGHT )
-   METHOD Charrightextend ()                  INLINE ::Send( SCI_CHARRIGHTEXTEND )
-   METHOD Charrightrectextend ()              INLINE ::Send( SCI_CHARRIGHTRECTEXTEND )
-   METHOD ClearAll()                          INLINE ::Send( SCI_CLEARALL )
-
-   METHOD Clear()                             INLINE ::Send( SCI_CLEAR )
-   METHOD Close()
-
-   METHOD Copy()           INLINE ::Send( SCI_COPY )
-   METHOD CopyLine()       INLINE ::Send( SCI_LINECOPY )
-   METHOD CopyRange( nStart, nEnd )           INLINE ::Send( SCI_COPYRANGE, nStart, nEnd )
-   METHOD CopyText( cCad )                    INLINE ::Send( SCI_COPYTEXT, Len( cCad ), cCad )
-
-    
-   METHOD Cut()            INLINE ::Send( SCI_CUT )
-
-   METHOD Deleteback()                        INLINE ::Send( SCI_DELETEBACK )
-   METHOD Deletebacknotline ()                INLINE ::Send( SCI_DELETEBACKNOTLINE )
-   METHOD Dellineleft()                       INLINE ::Send( SCI_DELLINELEFT )
-   METHOD Dellineright()                      INLINE ::Send( SCI_DELLINERIGHT )
-   METHOD Delwordleft()                       INLINE ::Send( SCI_DELWORDLEFT )
-   METHOD Delwordright()                      INLINE ::Send( SCI_DELWORDRIGHT )
-
-   METHOD DlgGotoLine()
-
-   METHOD DlgOpen()
-
-   METHOD Documentend()                       INLINE ::Send( SCI_DOCUMENTEND )
-   METHOD Documentendextend()                 INLINE ::Send( SCI_DOCUMENTENDEXTEND )
-   METHOD Documentstart()                     INLINE ::Send( SCI_DOCUMENTSTART )
-   METHOD Documentstartextend()               INLINE ::Send( SCI_DOCUMENTSTARTEXTEND )
-
-   METHOD EmptyUndoBuffer()                   INLINE ::Send( EM_EMPTYUNDOBUFFER )
-
-
-   METHOD FindNext() INLINE ::SearchForward()
-
-   METHOD FindPrev() INLINE ::SearchBackward()
-
-   METHOD FindText( cText, lForward ) INLINE  If( lForward, ::SearchForward( cText ), ::SearchBackward( cText ) )
-
-   METHOD FoldAllContract()                   INLINE ::Send( SCI_FOLDALL, SC_FOLDACTION_CONTRACT, 0 )
-   METHOD FoldAllExpand()                     INLINE ::Send( SCI_FOLDALL, SC_FOLDACTION_EXPAND, 0 )
-   METHOD FoldAllToggle()                     INLINE ::Send( SCI_FOLDALL, SC_FOLDACTION_TOGGLE, 0 )
-   METHOD FoldLevelNumber()                   INLINE ::Send( SCI_SETFOLDFLAGS, SC_FOLDFLAG_LEVELNUMBERS, 0 )
-   METHOD FoldLineNumber()                    INLINE ::Send( SCI_SETFOLDFLAGS, SC_FOLDFLAG_LINEAFTER_CONTRACTED, 0 )
-   METHOD FoldLineSt()                        INLINE ::Send( SCI_SETFOLDFLAGS, 128, 0 )
-   
-   METHOD GetAnchor()                         INLINE SciGetProp( ::hWnd, SCI_GETANCHOR )
-   METHOD GetCaretInLine()
-   METHOD GetCaretLineBack()                  INLINE SciGetProp( ::hWnd, SCI_GETCARETLINEBACK )
-   
-   METHOD GetCharAt( nPos ) INLINE SciGetProp( ::hWnd, SCI_GETCHARAT, nPos )
-
-   METHOD GetTextColor( cType )
-   
-   METHOD GetCurLine()
-   
-   METHOD GetCurrentLine()                   INLINE SciGetProp( ::hWnd, SCI_LINEFROMPOSITION, ::GetCurrentPos() )
-   METHOD GetCurrentPos()                    INLINE SciGetProp( ::hWnd, SCI_GETCURRENTPOS )
-   METHOD GetCurrentLineNumber()             INLINE SciGetProp( ::hWnd, SCI_LINEFROMPOSITION, ::GetCurrentPos() )
-   
-   METHOD GetCurrentStyle()  INLINE SciGetProp( ::hWnd, SCI_GETSTYLEAT, ::GetCurrentPos() )
-   
-   METHOD GetFuncList()
-
-   METHOD GetIndent()       INLINE SciGetProp( ::hWnd, SCI_GETINDENT )
-   METHOD GetLexer()        INLINE SciGetProp( ::hWnd, SCI_GETLEXER )
-   METHOD GetLine( nLine )  INLINE SciGetLine( ::hWnd, nLine )
-
-   METHOD GetLineCount()    INLINE SciGetProp( ::hWnd, SCI_GETLINECOUNT )
-
-   METHOD GetLineIndentation( nLine ) INLINE SciGetProp( ::hWnd, SCI_GETLINEINDENTATION, nLine )
-
-   METHOD GetModify()                 INLINE SciGetProp( ::hWnd, SCI_GETMODIFY ) == 1
-   METHOD GetReadOnly()               INLINE ::Send( SCI_GETREADONLY ) != 0
-   
-   METHOD GetProp ( xProp, xValue )   INLINE SciGetProp(::hWnd, xProp, xValue )
-
-   METHOD GetSelText()                INLINE SciGetSelText( ::hWnd )
-   METHOD GetSelectionEnd()           INLINE ::Send( SCI_GETSELECTIONEND )
-   METHOD GetSelectionStart()         INLINE ::Send( SCI_GETSELECTIONSTART )
-   
-   METHOD GetStyleAt( nPos )          INLINE SciGetProp( ::hWnd, SCI_GETSTYLEAT, nPos )
-
-   METHOD GetTipCursor()              INLINE ::Send( SCI_GETCARETSTYLE, 0, 0 )
-   METHOD GetText()                    INLINE SciGetText( ::hWnd )
-   METHOD GetWordLeft()
-   METHOD InsertSnippet( cFragment )
-
-   METHOD GoDown()                            INLINE ::Send( SCI_LINEDOWN )
-   METHOD GoTop()                             INLINE ::Send( SCI_HOME )
-   METHOD GoBottom()                          INLINE ::Send( SCI_SCROLLTOEND )
-   METHOD GoEol()                             INLINE ::Send( SCI_LINEEND )
-   METHOD GoHome()                            INLINE ::Send( SCI_HOME )
-   METHOD GoLeft()                            INLINE ::CharLeft()
-   METHOD GoRight()                           INLINE ::CharRight()
-   METHOD GoUp()                              INLINE ::Send( SCI_LINEUP )
-
-   METHOD GotoLine( nLine ) INLINE ::Send( SCI_GOTOLINE, nLine - 1, 0 )
-
-   METHOD GotoLineEnsureVisible( nextline )
-
-   METHOD GoNextChar() INLINE ::GotoPos( ::GetCurrentPos() + 1 )
-
-   METHOD CallTipShow( nPos, cText )     INLINE ::Send( 2200, nPos, cText )
-   METHOD CallTipCancel()                INLINE ::Send( 2201, 0, 0 )
-   METHOD CallTipActive()                INLINE ::Send( 2202, 0, 0 )
-   METHOD CallTipPosStart()              INLINE ::Send( 2203, 0, 0 )
-   METHOD CallTipSetHlt( nStart, nEnd )  INLINE ::Send( 2204, nStart, nEnd )
-   METHOD CallTipSetBack( nColor )       INLINE ::Send( 2205, nColor, 0 )
-
-   METHOD GotoPos( nPos )   INLINE ::Send( SCI_GOTOPOS, nPos )
-
-   METHOD GoUp()  INLINE ::Send( SCI_LINEUP )
-   
-   METHOD HandleEvent( nMsg, uParam1, uParam2, uParam3 )
-
-   METHOD Home ()                       INLINE ::Send( SCI_HOME )
-   METHOD Homedisplay ()                INLINE ::Send( SCI_HOMEDISPLAY )
-   METHOD Homedisplayextend ()          INLINE ::Send( SCI_HOMEDISPLAYEXTEND )
-   METHOD Homeextend ()                 INLINE ::Send( SCI_HOMEEXTEND )
-   METHOD Homerectextend ()             INLINE ::Send( SCI_HOMERECTEXTEND )
-   METHOD Homewrap ()                   INLINE ::Send( SCI_HOMEWRAP )
-   METHOD Homewrapextend ()             INLINE ::Send( SCI_HOMEWRAPEXTEND )
-
-   METHOD InitEdt()
-    
-   METHOD IsModify()                    INLINE ! Empty( ::Send( SCI_GETMODIFY ) )
-
-   METHOD InsertText( nPos, cText )     INLINE ::Send( SCI_INSERTTEXT, nPos, cText )
-
-   METHOD IntelliSense( nChar )
-
-   METHOD LineFromPosition( nPos )      INLINE ::GetProp( SCI_LINEFROMPOSITION, nPos, 0 )
-   METHOD LineLength( nLine )           INLINE ::Send( SCI_LINELENGTH, nLine - 1, 0 )
-   METHOD LineCopy ()                   INLINE ::Send( SCI_LINECOPY )
-   METHOD LineCut ()                    INLINE ::Send( SCI_LINECUT )
-   METHOD LineDelete ()                 INLINE ::Send( SCI_LINEDELETE )
-   METHOD LineDown ()                   INLINE ::Send( SCI_LINEDOWN )
-   METHOD LineDownextend()              INLINE ::Send( SCI_LINEDOWNEXTEND )
-   METHOD LineDownrectextend()          INLINE ::Send( SCI_LINEDOWNRECTEXTEND )
-   METHOD LineDuplicate()               INLINE ::Send( SCI_LINEDUPLICATE )
-   METHOD LineEnd ()                    INLINE ::Send( SCI_LINEEND )
-    
-   METHOD LineEnddisplay ()             INLINE ::Send( SCI_LINEENDDISPLAY )
-   METHOD LineEnddisplayextend ()       INLINE ::Send( SCI_LINEENDDISPLAYEXTEND )
-   METHOD LineEndextend ()              INLINE ::Send( SCI_LINEENDEXTEND )
-   METHOD LineEndrectextend ()          INLINE ::Send( SCI_LINEENDRECTEXTEND )
-   METHOD LineEndwrap ()                INLINE ::Send( SCI_LINEENDWRAP )
-   METHOD LineEndwrapextend ()          INLINE ::Send( SCI_LINEENDWR )
-   METHOD LinesScreen()                 INLINE ::Send( SCI_LINESONSCREEN )
   
-   METHOD LineScrolldown ()              INLINE ::Send( SCI_LINESCROLLDOWN )
-   METHOD LineScrollup()                 INLINE ::Send( SCI_LINESCROLLUP )
-   METHOD LineTranspose ()               INLINE ::Send( SCI_LINETRANSPOSE )
-   METHOD LineSep()
-   METHOD LineUp()                       INLINE ::Send( SCI_LINEUP )
-
-   METHOD LineUpExtend()                 INLINE ::Send( SCI_LINEUPEXTEND )
-   METHOD Lineuprectextend ()            INLINE ::Send( SCI_LINEUPRECTEXTEND )
-
-   METHOD Lowercase()                    INLINE ::Send( SCI_LOWERCASE )
-
-   METHOD nCol()                    INLINE ::GetCurrentPos() - ::PositionFromLine( ::nLine() - 1 ) + 1
-
-   METHOD MarginClick( nMargen, nPos )
-
-   METHOD NewLine()                 INLINE ::Send( SCI_NEWLINE )
- 
-   METHOD nLine()                   INLINE SciGetProp( ::hWnd, SCI_LINEFROMPOSITION, ::GetCurrentPos() ) + 1
- 
-   METHOD Notify( nType, nValue )
-    
    METHOD Open( cFileName )
-
-   METHOD Pagedown()              	 INLINE ::Send( SCI_PAGEDOWN )
-   METHOD Pagedownextend ()     	 INLINE ::Send( SCI_PAGEDOWNEXTEND )
-   METHOD Pagedownrectextend () 	 INLINE ::Send( SCI_PAGEDOWNRECTEXTEND )
-   METHOD Pageup()             	  	 INLINE ::Send( SCI_PAGEUP )
-   METHOD PageUpextend()        	 INLINE ::Send( SCI_PAGEUPEXTEND )
-   METHOD Pageuprectextend()   		 INLINE ::Send( SCI_PAGEUPRECTEXTEND )
-   METHOD Paradown ()           	 INLINE ::Send( SCI_PARADOWN )
-   METHOD Paradownextend ()    	  	 INLINE ::Send( SCI_PARADOWNEXTEND )
-   METHOD Paraup ()            		 INLINE ::Send( SCI_PARAUP )
-   METHOD Paraupextend ()       	 INLINE ::Send( SCI_PARAUPEXTEND )
-   METHOD Paste()                	 INLINE ::Send( SCI_PASTE )
-   METHOD PositionFromLine( nLine )  INLINE SciGetProp( ::hWnd, SCI_POSITIONFROMLINE, nLine, 0 )
-   METHOD PositionEndLine( nLine )   INLINE ::Send( SCI_GETLINEENDPOSITION, nLine, 0 )
-   METHOD GetTextRange( nStart, nEnd ) INLINE SciGetTextRange( ::hWnd, nStart, nEnd )
-   
-   METHOD ReDo() INLINE ::Send( SCI_REDO )
-
-   METHOD ReplaceSel( cText )      INLINE ::Send( SCI_REPLACESEL,len( cText ), cText  )
-
-   METHOD Replace()
 
    METHOD Save()
    METHOD SaveAS( cFileName )
 
-   METHOD ScrollToEnd() INLINE ::Send( SCI_SCROLLTOEND )
-
-   METHOD SearchNext( nFlags, cText )  INLINE ::Send( SCI_SEARCHNEXT, nFlags, cText )
-   METHOD SearchPrev( nFlags, cText )  INLINE ::Send( SCI_SEARCHPREV, nFlags, cText )
-   
-   METHOD SearchBackward( cText, nFlags )
-
-   METHOD SearchForward( cText, nFlags )
-
-   METHOD SelectAll()       INLINE ::Send( SCI_SETSEL, 0, -1 )
-
-   METHOD Send( nMsg, nWParam, nLParam ) INLINE SciSend( ::hWnd, nMsg, nWParam, nLParam )
-
-   METHOD SetAnchor( nAnchor ) INLINE ::Send( SCI_SETANCHOR, nAnchor )
-
-   METHOD SetAStyle( style, fore, back, size, face )
-
-   METHOD SetBackspaceUnindents( nSize ) INLINE ::Send( SCI_SETBACKSPACEUNINDENTS, nSize )
-
-   METHOD SetCaretLineBack( nColor ) INLINE ::Send( SCI_SETCARETLINEBACK, nColor )
-
-   METHOD SetColorCaret( nColor, lVisible )
-
-   METHOD SetColor( nClrText, nClrPane )
-   METHOD SetColourise( lOnOff )
-
-
-   METHOD SetHighlightColors()
-
-   METHOD SetCurrentPos( nPos ) INLINE ::Send( SCI_SETCURRENTPOS, nPos )
-   METHOD SetCursor( nMode )    INLINE ::Send( SCI_SETCURSOR, nMode, 0 )
-
-   METHOD SetEdgeColour( nColor ) INLINE ::Send( SCI_SETEDGECOLOUR, nColor )
-
-   METHOD SetEdgeColumn( nCol ) INLINE ::Send( SCI_SETEDGECOLUMN, nCol )
-
-   METHOD SetEdgeMode( nMode ) INLINE ::Send( SCI_SETEDGEMODE, nMode )
-
-   METHOD SetEOL( lOn )
-
-   METHOD SetFont( cFontName, nSize, lBold, lItalic ) INLINE ;
-      SciSetFont( ::hWnd, cFontName, nSize, lBold, lItalic )
-
-   METHOD SetIndent( nSize, lOn )
-   
-   METHOD SetIndicators()
-
-   METHOD GetKeyWords( cKeyWords, nIndex ) INLINE SciGetKeyWords( ::hWnd, cKeyWords, nIndex )
-
-   METHOD SetLexerProp ( cProp, cValue) INLINE SciSetLexerProp( ::hWnd, cProp, cValue  )
-
-   METHOD SetLinColor( nClrText, nClrPane )
-   
-   METHOD SetLineIndentation( nLine, nSize ) INLINE ::Send( SCI_SETLINEINDENTATION, nLine, nSize )
-
-   METHOD SetLinIndent( lOnOff, lSinc )
-
-   METHOD SetMargin( lOn )
-   
-   METHOD SetMBrace()
-
-   METHOD HandleBraceMatch()
-
-   METHOD SetReadOnly( lOn )      INLINE ::Send( SCI_SETREADONLY, If( lOn, 1, 0 ), 0 )
-
-   METHOD SetSavePoint()          INLINE ::Send( SCI_SETSAVEPOINT )
-
-   METHOD SetSel( nAnchor, nPos ) INLINE ::Send( SCI_SETSEL, nAnchor, nPos )
-
-   METHOD SetTabIndents( nSize )  INLINE ::Send( SCI_SETTABINDENTS, nSize )
-
-   METHOD SetMyText( cText ) INLINE SciSetText( ::hWnd, cText )
-
-   METHOD SetText( cText )        INLINE ::Send( SCI_SETTEXT, 0, cText )
-
-   METHOD SetTextColor( cType, nRGBColor )
-
-   METHOD SetToggle()
-
-   METHOD SetToggleMark()
-
-   METHOD SetUndoCollection()     INLINE ::Send( SCI_SETUNDOCOLLECTION )
+   METHOD Send( nMsg, nWParam, nLParam ) INLINE SCISEND( ::hWnd, nMsg, nWParam, nLParam )
 
    METHOD Setup()
-
-   METHOD SetUseTabs( lYesNo ) INLINE ::Send( SCI_SETUSETABS, If( lYesNo, 1, 0 ) )
-
-   METHOD SetViewSpace( lOn )
-   METHOD SetZoom( nZoom )
 
    METHOD Stutteredpagedown()                 INLINE ::Send( SCI_STUTTEREDPAGEDOWN )
    METHOD StutteredpagedownextenD()           INLINE ::Send( SCI_STUTTEREDPAGEDOWNEXTEND )
@@ -398,21 +45,15 @@ CLASS TScintilla FROM TControl
     
    METHOD StylereSetDefault()                 INLINE ::Send( SCI_STYLERESETDEFAULT, 0, 0 )
 
-   METHOD StyleSet( nStyle )				   INLINE ( ::nSetStyle := nStyle )
-
-   METHOD StyleSetBold(  lBold )              INLINE ::Send( SCI_STYLESETBOLD  , ::nSetStyle, if( lBold, 1, 0 ) )
-   METHOD StyleSetItalic( lItalic )           INLINE ::Send( SCI_STYLESETITALIC, ::nSetStyle, if( lItalic, 1, 0 ) )
-   METHOD StyleSetUnderline( lUnderline )     INLINE ::Send( SCI_STYLESETUNDERLINE, ::nSetStyle, if( lUnderline, 1, 0 ) )
-   METHOD StyleSetFont( cFontName )           INLINE ::Send( SCI_STYLESETFONT, ::nSetStyle, cFontName )
-   METHOD StyleSetSize( nSize )               INLINE ::Send( SCI_STYLESETSIZE, ::nSetStyle, nSize )
-
-   METHOD StyleSetColor( nClrFore, nClrBack )
    METHOD Tab()                               INLINE ::Send( SCI_TAB )
    METHOD UnDo()                              INLINE ::Send( SCI_UNDO )
    METHOD Uppercase()                         INLINE ::Send( SCI_UPPERCASE )
 
    METHOD AutoCShow( nLen, cList )            INLINE ::Send( SCI_AUTOCSHOW, nLen, cList )
+   METHOD AutoCShowKeywords()
    METHOD AutoCCancel()                       INLINE ::Send( SCI_AUTOCCANCEL )
+   METHOD GetWordLeft()
+   METHOD InsertSnippet( cBody )
    METHOD AutoCActive()                       INLINE ::Send( SCI_AUTOCACTIVE ) != 0
    METHOD AutoCPosStart()                     INLINE ::Send( SCI_AUTOCPOSSTART )
    METHOD AutoCComplete()                     INLINE ::Send( SCI_AUTOCCOMPLETE )
@@ -446,14 +87,94 @@ CLASS TScintilla FROM TControl
    METHOD Wordrightendextend ()               INLINE ::Send( SCI_WORDRIGHTENDEXTEND )
    METHOD Wordrightextend ()                  INLINE ::Send( SCI_WORDRIGHTEXTEND )
 
-   METHOD RegisterImage( nType, cXpm )        INLINE SciRegImage( ::hWnd, nType, cXpm )
-   METHOD RegisterImageFromFile( nType, cFile ) INLINE SciRegImageFromFile( ::hWnd, nType, cFile )
-   METHOD ClearRegisteredImages()             INLINE ::Send( 2408 )
-     
+      
    METHOD MenuEdit( lPopup )
     
+   METHOD GetModify()                 INLINE SciGetProp( ::hWnd, SCI_GETMODIFY ) == 1
+   METHOD GetReadOnly()               INLINE ::Send( SCI_GETREADONLY ) != 0
+    
+   METHOD GetCurLine()
+   METHOD GotoLineEnsureVisible( nLine )
+   METHOD BookmarkClearAll()
+   METHOD SetToggleMark()
+   METHOD SetEOL( lOn )
+   METHOD SetLinIndent( lOnOff, lSinc )
+   METHOD GetCaretInLine()
+   METHOD SetMargin( lOn )
+   METHOD LineSep()
+   METHOD AutoIndent()
+   METHOD SetIndicators()
+   METHOD SetIndent( nSize, lOn )
+   METHOD GetFuncList()
+   METHOD SetZoom( nZ )
+   METHOD SetColourise( lOnOff )
+   METHOD MarginClick( nMargen, nPos )
+   METHOD HandleEvent( nMsg, uParam1, uParam2, uParam3 )
+   METHOD Notify( nType, pScnNotification )
+
+   METHOD CallTipShow( nPos, cText )     INLINE ::Send( 2200, nPos, cText )
+   METHOD CallTipCancel()                INLINE ::Send( 2201, 0, 0 )
+   METHOD CallTipActive()                INLINE ::Send( 2202, 0, 0 )
+   METHOD CallTipPosStart()              INLINE ::Send( 2203, 0, 0 )
+   METHOD CallTipSetHlt( nStart, nEnd )  INLINE ::Send( 2204, nStart, nEnd )
+   METHOD CallTipSetBack( nColor )       INLINE ::Send( 2205, nColor, 0 )
+
+   METHOD GetIndent()       INLINE SciGetProp( ::hWnd, SCI_GETINDENT )
+   // METHOD GetLexer()        INLINE SciGetProp( ::hWnd, SCI_GETLEXER )
+   METHOD GetLine( nLine )  INLINE SCIGETLINE( ::hWnd, nLine )
+   METHOD GetLineCount()    INLINE SciGetProp( ::hWnd, SCI_GETLINECOUNT )
+
+
+
+   METHOD SetText( cText )          INLINE SCISETTEXT( ::hWnd, cText )
+   METHOD GetText()                 INLINE SCIGETTEXT( ::hWnd )
+   METHOD GetLength()               INLINE ::Send( SCI_GETTEXTLENGTH )
+   METHOD GetCurrentPos()           INLINE ::Send( SCI_GETCURRENTPOS )
+   METHOD GetCurrentLineNumber()    INLINE ::LineFromPosition( ::GetCurrentPos() )
+   METHOD LineFromPosition( nPos )  INLINE ::Send( SCI_LINEFROMPOSITION, nPos )
+   METHOD PositionFromLine( nLine ) INLINE ::Send( SCI_POSITIONFROMLINE, nLine )
+
+   METHOD GetLineIndentation( nL )  INLINE ::Send( SCI_GETLINEINDENTATION, nL )
+   METHOD SetLineIndentation( nL, nI ) INLINE ::Send( SCI_SETLINEINDENTATION, nL, nI )
+
+   METHOD GetProp( nMsg, nW, nL )   INLINE SCIGETPROP( ::hWnd, nMsg, nW, nL )
+   METHOD GetSelText()              INLINE SCIGETSELTEXT( ::hWnd )
+   METHOD GetTextRange( nS, nE )    INLINE SCIGETTEXTRANGE( ::hWnd, nS, nE )
+   METHOD InsertText( nPos, cT )    INLINE ::Send( SCI_INSERTTEXT, nPos, cT )
+   METHOD GotoPos( nPos )           INLINE ::Send( SCI_GOTOPOS, nPos )
+   METHOD GotoLine( nLine )         INLINE ::Send( SCI_GOTOLINE, nLine )
+   METHOD SetSel( nS, nE )          INLINE ::Send( SCI_SETSEL, nS, nE )
+   METHOD Clear()                   INLINE ::Send( SCI_CLEAR )
+   METHOD Bracy()                   INLINE ::Send( SCI_BRACEMATCH, ::GetCurrentPos() )
+   METHOD BraceMatch( nP )          INLINE ::Send( SCI_BRACEMATCH, nP )
+   METHOD BraceHighlight( n1, n2 )  INLINE ::Send( SCI_BRACEHIGHLIGHT, n1, n2 )
+   METHOD BraceBadLight( nP )       INLINE ::Send( SCI_BRACEBADLIGHT, nP )
+   METHOD GetCharAt( nP )           INLINE ::Send( SCI_GETCHARAT, nP )
+
+   /*
+   METHOD InitEdt()
+   METHOD IntelliSense( nChar )
+   METHOD SetMBrace()
+   METHOD HandleBraceMatch()
+   METHOD SearchBackward( cText, nFlags )
+   METHOD SearchForward( cText, nFlags )
+   METHOD Replace()
+   METHOD DlgOpen()
+   METHOD DlgGotoLine()
+   METHOD GetTextColor( cType )
+   METHOD SetTextColor( cType, nRGBColor )
+   METHOD SetViewSpace( lOn )
+*/
+   METHOD ReplaceSel( cText )       INLINE ::Send( SCI_REPLACESEL, 0, cText )
+   METHOD SetSavePoint()            INLINE ::Send( SCI_SETSAVEPOINT )
+
+      DATA cCKeyw1, cCKeyw2, cCKeyw3, cCKeyw4, cCKeyw5
+      DATA cCComment, cCCommentLin, cCOperator, cCString, cCNumber, cCBraces, cCBraceBad, cCIdentif
+   DATA nClrPane
+
    METHOD ValidChar( c ) INLINE  Lower( c ) $ "abcdefghijklmnopqrstuvwxyz1234567890ñ"
 
+   
 ENDCLASS
 
 //----------------------------------------------------------------------------//
@@ -462,56 +183,37 @@ METHOD New( nTop, nLeft, nBottom, nRight, oWnd , cLex ) CLASS TScintilla
     
    DEFAULT cLex :=  "flagship"
     
-   ::hWnd = SciCreate( nTop, nLeft, nBottom, nRight, oWnd:hWnd )
+   ::hWnd := SCICREATE( nTop, nLeft, nBottom - nTop, nRight - nLeft, oWnd:hWnd, Self )
    ::oWnd = oWnd
+
+   ::aMarkerHand := {}
+   ::aBookMarker := {}
+   ::lIndicators := .F.
+   ::lLinTabs    := .F.
+   ::nManualAnchor := 0
 
    oWnd:AddControl( Self )
 
-   //  ::cCKeyw1       := { METRO_ORANGE, ::nClrPane, SC_CASE_MIXED, } //CYAN
-   //  ::cCKeyw2       := { METRO_ORANGE, ::nClrPane, SC_CASE_MIXED, } // METRO_BROWN
-  
-   ::cCKeyw1       := { rgb(185,53,163), ::nClrPane, SC_CASE_MIXED, } //CYAN
-   ::cCKeyw2       := { rgb(185,53,163), ::nClrPane, SC_CASE_MIXED, } // METRO_BROWN
-  
-   ::cCKeyw3       := { METRO_BROWN, ::nClrPane, SC_CASE_MIXED, }  // CLR_BLUE
-   ::cCKeyw4       := { CLR_BLUE,    ::nClrPane, SC_CASE_MIXED, }     //METRO_CYAN
-   ::cCKeyw5       := { METRO_CYAN,  ::nClrPane, SC_CASE_MIXED, }   //METRO_MAUVE   // STEEL
-
-   ::cCComment     := { CLR_GRAY, ::nClrPane, SC_CASE_MIXED, }    //HGRAY
-   ::cCCommentLin  := { CLR_GRAY, ::nClrPane, SC_CASE_MIXED, }
-   ::cCString      := { CLR_HRED, ::nClrPane, SC_CASE_MIXED, }
-   ::cCNumber      := { CLR_RED,  ::nClrPane, SC_CASE_MIXED, }
-   ::cCOperator    := { CLR_BLUE, ::nClrPane, SC_CASE_MIXED, }
-   ::cCBraces      := { CLR_BLUE, CLR_YELLOW, SC_CASE_MIXED, }
-   ::cCBraceBad    := { CLR_HRED, CLR_YELLOW, SC_CASE_MIXED, }
-   ::cCIdentif     := { CLR_GREEN, ::nClrPane, SC_CASE_MIXED, }    //MAGENTA
-    
-   ::lFolding    := .t.
-    
-   ::cLexer   := cLex
-   ::nMargLeft := 4
-
    ::Setup()
    ::brclicked:= { ||  msginfo("rclick")    }
-    
-  
+
+   if ! lKeywordsLoaded .and. ( File( ResPath() + "/hbdocs.json" ) .or. File( Path() + "/hbdocs.json" ) )
+      oHbDocs := THbDocs():New()
+      if oHbDocs:aDocs != nil
+         SCISETGLOBALKEYWORDS( oHbDocs:GetAllSortedList() )
+         SCISETGLOBALDOCS( oHbDocs:GetAllDocList() )
+         lKeywordsLoaded := .T.
+      endif
+   endif
+   
+   if File( ResPath() + "/snippets.json" ) .or. File( Path() + "/snippets.json" )
+      SCISETGLOBALSNIPPETS( hb_memoRead( if( File( ResPath() + "/snippets.json" ), ResPath() + "/snippets.json", Path() + "/snippets.json" ) ) )
+   endif
+     
+   
 return Self
 
 //----------------------------------------------------------------------------//
-#define markerBookmark 	1
-
-METHOD SetToggle() CLASS TScintilla
-   Local lSw   := .F.
-   local nLine := ::GetCurrentLineNumber()
-   // msginfo(nLine)
-   if SciGetProp( ::hWnd,SCI_MARKERGET, nLine ) == 0
-      ::Send( SCI_MARKERADD, nLine, markerBookmark )
-   else
-      ::Send( SCI_MARKERDELETE, nLine, markerBookmark )
-   endif
-
-return lSw
-
 //----------------------------------------------------------------------------//
 
 
@@ -531,117 +233,9 @@ METHOD MenuEdit( lPopup ) CLASS TScintilla
    if !lPopup
       ENDMENU
    endif
-
 Return oMnu
 
 //----------------------------------------------------------------------------//
-
-METHOD StyleSetColor( nClrFore, nClrBack ) CLASS TScintilla
-
-   if Valtype( nClrFore ) == 'N'
-      ::Send( SCI_STYLESETFORE, ::nSetStyle, nClrFore )
-   endif
-
-   if Valtype( nClrBack ) == 'N'
-      ::Send( SCI_STYLESETBACK, ::nSetStyle, nClrBack )
-   endif
-   
-return nil
-
-//----------------------------------------------------------------------------//
-
-
-METHOD SetColor( nClrText, nClrPane, lIni ) CLASS TScintilla
-
-   local x
-   DEFAULT lIni := .F.
-
-   if !empty(nClrText)
-      :: nTextColor := nClrText
-   endif
-   if !empty(nClrPane )
-      ::nBackColor := nClrPane
-   endif
-   ::setup()
-
-
-return nil
-
-//----------------------------------------------------------------------------//
-
-METHOD SetLinColor( nClrText, nClrPane ) CLASS TScintilla
- 
-   if !empty(nClrText)
-      :: nTColorLin := nClrText
-   endif
-   if !empty(nClrPane )
-      ::nBColorLin := nClrPane
-   endif
-   ::setup()
-
-
-return nil
-
-//----------------------------------------------------------------------------//
-
-METHOD BookmarkNext( lForwardScan, lSelect )  CLASS TScintilla
-
-   LOCAL lineno      := ::GetCurrentLineNumber()
-   LOCAL sci_marker   := SCI_MARKERNEXT
-   LOCAL lineStart      := lineno + 1      //Scan starting from next line
-   LOCAL lineRetry      := 0            //If not found, try from the beginning
-   LOCAL anchor      := ::Send( SCI_GETANCHOR )
-   LOCAL nextline
-
-   DEFAULT lForwardScan    := .T.
-   DEFAULT lSelect         := .F.
-
-   if ! lForwardScan
-      lineStart   := lineno - 1                  //Scan starting from previous line
-      lineRetry   := ::Send(SCI_GETLINECOUNT, 0, 0)   //If not found, try from the end
-      sci_marker   := SCI_MARKERPREVIOUS
-   endif
-
-   // nextLine   := ::Send( sci_marker, lineRetry, 1 << markerBookmark )
-   nextLine   := ::Send( sci_marker, lineStart, -1  )
-
-   if nextLine < 0
-      // nextLine   := ::Send( sci_marker, lineRetry, 1 << markerBookmark )
-      nextLine   := ::Send( sci_marker, lineRetry , -1 )
-   endif
-
-   if ( nextLine < 0 .OR. nextLine == lineno )   // No bookmark (of the given type) or only one, and already on it
-
-      Msginfo( 'No bookmarks...' )
-
-   else
-
-      ::GotoLineEnsureVisible(nextLine);
-
-      //if (select)
-      //   wEditor.Call(SCI_SETANCHOR, anchor);
-      //
-
-   endif
-
-retu nil
-
-//----------------------------------------------------------------------------//
-
-METHOD SetColorCaret( nColor, lVisible ) CLASS TScintilla
-
-   local nVisible
-   DEFAULT nColor    := ::nCaretBackColor
-   DEFAULT lVisible  := .T.
-
-   nVisible          := if( lVisible, 1, 0 )
-   ::Send( SCI_SETCARETLINEBACK, nColor )
-   ::Send( SCI_SETCARETLINEVISIBLE, nVisible )
-
-Return nColor
-
-//----------------------------------------------------------------------------//
-
 METHOD SetIndicators() CLASS TScintilla
 
    if ::lIndicators
@@ -665,30 +259,7 @@ METHOD SetIndicators() CLASS TScintilla
 
 Return nil
 
-
 //----------------------------------------------------------------------------//
-
-METHOD SetAStyle( style, fore, back, size, face ) CLASS TScintilla
-
-   DEFAULT size := 0
-   DEFAULT face := ""
-   DEFAULT back := CLR_WHITE
-
-   ::Send( SCI_STYLESETFORE, style, fore )
-   ::Send( SCI_STYLESETBACK, style, back )
-
-   if size >= 1
-      ::Send( SCI_STYLESETSIZE, style, size )
-   endif
-   if ! Empty( face )
-      ::Send( SCI_STYLESETFONT, style, face )
-   endif
-
-return nil
-
-
-//----------------------------------------------------------------------------//
-
 METHOD SetIndent( nSize, lOn ) CLASS TScintilla
 
    DEFAULT lOn := If( ::Send( SCI_GETINDENTATIONGUIDES, 0, 0 ) == 0, .T., .F. )
@@ -705,9 +276,7 @@ METHOD SetIndent( nSize, lOn ) CLASS TScintilla
 
 retu nil
 
-
 //----------------------------------------------------------------------------//
-
 METHOD GetFuncList() CLASS TScintilla
 
    local nLines := ::GetLineCount(), n
@@ -715,34 +284,34 @@ METHOD GetFuncList() CLASS TScintilla
    // local cCommands := ""
 
    for n = 1 to nLines
-   cToken = Lower( Left( cLine := LTrim( ::GetLine( n ) ), 4 ) )
-   if cToken $ "func,proc,clas,meth" .and. ;
-         Lower( cFileExt( ::cFileName ) ) $ "prg,ch"
-      AAdd( aFunLines, { cLine, n, n + 1 } )
-   endif
-
-   if Left( cLine, 12 ) == "static funct"
-      AAdd( aFunLines, { cLine, n, n + 1 } )
-   endif
-
-   if Left( cLine, 6 ) == "#xcomm"
-      if StrToken( cLine, 2 ) == "@"
-         AAdd( aFunLines, { "@ ... " + StrToken( cLine, 5 ), n, n + 1 } )
-      else
-         AAdd( aFunLines, { StrToken( cLine, 2 ) + " " + ;
-            StrToken( cLine, 3 ), n, n + 1 } )
+      cToken = Lower( Left( cLine := LTrim( ::GetLine( n ) ), 4 ) )
+      if cToken $ "func,proc,clas,meth" .and. ;
+            Lower( cFileExt( ::cFileName ) ) $ "prg,ch"
+         AAdd( aFunLines, { cLine, n, n + 1 } )
       endif
-   endif
 
-   if Left( cLine, 7 ) == "HB_FUNC"
-      AAdd( aFunLines, { cLine, n, n + 1 } )
-   endif
-
-   if cToken $ "retu" .or. Left( cToken, 1 ) == "}"
-      if ATail( aFunLines ) != nil
-         ATail( aFunLines )[ 3 ] = n
+      if Left( cLine, 12 ) == "static funct"
+         AAdd( aFunLines, { cLine, n, n + 1 } )
       endif
-   endif
+
+      if Left( cLine, 6 ) == "#xcomm"
+         if StrToken( cLine, 2 ) == "@"
+            AAdd( aFunLines, { "@ ... " + StrToken( cLine, 5 ), n, n + 1 } )
+         else
+            AAdd( aFunLines, { StrToken( cLine, 2 ) + " " + ;
+               StrToken( cLine, 3 ), n, n + 1 } )
+         endif
+      endif
+
+      if Left( cLine, 7 ) == "HB_FUNC"
+         AAdd( aFunLines, { cLine, n, n + 1 } )
+      endif
+
+      if cToken $ "retu" .or. Left( cToken, 1 ) == "}"
+         if ATail( aFunLines ) != nil
+            ATail( aFunLines )[ 3 ] = n
+         endif
+      endif
    next
 
    ASort( aFunLines,,, { | x, y | x[ 1 ] < y[ 1 ] } )
@@ -755,9 +324,7 @@ METHOD GetFuncList() CLASS TScintilla
 
 return aFunLines
 
-
 //----------------------------------------------------------------------------//
-
 METHOD GetCurLine() CLASS TScintilla
     
    local nLine := ::GetCurrentLineNumber()
@@ -787,22 +354,21 @@ retu nil
 METHOD SetToggleMark() CLASS TScintilla
    Local lSw   := .F.
    Local nLine := ::GetCurrentLineNumber()
-   Local nPos
+   Local nPos, nMask, nMarker := 4
 
-
-   if ::GetProp( SCI_MARKERGET, nLine ) == 0  //.or.
-      AAdd( ::aMarkerHand, ::Send( SCI_MARKERADD, nLine, 4 ) )
+   nMask := ::Send( SCI_MARKERGET, nLine )
+   
+   if ! hb_bitTest( nMask, nMarker )
+      AAdd( ::aMarkerHand, ::Send( SCI_MARKERADD, nLine, nMarker ) )
       AAdd( ::aBookMarker, nLine + 1 )
       lSw := .T.
-      msginfo(len(::aBookMarker))
    else
-      // msginfo("borra")
-      ::Send( SCI_MARKERDELETE, nLine, 4 )
+      ::Send( SCI_MARKERDELETE, nLine, nMarker )
       nPos := AScan( ::aBookMarker, nLine + 1 )
-      if !Empty( nPos )
+      if nPos > 0
+         ::Send( SCI_MARKERDELETEHANDLE, ::aMarkerHand[ nPos ] )
          ADel( ::aBookMarker, nPos )
          ASize( ::aBookMarker, Len( ::aBookMarker ) - 1 )
-         ::Send( SCI_MARKERDELETEHANDLE, ::aMarkerHand[ nPos ] )
          ADel( ::aMarkerHand, nPos )
          ASize( ::aMarkerHand, Len( ::aMarkerHand ) - 1 )
       endif
@@ -1224,10 +790,11 @@ METHOD Close() CLASS TScintilla
    ::SetText( "" )
    ::cFileName = ""
 
-return nil
+   return nil
 
-//----------------------------------------------------------------------------//
 
+   //----------------------------------------------------------------------------//
+   /*
 
 METHOD InitEdt() CLASS TScintilla
     
@@ -1279,27 +846,18 @@ METHOD InitEdt() CLASS TScintilla
 */
 
 Return nil
-
+///
 //----------------------------------------------------------------------------//
 
 
 //----------------------------------------------------------------------------//
-
 METHOD IntelliSense( nChar ) CLASS TScintilla
 
-   local nAt   := ::nCol()
-   local cLine := Lower( LTrim( ::GetLine( ::GetCurrentLineNumber() + 1 ) ) )
+   local cWord, cDoc
 
-   // Close CallTip if closing parenthesis is typed
-   if nChar == 41 // ')'
-      ::CallTipCancel()
-   endif
-
-   if Len( cLine ) > 2 .and. SubStr( cLine, 1, 8 ) $ "define window"
-      ::CallTipShow( ::GetCurrentPos(), "DEFINE WINDOW <oWnd>" + Chr( 10 ) + ;
-         "   TITLE <cTitle> " + Chr( 10 ) + ;
-         "   FROM <nTop>, <nLeft> TO <nBottom>, <nRight>" )
-   endif
+   do case
+      // All logic moved to native C layer in scintillas.m
+   endcase
 
 return nil
 
@@ -1355,7 +913,7 @@ METHOD SaveAS( cFileName ) CLASS TScintilla
 return nil
 
 //----------------------------------------------------------------------------//
-
+/*
 METHOD SetMBrace() CLASS TScintilla
 
    ::Send( SCI_STYLESETFORE, STYLE_BRACELIGHT, ::cCBraces[ 1 ] )
@@ -1434,11 +992,19 @@ METHOD SearchForward( cText, nFlags ) CLASS TScintilla
    endif
 
 return lFound
-
+*/
 //----------------------------------------------------------------------------//
 
+
 METHOD Setup() CLASS TScintilla
+return nil
+
+/*
+METHOD Setup() CLASS TScintilla
+
+
    local n
+
    //local KeyWords1  := CadComand()
 
    local cCad0 := ;
@@ -1530,8 +1096,8 @@ METHOD Setup() CLASS TScintilla
    KeyWords2  := cCad0
 
 
-   // Lexer type is flagship.
-   ::Send( SCI_SETLEXERLANGUAGE, 0, ::cLexer  )
+    // Lexer type is flagship. Already set in C / SCICREATE
+    // SCISETLEXER( ::hWnd, ::cLexer )
    //ScintillaDebugLog( "Lexer Name: " + ::cLexer + " Lexer ID: " + Str( ::GetLexer() ) )
 
    ::InitEdt()
@@ -1550,12 +1116,13 @@ METHOD Setup() CLASS TScintilla
    // 4 - System variable keywords
    // 5 - Procedure keywords (keywords used in procedures like "begin" and "end")
    // 6..8 - User keywords 1..3
-   /*
-[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 0 value: major_keywords];
-[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 5 value: procedure_keywords];
-[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 6 value: client_keywords];
-[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 7 value: user_keywords];
-*/
+
+   
+//[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 0 value: major_keywords];
+//[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 5 value: procedure_keywords];
+//[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 6 value: client_keywords];
+//[mEditor setReferenceProperty: SCI_SETKEYWORDS parameter: 7 value: user_keywords];
+
 
 
 
@@ -1670,8 +1237,8 @@ METHOD Setup() CLASS TScintilla
 
    for  n= 25 to 31 // Markers 25..31 are reserved for folding.
 
-   ::Send( SCI_MARKERSETFORE, n, CLR_WHITE )  // color folder
-   ::Send( SCI_MARKERSETBACK, n, CLR_BLACK )
+      ::Send( SCI_MARKERSETFORE, n, CLR_WHITE )  // color folder
+      ::Send( SCI_MARKERSETBACK, n, CLR_BLACK )
 
    NEXT
 
@@ -1845,9 +1412,10 @@ METHOD SetViewSpace( lOn ) CLASS TScintilla
    endif
 
 return nil
-
+*/
 //----------------------------------------------------------------------------//
 
+/*
 #define SCLEX_FLAGSHIP 73
 
 METHOD SetHighlightColors() CLASS TScintilla
@@ -1882,11 +1450,11 @@ METHOD SetHighlightColors() CLASS TScintilla
       ::Send( SCI_STYLESETBACK, SCE_FS_KEYWORD4,     ::nClrPane )
       ::Send( SCI_STYLESETBACK, SCE_FS_KEYWORD2,     ::nClrPane )
       ::Send( SCI_STYLESETBACK, SCE_FS_KEYWORD3,     ::nClrPane )
-      /*
-        if Upper( ::oFont:cFaceName ) <> Upper( "FixedSys" )
-            ::Send( SCI_STYLESETITALIC, SCE_FS_COMMENTLINE, 1 )
-        endif
-      */
+      
+      //  if Upper( ::oFont:cFaceName ) <> Upper( "FixedSys" )
+      //      ::Send( SCI_STYLESETITALIC, SCE_FS_COMMENTLINE, 1 )
+      //  endif
+      
    else
        
       ::SetAStyle( SCE_FS_COMMENTLINE,    ::cCCommentLin[ 1 ], ::nClrPane )
@@ -1940,24 +1508,24 @@ METHOD SetHighlightColors() CLASS TScintilla
       ::Send( SCI_STYLESETCASE, SCE_FWH_KEYWORD3, ::cCKeyw4[ 3 ] )
       ::Send( SCI_STYLESETCASE, SCE_FWH_KEYWORD4, ::cCKeyw5[ 3 ] )
         
-      /*
+     
         //::Send( SCI_STYLESETFONT, SCE_FWH_DEFAULT , ::oFont:cFaceName ) //::oFntLin:cFaceName )
         //::Send( SCI_STYLESETSIZE , SCE_FWH_DEFAULT, Abs( Int( ::oFont:nHeight ) * 1 ) )
         //::Send( SCI_STYLESETFONT, SCE_FWH_COMMENT, ::oFont:cFaceName ) //::oFntLin:cFaceName )
         //::Send( SCI_STYLESETSIZE , SCE_FWH_COMMENT, Abs( Int( ::oFont:nHeight ) * 1 ) )
         
-        if !Empty( ::oFont )
-            if Upper( ::oFont:cFaceName ) <> Upper( "FixedSys" )
-                ::Send( SCI_STYLESETITALIC, SCE_FWH_COMMENT, 1 )
-                ::Send( SCI_STYLESETITALIC, SCE_FWH_COMMENTDOC, 1 )
-                ::Send( SCI_STYLESETITALIC, SCE_FWH_COMMENTLINE, 1 )
-            endif
-        endif
-       */
+       // if !Empty( ::oFont )
+       //     if Upper( ::oFont:cFaceName ) <> Upper( "FixedSys" )
+       //         ::Send( SCI_STYLESETITALIC, SCE_FWH_COMMENT, 1 )
+       //         ::Send( SCI_STYLESETITALIC, SCE_FWH_COMMENTDOC, 1 )
+       //         ::Send( SCI_STYLESETITALIC, SCE_FWH_COMMENTLINE, 1 )
+       //     endif
+       // endif
+   
    endif
   
 return nil
-
+*/
 
 
 //----------------------------------------------------------------------------//
@@ -1976,6 +1544,7 @@ Return if( nOp = 1, cCad2, cCad3 )
 
 //----------------------------------------------------------------------------//
 
+
 METHOD GetWordLeft() CLASS TScintilla
 
    local nPos       := ::GetCurrentPos()
@@ -1988,15 +1557,15 @@ METHOD GetWordLeft() CLASS TScintilla
    local i, cChar
 
    for i := nLen to 1 step -1
-   cChar := SubStr( cText, i, 1 )
-   // Simple check: Allow A-Z, a-z, 0-9, _
-   if ! ( ( cChar >= "A" .and. cChar <= "Z" ) .or. ;
-         ( cChar >= "a" .and. cChar <= "z" ) .or. ;
-         ( cChar >= "0" .and. cChar <= "9" ) .or. ;
-         cChar == "_" )
-      exit
-   endif
-   cWord := cChar + cWord
+      cChar := SubStr( cText, i, 1 )
+      // Simple check: Allow A-Z, a-z, 0-9, _
+      if ! ( ( cChar >= "A" .and. cChar <= "Z" ) .or. ;
+            ( cChar >= "a" .and. cChar <= "z" ) .or. ;
+            ( cChar >= "0" .and. cChar <= "9" ) .or. ;
+            cChar == "_" )
+         exit
+      endif
+      cWord := cChar + cWord
    next
    
 return cWord
@@ -2024,35 +1593,113 @@ METHOD InsertSnippet( cBody ) CLASS TScintilla
    
    // Replace ${n:default} with default
    do while "${" $ cBody
-   nStartSeq := At( "${", cBody )
-   // Find closing brace after start. 
-   // Since At doesn't support offset, we substring or regex.
-   // Easiest here: find "}" in the substring starting at nStartSeq
-   nEndSeq   := At( "}", SubStr( cBody, nStartSeq ) )
+      nStartSeq := At( "${", cBody )
+      // Find closing brace after start. 
+      // Since At doesn't support offset, we substring or regex.
+      // Easiest here: find "}" in the substring starting at nStartSeq
+      nEndSeq   := At( "}", SubStr( cBody, nStartSeq ) )
       
-   if nEndSeq > 0
-      nEndSeq  := nStartSeq + nEndSeq - 1
-      cToken   := SubStr( cBody, nStartSeq, nEndSeq - nStartSeq + 1 ) // ${1:label}
+      if nEndSeq > 0
+         nEndSeq  := nStartSeq + nEndSeq - 1
+         cToken   := SubStr( cBody, nStartSeq, nEndSeq - nStartSeq + 1 ) // ${1:label}
          
-      // Safety check to avoid infinite loop if no } found properly
-      if Empty( cToken )
-         exit
-      endif
+         // Safety check to avoid infinite loop if no } found properly
+         if Empty( cToken )
+            exit
+         endif
 
-      cContent := SubStr( cBody, nStartSeq + 2, nEndSeq - nStartSeq - 2 ) // 1:label
+         cContent := SubStr( cBody, nStartSeq + 2, nEndSeq - nStartSeq - 2 ) // 1:label
          
-      if ":" $ cContent
-         cDefault := SubStr( cContent, At( ":", cContent ) + 1 )
+         if ":" $ cContent
+            cDefault := SubStr( cContent, At( ":", cContent ) + 1 )
+         else
+            cDefault := "" // VSCode uses empty if no default.
+         endif
+         
+         cBody := StrTran( cBody, cToken, cDefault )
       else
-         cDefault := "" // VSCode uses empty if no default.
+         exit // Error or malformed
       endif
-         
-      cBody := StrTran( cBody, cToken, cDefault )
-   else
-      exit // Error or malformed
-   endif
    enddo
    
    ::InsertText( nStart, cBody )
    
+return nil
+//----------------------------------------------------------------------------//
+
+//METHOD SetTheme( cTheme ) CLASS TScintilla
+/*
+   local nBg, nText, nKw, nCmd, nComment, nStr, nPre, nNum, nSel
+
+   do case
+      case cTheme == "Dark"
+         nBg := RGB(30,30,30); nText := RGB(212,212,212); nKw := RGB(86,156,214)
+         nCmd := RGB(78,201,176); nComment := RGB(106,153,85); nStr := RGB(206,145,120)
+         nPre := RGB(197,134,192); nNum := RGB(181,206,168); nSel := RGB(38,79,120)
+
+      case cTheme == "Light"
+         nBg := RGB(255,255,255); nText := RGB(0,0,0); nKw := RGB(0,0,255)
+         nCmd := RGB(0,128,128); nComment := RGB(0,128,0); nStr := RGB(163,21,21)
+         nPre := RGB(128,0,128); nNum := RGB(128,64,0); nSel := RGB(173,214,255)
+
+      case cTheme == "Monokai"
+         nBg := RGB(39,40,34); nText := RGB(248,248,242); nKw := RGB(249,38,114)
+         nCmd := RGB(102,217,239); nComment := RGB(117,113,94); nStr := RGB(230,219,116)
+         nPre := RGB(166,226,46); nNum := RGB(174,129,255); nSel := RGB(73,72,62)
+
+      case cTheme == "Solarized"
+         nBg := RGB(0,43,54); nText := RGB(131,148,150); nKw := RGB(181,137,0)
+         nCmd := RGB(42,161,152); nComment := RGB(88,110,117); nStr := RGB(42,161,152)
+         nPre := RGB(203,75,22); nNum := RGB(211,54,130); nSel := RGB(7,54,66)
+      
+         otherwise
+         return nil   
+   endcase
+*/
+/* Apply to Scintilla */
+/*
+   ::Send( 3352, 32, nText ) // SCI_STYLESETFORE = 3352, STYLE_DEFAULT = 32
+   ::Send( 3353, 32, nBg )   // SCI_STYLESETBACK = 3353
+   ::Send( 3350, 0, 0 )      // SCI_STYLECLEARALL = 3350
+
+   ::Send( 3352, 33, RGB(133,133,133) ) // STYLE_LINENUMBER = 33
+   ::Send( 3353, 33, if( cTheme == "Light", RGB(240,240,240), RGB(37,37,38) ) )
+
+   ::Send( 3352, 5, nKw ) // SCE_C_WORD = 5
+   ::Send( 3355, 5, 1 )   // SCI_STYLESETBOLD = 3355
+   ::Send( 3352, 16, nCmd ) // SCE_C_WORD2 = 16
+   ::Send( 3352, 1, nComment ) // SCE_C_COMMENT = 1
+   ::Send( 3352, 2, nComment ) // SCE_C_COMMENTLINE = 2
+   ::Send( 3351, 1, 1 )        // SCI_STYLESETITALIC = 3351
+   ::Send( 3352, 6, nStr )  // SCE_C_STRING = 6
+   ::Send( 3352, 4, nNum )  // SCE_C_NUMBER = 4
+   ::Send( 3352, 9, nPre )  // SCE_C_PREPROCESSOR = 9
+   
+   ::Send( 2069, if( cTheme == "Light", RGB(0,0,0), RGB(255,255,255) ), 0 ) // SCI_SETCARETFORE = 2069
+   ::Send( 2068, 1, nSel ) // SCI_SETSELBACK = 2068
+*/
+//return nil
+
+function SelectScintillaTheme( oSci )
+   local aThemes := { "Dark", "Light", "Monokai", "Solarized" }
+   local nSel := MSGSELECTFROMLIST( "Select Editor Theme", aThemes )
+
+
+   if nSel > 0
+      SCINTILLA_SET_THEME(oSci:hWnd, nSel )
+   endif
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD AutoCShowKeywords() CLASS TScintilla
+
+   if oHbDocs != nil
+      ::AutoCShow( Len( ::GetWordLeft() ), oHbDocs:GetAllSortedList() )
+   endif
+
+return nil
+
+//----------------------------------------------------------------------------//
+
 return nil
