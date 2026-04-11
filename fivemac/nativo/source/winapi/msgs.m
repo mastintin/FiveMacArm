@@ -77,7 +77,6 @@ HB_FUNC(MSGINFONATIVE) {
   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   [alert runModal];
 
-  [[alert window] close];
   [alert release];
   // No hacemos release de msg/title porque HB_To_NSString devuelve autorelease
   [localPool drain];
@@ -410,7 +409,7 @@ HB_FUNC(CHOOSEFOLDER) {
 
 HB_FUNC(SAVEFILE) {
   NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
-  NSSavePanel *op = [[NSSavePanel alloc] init];
+  NSSavePanel *op = [NSSavePanel savePanel];
 
   [op setPrompt:@"Ok"];
 
@@ -419,18 +418,23 @@ HB_FUNC(SAVEFILE) {
   else
     [op setTitle:hb_NSSTRING_par(1)];
 
-  if (HB_ISCHAR(2))
-    [op setNameFieldStringValue:hb_NSSTRING_par(2)];
+  if (HB_ISCHAR(2)) {
+    NSString *fullPath = hb_NSSTRING_par(2);
+    if ([fullPath length] > 0) {
+      [op setDirectoryURL:
+              [NSURL fileURLWithPath:[fullPath
+                                         stringByDeletingLastPathComponent]]];
+      [op setNameFieldStringValue:[fullPath lastPathComponent]];
+    }
+  }
 
   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
   if ([op runModal] == NSModalResponseOK) {
-
-    NSString *source = [[[op URL] path] stringByRemovingPercentEncoding];
+    NSString *source = [[op URL] path];
     hb_retc([source cStringUsingEncoding:NSUTF8StringEncoding]);
   } else
     hb_retc("");
 
-  [op release];
   [localPool release];
 }
 
@@ -516,4 +520,52 @@ HB_FUNC(CHOOSESHEETTEXT) {
   } else
     hb_retc("");
 #endif
+}
+
+HB_FUNC(MSGSELECTFROMLIST) {
+  NSAutoreleasePool *localPool = [[NSAutoreleasePool alloc] init];
+  NSString *title = hb_NSSTRING_par(1);
+  PHB_ITEM pArray = hb_param(2, HB_IT_ARRAY);
+
+  if (title && pArray) {
+    NSAlert *alert = [[NSAlert alloc] init];
+    [alert setMessageText:title];
+    [alert setInformativeText:@"Please choose an option:"];
+    [alert setAlertStyle:NSAlertStyleInformational];
+
+    HB_SIZE nLen = hb_arrayLen(pArray);
+    for (HB_SIZE i = 1; i <= nLen; i++) {
+      const char *szOption = hb_arrayGetCPtr(pArray, i);
+      if (szOption)
+        [alert addButtonWithTitle:[NSString stringWithUTF8String:szOption]];
+      else
+        [alert addButtonWithTitle:[NSString
+                                      stringWithFormat:@"Option %d", (int)i]];
+    }
+
+    [alert addButtonWithTitle:@"Cancel"];
+
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+    NSModalResponse response = [alert runModal];
+    int nIdx = (int)(response - NSAlertFirstButtonReturn);
+
+    if (nIdx >= 0 && nIdx < (int)nLen)
+      hb_retni(nIdx + 1);
+    else
+      hb_retni(0);
+
+    [alert release];
+  } else {
+    hb_retni(0);
+  }
+  [localPool drain];
+}
+
+extern int FM_MsgSelectList(NSString *title, PHB_ITEM aItems, CGFloat w,
+                            CGFloat h);
+
+HB_FUNC(MSGSELECTLIST) {
+  hb_retni(FM_MsgSelectList(hb_NSSTRING_par(1), hb_param(2, HB_IT_ARRAY),
+                            HB_ISNUM(3) ? hb_parnd(3) : 350,
+                            HB_ISNUM(4) ? hb_parnd(4) : 400));
 }

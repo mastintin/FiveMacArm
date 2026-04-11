@@ -11,8 +11,44 @@ CLASS THbDocs
     METHOD Load()
     METHOD Find( cPrefix )
     METHOD GetDoc( cName )
+    METHOD GetAllSortedList()
+    METHOD GetAllDocList()
 
 ENDCLASS
+
+//----------------------------------------------------------------------------//
+
+METHOD GetAllDocList() CLASS THbDocs
+    local cList := ""
+    local hItem
+
+    for each hItem in ::aDocs
+        // name + Chr(1) + syntax (label) + Chr(1) + documentation + Chr(2)
+        cList += hItem[ "name" ] + Chr( 1 ) + ;
+                 hb_HGetDef( hItem, "label", "" ) + Chr( 1 ) + ;
+                 hb_HGetDef( hItem, "documentation", "" ) + Chr( 2 )
+    next
+
+return cList
+
+//----------------------------------------------------------------------------//
+
+METHOD GetAllSortedList() CLASS THbDocs
+
+    local aList := {}
+    local hItem, cLabel, cList := ""
+
+    for each hItem in ::aDocs
+        AAdd( aList, hItem[ "name" ] )
+    next
+
+    ASort( aList ) // Always sort for Scintilla native autocomplete
+
+    for each cLabel in aList
+        cList += cLabel + "|"
+    next
+
+return If( Empty( cList ), "", Left( cList, Len( cList ) - 1 ) )
 
 //----------------------------------------------------------------------------//
 
@@ -35,8 +71,12 @@ METHOD Load() CLASS THbDocs
     cPath := ResPath() + "/hbdocs.json"
 
     if ! File( cPath )
-    MsgInfo( "Error: hbdocs.json not found at " + cPath )
-    return nil
+       cPath := Path() + "/hbdocs.json"
+    endif
+
+    if ! File( cPath )
+       // MsgInfo( "Error: hbdocs.json not found" )
+       return Nil
     endif
 
     cJson := MemoRead( cPath )

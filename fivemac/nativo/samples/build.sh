@@ -30,12 +30,16 @@ done
 
 USE_SCINTILLA=0
 USE_EXTRAS=0
+USE_MONACO=0
 for arg in "$@"; do
     if [ "$arg" == "-scintilla" ]; then
         USE_SCINTILLA=1
     fi
     if [ "$arg" == "-extras" ]; then
         USE_EXTRAS=1
+    fi
+    if [ "$arg" == "-monaco" ]; then
+        USE_MONACO=1
     fi
 done
 
@@ -91,6 +95,14 @@ $HB_DIR/bin/harbour "../source/classes/webview.prg" -n -w -q -oobj/ -I./../inclu
 clang -ObjC "obj/webview.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/webview_mod.o"
 OBJS="$OBJS obj/webview_mod.o"
 
+# Compile monaco.prg
+if [ $USE_MONACO -eq 1 ]; then
+   echo "Compiling Monaco class..."
+   $HB_DIR/bin/harbour "../source/classes/monaco.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+   clang -ObjC "obj/monaco.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/monaco_mod.o"
+   OBJS="$OBJS obj/monaco_mod.o"
+fi
+
 # Compile webviews.m
 clang -ObjC "../source/winapi/webviews.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/webviews_mod.o"
 OBJS="$OBJS obj/webviews_mod.o"
@@ -126,10 +138,19 @@ OBJS="$OBJS obj/musics_mod.o"
 
 
 
-# Compile cifilters.m (New Filter Logic)
-echo "Compiling cifilters.m..."
+# Compile CIFilters (New Filter Logic)
+echo "Compiling CIFilters..."
 clang -ObjC "../source/winapi/cifilters.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/cifilters_mod.o"
 OBJS="$OBJS obj/cifilters_mod.o"
+
+# Compile Native ListBox
+echo "Compiling Native ListBox (classes and winapi)..."
+$HB_DIR/bin/harbour "../source/classes/listbox.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
+clang -ObjC "obj/listbox.c" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/listbox_mod.o"
+OBJS="$OBJS obj/listbox_mod.o"
+
+clang -ObjC "../source/winapi/listboxes.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/listboxes_mod.o"
+OBJS="$OBJS obj/listboxes_mod.o"
 
 # Compile QuickLook components
 echo "Compiling QuickLook components..."
@@ -189,7 +210,12 @@ if [ ! -d $APPName.app/Contents/MacOS ]; then
 fi  
 if [ ! -d $APPName.app/Contents/Resources ]; then
    mkdir $APPName.app/Contents/Resources
-   cp ./../../Resources/icons/fivetech.icns $APPName.app/Contents/Resources/
+fi
+cp ./../../Resources/icons/fivetech.icns $APPName.app/Contents/Resources/
+# Copia siempre la carpeta monaco y su contenido (js) si se usa -monaco
+if [ $USE_MONACO -eq 1 ]; then
+   mkdir -p $APPName.app/Contents/Resources/monaco
+   cp -R ./../../Resources/monaco/* $APPName.app/Contents/Resources/monaco/ 
 fi 
 
 # Smart Copy: Only copy images referenced in the source code
@@ -255,7 +281,7 @@ fi
 echo linking...
 CRTLIB=$SDKPATH/usr/lib
 HRBLIBS="-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lminizip -lhbzlib -lhbmisc $MYSQL_LIBS"
-FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuickLookUI -framework QuartzCore -framework CoreImage -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers -framework Vision -framework MapKit -framework CoreLocation -framework Network -framework SystemConfiguration'
+FRAMEWORKS='-framework Cocoa -framework WebKit -framework QuickLookUI -framework QuartzCore -framework CoreImage -framework PDFKit -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers -framework Vision -framework MapKit -framework CoreLocation -framework Network -framework SystemConfiguration '
 
 SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
 if [ ! -d "$SWIFTPATH" ]; then

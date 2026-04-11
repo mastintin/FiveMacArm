@@ -1,0 +1,40 @@
+# Compiler flags
+-n
+-w
+-i../include
+-i../../harbour/include
+
+# Libraries path
+-L../lib
+-L../../harbour/lib
+
+# FiveMac libraries
+-lfive
+-lfivec
+-lscintilla
+
+# Core libs
+-lz
+-lpcre
+-lsqlite3
+
+-ldflag=-framework
+-ldflag=Cocoa
+-ldflag=-framework
+-ldflag=QuartzCore
+-ldflag=-framework
+-ldflag=AppKit
+-ldflag=-framework
+-ldflag=AVFoundation
+-ldflag=-framework
+-ldflag=IOKit
+-ldflag=-framework
+-ldflag=UniformTypeIdentifiers
+-ldflag=-framework
+-ldflag=UserNotifications
+
+# Output name
+-otestsci
+
+# Source Files
+testsci.prg

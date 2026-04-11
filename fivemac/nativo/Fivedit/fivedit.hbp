@@ -7,12 +7,13 @@
 -L../../../harbour/lib
 -lfive
 -lfivec
--lscintilla
 -lz
 -lpcre
 -lsqlite3
-# Frameworks flags for ObjC
--ldflag=-F../../Resources/frameworks
+-lscintilla
+
+# Sources
+-ldflag=-F./Resources/frameworks
 -ldflag=-framework
 -ldflag=Cocoa
 -ldflag=-framework
@@ -44,9 +45,9 @@
 # Scintilla flags for ObjC
 -ldflag=-framework
 -ldflag=Scintilla
-# RPath flags for ObjC
+# RPath flags for LOCAL Resources
 -ldflag=-rpath
--ldflag=@loader_path/../frameworks
+-ldflag=@executable_path/../Frameworks
 -gtstd
 -ofivedit
 # Helper flags for ObjC
@@ -56,3 +57,7 @@
 fivedit.prg
 CreaForm.prg
 CreaBuilder.prg
+../source/classes/theme_manager.prg
+
+# Headers for Scintilla in C
+-cflag=-I../include/scintilla_headers

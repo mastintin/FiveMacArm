@@ -1,0 +1,23 @@
+{
+  "name": "Solarized Dark Professional",
+  "styles": [
+    { "id": 32, "name": "Default", "fore": "#839496", "back": "#002b36", "font": "Menlo", "size": 15 },
+    { "id": 0,  "name": "White Space", "fore": "#586e75" },
+    { "id": 1,  "name": "Comment", "fore": "#586e75", "italic": true },
+    { "id": 2,  "name": "Line Comment", "fore": "#586e75", "italic": true },
+    { "id": 3,  "name": "Doc Comment", "fore": "#586e75" },
+    { "id": 4,  "name": "Number", "fore": "#2aa198" },
+    { "id": 5,  "name": "Keyword 1", "fore": "#859900", "bold": true },
+    { "id": 6,  "name": "Keyword 2", "fore": "#b58900", "bold": true },
+    { "id": 15, "name": "Keyword 3", "fore": "#d33682" },
+    { "id": 7,  "name": "String", "fore": "#2aa198" },
+    { "id": 8,  "name": "Character", "fore": "#2aa198" },
+    { "id": 10, "name": "Operator", "fore": "#839496" },
+    { "id": 11, "name": "Identifier", "fore": "#839496" },
+    { "id": 33, "name": "Line Number", "fore": "#586e75", "back": "#073642" },
+    { "id": 34, "name": "Brace Highlight", "fore": "#268bd2", "back": "#073642", "bold": true },
+    { "id": 35, "name": "Brace Bad", "fore": "#dc322f", "back": "#073642", "bold": true }
+  ],
+  "caret": { "fore": "#839496" },
+  "selection": { "back": "#073642" }
+}

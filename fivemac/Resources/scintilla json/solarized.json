@@ -1,0 +1,18 @@
+{
+  "name": "Solarized Dark",
+  "styles": [
+    { "id": 32, "name": "Default", "fore": "#839496", "back": "#002b36", "font": "Menlo", "size": 14 },
+    { "id": 0,  "name": "White Space", "fore": "#586e75" },
+    { "id": 1,  "name": "Comment", "fore": "#586e75", "italic": true },
+    { "id": 2,  "name": "Line Comment", "fore": "#586e75", "italic": true },
+    { "id": 5,  "name": "Keyword 1", "fore": "#859900", "bold": true },
+    { "id": 6,  "name": "Keyword 2", "fore": "#b58900", "bold": true },
+    { "id": 4,  "name": "Number", "fore": "#2aa198" },
+    { "id": 10, "name": "Operator", "fore": "#93a1a1" },
+    { "id": 7,  "name": "String", "fore": "#2aa198" },
+    { "id": 34, "name": "Brace Highlight", "fore": "#cb4b16", "back": "#073642", "bold": true },
+    { "id": 33, "name": "Line Number", "fore": "#586e75", "back": "#073642" }
+  ],
+  "caret": { "fore": "#eee8d5", "back": "#073642" },
+  "selection": { "back": "#073642", "alpha": 100 }
+}

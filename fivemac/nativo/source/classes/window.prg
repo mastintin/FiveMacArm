@@ -27,8 +27,8 @@ CLASS TWindow
    DATA  bMMoved      // action to perform when the mouse is moved
    DATA  bValid       // VALID clause
    DATA  bResized     // action to perform when the window is resized 
-   DATA  lValidResult // VALID clause result
-   DATA  lWhenResult   // WHEN clause result
+   DATA  lValidResult INIT .T. // VALID clause result
+   DATA  lWhenResult  INIT .T. // WHEN clause result
    DATA  bWhen
    DATA  oBar         // Toolbar
    DATA  bOnTimer
@@ -347,7 +347,7 @@ return nil
 METHOD AtControl( nRow, nCol ) CLASS TWindow
 
    local hCtrl := WndHitTest( ::hWnd, nRow, nCol ), n, oCtrl
-   local nAt := AScan( ::aControls, { | oCtrl | oCtrl:hWnd == hCtrl } )
+   local nAt := AScan( ::aControls, { | oCtrl | ValType( oCtrl:hWnd ) == ValType( hCtrl ) .and. oCtrl:hWnd == hCtrl } )
 
    if nAt == 0
    if ( oCtrl := ::FindControl( hCtrl ) ) != nil
@@ -451,7 +451,7 @@ METHOD UnLink() CLASS TWindow
 
    local nAt
 
-   if ( nAt := AScan( aWindows, { | o | o:hWnd == ::hWnd } ) ) != 0
+   if ( nAt := AScan( aWindows, { | o | ValType( o:hWnd ) == ValType( ::hWnd ) .and. o:hWnd == ::hWnd } ) ) != 0
    ADel( aWindows, nAt )
    ASize( aWindows, Len( aWindows ) - 1 )
    endif
@@ -495,7 +495,7 @@ METHOD FindControl( hWnd ) CLASS TWindow
    endif
 
    for n = 1 to Len( ::aControls )
-   if ::aControls[ n ]:hWnd == hWnd
+   if ValType( ::aControls[ n ]:hWnd ) == ValType( hWnd ) .and. ::aControls[ n ]:hWnd == hWnd
    return ::aControls[ n ]
    else
    if ( oControl := ::aControls[ n ]:FindControl( hWnd ) ) != nil
@@ -805,7 +805,7 @@ return nil
 
 function _FMH( hWnd, nMsg, hSender, uParam1, uParam2 ,uParam3, uParam4 )
 
-   local nAt := AScan( aWindows, { | o | o:hWnd == hWnd } )
+   local nAt := AScan( aWindows, { | o | ValType( o:hWnd ) == ValType( hWnd ) .and. o:hWnd == hWnd } )
 
    if nAt != 0
    return aWindows[ nAt ]:HandleEvent( nMsg, hSender, uParam1, uParam2, uParam3, uParam4 )
@@ -819,7 +819,7 @@ return nil
 
 function _FMO( hWnd, nMsg, hSender, uParam1, uParam2 )
 
-   local oControl, nAt := AScan( aWindows, { | o | o:hWnd == hWnd } )
+   local oControl, nAt := AScan( aWindows, { | o | ValType( o:hWnd ) == ValType( hWnd ) .and. o:hWnd == hWnd } )
 
    if nAt != 0
    oControl := aWindows[ nAt ]:FindControl( hSender )
@@ -835,6 +835,8 @@ return nil
 //----------------------------------------------------------------------------//
 
 function GetAllWin()
+
+return aWindows
 
 return aWindows
 

@@ -14,7 +14,7 @@ static cPathPrj := ""
 static lSplit1, lSplit2, lSplit3
 static cDbfPath, popoverMas
 static cFontName := "Monaco", nFontSize := 14
-static oSnippets, oHbDocs
+static oSnippets
 static lSense := .T.
 static oPanelScintilla
 
@@ -28,7 +28,7 @@ REQUEST APPTERMINATE
 
 //----------------------------------------------------------------------------//
 
-function Main()
+FUNCTION Main()
 
    local oSlide, oSayZoom
    local oMenuItem
@@ -46,10 +46,8 @@ function Main()
    oSnippets := TSnippets():New( ResPath() + "/snippets.json" )
    // MsgInfo( "Loading Snippets from: " + ResPath() + "/snippets.json" )
 
-   oHbDocs := THbDocs():New()
-   // MsgInfo( "HbDocs Loaded. Items: " + Str( Len( oHbDocs:aDocs ) ) )
-
-   DEFINE WINDOW oWnd FROM 100, 100 TO 800, 1200 FULL NOFLIPPED 
+   DEFINE WINDOW oWnd FROM 100, 100 TO 800, 1200 FULL NOFLIPPED
+   
 
    BuildButtonBar()
 
@@ -100,40 +98,14 @@ function Main()
       Alltrim(str( ( ( oEditor:setZoom( oSlide:GetValue() ) + 10 ) * 10 ) ) ) + "%" ) }
 
    // Workaround for Scintilla Key Interception
-   oEditor:bKeyDown = { |k| EditorKeyHandler( k ) }
+   oEditor:oSnippets := oSnippets
+   oEditor:bKeyDown = { |k| oEditor:KeyDown( k ) }
    
    // AutoComplete Logic
    
-   oEditor:AutoCSetIgnoreCase( .T. )
-   oEditor:AutoCSetSeparator( 124 ) // | 
-   oEditor:Send( 2285, 63, 0 ) // SCI_AUTOCSETTYPESEPARATOR(63)
-   
-   oEditor:bCharAdded = { |nKey| 
-   local cWord, cList
-   
-   cWord := oEditor:GetWordLeft()
-   // MsgInfo( "CharAdded Key: " + AllTrim( Str( nKey ) ) + " Word: [" + cWord + "]" ) // DEBUG
-   
-   if ! lSense .or. oHbDocs == nil 
-      return nil 
-   endif
-       
-   // Ignore non-alpha keys (optional optimization)
-       
-   cWord := oEditor:GetWordLeft()
-       
-   if Len( cWord ) >= 3
-      cList := oHbDocs:Find( cWord )
-          
-      if ! Empty( cList )
-         oEditor:AutoCShow( Len( cWord ), cList )
-         // If list is huge, AutoCShow might fail internally if not handled right?
-         // MsgInfo( "Showing list for: " + cWord )
-      endif
-   endif
-       
-   return nil
-   }
+    oEditor:AutoCSetIgnoreCase( .T. )
+    oEditor:AutoCSetSeparator( 124 ) // | 
+    oEditor:Send( 2285, 63, 0 ) // SCI_AUTOCSETTYPESEPARATOR(63)
 
    ACTIVATE WINDOW oWnd
    
@@ -233,15 +205,17 @@ function BuildEditor()
 
    // oEditor:nMargLeft:= 40
    // oEditor:Send( SCI_SETMARGINLEFT, 0, oEditor:nMargLeft )
+   
 
-   oEditor:bChange = { || EditorChange() }
+   // aqui se ha comentado------------------
+   //  oEditor:bChange = { || EditorChange() }
    oEditor:SetFont( cFontName, nFontSize )
    oEditor:SetColor( , nRgb( 252, 252, 252 ) , .t. )
 
    AAdd( aEditors, oEditor )
    
    oEditor:SetFocus()
-
+   
    oEditor:CallTipSetBack( nRGB( 235, 235, 235 ) )
    
 return oEditor
@@ -283,7 +257,7 @@ function BuildScriptDbf()
    local scriptDbf := AppPath() + "/scripts.dbf"
    local cAlias
    local cCode := '#include "FiveMac.ch"' + CRLF + CRLF + ;
-      "function Main()" + CRLF + CRLF + ;
+      "PROCEDURE Main()" + CRLF + CRLF + ;
       ' MsgInfo( "Hello world!" )' + CRLF + CRLF + ;
       "return nil"
 
@@ -478,7 +452,7 @@ function NewFile()
    local cFileName := Space( 50 )
    local cAlias
    local cCode := '#include "FiveMac.ch"' + CRLF + CRLF + ;
-      "function Main()" + CRLF + CRLF + ;
+      "PROCEDURE Main()" + CRLF + CRLF + ;
       '   MsgInfo( "Hello world!" )' + CRLF + CRLF + ;
       "return nil"
    
@@ -562,7 +536,7 @@ function Preferences()
    local aFonts := FM_availableFonts()
 
   
-   DEFINE DIALOG oDlg TITLE "Preferences"  NOFLIPPED 
+   DEFINE DIALOG oDlg TITLE "Preferences" NOFLIPPED 
  
    DEFINE MULTIVIEW oMulti OF oDlg RESIZED
 
@@ -1262,6 +1236,9 @@ function ShowPreferencePage( oClr, oTree, oCbxFont, oGetSize, oSayFont, oSaySize
          MENUITEM "End of line"         ACTION  oEditor:SetEOL()
          SEPARATOR
          MENUITEM "Toggle Bookmark"     ACTION  oEditor:SetToggle()
+         SEPARATOR
+         MENUITEM "Themes..."           ACTION  SelectScintillaTheme( oEditor )
+
 
          MENUITEM "Next Bookmark"       ACTION  oEditor:BookMarkNext( .t. )
          MENUITEM "Previous Bookmark"   ACTION  oEditor:BookMarkNext( .f. )
@@ -2691,7 +2668,7 @@ function NewProject()
       // Basic Main PRG
       cFilePrg := cPath + "/" + cProjectName + ".prg"
       cCode := '#include "FiveMac.ch"' + CRLF + CRLF + ;
-               "function Main()" + CRLF + CRLF + ;
+               "PROCEDURE Main()" + CRLF + CRLF + ;
                '   MsgInfo( "Hello from ' + cProjectName + '" )' + CRLF + CRLF + ;
                "return nil"
                
@@ -2724,53 +2701,6 @@ return nil
 
 //----------------------------------------------------------------------------//
 
-function EditorKeyHandler( nKey )
-
-   local hFocus, cWord, cBody, cList
-   
-   if nKey == -1 // Manual AutoComplete Trigger (Ctrl+Space)
-      cWord := oEditor:GetWordLeft()
-      
-      // MsgInfo( "Word: [" + cWord + "]" )
-      
-      cList := oHbDocs:Find( cWord )
-      
-      if ! Empty( cList )
-         // MsgInfo( "List Len: " + Str( Len( cList ) ) )
-         oEditor:AutoCShow( Len( cWord ), cList )
-      else
-         MsgBeep()
-      endif
-
-      return nil
-   endif
-
-   if nKey == 9 // Tab
-      if oEditor != nil
-         cWord := oEditor:GetWordLeft()
-          
-         if ! Empty( cWord ) .and. oSnippets != nil
-            if oSnippets:Exist( cWord )
-               cBody := oSnippets:Get( cWord )
-               oEditor:InsertSnippet( cBody )
-               return .T. // Stop event
-            endif
-         endif
-          
-         // Fallback: Normal Tab behavior (Indentation)
-         oEditor:Send( 2281 ) // SCI_TAB
-      endif
-   endif
-
-
-   if nKey == 13 // Enter
-      hFocus = GetFocus()
-      if oEditor != nil .and. oEditor:hWnd == hFocus
-         oEditor:AutoIndent()
-      endif
-   endif
-
-return nil
 
 //----------------------------------------------------------------------------//
 

@@ -12,6 +12,13 @@
 @interface FMVNavigationHandler : NSObject <WKNavigationDelegate>
 @end
 
+// Silenciamos los warnings del compilador para metodos estandar que WKWebView 
+// implementa internamente pero no declara en su cabecera publica.
+@interface NSView (FMWKWebViewExtras)
+- (void)undo:(id)sender;
+- (void)redo:(id)sender;
+@end
+
 extern PHB_ITEM hb_itemNew(PHB_ITEM pNull);
 
 @implementation FMVNavigationHandler
@@ -63,7 +70,6 @@ extern PHB_ITEM hb_itemNew(PHB_ITEM pNull);
 
     hb_vmDo(3);
   } else {
-    NSLog(@"Bridge Error: self.phbWebview is NULL");
   }
 }
 @end
@@ -394,3 +400,40 @@ HB_FUNC(WEBVIEWSETZOOM) {
                                         Wview.frame.size.height / 2)];
   }
 }
+
+HB_FUNC(WEBVIEWUNDO) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  [(id)Wview undo:nil];
+}
+
+HB_FUNC(WEBVIEWREDO) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  [(id)Wview redo:nil];
+}
+
+HB_FUNC(WEBVIEWCUT) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  [(id)Wview cut:nil];
+}
+
+HB_FUNC(WEBVIEWCOPY) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  [(id)Wview copy:nil];
+}
+
+HB_FUNC(WEBVIEWPASTE) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  [(id)Wview paste:nil];
+}
+
+HB_FUNC(WEBVIEWSELECTALL) {
+  NSScrollView *sv = (NSScrollView *)hb_parnll(1);
+  WKWebView *Wview = (WKWebView *)[sv documentView];
+  [(id)Wview selectAll:nil];
+}
+

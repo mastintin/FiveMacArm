@@ -13,7 +13,7 @@
 CLASS TDialog FROM TWindow
 
    METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled,;
-               nWidth, nHeight ,lflipped ,oBrush, lNoFlipped )
+               nWidth, nHeight ,lflipped ,oBrush, lNoFlipped, lNoBorder, lGlass )
 
    METHOD Activate( bLClicked, bValid, lModeless, lCentered, bInit, bRClicked,;
                     bResized )
@@ -22,7 +22,7 @@ ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, nHeight ,lflipped ,oBrush, lNoFlipped ) CLASS TDialog
+METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, nHeight ,lflipped ,oBrush, lNoFlipped, lNoBorder, lGlass ) CLASS TDialog
 
    DEFAULT nTop := 300, nLeft := 300, nBottom := 700, nRight := 800,;
                  cTitle := "FiveMac", lTextured := .f., lPaneled := .f. ,;
@@ -39,10 +39,17 @@ METHOD New( nTop, nLeft, nBottom, nRight, cTitle, lTextured, lPaneled ,nWidth, n
    ::lNoFlipped := lNoFlipped
     
    ::hWnd = WndCreate( nTop, nLeft, nRight - nLeft, nBottom - nTop,;
+                       If( ! Empty( lNoBorder ), NSBorderlessWindowMask, ;
                        nOr( NSTitledWindowMask, NSClosableWindowMask,;
 	                     NSMiniaturizableWindowMask,;
 					             If( lTextured, NSTexturedBackgroundWindowMask, 0 ),;
-					             If( lPaneled, NSUtilityWindowMask, 0 ) ) )
+					             If( lPaneled, NSUtilityWindowMask, 0 ) ) ) )
+   
+   if ! Empty( lGlass )
+      ::lGlass = .t.
+      ::SetGlass()
+      ::SetVibrancy( .T. )
+   endif
   
  
    if nWidth != nil .or. nHeight!= nil

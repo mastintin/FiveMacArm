@@ -10,9 +10,10 @@ FRAMEPATH=$(SDKPATH)/System/Library/Frameworks
 # Using 10.13 as a reasonable minimum for modern builds, or stick to what works for the user. 
 # The previous valid one was 10.15.
 MIN_VER=-mmacosx-version-min=26.0
-CFLAGS=$(MIN_VER)
-CVFLAGS=$(MIN_VER)
 CC=clang
+SCINT_INC=-I/Users/manuel/Fivemac/scintilla_src/include -I/Users/manuel/Fivemac/scintilla_src/src -I/Users/manuel/Fivemac/scintilla_src/cocoa
+CFLAGS=$(MIN_VER) $(SCINT_INC)
+CVFLAGS=$(MIN_VER) $(SCINT_INC)
 SWIFTFLAGS = -I./include -sdk $(SDKPATH)
 
 # Harbour paths
@@ -23,7 +24,7 @@ HB_INC=$(HB_DIR)/include
 
 all : fivemac
 
-fivemac : ./lib/libfive.a ./lib/libfivec.a create
+fivemac : ./lib/libfive.a ./lib/libfivec.a ./lib/libscintilla.a create
 
 scintilla : ./lib/libscintilla.a
 
@@ -121,6 +122,7 @@ PRG_OBJS = \
 	./obj/viewstackbar.o \
   	./obj/window.o	\
 	./obj/webview.o \
+	./obj/monaco.o \
 	./obj/varios.o
 
 C_OBJS = ./objc/browses.o	\
@@ -198,7 +200,9 @@ C_OBJS = ./objc/browses.o	\
     ./objc/ocr.o \
     ./objc/mapkit.o \
     ./objc/Md5Wrappers.o \
-    ./objc/windows.o
+    ./objc/windows.o \
+	./objc/select.o \
+    
 
 ./lib/libfive.a  : $(PRG_OBJS)
 	if [ ! -d "lib" ]; then mkdir -p lib; fi
@@ -249,7 +253,7 @@ extras :
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/winapi/%.m
 	if [ ! -d "objc" ]; then mkdir -p objc; fi
-	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -F../frameworks -Wall -c -o $@ $<
+	$(CC) -ObjC -I$(HB_INC) -I./include -I$(HEADERS) -F../frameworks $(CFLAGS) -Wall -c -o $@ $<
 
 # -arch i386 -arch ppc
 ./objc/%.o : ./source/winapi/%.c

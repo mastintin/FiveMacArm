@@ -1,4 +1,5 @@
 # ./build.sh - (c) FiveTech Software 2007-2018
+# Modified to handle Scintilla 5.x Framework and Resources
 
 clear
 
@@ -23,178 +24,79 @@ RESOURCES="./../../Resources"
 HARBPATH="./../../../harbour"
 
 # Loop through all arguments (files)
-for FILE in "$@"; do
-    echo "Compiling $FILE.prg..."
-    $HARBPATH/bin/harbour "$FILE" -n -w -I$PATHCONF/include -I$HARBPATH/include
+for FILE_PATH in "$@"; do
+    FILE_NAME=$(basename "$FILE_PATH")
+    FILE_DIR=$(dirname "$FILE_PATH")
+    
+    echo "Compiling $FILE_PATH.prg..."
+    $HARBPATH/bin/harbour "$FILE_PATH" -n -w -I$PATHCONF/include -I$HARBPATH/include
     if [ $? -ne 0 ]; then
-       echo "Error compiling $FILE.prg"
+       echo "Error compiling $FILE_PATH.prg"
        exit 1
     fi   
 
-    echo "Compiling C module $FILE.c..."
-    #  add -arch ppc -arch i386 for universal binaries
-    SDKPATH=$(xcrun --show-sdk-path)
-    clang -ObjC "$FILE.c" -c -I./../include -I$HARBPATH/include   
+    C_FILE="./$FILE_NAME.c"
+    O_FILE="./$FILE_NAME.o"
+
+    echo "Compiling C module $C_FILE..."
+    clang -ObjC "$C_FILE" -c -I./../include -I$HARBPATH/include   
     if [ $? -ne 0 ]; then
-       echo "Error compiling $FILE.c"
+       echo "Error compiling $C_FILE"
        exit 1
     fi
     
-    OBJS="$OBJS $FILE.o"
-    PRG_FILES="$PRG_FILES $FILE.prg"
+    OBJS="$OBJS $O_FILE"
+    PRG_FILES="$PRG_FILES $FILE_PATH.prg"
 done
 
 if [ ! -d $APPName.app ]; then
-   mkdir $APPName.app
+   mkdir -p $APPName.app/Contents/MacOS
+   mkdir -p $APPName.app/Contents/Resources
+   mkdir -p $APPName.app/Contents/Frameworks
 fi   
-if [ ! -d $APPName.app/Contents ]; then
-   mkdir $APPName.app/Contents
-fi
 
-if [ ! -d $APPName.app/Contents ]; then
-   mkdir $APPName.app/Contents
-fi
+# Ensure Scintilla.framework is always present for Scintilla 5.x
+SCINTILLA_SRC_FRAMEWORK="../../fivemac/frameworks/Scintilla.framework"
+TARGET_FRAMEWORKS_DIR="./$APPName.app/Contents/Frameworks"
 
-if [ ! -f $APPName.app/Contents/Info.plist ]; then
-   echo '<?xml version="1.0" encoding="UTF-8"?>' > $APPName.app/Contents/Info.plist
-   echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $APPName.app/Contents/Info.plist
-   echo '<plist version="1.0">' >> $APPName.app/Contents/Info.plist
-   echo '<dict>' >> $APPName.app/Contents/Info.plist
-   echo '   <key>CFBundleExecutable</key>' >> $APPName.app/Contents/Info.plist
-   echo '   <string>'$APPName'</string>' >> $APPName.app/Contents/Info.plist
-   echo '   <key>CFBundleName</key>' >> $APPName.app/Contents/Info.plist
-   echo '   <string>'$APPName'</string>' >> $APPName.app/Contents/Info.plist
-   echo '   <key>CFBundleIdentifier</key>' >> $APPName.app/Contents/Info.plist
-   echo '   <string>com.fivetech.'$APPName'</string>' >> $APPName.app/Contents/Info.plist
-   echo '   <key>CFBundlePackageType</key>' >> $APPName.app/Contents/Info.plist
-   echo '   <string>APPL</string>' >> $APPName.app/Contents/Info.plist
-   echo '   <key>CFBundleInfoDictionaryVersion</key>' >> $APPName.app/Contents/Info.plist
-   echo '   <string>6.0</string>' >> $APPName.app/Contents/Info.plist
-   echo '   <key>CFBundleIconFile</key>' >> $APPName.app/Contents/Info.plist
-   echo '   <string>fivetech.icns</string>' >> $APPName.app/Contents/Info.plist
-   echo '   <key>NSHighResolutionCapable</key>' >> $APPName.app/Contents/Info.plist
-   echo '<true/>' >> $APPName.app/Contents/Info.plist
-   echo '	<key>NSPrincipalClass</key>' >> $APPName.app/Contents/Info.plist
-   echo '	<string>NSApplication</string>' >> $APPName.app/Contents/Info.plist
-   echo '	<key>NSAppTransportSecurity</key>' >> $APPName.app/Contents/Info.plist
-   echo '	<dict>' >> $APPName.app/Contents/Info.plist
-   echo '		<key>NSAllowsArbitraryLoads</key>' >> $APPName.app/Contents/Info.plist
-   echo '		<true/>' >> $APPName.app/Contents/Info.plist
-   echo '	</dict>' >> $APPName.app/Contents/Info.plist
-   # para poder enviar mail
-   # echo '   <key>NSAppleEventsUsageDescription</key>' >> $APPName.app/Contents/Info.plist
-   # echo '   <string>FiveMac needs to control Mail to send emails.</string>' >> $APPName.app/Contents/Info.plist
-   echo '</dict>' >> $APPName.app/Contents/Info.plist
-   echo '</plist>' >> $APPName.app/Contents/Info.plist
-
-   echo 'APPL????' > $APPName.app/Contents/PkgInfo
-fi
-if [ ! -d $APPName.app/Contents/MacOS ]; then
-   mkdir $APPName.app/Contents/MacOS
-fi  
-   
-# Copy resources always (even if folders exist)
-cp snippets.json "$APPName.app/Contents/Resources/"
-cp hbdocs.json "$APPName.app/Contents/Resources/"
-cp hbdocs.missing "$APPName.app/Contents/Resources/"
-if [ -d "img" ]; then
-   echo "Copying images from img..."
-   cp -v img/* "$APPName.app/Contents/Resources/"
-fi
-
-if [ ! -d $APPName.app/Contents/Resources ]; then
-   mkdir $APPName.app/Contents/Resources
-fi
-   cp $RESOURCES/icons/fivetech.icns $APPName.app/Contents/Resources/
-    cp ./*.inc                    ./$APPName.app/Contents/Resources/
-   cp ./*.json                   ./$APPName.app/Contents/Resources/
-   cp ./hbdocs.json              ./$APPName.app/Contents/Resources/
-
-# Smart Copy: Only copy images referenced in the source code
-# First, clean existing bitmaps to ensure we don't keep unused ones from previous builds
-if [ -d "$APPName.app/Contents/Resources/bitmaps" ]; then
-   rm -rf "$APPName.app/Contents/Resources/bitmaps"
-fi
-mkdir -p "$APPName.app/Contents/Resources/bitmaps"
-
-# Smart Copy: Only copy images referenced in the source code
-# First, clean existing bitmaps to ensure we don't keep unused ones from previous builds
-if [ -d "$APPName.app/Contents/Resources/bitmaps" ]; then
-   rm -rf "$APPName.app/Contents/Resources/bitmaps"
-fi
-mkdir -p "$APPName.app/Contents/Resources/bitmaps"
-
-echo "Smart bundling images..."
-# Find all quoted strings ending in common image extensions across ALL Prg files
-IMAGES=$(grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" $PRG_FILES | tr -d '"' | sort | uniq)
-
-if [ -z "$IMAGES" ]; then
-    echo "  No explicit image references found in source files"
+if [ -d "$SCINTILLA_SRC_FRAMEWORK" ]; then
+    echo "Updating Scintilla.framework in $APPName.app..."
+    mkdir -p "$TARGET_FRAMEWORKS_DIR"
+    cp -Rf "$SCINTILLA_SRC_FRAMEWORK" "$TARGET_FRAMEWORKS_DIR/"
 else
-    count=0
-    for img in $IMAGES; do
-        # Extract filename only in case grep returns File:match format (though -o usually avoids this, with multiple files grep adds filename:)
-        # Actually with multiple files grep -o outputs "filename:match". We need to handle that.
-        # simpler: cat all files and grep.
-        if [ -f "./../../bitmaps/$img" ]; then
-            cp "./../../bitmaps/$img" "$APPName.app/Contents/Resources/bitmaps/"
-            ((count++))
-        fi
-    done
-    
-    # Retry with cat if count is 0, to handle grep output format difference
-    if [ $count -eq 0 ]; then
-       IMAGES=$(cat $PRG_FILES | grep -E -o "\"[^\"]+\.(png|jpg|tif|tiff|gif|bmp|icns)\"" | tr -d '"' | sort | uniq)
-       for img in $IMAGES; do
-          if [ -f "./../../bitmaps/$img" ]; then
-             cp "./../../bitmaps/$img" "$APPName.app/Contents/Resources/bitmaps/"
-             ((count++))
-          fi
-       done
+    # Try alternate location in nativo folder structure
+    SCINTILLA_SRC_FRAMEWORK="./Resources/frameworks/Scintilla.framework"
+    if [ -d "$SCINTILLA_SRC_FRAMEWORK" ]; then
+        echo "Updating Scintilla.framework from Resources..."
+        mkdir -p "$TARGET_FRAMEWORKS_DIR"
+        cp -Rf "$SCINTILLA_SRC_FRAMEWORK" "$TARGET_FRAMEWORKS_DIR/"
+    else
+        echo "Warning: Scintilla.framework NOT FOUND"
     fi
-
-    echo "  Bundled $count images."
 fi
 
-# Fallback/Legacy: If you want to copy ALL bitmaps, uncomment the line below:
-# cp -R ./../../bitmaps $APPName.app/Contents/Resources/
+# Ensure Resources (hbdocs.json, etc.) are always present
+echo "Copying resources to $APPName.app/Contents/Resources..."
+if [ -d "./Resources" ]; then
+   cp -Rf ./Resources/* $APPName.app/Contents/Resources/
+fi
 
-# Fallback/Legacy: If you want to copy ALL bitmaps, uncomment the line below:
-# cp -R ./../bitmaps $APPName.app/Contents/Resources/
+# Specfic copy for JSON configurations (Snippets, docs, themes)
+[ -f "./hbdocs.json" ] && cp "./hbdocs.json" $APPName.app/Contents/Resources/
+[ -f "./snippets.json" ] && cp "./snippets.json" $APPName.app/Contents/Resources/
+[ -f "./solarized.json" ] && cp "./solarized.json" $APPName.app/Contents/Resources/
 
-if [ ! -d $APPName.app/Contents/frameworks ]; then
-   mkdir $APPName.app/Contents/frameworks
-   cp -r $RESOURCES/frameworks/* $APPName.app/Contents/frameworks/
-fi 
-
+# Link ALL OBJS
 echo linking...
+SDKPATH=$(xcrun --show-sdk-path)
 CRTLIB=$SDKPATH/usr/lib
 HRBLIBS='-lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lhbmysql -lhbmisc'
 MYSQL_LIBS='-lmariadb -lssl -lcrypto'
-FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers'
-
-SWIFTPATH=$(xcrun --show-sdk-path)/usr/lib/swift
-if [ ! -d "$SWIFTPATH" ]; then
-    # Fallback for Command Line Tools
-    SWIFTPATH=/usr/lib/swift
-fi
-
+FRAMEWORKS='-framework Cocoa -framework WebKit -framework Quartz -framework UserNotifications -framework ScreenCaptureKit -framework ScriptingBridge -framework AVKit -framework AVFoundation -framework CoreMedia -framework iokit -framework UniformTypeIdentifiers -framework Network'
+SWIFTPATH=$SDKPATH/usr/lib/swift
 WINNH3DLIB="-L$SWIFTPATH -rpath $SWIFTPATH -rpath @executable_path/../Frameworks"
 
-#  add -arch ppc -arch i386 for universal binaries
-#  add -arch ppc -arch i386 for universal binaries
-# Link ALL OBJS
-clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib -lfive -lfivec -lscintilla -L$HARBPATH/lib $HRBLIBS $MYSQL_LIBS $FRAMEWORKS  -F$RESOURCES/frameworks -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
-
-
-#rm $1.c
-#rm $1.o
-# Clean up all Objects and C files
-# rm $OBJS
-# for file in "$@"; do rm "$file.c"; done
-
+clang $OBJS -o ./$APPName.app/Contents/MacOS/$APPName -L$CRTLIB -L$PATHCONF/lib -lfive -lfivec -lscintilla -L$HARBPATH/lib $HRBLIBS $MYSQL_LIBS $FRAMEWORKS  -F$TARGET_FRAMEWORKS_DIR -framework Scintilla -lsqlite3 $WINNH3DLIB $CRTLIB/libz.tbd $CRTLIB/libpcre.tbd
 
 echo done!
-#./$APPName.app/Contents/MacOS/$APPName
 /usr/bin/open -W ./$APPName.app
-

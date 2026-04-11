@@ -538,16 +538,12 @@ HB_FUNC(WNDSETFONT) {
 //--------------------------------------------------------------------------------//
 
 HB_FUNC(WNDCLOSE) {
-  // 1. Obtenemos el puntero
   NSWindow *window = (NSWindow *)hb_parnll(1);
 
-  // 2. Validamos que sea realmente una ventana antes de enviar el mensaje
   if (window && [window isKindOfClass:[NSWindow class]]) {
-
-    // performClose simula el clic en el botón rojo de cerrar.
-    // Esto disparará las validaciones de guardado si la ventana tiene un
-    // delegate.
-    [window performClose:nil];
+    // Usamos close directamente porque performClose requiere que la ventana tenga botón de cerrar
+    // y los diálogos GLASS / NOBORDER no lo tienen.
+    [window close];
   }
 }
 

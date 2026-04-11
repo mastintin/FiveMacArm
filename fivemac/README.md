@@ -78,7 +78,22 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 - **SwiftUI Integration**: Initial rollout of native SwiftUI controls bridged to Harbour.
     - **TSwiftVStack**: A powerful vertical list control with support for dynamic item addition (Text, Images, HStack Rows).
     - **Layout Control**: Added `SetSpacing` and `SetAlignment` (Leading/Center/Trailing) for precise UI layout.
-    - **Interactivity**: Native click support for all items, delegating events back to Harbour codeblocks.
+    - **Interactivity**: Native click support for all# FiveMac Framework - Modernization Log
+
+## 🚀 Native ListBox & Selection Modernization (Abril 2026)
+Hemos transformado el sistema de selección de listas para ofrecer una experiencia 100% macOS nativa y de alto rendimiento:
+
+*   **Nuevo `MsgSelectList`**: Implementado como una función C pura en `listboxes.m`, eliminando redundancias y mejorando la estabilidad.
+*   **Filtrado en Tiempo Real (Live Search)**: Integración de `NSSearchField` en el selector modal y soporte para ListBox standalone.
+*   **Mapeo Inteligente de Índices**: El sistema traduce automáticamente la selección filtrada a la posición real del array original de Harbour, garantizando la integridad de los datos.
+*   **TListBox Evolution**: Nueva metodología `:SetSearch( oSearch )` para conectar un campo de búsqueda a cualquier lista con una sola línea de código.
+*   **Optimización del Editor Monaco**: Rediseñado el "Symbol Navigator" (Navegador de Funciones) utilizando el nuevo componente nativo, simplificando drásticamente el código fuente del usuario.
+
+---
+
+# Fivemac
+Framework de desarrollo para Mac con Harbour
+ codeblocks.
     - **HStack Rows**: Support for complex rows containing Icons + Text with proper alignment.
     - **TSwiftZStack**: New Layered control for overlaying content (Images beneath Text), supported by `TestSwiftZStack.prg`. Supports both SF Symbols and File Images.
 

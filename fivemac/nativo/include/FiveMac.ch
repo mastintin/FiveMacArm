@@ -104,10 +104,12 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ <flipped: FLIPPED> ] ; 
    [ <noflipped: NOFLIPPED> ] ;
    [ BRUSH <obrush> ] ;
+   [ <noborder: NOBORDER> ] ;
+   [ <glass: GLASS> ] ;
    => ;
    <oDlg> := TDialog():New( <nTop>, <nLeft>, <nBottom>, <nRight>,;
    <cTitle>, [<.textured.>], [<.paneled.>], [<nWidth>], [<nHeight>],;
-   [<.flipped.>], [<obrush>], [<.noflipped.>] )
+   [<.flipped.>], [<obrush>], [<.noflipped.>], [<.noborder.>], [<.glass.>] )
 
 #xcommand ACTIVATE DIALOG <oDlg> ;
    [ ON [ LEFT ] CLICK <uLClicked> ] ;
@@ -449,6 +451,16 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
   
 //----------------------------------------------------------------------------//		 								   
                                     
+#xcommand @ <nRow>, <nCol> LISTBOX <oList> ;
+   [ <it: ITEMS, PROMPTS> <aItems> ] ;
+   [ OF <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ ACTION <uAction> ] ;
+   [ ON CHANGE <uChange> ] ;
+   => ;
+   <oList> := TListBox():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <aItems>, [\{|Self|(<uAction>)\}], [\{|Self|(<uChange>)\}] )
+
+//----------------------------------------------------------------------------//
 #xcommand @ <nRow>, <nCol> LISTBOX <oBrw> ;
    [ FIELDS <fields,...> ] ;
    [ HEADERS <headers,...> ] ;

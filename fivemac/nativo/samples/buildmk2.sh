@@ -12,7 +12,7 @@ PROJECT=$1
 
 # 1. Locate Harbour
 # Assuming standard FiveMac directory structure: fivemac/samples -> fivemac/harbour
-HB_ROOT="./../../harbour"
+HB_ROOT="./../../../harbour"
 HBMK2="$HB_ROOT/bin/hbmk2"
 
 if [ ! -f "$HBMK2" ]; then

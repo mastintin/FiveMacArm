@@ -33,6 +33,8 @@ CLASS TWebview FROM TControl
    
     METHOD Progress() INLINE WebViewProgress( ::hWnd )
 
+    METHOD SetZoom( nMagnification ) INLINE WebViewSetZoom( ::hWnd, nMagnification )
+
     METHOD ScriptCallMethod(cMethod) INLINE WebScripCallMethod(::hWnd,cMethod)
 
     METHOD ScriptCallMethodArg(cMethod,cArgumento) INLINE WebScripCallMethodArg(::hWnd,cMethod,cArgumento) 
@@ -47,6 +49,13 @@ CLASS TWebview FROM TControl
     METHOD Initiate()
    
    
+
+     METHOD Undo()      INLINE WebViewUndo( ::hWnd )
+     METHOD Redo()      INLINE WebViewRedo( ::hWnd )
+     METHOD Cut()       INLINE WebViewCut( ::hWnd )
+     METHOD Copy()      INLINE WebViewCopy( ::hWnd )
+     METHOD Paste()     INLINE WebViewPaste( ::hWnd )
+     METHOD SelectAll() INLINE WebViewSelectAll( ::hWnd )
 
 ENDCLASS   
 
