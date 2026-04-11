@@ -1,4 +1,20 @@
-# FiveMac
+# FiveMac Framework - Modernization Log (Abril 2026)
+
+## 🚀 Componentes de Lista y Navegación
+Hemos transformado el sistema de selección de listas para ofrecer una experiencia 100% macOS nativa y de alto rendimiento:
+*   **Nuevo `MsgSelectList`**: Selector modal con filtrado en tiempo real (`NSSearchField`).
+*   **Live Search Standalone**: Soporte para ListBox clásicos con búsqueda asistida.
+*   **Mapeo Inteligente**: Las selecciones filtradas devuelven siempre la posición real del array Harbour.
+
+## 📝 Motores de Edición y Scintilla
+*   **Scintilla 5**: Migración al framework 5 para mayor estabilidad en macOS modernos.
+*   **Monaco Editor**: Integración del motor de VS Code con extensiones para Harbour.
+*   **Carga vía CDN**: Test funcional de Monaco y sus extensiones sin instalación local.
+*   **Symbol Navigator**: Selector de funciones rediseñado con búsqueda inteligente.
+
+---
+
+# FiveMacArm
 
 **FiveMac** is a library that allows **Harbour** developers to create native macOS applications using the **Cocoa (AppKit)** framework. It bridges the power of the xBase language with the modern macOS user interface.
 
