@@ -87,7 +87,15 @@ Hemos transformado el sistema de selección de listas para ofrecer una experienc
 *   **Filtrado en Tiempo Real (Live Search)**: Integración de `NSSearchField` en el selector modal y soporte para ListBox standalone.
 *   **Mapeo Inteligente de Índices**: El sistema traduce automáticamente la selección filtrada a la posición real del array original de Harbour, garantizando la integridad de los datos.
 *   **TListBox Evolution**: Nueva metodología `:SetSearch( oSearch )` para conectar un campo de búsqueda a cualquier lista con una sola línea de código.
-*   **Optimización del Editor Monaco**: Rediseñado el "Symbol Navigator" (Navegador de Funciones) utilizando el nuevo componente nativo, simplificando drásticamente el código fuente del usuario.
+
+## 📝 Modernización de Motores de Edición (Abril 2026)
+Gran salto adelante en las capacidades de edición de código:
+
+*   **Scintilla 5**: Actualización del motor Scintilla al **Framework 5**, proporcionando mayor estabilidad y compatibilidad con las últimas APIs de macOS.
+*   **Monaco Editor Integration**: Introducción del motor de edición Monaco (el corazón de VS Code) como alternativa de primer nivel.
+*   **Extensión Harbour para Monaco**: Soporte nativo de sintaxis Harbour mediante extensiones dinámicas.
+*   **Test Funcional desde CDN**: El motor Monaco y sus extensiones se cargan y testean directamente desde CDN, permitiendo pruebas instantáneas sin instalaciones complejas.
+*   **Optimización del Symbol Navigator**: Rediseñado el navegador de funciones utilizando el nuevo componente nativo de selección filtrada.
 
 ---
 
