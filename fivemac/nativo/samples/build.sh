@@ -107,6 +107,7 @@ fi
 clang -ObjC "../source/winapi/webviews.m" -c -target arm64-apple-macosx26.0 -I./../include -I$HB_DIR/include -o "obj/webviews_mod.o"
 OBJS="$OBJS obj/webviews_mod.o"
 
+
 # Compile get.prg (TGet with WHEN clause)
 echo "Compiling modified TGet..."
 $HB_DIR/bin/harbour "../source/classes/get.prg" -n -w -q -oobj/ -I./../include -I$HB_DIR/include
@@ -212,10 +213,18 @@ if [ ! -d $APPName.app/Contents/Resources ]; then
    mkdir $APPName.app/Contents/Resources
 fi
 cp ./../../Resources/icons/fivetech.icns $APPName.app/Contents/Resources/
-# Copia siempre la carpeta monaco y su contenido (js) si se usa -monaco
+# Copia siempre la carpeta monaco y su contenido (js, plist) si se usa -monaco
 if [ $USE_MONACO -eq 1 ]; then
+   echo "  Bundling Monaco resources..."
    mkdir -p $APPName.app/Contents/Resources/monaco
-   cp -R ./../../Resources/monaco/* $APPName.app/Contents/Resources/monaco/ 
+   # Copy from native resources (base)
+   if [ -d "./../resources/monaco" ]; then
+      cp -R ./../resources/monaco/* $APPName.app/Contents/Resources/monaco/ 
+   fi
+   # Copy from root resources (The MASTER source of truth, overwrites native)
+   if [ -d "./../../Resources/monaco" ]; then
+      cp -R ./../../Resources/monaco/* $APPName.app/Contents/Resources/monaco/ 
+   fi
 fi 
 
 # Smart Copy: Only copy images referenced in the source code

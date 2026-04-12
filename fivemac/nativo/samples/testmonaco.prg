@@ -50,6 +50,16 @@ function Main()
       TOOLTIP "Saltar a línea" ;
       IMAGE "arrow.right.to.line"
 
+   DEFINE BUTTON OF oTbr PROMPT "Salir" ;
+      ACTION oWnd:End() ;
+      TOOLTIP "Cerrar aplicación" ;
+      IMAGE "xmark.circle"
+
+   DEFINE BUTTON OF oTbr PROMPT "Chat IA" ;
+      ACTION AICREATECHAT() ;
+      TOOLTIP "Hablar con la IA" ;
+      IMAGE "bubble.left.and.bubble.right"
+
    // --- El Editor (Cuerpo) ---
    oMonaco := TMonaco():New( 5, 5, 1080, 595, oWnd )
    

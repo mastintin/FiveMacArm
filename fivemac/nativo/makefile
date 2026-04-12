@@ -203,7 +203,8 @@ C_OBJS = ./objc/browses.o	\
     ./objc/mapkit.o \
     ./objc/Md5Wrappers.o \
     ./objc/windows.o \
-	./objc/select.o
+	./objc/select.o \
+	./objc/aichat.o
     
 
 ./lib/libfive.a  : $(PRG_OBJS)
