@@ -952,7 +952,8 @@ Function MsgGet( cTitle, cSay , cline  )
     endif
 
     DEFINE DIALOG oDlg TITLE cTitle ;
-        FROM 220, 350 TO 340, 680
+        FROM 220, 350 TO 340, 680 NOFLIPPED
+
     @ 88, 50 SAY cSay OF oDlg SIZE 250, 17
 
     @ 62, 50 GET oGet VAR cLine OF oDlg SIZE 250, 22
