@@ -188,4 +188,6 @@
 #define SCI_SETYOFFSET             2405
 #define SCI_GETYOFFSET             2406
 
+#define SCI_ENSUREVISIBLEENFORCEPOLICY 2234
+
 #endif
