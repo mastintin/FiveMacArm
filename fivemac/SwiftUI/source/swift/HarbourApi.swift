@@ -13,6 +13,7 @@ public typealias HB_SIZE = CUnsignedLong
 @_silgen_name("hb_parnl") public func hb_parnl(_ i: Int32) -> Int
 @_silgen_name("hb_parnd") public func hb_parnd(_ i: Int32) -> Double
 @_silgen_name("hb_parnll") public func hb_parnll(_ i: Int32) -> Int64
+@_silgen_name("hb_parptr") public func hb_parptr(_ i: Int32) -> UnsafeMutableRawPointer?
 @_silgen_name("hb_pcount") public func hb_pcount() -> Int32
 @_silgen_name("hb_param") public func hb_param(_ iParam: Int32, _ iMask: Int32) -> PHB_ITEM?
 
@@ -22,6 +23,7 @@ public typealias HB_SIZE = CUnsignedLong
 @_silgen_name("hb_retni") public func hb_retni(_ i: Int32)
 @_silgen_name("hb_retnd") public func hb_retnd(_ d: Double)
 @_silgen_name("hb_retnll") public func hb_retnll(_ n: Int64)
+@_silgen_name("hb_retptr") public func hb_retptr(_ p: UnsafeMutableRawPointer?)
 
 // Gestión de ítems
 @_silgen_name("hb_itemNew") public func hb_itemNew(_ pItem: PHB_ITEM?) -> PHB_ITEM?
@@ -114,6 +116,36 @@ public struct Harbour {
             } catch { print("Error serializando JSON para Harbour: \(error)") }
         }
         hb_retc(nil) 
+    }
+
+    /// Llamada inteligente a cualquier función de Harbour resolviendo tipos automáticamente
+    public static func call(_ funcName: String, _ args: Any...) {
+        funcName.uppercased().withCString { cName in
+            guard let ds = hb_dynsymFindName(cName),
+                  let sym = hb_dynsymSymbol(ds) else { 
+                print("HarbourBridge: Función \(funcName) no encontrada")
+                return 
+            }
+            
+            hb_vmPushSymbol(sym)
+            hb_vmPushNil() // Receptor (Self = nil para funciones)
+            
+            for arg in args {
+                if let s = arg as? String {
+                    s.withCString { ptr in _hb_vmPushString(ptr, s.utf8.count) }
+                } else if let i = arg as? Int {
+                    hb_vmPushNLL(Int64(i))
+                } else if let d = arg as? Double {
+                    hb_vmPushNumber(d, 0)
+                } else if let b = arg as? Bool {
+                    hb_vmPushLogical(b ? 1 : 0)
+                } else {
+                    hb_vmPushNil()
+                }
+            }
+            
+            hb_vmDo(Int32(args.count))
+        }
     }
 }
 

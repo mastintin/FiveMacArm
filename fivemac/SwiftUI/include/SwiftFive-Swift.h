@@ -381,6 +381,11 @@ SWIFT_CLASS("_TtC9SwiftFive11FlippedView")
 @property (nonatomic, readonly) BOOL isFlippedStyle;
 @end
 
+SWIFT_CLASS_NAMED("SwiftAIChatLoader")
+@interface SwiftAIChatLoader : NSObject
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
 SWIFT_CLASS_NAMED("SwiftButtonLoader")
 @interface SwiftButtonLoader : NSObject
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
@@ -721,6 +726,8 @@ SWIFT_EXTERN void HB_FUN_SD_SPEECH_STOP_RECORDING(void * _Nullable p) SWIFT_NOEX
 
 SWIFT_EXTERN void HB_FUN_SD_SPEECH_TRANSCRIBE_FILE(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_SD_SW_AICHAT_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SD_SW_ALERT(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SD_SW_GETIP(void * _Nullable p) SWIFT_NOEXCEPT;
@@ -990,6 +997,8 @@ SWIFT_EXTERN void HB_FUN_SD_ZSTK_SET_LAST_ITEM_ID(void * _Nullable p) SWIFT_NOEX
 SWIFT_EXTERN void HB_FUN_CREATESWIFTVIEW(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN int8_t const * _Nullable sw_GetRootId_par(int32_t iParam) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
+SWIFT_EXTERN void HB_FUN_SD_SW_AICHAT_OPEN(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_GET_ID(void * _Nullable p) SWIFT_NOEXCEPT;
 

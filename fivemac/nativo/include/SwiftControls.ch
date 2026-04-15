@@ -144,4 +144,16 @@
     => ;
     [ <oWeb> := ] TSwiftWebview():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cUrl>,, <nAutoResize> )
 
+#xcommand @ <nRow>, <nCol> SWIFTAICHAT [ <oChat> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ OF <oWnd> ] ;
+    [ APIKEY <cKey> ] ;
+    [ MODEL <cModel> ] ;
+    => ;
+    [ <oChat> := ] TSwiftAIChat():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cKey>, <cModel> )
+
+#xcommand SWIFTAICHAT <cKey> [ MODEL <cModel> ] ;
+    => ;
+    SD_SW_AICHAT_OPEN( <cKey>, [ <cModel> ] )
+
 #endif

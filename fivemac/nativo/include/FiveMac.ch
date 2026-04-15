@@ -892,7 +892,6 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    <oBrush> := TBrush():New( <cImage> )
 
 //--------------------------------------------------------------------------//
-#endif
 
 //----------------------------------------------------------------------------//
 
@@ -923,3 +922,15 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
    [ FILE <cFileName> ] ;
    => ;
    <oQL> := TQuickLook():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <cFileName> )
+
+//----------------------------------------------------------------------------//
+// Soporte para Puente Transparente SwiftUI (SD_ Proxy)
+//----------------------------------------------------------------------------//
+
+// Definición del Objeto Proxy para llamadas dinámicas a Swift
+#define SD  Sw_GetProxy()
+#define SDS SD:Sync()
+
+//----------------------------------------------------------------------------//
+
+#endif

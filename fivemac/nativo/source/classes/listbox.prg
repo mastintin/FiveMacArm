@@ -11,7 +11,7 @@ CLASS TListBox FROM TControl
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, aItems, bAction )
    
-   METHOD SetItems( aItems ) INLINE ListSetItems( ::hWnd, aItems ), ::aItems := aItems
+    METHOD SetItems( aItems )
 
    METHOD SetSearch( oSearch ) INLINE ListSetSearch( ::hWnd, oSearch:hWnd )
 

@@ -304,6 +304,7 @@ public class StackItem: Identifiable, Codable {
         case datepicker = 14
         case textfield = 15
         case zstack = 16
+        case aichat = 17
     }
 }
 

@@ -1,2 +1,0 @@
-#line 16 "./include/FiveMac.ch"
-EXTERNAL HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep

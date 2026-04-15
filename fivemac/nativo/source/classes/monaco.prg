@@ -15,6 +15,7 @@ CLASS TMonaco FROM TWebView
    DATA lClosing        INIT .F.  // Indica si debemos cerrar al terminar de grabar
    DATA nLine           INIT 1
    DATA nCol            INIT 1
+   DATA cAIKey          INIT ""
 
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd )
      
@@ -31,8 +32,8 @@ CLASS TMonaco FROM TWebView
 
    // Navegación y Edición
    METHOD GoToLine( nLine ) INLINE ::ScriptCallMethod( "editor.revealLineInCenter(" + AllTrim( Str( nLine ) ) + ");" + ;
-                                                    "editor.setPosition({lineNumber: " + AllTrim( Str( nLine ) ) + ", column: 1});" + ;
-                                                    "editor.focus();" )
+                                                     "editor.setPosition({lineNumber: " + AllTrim( Str( nLine ) ) + ", column: 1});" + ;
+                                                     "editor.focus();" )
    METHOD Find()               INLINE ::ScriptCallMethod( "editor.getAction('actions.find').run()" )
    METHOD SetReadOnly( lOn )   INLINE ::ScriptCallMethod( "editor.updateOptions({ readOnly: " + Lower(CValToChar(lOn)) + " })" )
    METHOD SetFocus()           INLINE ::ScriptCallMethod( "editor.focus()" )
@@ -42,6 +43,7 @@ CLASS TMonaco FROM TWebView
    METHOD Redo()               INLINE ::ScriptCallMethod( "redo()" )
 
    METHOD GetHtml()
+   METHOD AskAI( cSelectedText )
    METHOD HandleEvent( cBody, cName )
 
 ENDCLASS
@@ -109,8 +111,9 @@ return nil
 METHOD HandleEvent( cBody, cName ) CLASS TMonaco
 
    local nPos
-   local cEvent  := ""
+   local cEvent   := ""
    local cPayload := ""
+   local aAI
 
    if cName == "fivemac" 
       nPos := hb_At( ":", cBody )
@@ -155,6 +158,15 @@ METHOD HandleEvent( cBody, cName ) CLASS TMonaco
          endif
       endif
 
+      if cEvent == "onAIRequest"
+         hb_jsonDecode( cPayload, @aAI )
+         if ValType( aAI ) == "H"
+            ::AskAI( aAI[ "selection" ], aAI[ "fullCode" ] )
+         else
+            ::AskAI( cPayload )
+         endif
+      endif
+
       if cEvent == "onCursor"
          // Para el cursor sí troceamos el payload que es pequeño: "line:col"
          nPos := hb_At( ":", cPayload )
@@ -167,6 +179,101 @@ METHOD HandleEvent( cBody, cName ) CLASS TMonaco
    endif
 
 return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD AskAI( cSelectedText, cFullCode ) CLASS TMonaco
+
+   local cKey := ::cAIKey
+   local cUrl, cJson, cResponse, oNet, aResp
+   local cInstruction := ""
+   local cContext := ""
+
+   if Empty( cFullCode )
+      cFullCode := ""
+   endif
+
+   if !Empty( cFullCode )
+      cContext := "--- FULL FILE CONTENT ---" + hb_eol() + cFullCode + hb_eol()
+   endif
+
+   if !Empty( cSelectedText )
+      cContext += "--- SELECTED PART TO MODIFY ---" + hb_eol() + cSelectedText + hb_eol()
+   endif
+
+   if Empty( cKey )
+      cKey := GetPlistValue( ResPath( "monaco/monaco.plist" ), "AIKey" )
+   endif
+
+   cKey := AllTrim( cKey )
+   cKey := StrTran( cKey, hb_eol(), "" )
+   cKey := StrTran( cKey, Chr(13), "" )
+   cKey := StrTran( cKey, Chr(10), "" )
+
+   if Empty( cKey )
+      MsgStop( "AI Key not set. Please assign oMonaco:cAIKey or set it in monaco.plist" )
+      return nil
+   endif
+
+   cInstruction := MsgGetMultiline( "Instrucciones para la IA:", "Escriba aquí lo que desea que haga Gemma con el código seleccionado..." )
+   
+   if Empty( cInstruction )
+      return nil
+   endif
+
+    // Groq API URL (Ultra-fast inference)
+   cUrl := "https://api.groq.com/openai/v1/chat/completions"
+
+   cJson := '{' + ;
+            '"model": "llama-3.3-70b-versatile",' + ;
+            '"messages": [' + ;
+               '{"role": "system", "content": "You are the FiveMac Framework Expert. You ONLY write Harbour code using the official FiveMac.ch syntax. \n' + ;
+               'OFFICIAL SYNTAX RULES: \n' + ;
+               '- Window: DEFINE WINDOW <o> TITLE <t> FROM <r>,<c> TO <r>,<c> [SIZE <w>,<h>] [FLIPPED] \n' + ;
+               '- Button: @ <r>, <c> BUTTON [ <o> PROMPT ] <p> OF <w> ACTION <a> [SIZE <w>,<h>] \n' + ;
+               '- Get/Input: @ <r>, <c> GET [ <o> VAR ] <v> OF <w> [SIZE <w>,<h>] \n' + ;
+               '- Checkbox: @ <r>, <c> CHECKBOX [ <o> VAR ] <l> PROMPT <p> OF <w> \n' + ;
+               '- Say: @ <r>, <c> SAY [ <o> PROMPT ] <t> OF <w> \n' + ;
+               '- Activation: ACTIVATE WINDOW <o> [CENTERED] [VALID <v>] \n' + ;
+               '- ToolBar: DEFINE TOOLBAR <o> OF <w> / DEFINE BUTTON OF <t> PROMPT <p> ACTION <a> IMAGE <i> \n' + ;
+               'ALWAYS return PURE Harbour code block. No explanations, no markdown. No C/ObjC."},' + ;
+               '{"role": "user", "content": ' + hb_jsonEncode( "User Instruction: " + cInstruction + hb_eol() + "Current Code State:" + hb_eol() + cContext ) + '}' + ;
+            '],' + ;
+            '"temperature": 0}'
+
+   MsgRun( "Groq is thinking...", { || ;
+      oNet := TNetwork():New(), ;
+      oNet:SetHeader( "Content-Type", "application/json" ), ;
+      oNet:SetHeader( "Authorization", "Bearer " + cKey ), ;
+      cResponse := oNet:Post( cUrl, cJson, 10 ) ;
+   } )
+
+   if Empty( cResponse )
+      MsgStop( "No response from Groq. Check your internet or API Key." )
+      return nil
+   endif
+
+   hb_jsonDecode( cResponse, @aResp )
+
+   if ValType( aResp ) == "H" .and. hb_HHasKey( aResp, "choices" ) .and. ;
+      Len( aResp[ "choices" ] ) > 0 .and. ;
+      hb_HHasKey( aResp[ "choices" ][ 1 ], "message" )
+      
+      cResponse := aResp[ "choices" ][ 1 ][ "message" ][ "content" ]
+      
+      // Limpiamos posible markdown si Groq se pone creativo
+      if Left( cResponse, 3 ) == "```"
+         cResponse := SubStr( cResponse, At( hb_eol(), cResponse ) + Len( hb_eol() ) )
+         if Right( cResponse, 3 ) == "```"
+            cResponse := Left( cResponse, Len( cResponse ) - 3 )
+         endif
+      endif
+
+      ::ScriptCallMethodArg( "insertAIResponseB64", hb_base64Encode( cResponse ) )
+   else
+      MsgStop( hb_jsonEncode( aResp, .t. ), "Groq Error" )
+   endif
+ return nil
 
 //----------------------------------------------------------------------------//
 
@@ -186,8 +293,8 @@ return nil
 
 METHOD GetHtml() CLASS TMonaco
 
-   local cHtml := ""
-   local cJsExt := ""
+   local cHtml := "", cJsExt := ""
+   local lAIActive := .f.
    local cPath := ""
 
    // 1. Localizar el archivo de extensión
@@ -219,10 +326,10 @@ METHOD GetHtml() CLASS TMonaco
    cHtml += "<script>"
    cHtml += " require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});"
    cHtml += " let editor;"
-   cHtml += " require(['vs/editor/editor.main'], function() {"
-   cHtml += cJsExt 
-   cHtml += " if(typeof registerHarbour === 'function') registerHarbour(monaco);"
-   cHtml += "  editor = monaco.editor.create(document.getElementById('container'), {"
+   cHtml += " require(['vs/editor/editor.main'], function(monaco) {" + hb_eol()
+   cHtml += cJsExt + hb_eol()
+   cHtml += " if(typeof registerHarbour === 'function') registerHarbour(monaco);" + hb_eol()
+   cHtml += "  editor = monaco.editor.create(document.getElementById('container'), {" + hb_eol()
    cHtml += "   value: '', language: '" + ::cLanguage + "', theme: '" + ::cTheme + "',"
    cHtml += "   automaticLayout: true, tabSize: 3, insertSpaces: true,"
    cHtml += "   matchBrackets: 'always',"
@@ -233,7 +340,9 @@ METHOD GetHtml() CLASS TMonaco
    cHtml += "  editor.onDidChangeCursorPosition((e) => { "
    cHtml += "     window.webkit.messageHandlers.fivemac.postMessage( 'onCursor:' + e.position.lineNumber + ':' + e.position.column ); "
    cHtml += "  });"
-   cHtml += " });"
+   lAIActive := !Empty( ::cAIKey ) .or. File( ResPath( "monaco/monaco.plist" ) )
+   cHtml += "  if(typeof setupEditorIA === 'function') setupEditorIA(editor, " + iif(lAIActive, "true", "false") + ", monaco);" + hb_eol()
+   cHtml += " });" + hb_eol()
    cHtml += " function setTextB64(b64) { "
    cHtml += "    try { "
    cHtml += "       if (editor) { "
@@ -242,6 +351,19 @@ METHOD GetHtml() CLASS TMonaco
    cHtml += "          editor.setValue(new TextDecoder().decode(bytes)); "
    cHtml += "       } "
    cHtml += "    } catch(e) { alert('Error decoding B64: ' + e.message); } "
+   cHtml += " } "
+   cHtml += " function insertAIResponseB64(b64) { "
+   cHtml += "    try { "
+   cHtml += "       if (editor) { "
+   cHtml += "          const binString = atob(b64); "
+   cHtml += "          const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0)); "
+   cHtml += "          const text = new TextDecoder().decode(bytes); "
+   cHtml += "          const selection = editor.getSelection(); "
+   cHtml += "          const op = { range: selection, text: text, forceMoveMarkers: true }; "
+   cHtml += "          editor.executeEdits('ai-generation', [op]); "
+   cHtml += "          editor.focus();"
+   cHtml += "       } "
+   cHtml += "    } catch(e) { alert('Error inserting AI B64: ' + e.message); } "
    cHtml += " } "
    cHtml += " function getText() { if (editor) window.webkit.messageHandlers.fivemac.postMessage( 'onValues:' + editor.getValue() ); }"
    cHtml += " function setLanguage(l) { if (editor) monaco.editor.setModelLanguage(editor.getModel(), l); }"

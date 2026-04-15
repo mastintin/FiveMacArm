@@ -30,7 +30,7 @@ REQUEST APPTERMINATE
 
 FUNCTION Main()
 
-   local oSlide, oSayZoom
+   local oSlide, oSayZoom, nWidth, nHeight
    local oMenuItem
   
    cBmpPath = ImgPath()
@@ -46,7 +46,10 @@ FUNCTION Main()
    oSnippets := TSnippets():New( ResPath() + "/snippets.json" )
    // MsgInfo( "Loading Snippets from: " + ResPath() + "/snippets.json" )
 
-   DEFINE WINDOW oWnd FROM 100, 100 TO 800, 1200 FULL NOFLIPPED
+   nWidth := ScreenWidth()
+   nHeight := ScreenHeight()
+
+   DEFINE WINDOW oWnd FROM 0, 0 TO nHeight, nWidth FULL NOFLIPPED
    
 
    BuildButtonBar()
@@ -80,12 +83,6 @@ FUNCTION Main()
 
    @ 0, 10 SAY oMsgBar PROMPT "FiveMac IDE" OF oWnd SIZE 300, 18 RAISED
 
-   oWnd:Maximize()
-
-   oSplitV:SetPosition( 1, 250 )
-   oSplitV:SetPosition( 2, oWnd:nWidth - 400 )
-   oSplitH:SetPosition( 1, oSplitV:nHeight - 120 )
-
    @ 2, 210 BUTTON oSayZoom PROMPT "Zoom : 100%"  OF oWnd SIZE 110, 16 ;
       ACTION oSayZoom:setText("Zoom : "+ alltrim(str( ( ( oEditor:setZoom( 0 )+10)*10 ) ) )+ "%" )
 
@@ -102,12 +99,15 @@ FUNCTION Main()
    oEditor:bKeyDown = { |k| oEditor:KeyDown( k ) }
    
    // AutoComplete Logic
-   
     oEditor:AutoCSetIgnoreCase( .T. )
     oEditor:AutoCSetSeparator( 124 ) // | 
     oEditor:Send( 2285, 63, 0 ) // SCI_AUTOCSETTYPESEPARATOR(63)
 
-   ACTIVATE WINDOW oWnd
+   ACTIVATE WINDOW oWnd ;
+      ON INIT ( oSplitV:SetPosition( 1, 250 ),;
+                oSplitV:SetPosition( 2, oWnd:nWidth - 400 ),;
+                oSplitH:SetPosition( 1, oSplitV:nHeight - 120 ),;
+                LoadRecentFiles() )
    
 return nil
 

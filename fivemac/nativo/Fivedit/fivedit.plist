@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>AIKey</key>
+	<string>AIzaSyCPiFrgXkxmeDHm8vpaiAoMokpfyHF3YNI</string>
 	<key>Color-Strings</key>
 	<string></string>
 	<key>ExtraFrameWorks</key>
@@ -51,8 +53,8 @@
 	</array>
 	<key>LastFiles</key>
 	<array>
-		<string>/Users/manuel/Fivemac/fivemac/nativo/samples/testdrop.prg</string>
-		<string>/Users/manuel/Fivemac/fivemac/nativo/samples/testdrop.prg</string>
+		<string>/Users/manuel/Fivemac/fivemac/nativo/samples/browse.prg</string>
+		<string>/Users/manuel/Fivemac/fivemac/nativo/samples/browse.prg</string>
 		<string></string>
 		<string></string>
 		<string></string>

@@ -569,3 +569,151 @@ HB_FUNC(MSGSELECTLIST) {
                             HB_ISNUM(3) ? hb_parnd(3) : 350,
                             HB_ISNUM(4) ? hb_parnd(4) : 400));
 }
+
+// --- DIÁLOGO MULTILÍNEA CON NSALERT ---
+NSString * FM_MsgGetMultiline( NSString * title, NSString * defaultText, CGFloat w, CGFloat h )
+{
+   NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+   NSString * result = nil;
+
+   NSAlert * alert = [[NSAlert alloc] init];
+   [alert setMessageText: title];
+   [alert setInformativeText: @"Introduzca las instrucciones:"];
+   [alert setAlertStyle: NSAlertStyleInformational];
+   [alert addButtonWithTitle: @"Aceptar"];
+   [alert addButtonWithTitle: @"Cancelar"];
+
+   // --- CONTENEDOR PARA EL TEXTO ---
+   NSScrollView * sv = [[NSScrollView alloc] initWithFrame: NSMakeRect(0, 0, w, h)];
+   [sv setHasVerticalScroller: YES];
+   [sv setHasHorizontalScroller: NO];
+   [sv setAutohidesScrollers: YES];
+   [sv setBorderType: NSBezelBorder];
+
+   NSTextView * tv = [[NSTextView alloc] initWithFrame: [sv bounds]];
+   [tv setMinSize: NSMakeSize(0.0, h)];
+   [tv setMaxSize: NSMakeSize(FLT_MAX, FLT_MAX)];
+   [tv setVerticallyResizable: YES];
+   [tv setHorizontallyResizable: NO];
+   [tv setAutoresizingMask: NSViewWidthSizable];
+   [[tv textContainer] setContainerSize: NSMakeSize(w, FLT_MAX)];
+   [[tv textContainer] setWidthTracksTextView: YES];
+   [tv setString: defaultText ? defaultText : @""];
+   [tv setFont: [NSFont systemFontOfSize: 14]];
+
+   [sv setDocumentView: tv];
+   [alert setAccessoryView: sv];
+
+   [[NSApplication sharedApplication] activateIgnoringOtherApps: YES];
+   
+   // Foco inicial en el TextView
+   [[alert window] makeFirstResponder: tv];
+
+   if( [alert runModal] == NSAlertFirstButtonReturn )
+   {
+      result = [[tv string] copy];
+   }
+
+   [tv release]; [sv release]; [alert release];
+   [pool drain];
+
+   return [result autorelease];
+}
+
+HB_FUNC( MSGGETMULTILINE )
+{
+   NSString * result = FM_MsgGetMultiline( hb_NSSTRING_par( 1 ), 
+                                          hb_NSSTRING_par( 2 ),
+                                          HB_ISNUM( 3 ) ? hb_parnd( 3 ) : 400,
+                                          HB_ISNUM( 4 ) ? hb_parnd( 4 ) : 150 );
+   
+   if( result )
+      hb_retc( [result UTF8String] );
+   else
+      hb_retc( "" );
+}
+
+// --- MSGRUN NATIVO CON NSALERT ---
+HB_FUNC( MSGRUN )
+{
+   NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+   NSString * msg = (hb_pcount() >= 1) ? hb_NSSTRING_par( 1 ) : @"Procesando...";
+   PHB_ITEM pBlock = (hb_pcount() >= 2) ? hb_param( 2, HB_IT_BLOCK ) : NULL;
+
+   NSAlert * alert = [[NSAlert alloc] init];
+   [alert setMessageText: @"Por favor, espere"];
+   [alert setInformativeText: msg];
+   [alert setAlertStyle: NSAlertStyleInformational];
+   
+   for (NSButton *btn in [alert buttons]) { [btn setHidden:YES]; }
+
+   NSWindow * window = [alert window];
+   [window setLevel: NSStatusWindowLevel];
+   [window orderFront: nil];
+   [window display];
+   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+
+   // BOMBEAR EVENTOS: Dejamos que Cocoa dibuje TODO antes de bloquearnos
+   int i;
+   for( i = 0; i < 10; i++ )
+   {
+      [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+   }
+
+   if( pBlock )
+   {
+      hb_vmEvalBlock( pBlock );
+   }
+
+   [window close];
+   [alert release];
+   [pool drain];
+
+   hb_ret();
+}
+
+// --- WAIT ASÍNCRONO (NON-MODAL) CON NSALERT ---
+
+// --- WAIT ASÍNCRONO (NON-MODAL) CON NSALERT ---
+static NSAlert *_g_asyncWaitAlert = nil;
+
+HB_FUNC( MSGWAITNS )
+{
+   NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
+   NSString * msg = (hb_pcount() >= 1) ? hb_NSSTRING_par( 1 ) : @"Espere...";
+   NSString * title = (hb_pcount() >= 2) ? hb_NSSTRING_par( 2 ) : @"Fivedit Intelligence";
+
+   if( _g_asyncWaitAlert ) {
+       [[_g_asyncWaitAlert window] close];
+       [_g_asyncWaitAlert release];
+   }
+
+   _g_asyncWaitAlert = [[NSAlert alloc] init];
+   [_g_asyncWaitAlert setMessageText: title];
+   [_g_asyncWaitAlert setInformativeText: msg];
+   [_g_asyncWaitAlert setAlertStyle: NSAlertStyleInformational];
+   
+   // Ocultamos botones para que parezca un panel de espera puro
+   for (NSButton *btn in [_g_asyncWaitAlert buttons]) {
+      [btn setHidden:YES];
+   }
+
+   NSWindow * window = [_g_asyncWaitAlert window];
+   [window setLevel: NSStatusWindowLevel]; // Flotando arriba
+   
+   // Mostrar sin bloquear
+   [window center];
+   [window orderFront: nil];
+   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+
+   [pool drain];
+}
+
+HB_FUNC( MSGWAITNSSTOP )
+{
+   if( _g_asyncWaitAlert ) {
+       [[_g_asyncWaitAlert window] close];
+       [_g_asyncWaitAlert release];
+       _g_asyncWaitAlert = nil;
+   }
+}

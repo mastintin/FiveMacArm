@@ -28,7 +28,39 @@ CLASS TScintilla FROM TControl
    METHOD New( nTop, nLeft, nBottom, nRight, oWnd )
  
    METHOD AddText( cText )          INLINE ::Send( SCI_ADDTEXT, len( cText ), cText )
-  
+   METHOD AddTextCRLF( cText )      INLINE ::Send( SCI_ADDTEXT, Len( cText )+2, cText+CRLF )
+   METHOD Backtab()                 INLINE ::Send( SCI_BACKTAB ) 
+
+   METHOD Charleft ()                         INLINE ::Send( SCI_CHARLEFT )
+   METHOD Charleftextend ()                   INLINE ::Send( SCI_CHARLEFTEXTEND )
+   METHOD Charleftrectextend ()               INLINE ::Send( SCI_CHARLEFTRECTEXTEND )
+   METHOD Charright ()                        INLINE ::Send( SCI_CHARRIGHT )
+   METHOD Charrightextend ()                  INLINE ::Send( SCI_CHARRIGHTEXTEND )
+   METHOD Charrightrectextend ()              INLINE ::Send( SCI_CHARRIGHTRECTEXTEND )
+
+   METHOD Clear()                             INLINE ::Send( SCI_CLEAR )
+   METHOD ClearAll()                          INLINE ::Send( SCI_CLEARALL )   
+   
+
+   METHOD Copy()                              INLINE ::Send( SCI_COPY )
+   METHOD CopyLine()                          INLINE ::Send( SCI_LINECOPY )
+   METHOD CopyRange( nStart, nEnd )           INLINE ::Send( SCI_COPYRANGE, nStart, nEnd )
+   METHOD CopyText( cCad )                    INLINE ::Send( SCI_COPYTEXT, Len( cCad ), cCad )
+   METHOD Cut()                               INLINE ::Send( SCI_CUT )
+
+   METHOD Documentend()                       INLINE ::Send( SCI_DOCUMENTEND )
+   METHOD Documentendextend()                 INLINE ::Send( SCI_DOCUMENTENDEXTEND )
+   METHOD Documentstart()                     INLINE ::Send( SCI_DOCUMENTSTART )
+   METHOD Documentstartextend()               INLINE ::Send( SCI_DOCUMENTSTARTEXTEND )
+ 
+   METHOD Deleteback()                        INLINE ::Send( SCI_DELETEBACK )
+   METHOD Deletebacknotline ()                INLINE ::Send( SCI_DELETEBACKNOTLINE )
+   METHOD Dellineleft()                       INLINE ::Send( SCI_DELLINELEFT )
+   METHOD Dellineright()                      INLINE ::Send( SCI_DELLINERIGHT )
+   METHOD Delwordleft()                       INLINE ::Send( SCI_DELWORDLEFT )
+   METHOD Delwordright()                      INLINE ::Send( SCI_DELWORDRIGHT )
+
+
    METHOD Open( cFileName )
 
    METHOD Save()
@@ -71,6 +103,8 @@ CLASS TScintilla FROM TControl
    METHOD Vchomerectextend()                  INLINE ::Send( SCI_VCHOMERECTEXTEND )
    METHOD Vchomewrap()                        INLINE ::Send( SCI_VCHOMEWRAP )
    METHOD Vchomewrapextend ()                 INLINE ::Send( SCI_VCHOMEWRAPEXTEND )
+  
+
 
    METHOD Wordleft ()                         INLINE ::Send( SCI_WORDLEFT )
    METHOD Wordleftend ()                      INLINE ::Send( SCI_WORDLEFTEND )
@@ -121,6 +155,7 @@ CLASS TScintilla FROM TControl
    METHOD GetLine( nLine )  INLINE SCIGETLINE( ::hWnd, nLine )
    METHOD GetLineCount()    INLINE SciGetProp( ::hWnd, SCI_GETLINECOUNT )
 
+   METHOD Lowercase()                    INLINE ::Send( SCI_LOWERCASE )
 
 
    METHOD SetText( cText )          INLINE SCISETTEXT( ::hWnd, cText )
@@ -141,7 +176,7 @@ CLASS TScintilla FROM TControl
    METHOD GotoPos( nPos )           INLINE ::Send( SCI_GOTOPOS, nPos )
    METHOD GotoLine( nLine )         INLINE ::Send( SCI_GOTOLINE, nLine )
    METHOD SetSel( nS, nE )          INLINE ::Send( SCI_SETSEL, nS, nE )
-   METHOD Clear()                   INLINE ::Send( SCI_CLEAR )
+
    METHOD Bracy()                   INLINE ::Send( SCI_BRACEMATCH, ::GetCurrentPos() )
    METHOD BraceMatch( nP )          INLINE ::Send( SCI_BRACEMATCH, nP )
    METHOD BraceHighlight( n1, n2 )  INLINE ::Send( SCI_BRACEHIGHLIGHT, n1, n2 )
@@ -807,8 +842,6 @@ METHOD AutoCShowKeywords() CLASS TScintilla
       ::AutoCShow( Len( ::GetWordLeft() ), oHbDocs:GetAllSortedList() )
    endif
 
-   return nil
-
-   //----------------------------------------------------------------------------//
-
 return nil
+
+

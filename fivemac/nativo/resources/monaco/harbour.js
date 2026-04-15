@@ -318,3 +318,22 @@ function registerHarbour(monaco) {
 
     console.log("Harbour extension loaded successfully.");
 }
+
+function setupEditorIA(editor, active, monaco) {
+    if (!active || !editor || !monaco) return;
+    
+    editor.addAction({
+        id: 'gen-ai-request',
+        label: 'Gemma: Ask AI Assistant',
+        keybindings: [
+            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK
+        ],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: function(ed) {
+            const selection = ed.getSelection();
+            const text = ed.getModel().getValueInRange(selection);
+            window.webkit.messageHandlers.fivemac.postMessage( 'onAIRequest:' + text );
+        }
+    });
+}

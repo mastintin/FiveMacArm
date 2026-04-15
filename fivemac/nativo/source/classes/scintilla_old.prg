@@ -151,7 +151,7 @@ CLASS TScintilla FROM TControl
    METHOD DlgOpen()
 
    METHOD Documentend()                       INLINE ::Send( SCI_DOCUMENTEND )
-   METHOD Documentendextend()                 INLINE ::Send( SCI_DOCUMENTENDEXTEND )
+   METHOD Documentendextend()                 INLINE ::Send( ::Send( SCI_DOCUMENTEND ) )
    METHOD Documentstart()                     INLINE ::Send( SCI_DOCUMENTSTART )
    METHOD Documentstartextend()               INLINE ::Send( SCI_DOCUMENTSTARTEXTEND )
 

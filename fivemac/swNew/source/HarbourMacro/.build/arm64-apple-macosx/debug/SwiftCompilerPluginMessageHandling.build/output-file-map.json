@@ -1,0 +1,47 @@
+{
+  "": {
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/master.swiftdeps"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/CompilerPluginMessageHandler.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/CompilerPluginMessageHandler.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/CompilerPluginMessageHandler.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/CompilerPluginMessageHandler~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/CompilerPluginMessageHandler.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/CompilerPluginMessageHandler.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/Diagnostics.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Diagnostics.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Diagnostics.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Diagnostics~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Diagnostics.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Diagnostics.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/Macros.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Macros.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Macros.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Macros~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Macros.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/Macros.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/PluginMacroExpansionContext.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMacroExpansionContext.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMacroExpansionContext.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMacroExpansionContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMacroExpansionContext.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMacroExpansionContext.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/PluginMessageCompatibility.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessageCompatibility.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessageCompatibility.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessageCompatibility~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessageCompatibility.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessageCompatibility.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftCompilerPluginMessageHandling/PluginMessages.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessages.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessages.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessages~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessages.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftCompilerPluginMessageHandling.build/PluginMessages.dia"
+  }
+}
