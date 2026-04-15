@@ -1,19 +1,31 @@
-#include "FiveMac.ch"
+// Common Utilities for the Swift Island
 
-// -------------------------------------------------------------------------------- //
-// NEW: Private dispatcher for Sw (Pure Swift) components
-// -------------------------------------------------------------------------------- //
+// SW_LOG: Escribe trazabilidad en un archivo de log usando funciones core
+function SW_LOG( cMsg )
+   local nHandle, cLog
+   cLog := "[" + Time() + "] " + hb_ValToStr( cMsg ) + hb_OsNewLine()
+   
+   if ! File( "sw_bridge.log" )
+      nHandle := fCreate( "sw_bridge.log" )
+   else
+      nHandle := fOpen( "sw_bridge.log", 1 ) // FO_WRITE
+   endif
+   
+   if nHandle >= 0
+      fSeek( nHandle, 0, 2 ) // FO_END
+      fWrite( nHandle, cLog )
+      fClose( nHandle )
+   endif
+return nil
+
+// SW_FMH is the Event Dispatcher called from Swift
 function SW_FMH( cId, nMsg )
-    local oItem := SwiftGetItem( cId )
-
-    // MsgInfo( "SW_FMH Arrived! ID: " + cId + " Msg: " + AllTrim( Str( nMsg ) ) )
-
-    if oItem != nil 
-        do case
-           case nMsg == 9 // WM_BTNCLICK
-                if __ObjHasMsg( oItem, "BACTION" ) .and. oItem:bAction != nil
-                   Eval( oItem:bAction, oItem:cId, oItem )
-                endif
-        endcase
-    endif
+   local oControl
+   oControl := SwiftGetItem( cId )
+   
+   if oControl != nil
+      if nMsg == 9 // WM_BTNCLICK
+         return oControl:OnAction()
+      endif
+   endif
 return nil

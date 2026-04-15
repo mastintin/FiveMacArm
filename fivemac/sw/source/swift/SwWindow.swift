@@ -1,141 +1,112 @@
 import SwiftUI
-import AppKit
-import Observation
-import HarbourMacro
 
-// MARK: - Native Window Bridge for SwiftUI
-
-@HarbourDirect
-public func swift_button_create_state(id: String, caption: String) {
-    let finalId = id.isEmpty ? UUID().uuidString : id
-    let state = ButtonState(caption: caption)
-    ViewRegistry.register(state, for: finalId)
+class SwWindowDelegate: NSObject, NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        print("SwiftWindow: Ventana cerrándose...")
+    }
 }
 
-// Storage to keep delegates alive
-private var windowDelegates: [String: NSWindowDelegate] = [:]
+class SwAppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        print("SwiftApp: Última ventana cerrada. Terminando proceso...")
+        return true
+    }
+}
+
+private let windowDelegate = SwWindowDelegate()
+private let appDelegate = SwAppDelegate()
 
 @_cdecl("HB_FUN_SW_CREATEWINDOW")
-public func sw_create_window_hb(_ p: UnsafeMutableRawPointer?) {
-    let title = hb_parc(1).map { String(cString: $0) } ?? "Swift Window"
-    let w = hb_parnd(2)
-    let h = hb_parnd(3)
-    let id = hb_parc(4).map { String(cString: $0) } ?? UUID().uuidString
+public func sw_createwindow_hb(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
+    let title = hb_parc(1).map { String(cString: $0) } ?? "FiveMac SwiftUI"
+    let width = hb_parni(2)
+    let height = hb_parni(3)
+    let windowId = hb_parc(4).map { String(cString: $0) } ?? UUID().uuidString
     
-    // Create a special state for this window
-    // Use SwiftVStackState as generic container for items
+    print("SwiftWindow: Creando ventana \(windowId) - \(title) (\(width)x\(height))")
+    
     let state = SwiftVStackState()
-    state.scrollable = false
+    ViewRegistry.register(state, for: windowId)
     
-    // Root base is a ZStack for absolute positioning
-    state.items = [StackItem(type: .zstack, content: "root", id: "root_" + id)]
-    
-    ViewRegistry.register(state, for: id)
-
-    var windowPtr: UnsafeMutableRawPointer? = nil
-
-    class WindowDelegate: NSObject, NSWindowDelegate {
-        func windowWillClose(_ notification: Notification) {
-            NSApp.terminate(nil)
-        }
-    }
-
-    let block = {
+    DispatchQueue.main.async {
+        let windowView = SwWindowView(state: state, id: windowId)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: w, height: h),
+            contentRect: NSRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
         )
         window.title = title
-        window.identifier = NSUserInterfaceItemIdentifier(id)
-        
-        let delegate = WindowDelegate()
-        windowDelegates[id] = delegate
-        window.delegate = delegate
-        
-        // Use our NEW isolated SwWindowView engine
-        let root = SwWindowView(state: state, id: id)
-        let hosting = NSHostingView(rootView: root)
-        hosting.translatesAutoresizingMaskIntoConstraints = false
-        
-        let contentView = window.contentView!
-        contentView.addSubview(hosting)
-        
-        NSLayoutConstraint.activate([
-            hosting.topAnchor.constraint(equalTo: contentView.topAnchor),
-            hosting.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            hosting.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            hosting.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
-        ])
-        
         window.center()
+        window.backgroundColor = .windowBackgroundColor
+        
+        // Creamos la hosting view y forzamos la persistencia de su capa
+        let hostingView = NSHostingView(rootView: windowView)
+        hostingView.wantsLayer = true
+        if let layer = hostingView.layer {
+            layer.backgroundColor = NSColor.windowBackgroundColor.cgColor
+            // Política de redibujado manual: no limpies la capa automáticamente
+            hostingView.layerContentsRedrawPolicy = .onSetNeedsDisplay
+        }
+        
+        window.contentView = hostingView
+        window.delegate = windowDelegate
         window.makeKeyAndOrderFront(nil)
         
-        windowPtr = Unmanaged.passRetained(window).toOpaque()
+        // Save the window object in the registry so it doesn't get deallocated
+        ViewRegistry.register(window, for: "NSWindow_\(windowId)")
     }
     
-    if Thread.isMainThread {
-        block()
-    } else {
-        DispatchQueue.main.sync { block() }
-    }
+    return UnsafeMutableRawPointer(bitPattern: 1)
+}
+
+@_cdecl("HB_FUN_SW_ADD_WINDOW_ITEM")
+public func sw_add_window_item_hb(_ p: UnsafeMutableRawPointer?) {
+    // 1: windowId (C)
+    // 2: itemId (C)
+    // 3: top (N)
+    // 4: left (N)
+    // 5: width (N)
+    // 6: height (N)
+    // 7: type (N)
+    // 8: content (C)
     
-    if let ptr = windowPtr {
-        hb_retnll(Int64(Int(bitPattern: ptr)))
-    } else {
-        hb_retnll(0)
+    let windowId = hb_parc(1).map { String(cString: $0) } ?? ""
+    let itemId = hb_parc(2).map { String(cString: $0) } ?? ""
+    let top = Int(hb_parni(3))
+    let left = Int(hb_parni(4))
+    let width = Int(hb_parni(5))
+    let height = Int(hb_parni(6))
+    let type = Int(hb_parni(7))
+    let content = hb_parc(8).map { String(cString: $0) } ?? ""
+    
+    print("Bridge: Recibido Item \(itemId) - Tipo: \(type), Pos: (\(left), \(top)), Size: \(width)x\(height), Contenido: \(content)")
+    
+    let itype = StackItem.ItemType(rawValue: type) ?? .text
+    let item = StackItem(type: itype, content: content, id: itemId)
+    item.x = Double(left)
+    item.y = Double(top)
+    item.itemWidth = Double(width)
+    item.itemHeight = Double(height)
+    
+    // Register globally for Action Stacking
+    ViewRegistry.register(item, for: itemId)
+    
+    DispatchQueue.main.async {
+        if let state = ViewRegistry.getState(for: windowId) as? SwiftVStackState {
+            state.items.append(item)
+            print("Bridge: Item \(itemId) añadido al estado de la ventana \(windowId)")
+        } else {
+            print("Bridge: Error - No se encontró el estado para la ventana \(windowId)")
+        }
     }
 }
 
 @_cdecl("HB_FUN_SW_APPRUN")
-public func sw_app_run_hb(_ p: UnsafeMutableRawPointer?) {
-    let block = {
-        NSApp.run()
-    }
-    if Thread.isMainThread {
-        block()
-    } else {
-        DispatchQueue.main.sync { block() }
-    }
-}
-
-@_cdecl("HB_FUN_SW_ADD_WINDOW_ITEM")
-public func sw_add_window_item(_ p: UnsafeMutableRawPointer?) {
-    guard let windowId = hb_parc(1).map({ String(cString: $0) }),
-          let state = ViewRegistry.get(windowId) as? SwiftVStackState else {
-        print("SW_ADD_WINDOW_ITEM: Window ID '\(hb_parc(1).map({ String(cString: $0) }) ?? "nil")' not found in Registry")
-        return 
-    }
-    
-    guard let content = hb_parc(3).map({ String(cString: $0) }) else { return }
-    let typeInt = Int(hb_parni(2))
-    guard let type = StackItem.ItemType(rawValue: typeInt) else { 
-        print("SW_ADD_WINDOW_ITEM: Invalid type \(typeInt)")
-        return 
-    }
-    
-    let x = hb_parnd(4)
-    let y = hb_parnd(5)
-    let w = hb_parnd(6)
-    let h = hb_parnd(7)
-    let itemId = hb_parc(8).map({ String(cString: $0) }) ?? UUID().uuidString
-
-    let item = StackItem(type: type, content: content, id: itemId)
-    item.x = x
-    item.y = y
-    item.itemWidth = w
-    item.itemHeight = h
-    
-    let block = {
-        // Add DIRECTLY to the state's main items array
-        state.items.append(item)
-        state.lastItem = item
-        
-        // This re-assignment is what triggers the @Observable refresh
-        let copy = state.items
-        state.items = copy
-    }
-    
-    if Thread.isMainThread { block() } else { DispatchQueue.main.async { block() } }
+public func sw_apprun_hb(_ p: UnsafeMutableRawPointer?) {
+    print("SwiftApp: Iniciando NSApp.run()...")
+    NSApp.setActivationPolicy(.regular)
+    NSApp.delegate = appDelegate
+    NSApp.activate(ignoringOtherApps: true)
+    NSApp.run()
 }

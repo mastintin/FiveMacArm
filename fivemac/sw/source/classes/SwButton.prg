@@ -2,11 +2,11 @@
 
 CLASS TSwButton FROM TSwiftControl
 
+    DATA bAction
+    DATA bPipeline    // NUEVO: Puntero de autopista directa para Lotes
+
     ACCESS Caption      INLINE ::hState["Caption"]
     ASSIGN Caption( c ) INLINE ::SetText( c )
-
-    ASSIGN OnClick( b ) INLINE ::bAction := b
-    ASSIGN OnAction( b ) INLINE ::bAction := b
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId )
     METHOD OnAction()
@@ -23,36 +23,38 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, c
 
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
     
-    ::bAction = bAction
-    ::oWnd    = oWnd
+    ::bAction  := bAction
+    ::oWnd     := oWnd
     ::hState["Caption"] := cPrompt
    
-    // Modern Mode: Only create state in Swift. No NSView handle.
-    SD_SWIFT_BUTTON_CREATE_STATE( ::cId, cPrompt )
+    // 1. Crear el estado y el item en Swift
+    SW_BUTTON_CREATE( ::cId, cPrompt )
     
-    // Official registration on Harbour side (even without hWnd)
+    // 2. Registrar en Harbour
     SwiftRegisterItem( ::cId, Self )
     
-    if oWnd != nil .and. oWnd:IsKindOf( "TSWWINDOW" )
-        oWnd:AddControl( Self, nTop, nLeft )
+    // 3. Añadir a la ventana
+    if oWnd != nil
+        oWnd:AddControl( Self, nTop, nLeft, 9 )
     endif
 
 return Self
 
 METHOD SetText( cText ) CLASS TSwButton
-    ::hState["Caption"] := cText
-    SD_BTN_SET_TEXT( ::cId, cText )
+    SD:Text( ::cId, cText )
 return nil
 
 METHOD OnAction() CLASS TSwButton
-    if ::bAction != nil
+    if ::bPipeline != nil
+        // Autopista Transaccional: Empaqueta y ejecuta el lote de Swift de forma garantizada
+        WITH OBJECT Sw_GetProxy()
+            :Pipeline( ::bPipeline )
+        END
+    elseif ::bAction != nil
         Eval( ::bAction, Self )
     endif
 return nil
 
 METHOD End() CLASS TSwButton
-    // We don't have a native hWnd to destroy here, 
-    // but we can clean the registry
-    SD_BTN_DESTROY( ::cId, 0 )
-    ::bAction := nil
+    SwiftUnregisterItem( ::cId )
 return ::Super:End()

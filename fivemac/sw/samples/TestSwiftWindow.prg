@@ -1,18 +1,19 @@
 #include "FiveMac.ch"
-#include "SwiftControls.ch"
 
 function Main()
-   local oWnd, oBtn0, oBtn1, oBtn2
+   local oWnd, oBtn, oChat
+   local cApiKey := "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"
    
-   oWnd := TSwWindow():New( "Ventana Sw (Pure SwiftUI)", 600, 400 )
+   oWnd := TSwWindow():New( "FiveMac SwiftUI - AI Chat Island", 800, 600 )
    
-   oBtn0 := TSwButton():New( 0, 0, 150, 40, "ESQUINA 0,0", oWnd, {|| MsgInfo( "0,0!" ) } )
-   
-   oBtn1 := TSwButton():New( 50, 50, 150, 40, "Pure Swift 1", oWnd, ;
-      { || MsgInfo( "Hola 1" ) } )
+    oBtn := TSwButton():New( 20, 20, 150, 40, "Limpiar Chat", oWnd, ;
+       { || oChat:Clear(), SwMsgInfo( "El chat ha sido vaciado localmente." ) } )
       
-   oBtn2 := TSwButton():New( 150, 200, 180, 45, "Pure Swift 2", oWnd, ;
-      { || MsgInfo( "Hola 2" ) } )
+   // Creamos el Chat ocupando menos ancho
+   oChat := TSwAIChat():New( 80, 20, 500, 480, oWnd, ;
+                             cApiKey, ;
+                             "llama-3.3-70b-versatile" )
 
    ACTIVATE WINDOW oWnd
+   
 return nil
