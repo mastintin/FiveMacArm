@@ -97,6 +97,17 @@ Gran salto adelante en las capacidades de edición de código:
 *   **Test Funcional desde CDN**: El motor Monaco y sus extensiones se cargan y testean directamente desde CDN, permitiendo pruebas instantáneas sin instalaciones complejas.
 *   **Optimización del Symbol Navigator**: Rediseñado el navegador de funciones utilizando el nuevo componente nativo de selección filtrada.
 
+## 🏝️ Swift Island (sw): Revolucionaria Arquitectura Harbour-Swift (Abril 2026)
+Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.
+
+*   **Ventanas Swift Nativas**: La interfaz se construye directamente con el motor de Swift, permitiendo acceso a todas las capacidades modernas de macOS (Translucidez, animaciones fluidas, layouts dinámicos).
+*   **Protocolo de Comunicación "Zero-Bridge"**: Se elimina la necesidad de `HarbourDirect` y de crear manualmente funciones puente (`.m` o `.swift`) para cada control. Todo fluye a través de un canal JSON unificado.
+*   **Arquitectura de Lotes (ActionStack)**: 
+    *   **Pipeline Transaccional**: Las acciones se agrupan en lotes (stacks) y se envían en una sola transacción, optimizando el rendimiento y evitando el parpadeo de la UI.
+    *   **Ejecución Dual**: Soporte nativo para llamadas **Síncronas** (Harbour espera la respuesta para procesos críticos) y **Asíncronas** (Harbour sigue adelante para una UI ultra-fluida).
+*   **Mapeo Automático de Funcionalidad**: Gracias al uso de `ERROR HANDLER` en Harbour y un `Dispatcher` inteligente en Swift, cualquier mensaje enviado a un objeto Proxy se traduce automáticamente en un comando Swift sin picar una sola línea de código puente.
+*   **Estado Sincronizado (Return Train)**: Swift notifica automáticamente a Harbour de cualquier cambio de estado (texto, valores, posiciones), manteniendo los objetos de Harbour siempre sincronizados mediante un sistema de retroalimentación inteligente con protección contra bucles.
+
 ---
 
 # Fivemac
