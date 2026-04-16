@@ -63,7 +63,7 @@ public func sw_slider_create_hb(_ p: UnsafeMutableRawPointer?) {
     
     let decoder = JSONDecoder()
     let initial = (try? decoder.decode(SliderInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? SliderInit(value: 0, min: 0, max: 100, width: 200, height: 30, top: 0, left: 0, showValue: true)
+                ?? SliderInit(value: 0, min: 0, max: 100, width: 200, height: 30, top: 0, left: 0, showValue: true, resizemask: 0)
     
     if ViewRegistry.getState(for: id) == nil {
         let state = SliderState(id: id, 

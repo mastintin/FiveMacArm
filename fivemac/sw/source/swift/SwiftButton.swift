@@ -70,7 +70,7 @@ public func sw_button_create_hb(_ p: UnsafeMutableRawPointer?) {
     
     let decoder = JSONDecoder()
     let initial = (try? decoder.decode(ButtonInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? ButtonInit(caption: "Button", width: 90, height: 30, top: 0, left: 0)
+                ?? ButtonInit(caption: "Button", width: 90, height: 30, top: 0, left: 0, resizemask: 0)
     
     if ViewRegistry.getState(for: id) == nil {
         let state = ButtonState(id: id, caption: initial.caption ?? "")

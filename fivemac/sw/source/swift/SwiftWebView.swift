@@ -67,7 +67,7 @@ public func sw_webview_create_hb(_ p: UnsafeMutableRawPointer?) {
     
     let decoder = JSONDecoder()
     let initial = (try? decoder.decode(WebViewInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? WebViewInit(url: nil, html: nil, width: 400, height: 300, top: 0, left: 0)
+                ?? WebViewInit(url: nil, html: nil, width: 400, height: 300, top: 0, left: 0, resizemask: 0)
     
     if ViewRegistry.getState(for: id) == nil {
         let state = WebViewState(id: id)

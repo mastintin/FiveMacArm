@@ -41,7 +41,7 @@ public func sw_label_create_hb(_ p: UnsafeMutableRawPointer?) {
     
     let decoder = JSONDecoder()
     let initial = (try? decoder.decode(LabelInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? LabelInit(text: "Label", width: 200, height: 20, top: 0, left: 0)
+                ?? LabelInit(text: "Label", width: 200, height: 20, top: 0, left: 0, resizemask: 0)
     
     if ViewRegistry.getState(for: id) == nil {
         let state = LabelState(id: id, text: initial.text ?? "")

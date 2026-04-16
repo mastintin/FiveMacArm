@@ -57,7 +57,7 @@ public func sw_toggle_create_hb(_ p: UnsafeMutableRawPointer?) {
     decoder.keyDecodingStrategy = .convertFromSnakeCase
     
     let initial = (try? decoder.decode(ToggleInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? ToggleInit(value: false, prompt: "Toggle", isSwitch: false, width: 200, height: 30, top: 0, left: 0)
+                ?? ToggleInit(value: false, prompt: "Toggle", isSwitch: false, width: 200, height: 30, top: 0, left: 0, resizemask: 0)
     
     if ViewRegistry.getState(for: id) == nil {
         let state = ToggleState(id: id, isOn: initial.value ?? false, prompt: initial.prompt ?? "")
