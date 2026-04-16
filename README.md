@@ -1,10 +1,13 @@
 # FiveMac Framework - Modernization Log (Abril 2026)
 
+## 🏝️ Swift Island (sw): Arquitectura 2.0
+Hemos dado un salto generacional en la integración Harbour-Swift:
+*   **Universal Dispatcher (Type-Agnostic)**: El bridge ya no necesita conocer el tipo de control. Todo se maneja por IDs y estados atómicos, simplificando el mantenimiento un 90%.
+*   **Geometría Reactiva**: Primer sistema de coordenadas dinámicas en tiempo real. Al cambiar `oControl:nTop` en Harbour, el objeto se desplaza en SwiftUI instantáneamente.
+*   **Bridge Minimalista**: Reducción de la complejidad de comunicación. Las llamadas de orquestación de ventanas han pasado de 7 parámetros a solo **2** (IDs puros).
+*   **Self-Identifying Components**: Los controles son autónomos; nacen con su identidad y estado cargado en el `hState`, eliminando latencias de inicialización.
+
 ## 🚀 Componentes de Lista y Navegación
-Hemos transformado el sistema de selección de listas para ofrecer una experiencia 100% macOS nativa y de alto rendimiento:
-*   **Nuevo `MsgSelectList`**: Selector modal con filtrado en tiempo real (`NSSearchField`).
-*   **Live Search Standalone**: Soporte para ListBox clásicos con búsqueda asistida.
-*   **Mapeo Inteligente**: Las selecciones filtradas devuelven siempre la posición real del array Harbour.
 
 ## 📝 Motores de Edición y Scintilla
 *   **Scintilla 5**: Migración al framework 5 para mayor estabilidad en macOS modernos.
