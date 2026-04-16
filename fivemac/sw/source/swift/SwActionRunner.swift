@@ -6,8 +6,8 @@ import AppKit
 
 @_cdecl("HB_FUN_SW_GET_PROXY_MAP")
 public func sw_get_proxy_map_hb(_ p: UnsafeMutableRawPointer?) {
-    // 1. Despertamos al Dispatcher para que se ejecute la autorregistración de módulos
     _ = SwDispatcher.shared
+    SwDispatcher.registerUniversal()
     
     // 2. Obtenemos el mapa de capacidades registradas
     let map = SwCapabilities.shared.getProxyMap()

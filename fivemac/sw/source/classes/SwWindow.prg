@@ -3,7 +3,7 @@
 CLASS TSwWindow FROM TSwiftControl
 
     METHOD New( cTitle, nWidth, nHeight, cId )
-    METHOD AddControl( oControl, nTop, nLeft, nType )
+    METHOD AddControl( oControl, nTop, nLeft )
     METHOD Activate()
     METHOD SetTitle( cTitle )
     METHOD Center()
@@ -21,6 +21,8 @@ METHOD New( cTitle, nWidth, nHeight, cId ) CLASS TSwWindow
 
     ::hWnd = SW_CREATEWINDOW( cTitle, nWidth, nHeight, ::cId )
     
+    ::hState["type"] := "window"
+    
     // Register directly using our already-set ID
     // avoiding standard :Register() to not touch SW_GET_ID
     SwiftRegisterItem( ::cId, Self )
@@ -36,40 +38,26 @@ METHOD Activate( lCenter ) CLASS TSwWindow
     SW_APPRUN()
 return nil
 
-METHOD AddControl( oControl, nTop, nLeft, nType ) CLASS TSwWindow
-    local cCaption := ""
+METHOD AddControl( oControl, nTop, nLeft ) CLASS TSwWindow
     
     // Ignore automatic calls from New() that don't specify coordinates
     if nTop == nil .and. nLeft == nil
        return nil
     endif
 
-    // If type is not passed, try to infer it (legacy/fallback)
-    if nType == nil
-        nType := 0
-        if oControl:IsKindOf( "TSWBUTTON" ) ; nType := 9 ; endif
-        if oControl:IsKindOf( "TSWAICHAT" ) ; nType := 17 ; endif
-        if oControl:IsKindOf( "TSWLABEL" )  ; nType := 0 ; endif
-    endif
-    
-    cCaption := If( __ObjHasMsg( oControl, "CCAPTION" ), oControl:cCaption, "" )
-    if Empty( cCaption ) .and. __ObjHasMsg( oControl, "CAPTION" )
-       cCaption := oControl:Caption
-    endif
-    
-    SW_ADD_WINDOW_ITEM( ::cId, oControl:cId, nTop, nLeft, oControl:nWidth, oControl:nHeight, nType, cCaption )
+    SW_ADD_WINDOW_ITEM( ::cId, oControl:cId )
 
 return nil
 
 
 METHOD SetTitle( cTitle ) CLASS TSwWindow
-    SD:WindowTitle( ::cId, cTitle )
+    SD:Apply( ::cId, { "title" => cTitle } )
 return nil
 
 METHOD Center() CLASS TSwWindow
-    SD:WindowCenter( ::cId )
+    SD:Apply( ::cId, { "center" => .t. } )
 return nil
 
 METHOD End() CLASS TSwWindow
-    SD:WindowClose( ::cId )
+    SD:Apply( ::cId, { "close" => .t. } )
 return ::Super:End()

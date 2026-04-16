@@ -13,44 +13,33 @@ public struct SwRecursiveItemView: View {
         Group {
             switch item.type {
             case .button:
-                // Custom Capsule Button for maximum persistence during focus loss
-                Text(item.content)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .frame(width: CGFloat(item.itemWidth ?? 150), height: CGFloat(item.itemHeight ?? 40))
-                    .background {
-                        Capsule()
-                            .fill(
-                                isPressed 
-                                ? LinearGradient(colors: [Color.blue.opacity(0.8), Color.blue], startPoint: .top, endPoint: .bottom)
-                                : LinearGradient(colors: [Color.blue, Color.blue.opacity(0.8)], startPoint: .top, endPoint: .bottom)
-                            )
-                            .shadow(color: .black.opacity(isPressed ? 0.1 : 0.2), radius: isPressed ? 1 : 3, x: 0, y: isPressed ? 1 : 2)
-                    }
-                    .scaleEffect(isPressed ? 0.96 : 1.0)
-                    .contentShape(Capsule())
-                    // Manual press gesture to avoid native Button optimizations that hide it
-                    .onLongPressGesture(minimumDuration: 0.0, pressing: { pressing in
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
-                            isPressed = pressing
-                        }
-                    }, perform: {
-                        onAction?(item.id)
-                    })
+                if let state = ViewRegistry.getState(for: item.id) as? ButtonState {
+                    SwiftButtonView(state: state, onAction: onAction)
+                        .frame(width: CGFloat(item.itemWidth ?? 100), height: CGFloat(item.itemHeight ?? 40))
+                }
 
             case .text:
-                Text(item.content)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(item.fgColor.map { Color(rgba: $0) } ?? .primary)
+                if let state = ViewRegistry.getState(for: item.id) as? LabelState {
+                    SwiftLabelView(state: state)
+                        .frame(width: CGFloat(item.itemWidth ?? 100), height: CGFloat(item.itemHeight ?? 20))
+                }
                 
             case .aichat:
                 if let state = ViewRegistry.get(item.id) as? SwiftAIChatState {
                     SwiftAIChatView(state: state)
                         .frame(width: CGFloat(item.itemWidth ?? 400), height: CGFloat(item.itemHeight ?? 300))
-                } else {
-                    Text("AIChat State not found: \(item.id)")
+                }
+
+            case .toggle:
+                if let state = ViewRegistry.getState(for: item.id) as? ToggleState {
+                    SwiftToggleView(state: state)
+                        .frame(width: CGFloat(item.itemWidth ?? 200), height: CGFloat(item.itemHeight ?? 30))
+                }
+
+            case .slider:
+                if let state = ViewRegistry.getState(for: item.id) as? SliderState {
+                    SwiftSliderView(state: state)
+                        .frame(width: CGFloat(item.itemWidth ?? 200), height: CGFloat(item.itemHeight ?? 30))
                 }
 
             default:
@@ -79,7 +68,7 @@ public struct SwWindowView: View {
                 )
             }
         }
-        .drawingGroup() // Flatten hierarchy to Metal texture for maximum persistence 
+        // .drawingGroup() // ELIMINADO: Impedía el renderizado de controles nativos como Toggle
         .frame(minWidth: 100, minHeight: 100)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

@@ -176,17 +176,38 @@ struct MessageBubble: View {
     }
 }
 
+// MARK: - AIChat Initialization (Codable)
+public struct AIChatInit: Codable {
+    public let width: Double?
+    public let height: Double?
+    public let top: Double?
+    public let left: Double?
+}
+
 // MARK: - Bridge
 @_cdecl("HB_FUN_SW_AICHAT_CREATE_STATE")
 public func sw_aichat_create_state_hb(_ p: UnsafeMutableRawPointer?) {
     let id = hb_parc(1).map { String(cString: $0) } ?? ""
-    let apiKey = hb_parc(2).map { String(cString: $0) } ?? ""
-    let model = hb_parc(3).map { String(cString: $0) } ?? ""
-    let apiurl = hb_parc(4).map { String(cString: $0) } ?? ""
+    let jsonStr = hb_parc(2).map { String(cString: $0) } ?? "{}"
+    let apiKey = hb_parc(3).map { String(cString: $0) } ?? ""
+    let model = hb_parc(4).map { String(cString: $0) } ?? ""
+    let apiurl = hb_parc(5).map { String(cString: $0) } ?? ""
+    
+    let decoder = JSONDecoder()
+    let initial = (try? decoder.decode(AIChatInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
+                ?? AIChatInit(width: 400, height: 300, top: 0, left: 0)
     
     print("AIChat: Inicializando estado para el control \(id)")
     let state = SwiftAIChatState(apiKey: apiKey, model: model, apiUrl: apiurl)
     ViewRegistry.register(state, for: id)
+    
+    // Autoregistro del Layout Item (con coordenadas del hState)
+    let item = StackItem(type: .aichat, id: id)
+    item.itemWidth = initial.width ?? 400
+    item.itemHeight = initial.height ?? 300
+    item.x = initial.left ?? 0
+    item.y = initial.top ?? 0
+    ViewRegistry.register(item, for: id)
 }
 
 @_cdecl("HB_FUN_SW_AICHAT_CLEAR")

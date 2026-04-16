@@ -23,19 +23,25 @@ public class ViewRegistry {
     private static var itemRegistry: [String: StackItem] = [:]
 
     public static func register(_ value: Any, for id: String) {
-        if let view = value as? NSView { views[id] = view }
-        else if let item = value as? StackItem { itemRegistry[id] = item }
-        else { states[id] = value }
+        let cleanId = id.lowercased()
+        if let view = value as? NSView { views[cleanId] = view }
+        else if let item = value as? StackItem { itemRegistry[cleanId] = item }
+        else { states[cleanId] = value }
     }
 
-    public static func get(_ id: String) -> Any? { states[id] ?? views[id] ?? itemRegistry[id] }
-    public static func getState(for id: String) -> Any? { states[id] }
-    public static func getView(for id: String) -> NSView? { views[id] }
-    public static func getItem(for id: String) -> StackItem? { itemRegistry[id] }
+    public static func get(_ id: String) -> Any? { 
+        let cleanId = id.lowercased()
+        return states[cleanId] ?? views[cleanId] ?? itemRegistry[cleanId] 
+    }
+    public static func getState(for id: String) -> Any? { states[id.lowercased()] }
+    public static func getView(for id: String) -> NSView? { views[id.lowercased()] }
+    public static func getItem(for id: String) -> StackItem? { itemRegistry[id.lowercased()] }
+
     public static func clean(id: String) { 
-        states.removeValue(forKey: id)
-        views.removeValue(forKey: id)
-        itemRegistry.removeValue(forKey: id)
+        let cleanId = id.lowercased()
+        states.removeValue(forKey: cleanId)
+        views.removeValue(forKey: cleanId)
+        itemRegistry.removeValue(forKey: cleanId)
     }
 }
 
@@ -43,19 +49,18 @@ public class ViewRegistry {
 @Observable
 public class StackItem: Identifiable {
     public enum ItemType: Int, Codable {
-        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, aichat = 17
+        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, aichat = 17
     }
     public let id: String
     public var type: ItemType
-    public var content: String
     public var x: Double?
     public var y: Double?
     public var itemWidth: Double?
     public var itemHeight: Double?
     public var fgColor: ColorRGBA?
     
-    public init(type: ItemType, content: String, id: String = UUID().uuidString) {
-        self.type = type; self.content = content; self.id = id
+    public init(type: ItemType, id: String = UUID().uuidString) {
+        self.type = type; self.id = id
     }
 }
 
@@ -67,6 +72,31 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState {
     public init() {}
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
     public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
+}
+
+@Observable
+public class SwiftWindowState: SwiftVStackState, SwApplyable {
+    public var windowId: String = ""
+    
+    public init(id: String) {
+        self.windowId = id
+        super.init()
+    }
+    
+    public func apply(property: String, value: Any) {
+        let prop = property.lowercased()
+        DispatchQueue.main.async {
+            if let win = ViewRegistry.get("NSWindow_\(self.windowId)") as? NSWindow {
+                if prop == "title", let v = value as? String {
+                    win.title = v
+                } else if prop == "center" {
+                    win.center()
+                } else if prop == "close" {
+                    win.close()
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Layout Utilities

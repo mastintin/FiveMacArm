@@ -42,16 +42,11 @@ public class SwDispatcher {
     // MARK: - State Tracking (The Train Reporting)
     
     public func recordChange(id: String, property: String, value: Any) {
-        // Buscamos el tipo de control para poder traducir la propiedad
-        var mappedProperty = property
-        if let item = ViewRegistry.getItem(for: id) {
-            let controlType = "\(item.type)".lowercased()
-            mappedProperty = SwCapabilities.shared.getHarbourField(for: controlType, cmd: property)
-        }
+        let cleanProp = property.lowercased()
         
         queue.sync(flags: .barrier) {
             if stateChanges[id] == nil { stateChanges[id] = [:] }
-            stateChanges[id]?[mappedProperty] = value
+            stateChanges[id]?[cleanProp] = value
         }
     }
     
@@ -88,5 +83,41 @@ public class SwDispatcher {
         FilesCommands.register(in: self)
         ViewsCommands.register(in: self)
         SystemCommands.register(in: self)
+    }
+
+    // DISPATCHER UNIVERSAL: Mapea directamente nombres de propiedades
+    public static func registerUniversal() {
+
+        self.shared.register("apply") { params in
+            let id = ((params["id"] as? String) ?? (params["p1"] as? String) ?? "").lowercased()
+            await MainActor.run {
+                if let state = ViewRegistry.getState(for: id) as? SwApplyable {
+                    for (key, value) in params {
+                        if key != "id" && !key.hasPrefix("p") && key != "cmd" {
+                            state.apply(property: key, value: value)
+                            
+                            // MEJORA: Si es una propiedad de geometría, actualizar también el StackItem (Item de Layout)
+                            if let item = ViewRegistry.getItem(for: id) {
+                                switch key.lowercased() {
+                                case "top":
+                                    if let n = (value as? NSNumber)?.doubleValue { item.y = n }
+                                case "left":
+                                    if let n = (value as? NSNumber)?.doubleValue { item.x = n }
+                                case "width":
+                                    if let n = (value as? NSNumber)?.doubleValue { item.itemWidth = n }
+                                case "height":
+                                    if let n = (value as? NSNumber)?.doubleValue { item.itemHeight = n }
+                                default:
+                                    break
+                                }
+                            }
+
+                            // INFORMAMOS DE VUELTA: Para que Harbour confirme su hState
+                            self.shared.recordChange(id: id, property: key, value: value)
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -5,16 +5,20 @@
 // Punto de entrada global: SD:Metodo()
 // -------------------------------------------------------------------------- //
 
-function Sw_GetProxy()
+function Sw_GetProxy( lRefresh )
    static oProxy
    local cJson, hMap := {=>}
    
-   if oProxy == nil
+   if oProxy == nil .or. lRefresh == .T.
       // Consultamos a la aduana de Swift (ActionRunner)
       cJson := SW_GET_PROXY_MAP()
       hb_jsonDecode( cJson, @hMap )
       
-      oProxy := TSwProxy():New( hMap )
+      if oProxy == nil
+         oProxy := TSwProxy():New( hMap )
+      else
+         oProxy:hMap := hMap
+      endif
    endif
 return oProxy
 
@@ -63,8 +67,10 @@ METHOD OnError( ... ) CLASS TSwProxy
    local n, uRet
    local lSync := ::lSync
    
-   if Sw_IsSyncing() 
-      return nil
+   // El proxy global no tiene ID, así que dejamos que fluyan los comandos
+   // La seguridad real se aplica en TSwControlProxy
+   if ::lSync .and. Sw_IsSyncing()
+       // Opcional: algún log si fuera necesario
    endif
    
    // Reseteamos el flag de sincronía para la siguiente llamada
@@ -72,15 +78,24 @@ METHOD OnError( ... ) CLASS TSwProxy
    
    SW_LOG( "TSwProxy:OnError -> " + cMsg )
    
-   // Traducimos comando si existe en el mapa
-   if hb_HHasKey( ::hMap, cMsg )
-      cMsg := ::hMap[ cMsg ]
+   // Caso especial para comando universal
+   if Upper( cMsg ) == "APPLY"
+      if ValType( aArgs[2] ) == "H"
+         hParams := aArgs[2]
+      endif
+      hParams[ "id" ] := aArgs[1]
+      cMsg := "apply"
+   else
+      // Traducimos comando si existe en el mapa
+      if hb_HHasKey( ::hMap, cMsg )
+         cMsg := ::hMap[ cMsg ]
+      endif
+      
+      // Empaquetamos argumentos posicionales para el Dispatcher de Swift
+      for n := 1 to Len( aArgs )
+         hParams[ "p" + AllTrim( Str( n ) ) ] := aArgs[ n ]
+      next
    endif
-   
-   // Empaquetamos argumentos posicionales para el Dispatcher de Swift
-   for n := 1 to Len( aArgs )
-      hParams[ "p" + AllTrim( Str( n ) ) ] := aArgs[ n ]
-   next
    
    if ::lBuffering
       ::oCurrentStack:AddCall( cMsg, hParams )
@@ -88,10 +103,10 @@ METHOD OnError( ... ) CLASS TSwProxy
       // Ejecución inmediata
       if lSync
          hParams[ "cmd" ] := cMsg 
-         SW_LOG( "TSwProxy:SYNC_EXEC -> " + cMsg )
          uRet := SW_PIPELINE_EXEC_SYNC( hb_jsonEncode( { hParams } ) )
          return uRet
       else
+
          with object TSwActionStack():New()
          :AddCall( cMsg, hParams )
          :Execute()
@@ -122,29 +137,40 @@ METHOD OnError( ... ) CLASS TSwControlProxy
    local aArgs   := hb_AParams()   
    local oProxy  := Sw_GetProxy()
    local hParams := {=>}
-   local n, uRet
+   local n, uRet, cProp
    
-   if Sw_IsSyncing() 
+   if Sw_IsSyncing() .and. Upper( AllTrim( Sw_CurrentSyncID() ) ) == Upper( AllTrim( ::cId ) )
       return nil
    endif
    
-   // 1. Traducimos el mensaje usando el mapa global (ej: SetText -> text)
-   if hb_HHasKey( oProxy:hMap, cMsg )
-      cMsg := oProxy:hMap[ cMsg ]
+   // Si el comando no es APPLY, lo mandamos como propiedad directa ('apply')
+   if Upper( cMsg ) == "APPLY"
+      if ValType( aArgs[1] ) == "H"
+         hParams := aArgs[1]
+      endif
+      cMsg := "apply"
+   else
+      if hb_HHasKey( oProxy:hMap, cMsg )
+         cMsg := oProxy:hMap[ cMsg ]
+         // Aquí mandamos argumentos tradicionales p1, p2...
+         hParams[ "p1" ] := ::cId
+         for n := 1 to Len( aArgs )
+            hParams[ "p" + AllTrim( Str( n + 1 ) ) ] := aArgs[ n ]
+         next
+      else
+         cProp := Lower( __GetMessage() )
+         if Left( cProp, 3 ) == "set" ; cProp := SubStr( cProp, 4 ) ; endif
+         cMsg := "apply"
+         hParams[ cProp ] := aArgs[1]
+      endif
    endif
+
+   hParams[ "id" ] := ::cId
+
    
-   // 2. Inyectamos el ID como p1 y desplazamos el resto
-   hParams[ "id" ] := ::cId  // Por si el comando usa 'id' explícito
-   hParams[ "p1" ] := ::cId
-   for n := 1 to Len( aArgs )
-      hParams[ "p" + AllTrim( Str( n + 1 ) ) ] := aArgs[ n ]
-   next
-   
-   // 3. Respetamos el estado de Buffering global si existe
    if oProxy:lBuffering
       oProxy:oCurrentStack:AddCall( cMsg, hParams )
    else
-      // 4. Ejecución inmediata (Sync o Async según nos pidieron)
       if ::lSync
          hParams[ "cmd" ] := cMsg 
          uRet := SW_PIPELINE_EXEC_SYNC( hb_jsonEncode( { hParams } ) )

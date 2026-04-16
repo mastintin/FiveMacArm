@@ -13,13 +13,13 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 ## 🏝️ Swift Island (sw): Revolucionaria Arquitectura Harbour-Swift
 Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.
 
+*   **Universal Dispatcher 2.0 (Type-Agnostic)**: Se ha eliminado totalmente la necesidad de pasar tipos de control al orquestador de ventanas. Ahora el bridge solo maneja IDs, delegando la identidad y el renderizado al registro universal de Swift.
+*   **Geometría Reactiva en Tiempo Real**: Implementación de `ACCESS/ASSIGN` para `nTop`, `nLeft`, `nWidth` y `nHeight` en la clase base. Cualquier cambio en estas propiedades desde Harbour se refleja instantáneamente en la UI de SwiftUI sin parpadeos ni refrescos de ventana.
+*   **Bridge Minimalista**: Reducción drástica del tráfico en el bridge. La función `SW_ADD_WINDOW_ITEM` ha pasado de 7 parámetros a solo **2 parámetros** (ID Ventana e ID Control), simplificando el mantenimiento y mejorando el rendimiento.
+*   **Identidad en el Estado (hState)**: Cada componente nace ahora con su "mochila" de metadatos completa (`type`, geometría, estado), permitiendo que los controles sean entidades autónomas y self-positioning desde el primer milisegundo.
 *   **Ventanas Swift Nativas**: La interfaz se construye directamente con el motor de Swift, permitiendo acceso a todas las capacidades modernas de macOS (Translucidez, animaciones fluidas, layouts dinámicos).
-*   **Protocolo de Comunicación "Zero-Bridge"**: Se elimina la necesidad de `HarbourDirect` y de crear manualmente funciones puente (`.m` o `.swift`) para cada control. Todo fluye a través de un canal JSON unificado.
-*   **Arquitectura de Lotes (ActionStack)**: 
-    *   **Pipeline Transaccional**: Las acciones se agrupan en lotes (stacks) y se envían en una sola transacción, optimizando el rendimiento y evitando el parpadeo de la UI.
-    *   **Ejecución Dual**: Soporte nativo para llamadas **Síncronas** (Harbour espera la respuesta para procesos críticos) y **Asíncronas** (Harbour sigue adelante para una UI ultra-fluida).
-*   **Mapeo Automático de Funcionalidad**: Gracias al uso de `ERROR HANDLER` en Harbour y un `Dispatcher` inteligente en Swift, cualquier mensaje enviado a un objeto Proxy se traduce automáticamente en un comando Swift sin picar una sola línea de código puente.
-*   **Estado Sincronizado (Return Train)**: Swift notifica automáticamente a Harbour de cualquier cambio de estado (texto, valores, posiciones), manteniendo los objetos de Harbour siempre sincronizados mediante un sistema de retroalimentación inteligente con protección contra bucles.
+*   **Protocolo de Comunicación "Zero-Bridge"**: Se elimina la necesidad de `HarbourDirect` y de crear manualmente funciones puente para cada control. Todo fluye a través de un canal JSON unificado.
+*   **Estado Sincronizado (Return Train)**: Swift notifica automáticamente a Harbour de cualquier cambio de estado, manteniendo los objetos de Harbour siempre sincronizados.
 
 ## 📝 Modernización de Motores de Edición
 Gran salto adelante en las capacidades de edición de código:

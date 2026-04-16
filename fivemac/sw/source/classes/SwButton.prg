@@ -5,7 +5,7 @@ CLASS TSwButton FROM TSwiftControl
     DATA bAction
     DATA bPipeline    // NUEVO: Puntero de autopista directa para Lotes
 
-    ACCESS Caption      INLINE ::hState["Caption"]
+    ACCESS Caption      INLINE ::hState["caption"]
     ASSIGN Caption( c ) INLINE ::SetText( c )
 
     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId )
@@ -25,17 +25,18 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, c
     
     ::bAction  := bAction
     ::oWnd     := oWnd
-    ::hState["Caption"] := cPrompt
+    ::hState["caption"] := cPrompt
+    ::hState["type"]    := 9
    
     // 1. Crear el estado y el item en Swift
-    SW_BUTTON_CREATE( ::cId, cPrompt )
+    SW_BUTTON_CREATE( ::cId, hb_jsonEncode( ::hState ) )
     
     // 2. Registrar en Harbour
     SwiftRegisterItem( ::cId, Self )
     
     // 3. Añadir a la ventana
     if oWnd != nil
-        oWnd:AddControl( Self, nTop, nLeft, 9 )
+        oWnd:AddControl( Self, nTop, nLeft )
     endif
 
 return Self

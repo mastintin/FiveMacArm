@@ -21,12 +21,16 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cApiKey, cModel, cApiUrl ) CLASS
    ::nHeight := nHeight
    ::oWnd := oWnd
 
-   // 1. Crear el estado en Swift
-   SW_AICHAT_CREATE_STATE( ::cId, cApiKey, cModel, cApiUrl )
+   ::hState["type"]   := 17
 
-   // 2. Añadirlo a la ventana (Tipo 17)
+   // 1. Crear el estado en Swift
+   SW_AICHAT_CREATE_STATE( ::cId, hb_jsonEncode( ::hState ), cApiKey, cModel, cApiUrl )
+
+   // 2. Añadirlo a la ventana
    if !Empty( oWnd )
       oWnd:AddControl( Self, nTop, nLeft )
    endif
+
+   SwiftRegisterItem( ::cId, Self )
 
 return Self

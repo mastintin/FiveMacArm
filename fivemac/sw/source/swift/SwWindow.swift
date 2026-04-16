@@ -25,7 +25,7 @@ public func sw_createwindow_hb(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRa
     
     print("SwiftWindow: Creando ventana \(windowId) - \(title) (\(width)x\(height))")
     
-    let state = SwiftVStackState()
+    let state = SwiftWindowState(id: windowId)
     ViewRegistry.register(state, for: windowId)
     
     DispatchQueue.main.async {
@@ -64,40 +64,14 @@ public func sw_createwindow_hb(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRa
 public func sw_add_window_item_hb(_ p: UnsafeMutableRawPointer?) {
     // 1: windowId (C)
     // 2: itemId (C)
-    // 3: top (N)
-    // 4: left (N)
-    // 5: width (N)
-    // 6: height (N)
-    // 7: type (N)
-    // 8: content (C)
     
     let windowId = hb_parc(1).map { String(cString: $0) } ?? ""
     let itemId = hb_parc(2).map { String(cString: $0) } ?? ""
-    let top = Int(hb_parni(3))
-    let left = Int(hb_parni(4))
-    let width = Int(hb_parni(5))
-    let height = Int(hb_parni(6))
-    let type = Int(hb_parni(7))
-    let content = hb_parc(8).map { String(cString: $0) } ?? ""
-    
-    print("Bridge: Recibido Item \(itemId) - Tipo: \(type), Pos: (\(left), \(top)), Size: \(width)x\(height), Contenido: \(content)")
-    
-    let itype = StackItem.ItemType(rawValue: type) ?? .text
-    let item = StackItem(type: itype, content: content, id: itemId)
-    item.x = Double(left)
-    item.y = Double(top)
-    item.itemWidth = Double(width)
-    item.itemHeight = Double(height)
-    
-    // Register globally for Action Stacking
-    ViewRegistry.register(item, for: itemId)
     
     DispatchQueue.main.async {
-        if let state = ViewRegistry.getState(for: windowId) as? SwiftVStackState {
+        if let state = ViewRegistry.getState(for: windowId) as? SwiftVStackState,
+           let item = ViewRegistry.getItem(for: itemId) {
             state.items.append(item)
-            print("Bridge: Item \(itemId) añadido al estado de la ventana \(windowId)")
-        } else {
-            print("Bridge: Error - No se encontró el estado para la ventana \(windowId)")
         }
     }
 }

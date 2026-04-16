@@ -51,22 +51,39 @@ public class ButtonState {
 
 
 
+// MARK: - Button Initialization (Codable)
+public struct ButtonInit: Codable {
+    public let caption: String?
+    public let width: Double?
+    public let height: Double?
+    public let top: Double?
+    public let left: Double?
+}
+
 // MARK: - Native Bridge (Harbour Interface)
 
 @_cdecl("HB_FUN_SW_BUTTON_CREATE")
 public func sw_button_create_hb(_ p: UnsafeMutableRawPointer?) {
     let id = hb_parc(1).map { String(cString: $0) } ?? UUID().uuidString
-    let caption = hb_parc(2).map { String(cString: $0) } ?? ""
+    let jsonStr = hb_parc(2).map { String(cString: $0) } ?? "{}"
+    
+    let decoder = JSONDecoder()
+    let initial = (try? decoder.decode(ButtonInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
+                ?? ButtonInit(caption: "Button", width: 90, height: 30, top: 0, left: 0)
     
     if ViewRegistry.getState(for: id) == nil {
-        let state = ButtonState(id: id, caption: caption)
+        let state = ButtonState(id: id, caption: initial.caption ?? "")
         ViewRegistry.register(state, for: id)
         
-        // CORRECCIÓN AQUÍ: Se añade el parámetro content
-        let item = StackItem(type: .button, content: caption, id: id)
+        let item = StackItem(type: .button, id: id)
+        item.itemWidth = initial.width ?? 90
+        item.itemHeight = initial.height ?? 30
+        item.x = initial.left ?? 0
+        item.y = initial.top ?? 0
         ViewRegistry.register(item, for: id)
     }
-     // AUTORREGISTRACIÓN: Definimos cómo nos ven desde Harbour y cómo respondemos
+    
+    // AUTORREGISTRACIÓN: Definimos cómo nos ven desde Harbour y cómo respondemos
     SwCapabilities.shared.register(
         control: "button",
         commands: [
@@ -125,29 +142,36 @@ public func sw_button_setcolor_hb(_ p: UnsafeMutableRawPointer?) {
     }
 }
 
-// MARK: - SwiftUI View Component
-public struct SwButton: View {
-    let state: ButtonState
-    
-    public init(state: ButtonState) {
-        self.state = state
-    }
+// MARK: - Button View (Visual)
+public struct SwiftButtonView: View {
+    @Bindable var state: ButtonState
+    let onAction: ((String) -> Void)?
+    @State private var isPressed = false
     
     public var body: some View {
-        if state.isVisible {
-            Button(action: {
-                // Aquí dispararías el evento hacia Harbour si lo necesitas
-                print("Botón \(state.id) pulsado")
-            }) {
-                Text(state.caption)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(state.backgroundColor)
-                    .foregroundColor(state.foregroundColor)
-                    .cornerRadius(state.cornerRadius)
+        Text(state.caption)
+            .font(.system(size: 14, weight: .bold))
+            .foregroundStyle(state.foregroundColor)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .background {
+                Capsule()
+                    .fill(
+                        isPressed 
+                        ? LinearGradient(colors: [state.backgroundColor.opacity(0.8), state.backgroundColor], startPoint: .top, endPoint: .bottom)
+                        : LinearGradient(colors: [state.backgroundColor, state.backgroundColor.opacity(0.8)], startPoint: .top, endPoint: .bottom)
+                    )
+                    .shadow(color: .black.opacity(0.2), radius: isPressed ? 1 : 3, x: 0, y: isPressed ? 1 : 2)
             }
-            .buttonStyle(.plain)
-        }
+            .scaleEffect(isPressed ? 0.96 : 1.0)
+            .contentShape(Capsule())
+            .onLongPressGesture(minimumDuration: 0.0, pressing: { pressing in
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
+                    isPressed = pressing
+                }
+            }, perform: {
+                onAction?(state.id)
+            })
     }
 }
 

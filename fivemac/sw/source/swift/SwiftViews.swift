@@ -31,14 +31,6 @@ internal struct ViewsCommands {
             state.apply(property: property, value: value as Any)
         }
         
-        // 2. Actualizar el Layout Item (Para que SwiftUI refresque la vista)
-        if property == "text" || property == "caption" {
-            if let item = ViewRegistry.getItem(for: id) {
-                // Desenvolvemos el valor para evitar el "Optional(...)"
-                let cleanValue = (value as? String) ?? String(describing: value)
-                item.content = cleanValue
-            }
-        }
 
         // 3. EL CHIVATAZO: Registramos el cambio para el Tren de Vuelta a Harbour
         SwDispatcher.shared.recordChange(id: id, property: property, value: value as Any)

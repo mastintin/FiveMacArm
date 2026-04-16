@@ -1,51 +1,43 @@
 #include "FiveMac.ch"
 
-// Tipo 0 en SwCommon.swift
 #define SW_TYPE_TEXT 0
 
 CLASS TSwLabel FROM TSwiftControl
 
-    ACCESS Caption      INLINE ::hState["Caption"]
-    ASSIGN Caption( c ) INLINE ::SetText( c )
+    ACCESS Caption    INLINE ::hState["text"]
+    ASSIGN Caption(c) INLINE ::SetText(c)
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId )
-    METHOD SetText( cText )
-    METHOD Refresh() INLINE nil
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId ) CONSTRUCTOR
+    METHOD SetText( cText, lSync )
 
 ENDCLASS
 
-METHOD SetText( cText, lSync ) CLASS TSwLabel
-    DEFAULT lSync := .F.
-    
-    SW_LOG( "TSwLabel:SetText -> ID: " + ::cId + " Text: " + cText + " Sync: " + hb_ValToStr( lSync ) )
-
-    if lSync
-        SDS:Text( ::cId, cText )
-    else    
-        SD:Text( ::cId, cText )
-    endif
-    ::hState["Caption"] := cText
-return nil
+// -------------------------------------------------------------------------------- //
 
 METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId ) CLASS TSwLabel
 
-    default nWidth := 100, nHeight := 20, cText := ""
-    
+    default nWidth := 300, nHeight := 20, cText := ""
     if Empty( cId ) ; cId := hb_UUID() ; endif
 
-    ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
-    
-    ::hState["Caption"] := cText
-    ::oWnd     := oWnd
+    ::nTop := nTop ; ::nLeft := nLeft ; ::nWidth := nWidth ; ::nHeight := nHeight ; ::cId := cId
 
-    // 1. Crear el ítem en Swift con su autorregistro de capacidades
-    SW_LABEL_CREATE( ::cId, cText )
+    ::hState["text"]   := cText
+    ::hState["type"]   := SW_TYPE_TEXT
 
-    // 2. Registrar en el almacén de Harbour (para el Tren de Vuelta)
+    SW_LABEL_CREATE( ::cId, hb_jsonEncode( ::hState ) )
+
+    if oWnd != nil ; oWnd:AddControl( Self, nTop, nLeft ) ; endif
+
     SwiftRegisterItem( ::cId, Self )
 
-    if !Empty( oWnd )
-        oWnd:AddControl( Self, nTop, nLeft, SW_TYPE_TEXT )
-    endif
+return self
 
-return Self
+METHOD SetText( cText, lSync ) CLASS TSwLabel
+    DEFAULT lSync := .f.
+    ::hState["text"] := cText
+    if ( lSync == .T. )
+       SDS:Apply( ::cId, { "text" => cText } )
+    else
+       SD:Apply( ::cId, { "text" => cText } )
+    endif
+return nil
