@@ -9,22 +9,28 @@ function Main()
 
     @ 10, 20 SAY oSay PROMPT "Navegador Reactivo" OF oWnd SIZE 300, 30
 
-    @ 50, 20 WEBVIEW oWeb URL cUrl OF oWnd SIZE 760, 480
+    @ 50, 20 WEBVIEW oWeb URL cUrl OF oWnd SIZE 760, 480 ;
+        AUTORESIZE SW_RESIZE_WIDTH + SW_RESIZE_HEIGHT
 
     @ 540, 20 BUTTON "Google" OF oWnd SIZE 100, 40 ;
-        ACTION oWeb:Url := "https://www.google.com"
+        ACTION oWeb:Url := "https://www.google.com" ;
+        AUTORESIZE SW_ANCHOR_BOTTOM
 
     @ 540, 130 BUTTON "Bing" OF oWnd SIZE 100, 40 ;
-        ACTION oWeb:Url := "https://www.bing.com"
+        ACTION oWeb:Url := "https://www.bing.com" ;
+        AUTORESIZE SW_ANCHOR_BOTTOM
 
     @ 540, 240 BUTTON "< Volver" OF oWnd SIZE 100, 40 ;
-        ACTION oWeb:GoBack()
+        ACTION oWeb:GoBack() ;
+        AUTORESIZE SW_ANCHOR_BOTTOM
 
     @ 540, 350 BUTTON "Subir 20px" OF oWnd SIZE 120, 40 ;
-        ACTION oWeb:nTop -= 20
+        ACTION oWeb:nTop -= 20 ;
+        AUTORESIZE SW_ANCHOR_BOTTOM
 
     @ 540, 480 BUTTON "Bajar 20px" OF oWnd SIZE 120, 40 ;
-        ACTION oWeb:nTop += 20
+        ACTION oWeb:nTop += 20 ;
+        AUTORESIZE SW_ANCHOR_BOTTOM
 
     ACTIVATE WINDOW oWnd CENTER
 

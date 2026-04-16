@@ -4,6 +4,8 @@ import SwiftUI
 /// It separates absolute positioning (ZStack) from the standard FiveMac VStack layout.
 public struct SwRecursiveItemView: View {
     @Bindable var item: StackItem
+    let width: CGFloat
+    let height: CGFloat
     let onAction: ((String) -> Void)?
     let index: Int
     
@@ -15,37 +17,37 @@ public struct SwRecursiveItemView: View {
             case .button:
                 if let state = ViewRegistry.getState(for: item.id) as? ButtonState {
                     SwiftButtonView(state: state, onAction: onAction)
-                        .frame(width: CGFloat(item.itemWidth ?? 100), height: CGFloat(item.itemHeight ?? 40))
+                        .frame(width: width, height: height)
                 }
 
             case .text:
                 if let state = ViewRegistry.getState(for: item.id) as? LabelState {
                     SwiftLabelView(state: state)
-                        .frame(width: CGFloat(item.itemWidth ?? 100), height: CGFloat(item.itemHeight ?? 20))
+                        .frame(width: width, height: height)
                 }
                 
             case .aichat:
                 if let state = ViewRegistry.get(item.id) as? SwiftAIChatState {
                     SwiftAIChatView(state: state)
-                        .frame(width: CGFloat(item.itemWidth ?? 400), height: CGFloat(item.itemHeight ?? 300))
+                        .frame(width: width, height: height)
                 }
 
             case .toggle:
                 if let state = ViewRegistry.getState(for: item.id) as? ToggleState {
                     SwiftToggleView(state: state)
-                        .frame(width: CGFloat(item.itemWidth ?? 200), height: CGFloat(item.itemHeight ?? 30))
+                        .frame(width: width, height: height)
                 }
 
             case .slider:
                 if let state = ViewRegistry.getState(for: item.id) as? SliderState {
                     SwiftSliderView(state: state)
-                        .frame(width: CGFloat(item.itemWidth ?? 200), height: CGFloat(item.itemHeight ?? 30))
+                        .frame(width: width, height: height)
                 }
 
             case .webview:
                 if let state = ViewRegistry.getState(for: item.id) as? WebViewState {
                     SwiftWebView(state: state)
-                        .frame(width: CGFloat(item.itemWidth ?? 400), height: CGFloat(item.itemHeight ?? 300))
+                        .frame(width: width, height: height)
                 }
 
             default:
@@ -66,10 +68,15 @@ public struct SwWindowView: View {
                 ForEach(state.items) { item in
                     let geometry = calculateGeometry(for: item, in: proxy.size)
                     
-                    SwRecursiveItemView(item: item, onAction: { itemId in
-                        Harbour.call("SW_FMH", itemId, 9) // 9 = WM_BTNCLICK
-                    }, index: 0)
-                    .frame(width: geometry.width, height: geometry.height)
+                    SwRecursiveItemView(
+                        item: item, 
+                        width: geometry.width,
+                        height: geometry.height,
+                        onAction: { itemId in
+                            Harbour.call("SW_FMH", itemId, 9) // 9 = WM_BTNCLICK
+                        }, 
+                        index: 0
+                    )
                     .position(
                         x: geometry.x + geometry.width / 2,
                         y: geometry.y + geometry.height / 2
