@@ -20,12 +20,12 @@ ENDCLASS
 
 // -------------------------------------------------------------------------------- //
 
-METHOD New( nTop, nLeft, nWidth, nHeight, lValue, cPrompt, oWnd, cId, lSwitch ) CLASS TSwToggle
+METHOD New( nTop, nLeft, nWidth, nHeight, lValue, cPrompt, oWnd, cId, lSwitch, nAutoResize ) CLASS TSwToggle
     
-    default nWidth := 200, nHeight := 30, lValue := .F., cPrompt := "", lSwitch := .F.
+    DEFAULT nWidth := 200, nHeight := 30, lValue := .F., cPrompt := "", lSwitch := .F.
     if Empty( cId ) ; cId := hb_UUID() ; endif
 
-    ::nTop := nTop ; ::nLeft := nLeft ; ::nWidth := nWidth ; ::nHeight := nHeight ; ::cId := cId
+    ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
     
     ::hState["value"]    := lValue
     ::hState["prompt"]   := cPrompt

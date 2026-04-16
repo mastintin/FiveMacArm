@@ -42,6 +42,12 @@ public struct SwRecursiveItemView: View {
                         .frame(width: CGFloat(item.itemWidth ?? 200), height: CGFloat(item.itemHeight ?? 30))
                 }
 
+            case .webview:
+                if let state = ViewRegistry.getState(for: item.id) as? WebViewState {
+                    SwiftWebView(state: state)
+                        .frame(width: CGFloat(item.itemWidth ?? 400), height: CGFloat(item.itemHeight ?? 300))
+                }
+
             default:
                 EmptyView()
             }
@@ -55,21 +61,76 @@ public struct SwWindowView: View {
     let id: String
     
     public var body: some View {
-        ZStack(alignment: .topLeading) {
-            // Background is now handled by NSWindow
-            ForEach(state.items) { item in
-                SwRecursiveItemView(item: item, onAction: { itemId in
-                    print("SwiftView: Enviando clic de \(itemId) a Harbour...")
-                    Harbour.call("SW_FMH", itemId, 9) // 9 = WM_BTNCLICK
-                }, index: 0)
-                .position(
-                    x: CGFloat((item.x ?? 0) + (item.itemWidth ?? 0) / 2),
-                    y: CGFloat((item.y ?? 0) + (item.itemHeight ?? 0) / 2)
-                )
+        GeometryReader { proxy in
+            ZStack(alignment: .topLeading) {
+                ForEach(state.items) { item in
+                    let geometry = calculateGeometry(for: item, in: proxy.size)
+                    
+                    SwRecursiveItemView(item: item, onAction: { itemId in
+                        Harbour.call("SW_FMH", itemId, 9) // 9 = WM_BTNCLICK
+                    }, index: 0)
+                    .frame(width: geometry.width, height: geometry.height)
+                    .position(
+                        x: geometry.x + geometry.width / 2,
+                        y: geometry.y + geometry.height / 2
+                    )
+                    .onAppear {
+                        if item.initialParentSize == nil {
+                            item.initialParentSize = proxy.size
+                        }
+                    }
+                }
             }
         }
-        // .drawingGroup() // ELIMINADO: Impedía el renderizado de controles nativos como Toggle
         .frame(minWidth: 100, minHeight: 100)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    // Logic for Anchors (AppKit style)
+    private func calculateGeometry(for item: StackItem, in currentSize: CGSize) -> (x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
+        let initialX = CGFloat(item.x ?? 0)
+        let initialY = CGFloat(item.y ?? 0)
+        let initialW = CGFloat(item.itemWidth ?? 100)
+        let initialH = CGFloat(item.itemHeight ?? 30)
+        
+        guard let initialParent = item.initialParentSize, item.resizemask != 0 else {
+            return (initialX, initialY, initialW, initialH)
+        }
+        
+        let diffW = currentSize.width - initialParent.width
+        let diffH = currentSize.height - initialParent.height
+        
+        var finalX = initialX
+        var finalY = initialY
+        var finalW = initialW
+        var finalH = initialH
+        
+        let mask = item.resizemask
+        
+        // Horizontal
+        if (mask & 2) != 0 { // AnchoMovil
+            finalW += diffW
+        } else if (mask & 1) != 0 { // AnclaRight
+            finalX += diffW
+        }
+        
+        // Vertical
+        if (mask & 16) != 0 { // AltoMovil
+            finalH += diffH
+        } else if (mask & 32) != 0 { // AnclaBottom
+            finalY += diffH
+        }
+        
+        // Return Train: Notify Harbour if geometry changed significantly
+        if finalX != initialX || finalY != initialY || finalW != initialW || finalH != initialH {
+             // We use a small optimization here: only sync if it really changed more than 1px
+             // to avoid bridge flooding.
+             DispatchQueue.main.async {
+                 let json = "{\"\(item.id)\":{\"top\":\(Int(finalY)),\"left\":\(Int(finalX)),\"width\":\(Int(finalW)),\"height\":\(Int(finalH))}}"
+                 Harbour.call("SW_PIPELINE_SYNC", json)
+             }
+        }
+        
+        return (finalX, finalY, finalW, finalH)
     }
 }

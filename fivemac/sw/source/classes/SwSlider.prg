@@ -15,26 +15,30 @@ CLASS TSwSlider FROM TSwiftControl
     ACCESS Max        INLINE ::hState["max"]
     ASSIGN Max( n )   INLINE ( ::hState["max"] := n, SD:Apply( ::cId, { "max" => n } ) )
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction )
+    METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction, nAutoResize )
     METHOD SetValue( nVal, lSync )
     METHOD Update( hNewState )
 
 ENDCLASS
 
-METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction ) CLASS TSwSlider
-
-    default nWidth := 200, nHeight := 30, nValue := 0, nMin := 0, nMax := 100
-    if Empty( cId ) ; cId := hb_UUID() ; endif
-
-    ::nTop := nTop ; ::nLeft := nLeft ; ::nWidth := nWidth ; ::nHeight := nHeight ; ::cId := cId ; ::bAction := bAction
+METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction, nAutoResize ) CLASS TSwSlider
+   
+   DEFAULT nWidth := 200, nHeight := 30
+   
+   if Empty( cId ) ; cId := hb_UUID() ; endif
+   
+   ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
+   
+   ::bAction := bAction
     
-    ::hState["value"]     := nValue
-    ::hState["min"]       := nMin
-    ::hState["max"]       := nMax
-    ::hState["showValue"] := .T.
-    ::hState["type"]      := SW_TYPE_SLIDER
-
-    SW_SLIDER_CREATE( ::cId, hb_jsonEncode( ::hState ) )
+   ::hState["value"]     := nValue
+   ::hState["min"]       := nMin
+   ::hState["max"]       := nMax
+   ::hState["showValue"] := .T.
+   ::hState["type"]      := 11
+   
+   // 1. Crear el estado y el item en Swift
+   SW_SLIDER_CREATE( ::cId, hb_jsonEncode( ::hState ) )
 
     if oWnd != nil ; oWnd:AddControl( Self, nTop, nLeft ) ; endif
 

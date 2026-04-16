@@ -58,6 +58,7 @@ public struct ButtonInit: Codable {
     public let height: Double?
     public let top: Double?
     public let left: Double?
+    public let resizemask: Int?
 }
 
 // MARK: - Native Bridge (Harbour Interface)
@@ -80,6 +81,7 @@ public func sw_button_create_hb(_ p: UnsafeMutableRawPointer?) {
         item.itemHeight = initial.height ?? 30
         item.x = initial.left ?? 0
         item.y = initial.top ?? 0
+        item.resizemask = initial.resizemask ?? 0
         ViewRegistry.register(item, for: id)
     }
     

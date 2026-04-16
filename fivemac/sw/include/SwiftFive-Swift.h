@@ -398,6 +398,8 @@ SWIFT_EXTERN void HB_FUN_SW_SLIDER_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_TOGGLE_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HB_FUN_SW_WEBVIEW_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
+
 #endif // defined(__OBJC__)
 #if __has_attribute(external_source_symbol)
 # pragma clang attribute pop

@@ -19,7 +19,10 @@ CLASS TSwiftControl
     ACCESS nHeight       INLINE ::hState["height"]
     ASSIGN nHeight( n )  INLINE ( ::hState["height"] := n, SD:Apply( ::cId, { "height" => n } ) )
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, cId )
+    ACCESS nAutoResize      INLINE ::hState["resizemask"]
+    ASSIGN nAutoResize( n ) INLINE ( ::hState["resizemask"] := n, SD:Apply( ::cId, { "resizemask" => n } ) )
+
+    METHOD New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
     METHOD End()
     METHOD SetPos( nTop, nLeft )
     METHOD SetSize( nWidth, nHeight )
@@ -30,16 +33,17 @@ CLASS TSwiftControl
  
 ENDCLASS
  
- METHOD New( nTop, nLeft, nWidth, nHeight, cId ) CLASS TSwiftControl
+ METHOD New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize ) CLASS TSwiftControl
      ::cId     := cId
      
-     DEFAULT nWidth := 100, nHeight := 30
+     DEFAULT nWidth := 100, nHeight := 30, nAutoResize := 0
 
     // Inicialización común de Estado (Sin disparar SD:Apply todavía)
-    ::hState["top"]    := nTop
-    ::hState["left"]   := nLeft
-    ::hState["width"]  := nWidth
-    ::hState["height"] := nHeight
+    ::hState["top"]         := nTop
+    ::hState["left"]        := nLeft
+    ::hState["width"]       := nWidth
+    ::hState["height"]      := nHeight
+    ::hState["resizemask"]  := nAutoResize
 
     SwiftRegisterItem( ::cId, Self )
  return Self

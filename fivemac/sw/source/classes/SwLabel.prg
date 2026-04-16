@@ -7,28 +7,29 @@ CLASS TSwLabel FROM TSwiftControl
     ACCESS Caption    INLINE ::hState["text"]
     ASSIGN Caption(c) INLINE ::SetText(c)
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId ) CONSTRUCTOR
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize )
     METHOD SetText( cText, lSync )
 
 ENDCLASS
 
 // -------------------------------------------------------------------------------- //
 
-METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId ) CLASS TSwLabel
+METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize ) CLASS TSwLabel
 
-    default nWidth := 300, nHeight := 20, cText := ""
-    if Empty( cId ) ; cId := hb_UUID() ; endif
+   DEFAULT nWidth := 100, nHeight := 20
+   
+   if Empty( cId ) ; cId := hb_UUID() ; endif
+   
+   ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
 
-    ::nTop := nTop ; ::nLeft := nLeft ; ::nWidth := nWidth ; ::nHeight := nHeight ; ::cId := cId
+   ::hState["text"]   := cText
+   ::hState["type"]   := SW_TYPE_TEXT
 
-    ::hState["text"]   := cText
-    ::hState["type"]   := SW_TYPE_TEXT
+   SW_LABEL_CREATE( ::cId, hb_jsonEncode( ::hState ) )
 
-    SW_LABEL_CREATE( ::cId, hb_jsonEncode( ::hState ) )
+   if oWnd != nil ; oWnd:AddControl( Self, nTop, nLeft ) ; endif
 
-    if oWnd != nil ; oWnd:AddControl( Self, nTop, nLeft ) ; endif
-
-    SwiftRegisterItem( ::cId, Self )
+   SwiftRegisterItem( ::cId, Self )
 
 return self
 

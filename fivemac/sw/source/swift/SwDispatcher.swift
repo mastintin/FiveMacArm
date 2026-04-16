@@ -107,6 +107,8 @@ public class SwDispatcher {
                                     if let n = (value as? NSNumber)?.doubleValue { item.itemWidth = n }
                                 case "height":
                                     if let n = (value as? NSNumber)?.doubleValue { item.itemHeight = n }
+                                case "resizemask":
+                                    if let n = (value as? NSNumber)?.intValue { item.resizemask = n }
                                 default:
                                     break
                                 }

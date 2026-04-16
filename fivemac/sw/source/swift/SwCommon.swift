@@ -49,7 +49,7 @@ public class ViewRegistry {
 @Observable
 public class StackItem: Identifiable {
     public enum ItemType: Int, Codable {
-        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, aichat = 17
+        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, aichat = 17
     }
     public let id: String
     public var type: ItemType
@@ -57,6 +57,8 @@ public class StackItem: Identifiable {
     public var y: Double?
     public var itemWidth: Double?
     public var itemHeight: Double?
+    public var resizemask: Int = 0
+    public var initialParentSize: CGSize? = nil
     public var fgColor: ColorRGBA?
     
     public init(type: ItemType, id: String = UUID().uuidString) {

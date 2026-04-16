@@ -52,6 +52,7 @@ public struct SliderInit: Codable {
     public let top: Double?
     public let left: Double?
     public let showValue: Bool?
+    public let resizemask: Int?
 }
 
 // MARK: - Native Bridge
@@ -77,6 +78,7 @@ public func sw_slider_create_hb(_ p: UnsafeMutableRawPointer?) {
         item.itemHeight = initial.height ?? 30
         item.x = initial.left ?? 0
         item.y = initial.top ?? 0
+        item.resizemask = initial.resizemask ?? 0
         ViewRegistry.register(item, for: id)
     }
 }

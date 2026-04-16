@@ -21,7 +21,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, c
     
     if Empty( cId ) ; cId := hb_UUID() ; endif
 
-    ::Super:New( nTop, nLeft, nWidth, nHeight, cId )
+    ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
     
     ::bAction  := bAction
     ::oWnd     := oWnd
