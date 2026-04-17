@@ -37,10 +37,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction
    ::hState["showValue"] := .T.
    ::hState["type"]      := 11
    
-   // 1. Crear el estado y el item en Swift
-   SW_SLIDER_CREATE( ::cId, hb_jsonEncode( ::hState ) )
+   ::oWnd    := oWnd
+   ::Create()
 
-    if oWnd != nil ; oWnd:AddControl( Self, nTop, nLeft ) ; endif
 
     SwiftRegisterItem( ::cId, Self )
 

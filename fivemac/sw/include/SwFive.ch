@@ -1,7 +1,7 @@
 #ifndef _SWFIVE_CH
 #define _SWFIVE_CH
 
-#include "anclas.ch"
+
 
 // Nombres modernos para la isla (Autoresize)
 #define SW_ANCHOR_RIGHT      AnclaRight
@@ -18,14 +18,16 @@
 #xcommand DEFINE WINDOW <oWnd> ;
    [ TITLE <cTitle> ] ;
    FROM <nTop>, <nLeft> TO <nBottom>, <nRight> ;
+   [ <of: OF, WINDOW, DIALOG> <oParent> ] ;
    => ;
-   <oWnd> := TSwWindow():New( <cTitle>, <nRight> - <nLeft>, <nBottom> - <nTop> )
+   <oWnd> := TSwWindow():New( <cTitle>, <nRight> - <nLeft>, <nBottom> - <nTop>,, <oParent> )
 
 #xcommand DEFINE WINDOW <oWnd> ;
    [ TITLE <cTitle> ] ;
    SIZE <nWidth>, <nHeight> ;
+   [ <of: OF, WINDOW, DIALOG> <oParent> ] ;
    => ;
-   <oWnd> := TSwWindow():New( <cTitle>, <nWidth>, <nHeight> )
+   <oWnd> := TSwWindow():New( <cTitle>, <nWidth>, <nHeight>,, <oParent> )
 
 #xcommand ACTIVATE WINDOW <oWnd> ;
    [ <center: CENTER, CENTERED> ] ;
@@ -47,17 +49,21 @@
    [ OF <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHOR> <nAnchor> ] ;
+   [ <lScr: SCROLL> ] ;
    => ;
-   [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cText>, <oWnd>,, <nAnchor> )
+   [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cText>, <oWnd>,, <nAnchor> ) ;
+   [; <oSay>:lScroll := <.lScr.> ]
 
 #xcommand @ <nRow>, <nCol> BUTTON [ <oBtn> PROMPT ] <cPrompt> ;
    [ OF <oWnd> ] ;
    [ ACTION <uAction,...> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHOR> <nAnchor> ] ;
+   [ <lScr: SCROLL> ] ;
    => ;
    [ <oBtn> := ] TSwButton():New( <nRow>, <nCol>, <nWidth>, <nHeight>,;
-   <cPrompt>, <oWnd>, [\{| self |(<uAction>)\}], <nAnchor> )
+   <cPrompt>, <oWnd>, [\{| self |(<uAction>)\}], <nAnchor> ) ;
+   [; <oBtn>:lScroll := <.lScr.> ]
 
 #xcommand @ <nRow>, <nCol> TOGGLE [ <oToggle> PROMPT ] <cText> ;
              [ <lValue: VALUE, VAR > <lOn> ] ;
@@ -88,5 +94,58 @@
               [ ID <cId> ] ;
     => ;
     [ <oWeb> := ] TSwWebView():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <cUrl>, <oWnd>, <cId>, <nAnchor> )
+
+#xcommand @ <nRow>, <nCol> IMAGE [ <oImg> ] ;
+              [ SYMBOL <cSymbol> ] ;
+              [ FILE <cFile> ] ;
+              [ URL <cUrl> ] ;
+              [ OF <oWnd> ] ;
+              [ SIZE <nWidth>, <nHeight> ] ;
+              [ <res: AUTORESIZE, ANCHOR> <nAnchor> ] ;
+              [ ID <cId> ] ;
+     => ;
+     [ <oImg> := ] TSwImage():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cSymbol>, <cFile>, <cUrl>, <cId>, <nAnchor> )
+
+//----------------------------------------------------------------------------//
+// CONTENEDORES (Stacks y Listas)
+//----------------------------------------------------------------------------//
+
+#xcommand @ <nRow>, <nCol> LIST [ <oList> ] ;
+              [ OF <oWnd> ] ;
+              [ SIZE <nWidth>, <nHeight> ] ;
+              [ <res: AUTORESIZE, ANCHOR> <nAnchor> ] ;
+              [ ACTION <uAction,...> ] ;
+              [ ID <cId> ] ;
+    => ;
+    [ <oList> := ] TSwList():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oWnd>, <cId>, <nAnchor>, [\{| nRow, self |(<uAction>)\}] )
+
+#xcommand DEFINE HSTACK [ <oHStack> ] ;
+              [ OF <oParent> ] ;
+              [ SIZE <nWidth>, <nHeight> ] ;
+              [ AT <nRow>, <nCol> ] ;
+              [ <res: AUTORESIZE, ANCHOR> <nAnchor> ] ;
+              [ <lScr: SCROLL> ] ;
+              [ ID <cId> ] ;
+    => ;
+    [ <oHStack> := ] TSwHStack():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oParent>, <cId>, <nAnchor> ) ;
+    [; <oHStack>:lScroll := <.lScr.> ]
+
+#xcommand DEFINE VSTACK [ <oVStack> ] ;
+              [ OF <oParent> ] ;
+              [ SIZE <nWidth>, <nHeight> ] ;
+              [ AT <nRow>, <nCol> ] ;
+              [ <res: AUTORESIZE, ANCHOR> <nAnchor> ] ;
+              [ <lScr: SCROLL> ] ;
+              [ ID <cId> ] ;
+    => ;
+    [ <oVStack> := ] TSwVStack():New( <nRow>, <nCol>, <nWidth>, <nHeight>, <oParent>, <cId>, <nAnchor> ) ;
+    [; <oVStack>:lScroll := <.lScr.> ]
+ 
+ #xcommand DEFINE ROW [ <oRow> ] ;
+               OF <oList> ;
+               [ ID <cId> ] ;
+       => ;
+       [ <oRow> := ] <oList>:AddRow( [<cId>] )
+
 
 #endif

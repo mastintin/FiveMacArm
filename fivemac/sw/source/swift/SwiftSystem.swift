@@ -39,6 +39,7 @@ internal struct SystemCommands {
     @MainActor static func saveFile(_ params: [String: Any]) async {
         let title = (params["title"] as? String) ?? (params["p1"] as? String) ?? "Guardar como"
         let name  = (params["name"] as? String) ?? (params["p2"] as? String) ?? ""
+        let id    = (params["id"] as? String) ?? (params["p3"] as? String) ?? ""
         
         let panel = NSSavePanel()
         panel.title = title
@@ -50,11 +51,20 @@ internal struct SystemCommands {
         }
         
         SwWorkflowContext.shared.set(result, for: "last_sync_result")
+
+        if !id.isEmpty {
+            let update: [String: [String: Any]] = [id: ["path": result]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
     }
 
     @MainActor static func getFile(_ params: [String: Any], onlyDirs: Bool = false) async {
         let title  = (params["title"] as? String) ?? (params["p1"] as? String) ?? "Seleccionar"
         let types  = (params["types"] as? String) ?? (params["p2"] as? String) ?? ""
+        let id     = (params["id"] as? String) ?? (params["p3"] as? String) ?? ""
         
         let panel = NSOpenPanel()
         panel.title = title
@@ -72,6 +82,14 @@ internal struct SystemCommands {
         }
         
         SwWorkflowContext.shared.set(result, for: "last_sync_result")
+
+        if !id.isEmpty {
+            let update: [String: [String: Any]] = [id: ["path": result]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
     }
 
     // MARK: - Alertas Estándar
@@ -91,10 +109,10 @@ internal struct SystemCommands {
     }
 
     // MARK: - Preguntas (Yes/No)
-    
-    @MainActor static func msgGet(_ params: [String: Any]) async {
+        @MainActor static func msgGet(_ params: [String: Any]) async {
         let text  = (params["text"] as? String) ?? (params["p1"] as? String) ?? "¿Desea continuar?"
         let title = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Confirmación"
+        let id    = (params["id"] as? String) ?? (params["p3"] as? String) ?? ""
         
         let alert = NSAlert()
         alert.messageText = title
@@ -108,6 +126,14 @@ internal struct SystemCommands {
         // Guardamos el resultado en el contexto para uso síncrono o asíncrono
         SwWorkflowContext.shared.set(response, for: "last_sync_result")
         SwWorkflowContext.shared.set(response, for: "msg_get_result")
+
+        if !id.isEmpty {
+            let update: [String: [String: Any]] = ["SYSTEM": [id: response]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
     }
 
     // MARK: - Avisos Temporales (Futura expansión para HUDs)

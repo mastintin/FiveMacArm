@@ -14,3 +14,15 @@ public protocol SwApplyable: AnyObject {
 public protocol SwReportable: AnyObject {
     func getCurrentState() -> [String: Any]
 }
+
+// MARK: - List Selection Environment bus
+struct ListSelectionKey: EnvironmentKey {
+    static let defaultValue: ((String) -> Void)? = nil
+}
+
+extension EnvironmentValues {
+    public var onListSelect: ((String) -> Void)? {
+        get { self[ListSelectionKey.self] }
+        set { self[ListSelectionKey.self] = newValue }
+    }
+}

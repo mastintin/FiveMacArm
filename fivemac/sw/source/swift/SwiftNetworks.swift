@@ -36,8 +36,6 @@ public func sw_getIP() -> String {
 
 //----------------------------------------------------------------------------//
 
-//----------------------------------------------------------------------------//
-
 public func sw_http_set_header(key: String, value: String) {
     if value.isEmpty {
         SwNetworkConfig.customHeaders.removeValue(forKey: key)
@@ -79,19 +77,13 @@ public func sw_http_get(url: String, timeout: Double) async -> String {
     return await sw_perform_request(url: url, method: "GET", body: nil, timeout: timeout)
 }
 
-//----------------------------------------------------------------------------//
-
 public func sw_http_post(url: String, json: String, timeout: Double) async -> String {
     return await sw_perform_request(url: url, method: "POST", body: json, timeout: timeout)
 }
 
-//----------------------------------------------------------------------------//
-
 public func sw_http_put(url: String, json: String, timeout: Double) async -> String {
     return await sw_perform_request(url: url, method: "PUT", body: json, timeout: timeout)
 }
-
-//----------------------------------------------------------------------------//
 
 public func sw_http_delete(url: String, timeout: Double) async -> String {
     return await sw_perform_request(url: url, method: "DELETE", body: nil, timeout: timeout)
@@ -175,7 +167,7 @@ public func sw_http_upload(url: String, filePath: String, timeout: Double) async
 
 //----------------------------------------------------------------------------//
 
-public func sw_http_download(url: String, destination: String, id: String = "", resumePath: String = "", timeout: Double) async -> Bool {
+public func sw_http_download(url: String, destination: String, id: String = "", targetId: String = "", resumePath: String = "", timeout: Double) async -> Bool {
     guard let urlObj = URL(string: url) else { return false }
     let destURL = URL(fileURLWithPath: (destination as NSString).expandingTildeInPath)
     let realTimeout = timeout > 0 ? timeout : 60.0
@@ -189,21 +181,24 @@ public func sw_http_download(url: String, destination: String, id: String = "", 
                 }
                 try FileManager.default.moveItem(at: loc, to: destURL)
                 success = true
-                // Limpiar .resume si existía
                 try? FileManager.default.removeItem(atPath: destination + ".resume")
             } catch {
                 print("Download Finish Error: \(error)")
             }
         } else if let err = error {
-             // Guardar resumeData si se interrumpió
              if let data = (err as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data {
                  try? data.write(to: URL(fileURLWithPath: destination + ".resume"))
              }
         }
         
         if !id.isEmpty {
-            DispatchQueue.main.async {
-                Harbour.call("SW_NET_ON_DOWNLOAD_END", id, success)
+            let notifyId = targetId.isEmpty ? id : targetId
+            let update: [String: Any] = [notifyId: [id: success]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                DispatchQueue.main.async {
+                    Harbour.call("SW_PIPELINE_SYNC", json)
+                }
             }
         }
     }
@@ -221,14 +216,13 @@ public func sw_http_download(url: String, destination: String, id: String = "", 
     }
     
     task.resume()
-    return true // La tarea ha comenzado
+    return true
 }
 
 // MARK: - Dispatcher Bridge (Commands Implementation)
 
 internal struct NetworkCommands {
     static func register(in sd: SwDispatcher) {
-        // 1. Registro de Comandos en el Dispatcher (Lógica)
         sd.register("httpget")        { params in await NetworkCommands.get(params) }
         sd.register("httppost")       { params in await NetworkCommands.post(params) }
         sd.register("httpput")        { params in await NetworkCommands.put(params) }
@@ -240,96 +234,157 @@ internal struct NetworkCommands {
         sd.register("httpcanresume")  { params in await NetworkCommands.canResume(params) }
         sd.register("getip")          { params in await NetworkCommands.getIP(params) }
         sd.register("isconnected")    { params in await NetworkCommands.isConnected(params) }
-
-        // 2. Registro de Capacidades (Mapeo de nombres Harbour -> Comandos Swift)
-        SwCapabilities.shared.register(
-            control: "system",
-            commands: [
-                "SWHTTPGET":        "httpget",
-                "SWHTTPPOST":       "httppost",
-                "SWHTTPPUT":        "httpput",
-                "SWHTTPDELETE":     "httpdelete",
-                "SWHTTPDOWNLOAD":   "httpdownload",
-                "SWHTTPHEADER":     "httpheader",
-                "SWHTTPCLEAR":      "httpclear",
-                "SWHTTPUPLOAD":     "httpupload",
-                "SWHTTPCANRESUME":  "httpcanresume",
-                "SWGETIP":          "getip",
-                "SWISCONNECTED":    "isconnected"
-            ],
-            fields: [:]
-        )
     }
 
-    static func get(_ params: [String: Any]) async {
-        let url = (params["url"] as? String) ?? (params["p1"] as? String) ?? ""
-        let key = (params["contextKey"] as? String) ?? (params["p2"] as? String) ?? "last_response"
-        let result = await sw_http_get(url: url, timeout: 30)
+    @discardableResult
+    static func performNetworkOperation(params: [String: Any], id: String, targetId: String, method: String) async -> String {
+        let urlString = params["url"] as? String ?? ""
+        let json = params["json"] as? String ?? ""
+        
+        var result = ""
+        switch method {
+        case "GET": result = await sw_http_get(url: urlString, timeout: 60)
+        case "POST": result = await sw_http_post(url: urlString, json: json, timeout: 60)
+        case "PUT": result = await sw_http_put(url: urlString, json: json, timeout: 60)
+        case "DELETE": result = await sw_http_delete(url: urlString, timeout: 60)
+        default: break
+        }
+        
+        let key = "last_http_\(method.lowercased())_response"
         SwWorkflowContext.shared.set(result, for: key)
+        
+        if !id.isEmpty {
+            let notifyId = targetId.isEmpty ? id : targetId
+            let update: [String: Any] = [notifyId: [id: result]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
+        return result
+    }
+
+    @discardableResult
+    static func get(_ params: [String: Any]) async -> String {
+        let id = params["id"] as? String ?? ""
+        let targetId = params["targetId"] as? String ?? ""
+        return await performNetworkOperation(params: params, id: id, targetId: targetId, method: "GET")
     }
     
-    static func post(_ params: [String: Any]) async {
-        let url  = (params["url"] as? String) ?? (params["p1"] as? String) ?? ""
-        let json = (params["json"] as? String) ?? (params["p2"] as? String) ?? "{}"
-        let key  = (params["contextKey"] as? String) ?? (params["p3"] as? String) ?? "last_response"
-        let result = await sw_http_post(url: url, json: json, timeout: 30)
-        SwWorkflowContext.shared.set(result, for: key)
+    @discardableResult
+    static func post(_ params: [String: Any]) async -> String {
+        let id = params["id"] as? String ?? ""
+        let targetId = params["targetId"] as? String ?? ""
+        return await performNetworkOperation(params: params, id: id, targetId: targetId, method: "POST")
     }
 
-    static func put(_ params: [String: Any]) async {
-        let url  = (params["url"] as? String) ?? (params["p1"] as? String) ?? ""
-        let json = (params["json"] as? String) ?? (params["p2"] as? String) ?? "{}"
-        let key  = (params["contextKey"] as? String) ?? (params["p3"] as? String) ?? "last_response"
-        let result = await sw_http_put(url: url, json: json, timeout: 30)
-        SwWorkflowContext.shared.set(result, for: key)
+    @discardableResult
+    static func put(_ params: [String: Any]) async -> String {
+        let id = params["id"] as? String ?? ""
+        let targetId = params["targetId"] as? String ?? ""
+        return await performNetworkOperation(params: params, id: id, targetId: targetId, method: "PUT")
     }
 
-    static func delete(_ params: [String: Any]) async {
-        let url = (params["url"] as? String) ?? (params["p1"] as? String) ?? ""
-        let key = (params["contextKey"] as? String) ?? (params["p2"] as? String) ?? "last_response"
-        let result = await sw_http_delete(url: url, timeout: 30)
-        SwWorkflowContext.shared.set(result, for: key)
+    @discardableResult
+    static func delete(_ params: [String: Any]) async -> String {
+        let id = params["id"] as? String ?? ""
+        let targetId = params["targetId"] as? String ?? ""
+        return await performNetworkOperation(params: params, id: id, targetId: targetId, method: "DELETE")
     }
 
-    static func download(_ params: [String: Any]) async {
-        let url  = (params["url"] as? String) ?? (params["p1"] as? String) ?? ""
-        let dest = (params["path"] as? String) ?? (params["p2"] as? String) ?? ""
-        let id   = (params["id"] as? String) ?? (params["p3"] as? String) ?? ""
-        let resume = (params["resumePath"] as? String) ?? (params["p4"] as? String) ?? ""
+    @discardableResult
+    static func download(_ params: [String: Any]) async -> Bool {
+        let url  = (params["url"] as? String) ?? ""
+        let dest = (params["path"] as? String) ?? ""
+        let id   = (params["id"] as? String) ?? ""
+        let targetId = (params["targetId"] as? String) ?? ""
+        let resume = (params["resumePath"] as? String) ?? ""
         
-        _ = await sw_http_download(url: url, destination: dest, id: id, resumePath: resume, timeout: 60)
+        return await sw_http_download(url: url, destination: dest, id: id, targetId: targetId, resumePath: resume, timeout: 60)
     }
 
-    static func upload(_ params: [String: Any]) async {
-        let url  = (params["url"] as? String) ?? (params["p1"] as? String) ?? ""
-        let path = (params["path"] as? String) ?? (params["p2"] as? String) ?? ""
-        let result = await sw_http_upload(url: url, filePath: path, timeout: 60)
-        SwWorkflowContext.shared.set(result, for: "last_upload_status")
-        SwWorkflowContext.shared.set(result, for: "last_sync_result")
+    @discardableResult
+    static func upload(_ params: [String: Any]) async -> Bool {
+        let url  = (params["url"] as? String) ?? ""
+        let path = (params["path"] as? String) ?? ""
+        let id   = (params["id"] as? String) ?? ""
+        let targetId = (params["targetId"] as? String) ?? ""
+        
+        let success = await sw_http_upload(url: url, filePath: path, timeout: 60)
+        SwWorkflowContext.shared.set(success, for: "last_upload_status")
+        
+        if !id.isEmpty {
+            let notifyId = targetId.isEmpty ? id : targetId
+            let update: [String: Any] = [notifyId: [id: success]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let jsonStr = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", jsonStr)
+            }
+        }
+        return success
     }
 
-    static func canResume(_ params: [String: Any]) async {
-        let url = (params["url"] as? String) ?? (params["p1"] as? String) ?? ""
+    @discardableResult
+    static func canResume(_ params: [String: Any]) async -> Bool {
+        let url = (params["url"] as? String) ?? ""
+        let id  = (params["id"] as? String) ?? ""
+        let targetId = (params["targetId"] as? String) ?? ""
+        
         let result = await sw_http_can_resume(url: url)
         SwWorkflowContext.shared.set(result, for: "last_can_resume")
-        SwWorkflowContext.shared.set(result, for: "last_sync_result")
+        
+        if !id.isEmpty {
+            let notifyId = targetId.isEmpty ? id : targetId
+            let update: [String: Any] = [notifyId: [id: result]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
+        return result
     }
 
-    static func getIP(_ params: [String: Any]) async {
+    @discardableResult
+    static func getIP(_ params: [String: Any]) async -> String {
+        let id = (params["id"] as? String) ?? ""
+        let targetId = (params["targetId"] as? String) ?? ""
         let ip = sw_getIP()
+        
         SwWorkflowContext.shared.set(ip, for: "local_ip")
-        SwWorkflowContext.shared.set(ip, for: "last_sync_result")
+        
+        if !id.isEmpty {
+            let notifyId = targetId.isEmpty ? id : targetId
+            let update: [String: Any] = [notifyId: [id: ip]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
+        return ip
     }
 
-    static func isConnected(_ params: [String: Any]) async {
+    @discardableResult
+    static func isConnected(_ params: [String: Any]) async -> Bool {
+        let id = (params["id"] as? String) ?? ""
+        let targetId = (params["targetId"] as? String) ?? ""
         let status = sw_isConnected()
+        
         SwWorkflowContext.shared.set(status, for: "is_connected")
-        SwWorkflowContext.shared.set(status, for: "last_sync_result")
+        
+        if !id.isEmpty {
+            let notifyId = targetId.isEmpty ? id : targetId
+            let update: [String: Any] = [notifyId: [id: status]]
+            if let data = try? JSONSerialization.data(withJSONObject: update),
+               let json = String(data: data, encoding: .utf8) {
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
+        return status
     }
 
     static func setHeader(_ params: [String: Any]) {
-        let key = (params["key"] as? String) ?? (params["p1"] as? String) ?? ""
-        let val = (params["value"] as? String) ?? (params["p2"] as? String) ?? ""
+        let key = (params["key"] as? String) ?? ""
+        let val = (params["value"] as? String) ?? ""
         sw_http_set_header(key: key, value: val)
     }
 
@@ -337,4 +392,3 @@ internal struct NetworkCommands {
         sw_http_clear_headers()
     }
 }
-

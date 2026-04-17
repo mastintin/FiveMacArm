@@ -21,6 +21,7 @@ public class ViewRegistry {
     private static var states: [String: Any] = [:]
     private static var views: [String: NSView] = [:]
     private static var itemRegistry: [String: StackItem] = [:]
+    private static var parentIdMap: [String: String] = [:]
 
     public static func register(_ value: Any, for id: String) {
         let cleanId = id.lowercased()
@@ -42,6 +43,61 @@ public class ViewRegistry {
         states.removeValue(forKey: cleanId)
         views.removeValue(forKey: cleanId)
         itemRegistry.removeValue(forKey: cleanId)
+        parentIdMap.removeValue(forKey: cleanId)
+    }
+
+    public static func registerParent(id: String, parentId: String) {
+        if !parentId.isEmpty {
+            parentIdMap[id.lowercased()] = parentId.lowercased()
+        }
+    }
+
+    public static func getParentId(for id: String) -> String? {
+        return parentIdMap[id.lowercased()]
+    }
+
+    @MainActor
+    public static func removeFromParent(id: String) {
+        let cleanId = id.lowercased()
+        guard let parentId = parentIdMap[cleanId] else { return }
+        guard let parentState = states[parentId] as? StackStateProtocol else { return }
+        
+        print("ViewRegistry: Eliminando \(cleanId) de su padre \(parentId)")
+        parentState.items.removeAll { $0.id.lowercased() == cleanId }
+        if parentState.lastItem?.id.lowercased() == cleanId {
+            parentState.lastItem = parentState.items.last
+        }
+    }
+
+    public static func recursiveClean(id: String) -> [String] {
+        let cleanId = id.lowercased()
+        var cleanedIds: [String] = []
+        
+        // 1. Si es un item jerárquico, primero matamos a sus hijos
+        if itemRegistry[cleanId] != nil {
+            // Buscamos si el estado de este item tiene hijos
+            if let state = states[cleanId] as? StackStateProtocol {
+                for child in state.items {
+                    cleanedIds.append(contentsOf: recursiveClean(id: child.id))
+                }
+            }
+        }
+        
+        // 2. Si es una ventana, también matamos a sus hijos (items absolutos)
+        if let windowState = states[cleanId] as? SwiftWindowState {
+             for child in windowState.items {
+                 cleanedIds.append(contentsOf: recursiveClean(id: child.id))
+             }
+             // Quitamos también la referencia a la NSWindow nativa si existe
+             views.removeValue(forKey: "NSWindow_\(cleanId)")
+        }
+
+        // 3. Limpiamos el objeto actual y lo añadimos a la lista
+        print("ViewRegistry: Limpieza recursiva de \(cleanId)")
+        cleanedIds.append(cleanId)
+        clean(id: cleanId)
+        
+        return cleanedIds
     }
 }
 
@@ -60,6 +116,8 @@ public class StackItem: Identifiable {
     public var resizemask: Int = 0
     public var initialParentSize: CGSize? = nil
     public var fgColor: ColorRGBA?
+    public var hasScroll: Bool = false
+    public var isInteractive: Bool = false
     
     public init(type: ItemType, id: String = UUID().uuidString) {
         self.type = type; self.id = id
@@ -67,17 +125,77 @@ public class StackItem: Identifiable {
 }
 
 @Observable
-public class SwiftVStackState: StackStateProtocol, RGBAColorableState {
+public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyable {
     public var items: [StackItem] = []
     public var lastItem: StackItem?
     public var scrollable: Bool = true
     public init() {}
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
     public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
+    
+    public func apply(property: String, value: Any) {
+        // Implementación base para propiedades genéricas si es necesario
+    }
 }
 
 @Observable
-public class SwiftWindowState: SwiftVStackState, SwApplyable {
+public class ImageState: SwApplyable, RGBAColorableState {
+    public let id: String
+    public var systemName: String = ""
+    public var filePath: String = ""
+    public var urlStr: String = ""
+    public var resizable: Bool = true
+    public var contentMode: Int = 0 // 0: fit, 1: fill
+    public var foregroundColor: Color = .primary
+    
+    public init(id: String, systemName: String = "", filePath: String = "", url: String = "") {
+        self.id = id
+        self.systemName = systemName
+        self.filePath = filePath
+        self.urlStr = url
+    }
+    
+    public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
+    
+    public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
+        DispatchQueue.main.async {
+            self.foregroundColor = Color(r: r, g: g, b: b, a: a)
+        }
+    }
+    
+    public func apply(property: String, value: Any) {
+        let prop = property.lowercased()
+        switch prop {
+        case "systemname":
+            if let s = value as? String { 
+                self.systemName = s
+                self.filePath = ""
+                self.urlStr = ""
+            }
+        case "file":
+            if let s = value as? String {
+                self.filePath = s
+                self.systemName = ""
+                self.urlStr = ""
+            }
+        case "url":
+            if let s = value as? String {
+                self.urlStr = s
+                self.systemName = ""
+                self.filePath = ""
+            }
+        case "mode":
+            if let i = value as? Int { self.contentMode = i }
+        case "resizable":
+            if let b = value as? Bool { self.resizable = b }
+        default:
+            break
+        }
+    }
+}
+
+@Observable
+public class SwiftWindowState: SwiftVStackState {
     public var windowId: String = ""
     
     public init(id: String) {
@@ -85,7 +203,7 @@ public class SwiftWindowState: SwiftVStackState, SwApplyable {
         super.init()
     }
     
-    public func apply(property: String, value: Any) {
+    public override func apply(property: String, value: Any) {
         let prop = property.lowercased()
         DispatchQueue.main.async {
             if let win = ViewRegistry.get("NSWindow_\(self.windowId)") as? NSWindow {

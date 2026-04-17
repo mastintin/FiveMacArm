@@ -25,9 +25,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize ) CLASS 
    ::hState["text"]   := cText
    ::hState["type"]   := SW_TYPE_TEXT
 
-   SW_LABEL_CREATE( ::cId, hb_jsonEncode( ::hState ) )
+   ::oWnd     := oWnd
+   ::Create()
 
-   if oWnd != nil ; oWnd:AddControl( Self, nTop, nLeft ) ; endif
 
    SwiftRegisterItem( ::cId, Self )
 

@@ -17,6 +17,18 @@ return s_cSyncID
 
 // -------------------------------------------------------------------------------- //
 
+function SwApp()
+    static oApp
+    if oApp == nil
+        oApp := TSwApplication():New()
+    endif
+return oApp
+
+// -------------------------------------------------------------------------------- //
+
+function SwiftCountItems()
+return Len( s_hRegistry )
+
 function SwiftRegisterItem( cId, oItem )
 
     if s_hRegistry == nil
@@ -68,12 +80,26 @@ function SW_PIPELINE_SYNC( cJson )
     if Empty( cJson ) ; return nil ; endif
     
     s_lInSync := .T.
+    SW_LOG( "SW_PIPELINE_SYNC: Received -> " + cJson )
     hb_jsonDecode( cJson, @hChanges )
     
     if ValType( hChanges ) == "H"
         aIds := hb_HKeys( hChanges )
         for n := 1 to Len( aIds )
             cId := aIds[ n ]
+            
+            // --- COMANDOS DE SISTEMA ---
+            if Upper( cId ) == "_SYSTEM"
+               hProps := hChanges[ cId ]
+               if hb_HHasKey( hProps, "unregister" ) .and. ValType( hProps["unregister"] ) == "A"
+                  for each uVal in hProps["unregister"]
+                     SW_LOG( "SW_PIPELINE_SYNC: System Unregister -> " + hb_ValToStr( uVal ) )
+                     SwiftUnregisterItem( uVal )
+                  next
+               endif
+               loop
+            endif
+
             s_cSyncID := cId
             oItem := SwiftGetItem( cId ) 
             

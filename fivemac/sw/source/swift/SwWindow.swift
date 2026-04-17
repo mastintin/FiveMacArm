@@ -1,8 +1,27 @@
 import SwiftUI
 
 class SwWindowDelegate: NSObject, NSWindowDelegate {
+    let windowId: String
+    
+    init(windowId: String) {
+        self.windowId = windowId
+    }
+
     func windowWillClose(_ notification: Notification) {
-        print("SwiftWindow: Ventana cerrándose...")
+        print("SwiftWindow: Ventana \(windowId) cerrándose...")
+        
+        // 1. Notificar primero el evento de cierre para que Harbour pueda reaccionar
+        let closeJson = "{\"\(windowId)\":{\"event\":\"close\"}}"
+        Harbour.call("SW_PIPELINE_SYNC", closeJson)
+        
+        // 2. Limpieza recursiva de memoria nativa y recolección de IDs
+        let deadIds = ViewRegistry.recursiveClean(id: windowId)
+        
+        // 3. Notificar a Harbour para desregistro masivo definitivo
+        let idsJson = deadIds.map { "\"\($0)\"" }.joined(separator: ", ")
+        let json = "{\"_system\":{\"unregister\":[\(idsJson)]}}"
+        
+        Harbour.call("SW_PIPELINE_SYNC", json)
     }
 }
 
@@ -13,7 +32,6 @@ class SwAppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-private let windowDelegate = SwWindowDelegate()
 private let appDelegate = SwAppDelegate()
 
 @_cdecl("HB_FUN_SW_CREATEWINDOW")
@@ -50,7 +68,12 @@ public func sw_createwindow_hb(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRa
         }
         
         window.contentView = hostingView
-        window.delegate = windowDelegate
+        
+        let delegate = SwWindowDelegate(windowId: windowId)
+        window.delegate = delegate
+        // Persist the delegate too
+        ViewRegistry.register(delegate, for: "Delegate_\(windowId)")
+        
         window.makeKeyAndOrderFront(nil)
         
         // Save the window object in the registry so it doesn't get deallocated
@@ -60,24 +83,15 @@ public func sw_createwindow_hb(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRa
     return UnsafeMutableRawPointer(bitPattern: 1)
 }
 
-@_cdecl("HB_FUN_SW_ADD_WINDOW_ITEM")
-public func sw_add_window_item_hb(_ p: UnsafeMutableRawPointer?) {
-    // 1: windowId (C)
-    // 2: itemId (C)
-    
-    let windowId = hb_parc(1).map { String(cString: $0) } ?? ""
-    let itemId = hb_parc(2).map { String(cString: $0) } ?? ""
-    
-    DispatchQueue.main.async {
-        if let state = ViewRegistry.getState(for: windowId) as? SwiftVStackState,
-           let item = ViewRegistry.getItem(for: itemId) {
-            state.items.append(item)
-        }
-    }
-}
+// HB_FUN_SW_ADD_WINDOW_ITEM eliminada: delegamos en SwComponentFactory para evitar duplicados
 
 @_cdecl("HB_FUN_SW_APPRUN")
 public func sw_apprun_hb(_ p: UnsafeMutableRawPointer?) {
+    if NSApp.isRunning {
+        print("SwiftApp: La aplicación ya está en marcha. Ignorando llamada duplicada a run().")
+        return
+    }
+    
     print("SwiftApp: Iniciando NSApp.run()...")
     NSApp.setActivationPolicy(.regular)
     NSApp.delegate = appDelegate

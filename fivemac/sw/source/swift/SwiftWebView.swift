@@ -52,38 +52,15 @@ public class WebViewState: SwApplyable {
 public struct WebViewInit: Codable {
     public let url: String?
     public let html: String?
+    public let interactive: Bool?
     public let width: Double?
     public let height: Double?
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
+    public let hasScroll: Bool?
 }
 
-// MARK: - Native Bridge
-@_cdecl("HB_FUN_SW_WEBVIEW_CREATE")
-public func sw_webview_create_hb(_ p: UnsafeMutableRawPointer?) {
-    let id = hb_parc(1).map { String(cString: $0) } ?? UUID().uuidString
-    let jsonStr = hb_parc(2).map { String(cString: $0) } ?? "{}"
-    
-    let decoder = JSONDecoder()
-    let initial = (try? decoder.decode(WebViewInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? WebViewInit(url: nil, html: nil, width: 400, height: 300, top: 0, left: 0, resizemask: 0)
-    
-    if ViewRegistry.getState(for: id) == nil {
-        let state = WebViewState(id: id)
-        if let urlStr = initial.url { state.url = URL(string: urlStr) }
-        state.html = initial.html
-        ViewRegistry.register(state, for: id)
-        
-        let item = StackItem(type: .webview, id: id)
-        item.itemWidth = initial.width ?? 400
-        item.itemHeight = initial.height ?? 300
-        item.x = initial.left ?? 0
-        item.y = initial.top ?? 0
-        item.resizemask = initial.resizemask ?? 0
-        ViewRegistry.register(item, for: id)
-    }
-}
 
 // MARK: - SwiftUI Representable
 public struct SwiftWebView: View {

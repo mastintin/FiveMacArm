@@ -30,16 +30,12 @@ METHOD New( nTop, nLeft, nWidth, nHeight, cUrl, oWnd, cId, nAutoResize ) CLASS T
    ::hState["url"]  := cUrl
    ::hState["type"] := 12 // webview
    
-   // 1. Crear el componente en Swift
-   SW_WEBVIEW_CREATE( ::cId, hb_jsonEncode( ::hState ) )
+   ::Create()
    
    // 2. Registrar en Harbour
    SwiftRegisterItem( ::cId, Self )
    
    // 3. Añadir a la ventana
-   if oWnd != nil
-       oWnd:AddControl( Self, nTop, nLeft )
-   endif
 
 return Self
 

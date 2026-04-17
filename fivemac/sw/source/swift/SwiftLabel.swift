@@ -31,31 +31,10 @@ public struct LabelInit: Codable {
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
+    public let hasScroll: Bool?
+    public let interactive: Bool?
 }
 
-// MARK: - Native Bridge
-@_cdecl("HB_FUN_SW_LABEL_CREATE")
-public func sw_label_create_hb(_ p: UnsafeMutableRawPointer?) {
-    let id = hb_parc(1).map { String(cString: $0) } ?? UUID().uuidString
-    let jsonStr = hb_parc(2).map { String(cString: $0) } ?? "{}"
-    
-    let decoder = JSONDecoder()
-    let initial = (try? decoder.decode(LabelInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? LabelInit(text: "Label", width: 200, height: 20, top: 0, left: 0, resizemask: 0)
-    
-    if ViewRegistry.getState(for: id) == nil {
-        let state = LabelState(id: id, text: initial.text ?? "")
-        ViewRegistry.register(state, for: id)
-        
-        let item = StackItem(type: .text, id: id)
-        item.itemWidth = initial.width ?? 200
-        item.itemHeight = initial.height ?? 20
-        item.x = initial.left ?? 0
-        item.y = initial.top ?? 0
-        item.resizemask = initial.resizemask ?? 0
-        ViewRegistry.register(item, for: id)
-    }
-}
 
 // MARK: - Label View
 public struct SwiftLabelView: View {

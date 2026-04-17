@@ -93,6 +93,21 @@ public class SwDispatcher {
             await MainActor.run {
                 if let state = ViewRegistry.getState(for: id) as? SwApplyable {
                     for (key, value) in params {
+                        // DETONADOR DE BORRADO UNIVERSAL
+                        if key.lowercased() == "close" && (value as? Bool == true || (value as? Int == 1)) {
+                             // 1. Quitar visualmente de SwiftUI
+                             ViewRegistry.removeFromParent(id: id)
+                             
+                             // 2. Matanza recursiva nativa
+                             let deadIds = ViewRegistry.recursiveClean(id: id)
+                             
+                             // 3. Notificar a Harbour para la matanza en PRG
+                             let idsStr = deadIds.map { "\"\($0)\"" }.joined(separator: ", ")
+                             let json = "{\"_system\":{\"unregister\":[\(idsStr)]}}"
+                             Harbour.call("SW_PIPELINE_SYNC", json)
+                             continue
+                        }
+
                         if key != "id" && !key.hasPrefix("p") && key != "cmd" {
                             state.apply(property: key, value: value)
                             
@@ -109,6 +124,8 @@ public class SwDispatcher {
                                     if let n = (value as? NSNumber)?.doubleValue { item.itemHeight = n }
                                 case "resizemask":
                                     if let n = (value as? NSNumber)?.intValue { item.resizemask = n }
+                                case "interactive":
+                                    if let b = value as? Bool { item.isInteractive = b }
                                 default:
                                     break
                                 }

@@ -139,14 +139,16 @@ METHOD OnError( ... ) CLASS TSwControlProxy
    local hParams := {=>}
    local n, uRet, cProp
    
-   if Sw_IsSyncing() .and. Upper( AllTrim( Sw_CurrentSyncID() ) ) == Upper( AllTrim( ::cId ) )
-      return nil
-   endif
+   // if Sw_IsSyncing() .and. Upper( AllTrim( Sw_CurrentSyncID() ) ) == Upper( AllTrim( ::cId ) )
+   //    return nil
+   // endif
    
    // Si el comando no es APPLY, lo mandamos como propiedad directa ('apply')
    if Upper( cMsg ) == "APPLY"
       if ValType( aArgs[1] ) == "H"
          hParams := aArgs[1]
+      else
+         hParams[ aArgs[1] ] := aArgs[2]
       endif
       cMsg := "apply"
    else

@@ -47,41 +47,16 @@ public struct SliderInit: Codable {
     public let value: Double?
     public let min: Double?
     public let max: Double?
+    public let showValue: Bool?
+    public let interactive: Bool?
     public let width: Double?
     public let height: Double?
     public let top: Double?
     public let left: Double?
-    public let showValue: Bool?
     public let resizemask: Int?
+    public let hasScroll: Bool?
 }
 
-// MARK: - Native Bridge
-@_cdecl("HB_FUN_SW_SLIDER_CREATE")
-public func sw_slider_create_hb(_ p: UnsafeMutableRawPointer?) {
-    let id = hb_parc(1).map { String(cString: $0) } ?? UUID().uuidString
-    let jsonStr = hb_parc(2).map { String(cString: $0) } ?? "{}"
-    
-    let decoder = JSONDecoder()
-    let initial = (try? decoder.decode(SliderInit.self, from: jsonStr.data(using: .utf8) ?? Data()))
-                ?? SliderInit(value: 0, min: 0, max: 100, width: 200, height: 30, top: 0, left: 0, showValue: true, resizemask: 0)
-    
-    if ViewRegistry.getState(for: id) == nil {
-        let state = SliderState(id: id, 
-                             value: initial.value ?? 0, 
-                             min: initial.min ?? 0, 
-                             max: initial.max ?? 100, 
-                             showValue: initial.showValue ?? true)
-        ViewRegistry.register(state, for: id)
-        
-        let item = StackItem(type: .slider, id: id)
-        item.itemWidth = initial.width ?? 200
-        item.itemHeight = initial.height ?? 30
-        item.x = initial.left ?? 0
-        item.y = initial.top ?? 0
-        item.resizemask = initial.resizemask ?? 0
-        ViewRegistry.register(item, for: id)
-    }
-}
 
 // MARK: - Slider View
 public struct SwiftSliderView: View {

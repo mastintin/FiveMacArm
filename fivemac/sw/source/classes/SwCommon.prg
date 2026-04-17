@@ -19,7 +19,7 @@ function SW_LOG( cMsg )
 return nil
 
 // SW_FMH is the Event Dispatcher called from Swift
-function SW_FMH( cId, nMsg )
+function SW_FMH( cId, nMsg, uParam1 )
    local oControl
    oControl := SwiftGetItem( cId )
    

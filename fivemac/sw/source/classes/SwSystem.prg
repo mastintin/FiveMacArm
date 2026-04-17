@@ -7,11 +7,6 @@
 FUNCTION SwMsgInfo( cMsg, cTitle )
 return SDS:SwMsgInfo( cMsg, cTitle )
 
-FUNCTION SwMsgStop( cMsg, cTitle )
-return SDS:SwMsgStop( cMsg, cTitle )
-
-FUNCTION SwMsgAlert( cMsg, cTitle )
-return SDS:SwMsgAlert( cMsg, cTitle )
 
 //----------------------------------------------------------------------------//
 // Funciones de Decisión

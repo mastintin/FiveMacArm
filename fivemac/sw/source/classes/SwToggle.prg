@@ -31,10 +31,10 @@ METHOD New( nTop, nLeft, nWidth, nHeight, lValue, cPrompt, oWnd, cId, lSwitch, n
     ::hState["prompt"]   := cPrompt
     ::hState["isSwitch"] := lSwitch
     ::hState["type"]     := SW_TYPE_TOGGLE
+    ::oWnd               := oWnd
 
-    SW_TOGGLE_CREATE( ::cId, hb_jsonEncode( ::hState ) )
+    ::Create()
 
-    if oWnd != nil ; oWnd:AddControl( Self, nTop, nLeft ) ; endif
 
     SwiftRegisterItem( ::cId, Self )
 
