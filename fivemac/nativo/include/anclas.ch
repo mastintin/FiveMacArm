@@ -1,3 +1,6 @@
+#ifndef _ANCLAS_CH
+#define _ANCLAS_CH
+
 //
 //  anclas.ch
 //  fivemac
@@ -19,3 +22,5 @@
 #define TA_CENTER   2 
 #define TA_RIGHT    1 
 #define TA_LEFT     0 
+
+#endif
