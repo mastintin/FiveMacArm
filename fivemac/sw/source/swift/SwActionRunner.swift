@@ -22,6 +22,7 @@ public func sw_get_proxy_map_hb(_ p: UnsafeMutableRawPointer?) {
 @_cdecl("HB_FUN_SW_PIPELINE_EXEC")
 public func sw_pipeline_exec_hb(_ p: UnsafeMutableRawPointer?) {
     guard let jsonStr = hb_parc(1).map({ String(cString: $0) }) else { return }
+    print("ActionRunner: Recibido Pipeline -> \(jsonStr)")
     guard let data = jsonStr.data(using: .utf8) else { return }
     
     Task(priority: .userInitiated) {

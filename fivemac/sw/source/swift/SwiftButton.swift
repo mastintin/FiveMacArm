@@ -41,6 +41,9 @@ public class ButtonState {
         case "visible":
             if let b = value as? Bool { self.isVisible = b }
             
+        case "hasscroll", "interactive", "resizemask":
+            break // Propiedades generales manejadas por el contenedor
+            
         default:
             print("SwButton [\(id)]: Propiedad '\(property)' no reconocida.")
         }
@@ -60,7 +63,6 @@ public struct ButtonInit: Codable {
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
-    public let hasScroll: Bool?
 }
 
 

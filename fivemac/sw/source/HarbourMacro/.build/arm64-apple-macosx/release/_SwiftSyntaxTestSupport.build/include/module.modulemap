@@ -1,3 +1,3 @@
 module _SwiftSyntaxTestSupport {
-    header "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/include/_SwiftSyntaxTestSupport-Swift.h"
+    header "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/include/_SwiftSyntaxTestSupport-Swift.h"
 }

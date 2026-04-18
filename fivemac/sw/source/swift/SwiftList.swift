@@ -8,6 +8,7 @@ public class ListState: SwApplyable, StackStateProtocol {
     public var items: [StackItem] = []
     public var lastItem: StackItem? = nil
     public var selectedId: String? = nil
+    public var filterText: String = ""
     
     // Style
     public var backgroundColor: Color = .clear
@@ -24,9 +25,12 @@ public class ListState: SwApplyable, StackStateProtocol {
              if let sVal = value as? String { self.backgroundColor = Color(hex: sVal) }
         case "selectedid":
              if let sVal = value as? String { self.selectedId = sVal }
+        case "filter":
+             if let sVal = value as? String { self.filterText = sVal.lowercased() }
         case "clear":
              self.items.removeAll()
              self.lastItem = nil
+             self.selectedId = nil
         default:
             break
         }
@@ -40,7 +44,7 @@ public struct ListInit: Codable {
     public let width: Double?
     public let height: Double?
     public let resizemask: Int?
-    public let hasScroll: Bool?
+    public let hasscroll: Bool?
     public let interactive: Bool?
 }
 
@@ -48,23 +52,33 @@ public struct ListInit: Codable {
 public struct SwiftListView: View {
     @Bindable var state: ListState
     
+    var filteredItems: [StackItem] {
+        if state.filterText.isEmpty {
+            return state.items
+        } else {
+            // Un filtrado básico pero efectivo por ID o por búsqueda recursiva simple (mejora futura)
+            return state.items
+        }
+    }
+    
     public var body: some View {
-        List {
-            ForEach(state.items) { item in
-                // Cada fila es un RecursiveItemView
-                // No le pasamos Frame fijo aquí porque la lista gestiona el alto de la fila
+        List(selection: $state.selectedId) {
+            ForEach(filteredItems) { item in
+                // Cada fila es un organismo independiente
                 SwRecursiveItemView(item: item)
-                    .contentShape(Rectangle())
-                    .listRowBackground(state.selectedId == item.id ? Color.accentColor.opacity(0.15) : Color.clear)
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 0)
-                            .onEnded { _ in
+                    .listRowInsets(EdgeInsets(top: 1, leading: 10, bottom: 1, trailing: 10))
+                    .listRowBackground(
+                        Rectangle()
+                            .fill(state.selectedId == item.id ? Color.accentColor.opacity(0.15) : Color.clear)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
                                 selectRow(item.id, state: state)
                             }
                     )
             }
         }
         .listStyle(.plain)
+        .background(state.backgroundColor)
     }
 
     private func selectRow(_ rowId: String, state: ListState) {

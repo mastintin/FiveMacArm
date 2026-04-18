@@ -58,7 +58,7 @@ public struct WebViewInit: Codable {
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
-    public let hasScroll: Bool?
+    public let hasscroll: Bool?
 }
 
 

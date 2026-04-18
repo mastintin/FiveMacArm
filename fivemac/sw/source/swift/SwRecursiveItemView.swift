@@ -32,11 +32,13 @@ import SwiftUI
                  AnyView(renderWebView())
              case .image:
                  AnyView(renderImage())
+             case .get:
+                 AnyView(renderGet())
              default:
                  AnyView(EmptyView())
              }
              
-             if item.hasScroll {
+             if item.hasscroll {
                  ScrollView {
                      content
                  }
@@ -157,6 +159,13 @@ import SwiftUI
      private func renderWebView() -> some View {
          if let state = ViewRegistry.getState(for: item.id) as? WebViewState {
              SwiftWebView(state: state)
+         }
+     }
+     
+     @ViewBuilder
+     private func renderGet() -> some View {
+         if let state = ViewRegistry.getState(for: item.id) as? GetState {
+             SwiftGetView(state: state)
          }
      }
      

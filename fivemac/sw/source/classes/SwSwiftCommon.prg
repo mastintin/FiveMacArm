@@ -100,6 +100,18 @@ function SW_PIPELINE_SYNC( cJson )
                loop
             endif
 
+            // --- COMANDOS GLOBALES ASÍNCRONOS ---
+            if Upper( cId ) == "_COMMAND"
+               hProps := hChanges[ cId ] // { "name" => "funcname", "p1" => ... }
+               if hb_HHasKey( hProps, "name" )
+                  cProp := hProps[ "name" ]
+                  if Upper( Right( cProp, 2 ) ) == "()" ; cProp := SubStr( cProp, 1, Len( cProp ) - 2 ) ; endif
+                  SW_LOG( "SW_PIPELINE_SYNC: Executing Global Command -> " + cProp )
+                  &( cProp )( hProps )
+               endif
+               loop
+            endif
+
             s_cSyncID := cId
             oItem := SwiftGetItem( cId ) 
             
@@ -133,4 +145,21 @@ function SW_PIPELINE_SYNC( cJson )
     endif
     s_lInSync := .F.
     s_cSyncID := ""
+return nil
+
+// -------------------------------------------------------------------------------- //
+
+function SW_ONCHANGE( cId, uVal )
+    local oItem := SwiftGetItem( cId )
+
+    SW_LOG( "🚢 [SW_ONCHANGE] ID: " + cId + " Val: [" + hb_ValToStr( uVal ) + "]" )
+
+    if oItem != nil .and. !s_lInSync
+        s_lInSync := .T.
+        if __ObjHasMsg( oItem, "ONACTION" )
+            oItem:OnAction( uVal )
+        endif
+        s_lInSync := .F.
+    endif
+
 return nil

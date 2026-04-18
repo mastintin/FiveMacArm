@@ -65,17 +65,26 @@ METHOD OnError( ... ) CLASS TSwProxy
    local aArgs   := hb_AParams()   
    local hParams := {=>}
    local n, uRet
-   local lSync := ::lSync
-   
-   // El proxy global no tiene ID, así que dejamos que fluyan los comandos
-   // La seguridad real se aplica en TSwControlProxy
-   if ::lSync .and. Sw_IsSyncing()
-       // Opcional: algún log si fuera necesario
-   endif
+   local lSync   := ::lSync
+   local oActive := TSwActionStack():oActive
    
    // Reseteamos el flag de sincronía para la siguiente llamada
    ::lSync := .F.
-   
+
+   // 1. Prioridad: Intercepción Universal (ActionStack Global)
+   if oActive != nil
+      if Upper( cMsg ) == "APPLY"
+         oActive:AddCall( "apply", hb_HMerge( { "id" => aArgs[1] }, aArgs[2] ) )
+      else
+         hParams[ "cmd" ] := Lower( cMsg )
+         for n := 1 to Len( aArgs )
+            hParams[ "p" + AllTrim( Str( n ) ) ] := aArgs[ n ]
+         next
+         oActive:AddCall( cMsg, hParams )
+      endif
+      return nil
+   endif
+
    SW_LOG( "TSwProxy:OnError -> " + cMsg )
    
    // Caso especial para comando universal
@@ -138,11 +147,14 @@ METHOD OnError( ... ) CLASS TSwControlProxy
    local oProxy  := Sw_GetProxy()
    local hParams := {=>}
    local n, uRet, cProp
+   local oActive := TSwActionStack():oActive
    
-   // if Sw_IsSyncing() .and. Upper( AllTrim( Sw_CurrentSyncID() ) ) == Upper( AllTrim( ::cId ) )
-   //    return nil
-   // endif
-   
+   // 1. Intercepción Universal (ActionStack Global)
+   if oActive != nil
+      oActive:AddControlCall( self, cMsg, aArgs )
+      return nil
+   endif
+
    // Si el comando no es APPLY, lo mandamos como propiedad directa ('apply')
    if Upper( cMsg ) == "APPLY"
       if ValType( aArgs[1] ) == "H"

@@ -10,6 +10,13 @@ public func sw_component_create_hb(_ p: UnsafeMutableRawPointer?) {
     let jsonStr = hb_parc(3).map { String(cString: $0) } ?? "{}"
     let parentId = hb_parc(4).map { String(cString: $0) } ?? ""
     
+    Task { @MainActor in
+        sw_component_create_internal(id: id, typeId: typeId, jsonStr: jsonStr, parentId: parentId)
+    }
+}
+
+@MainActor
+public func sw_component_create_internal(id: String, typeId: Int, jsonStr: String, parentId: String) {
     let jsonData = jsonStr.data(using: .utf8) ?? Data()
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -32,13 +39,12 @@ public func sw_component_create_hb(_ p: UnsafeMutableRawPointer?) {
         let state = SwiftVStackState()
         ViewRegistry.register(state, for: id)
         newItem = StackItem(type: .vstack, id: id)
-        // For containers, we might want to decode a generic size if available
         if let initial = try? decoder.decode(GenericInit.self, from: jsonData) {
             setupGeometry(item: newItem!, from: initial)
         }
 
     case 2: // HStack (Container)
-        let state = SwiftVStackState() // Same state but we use type .hstack
+        let state = SwiftVStackState() 
         ViewRegistry.register(state, for: id)
         newItem = StackItem(type: .hstack, id: id)
         if let initial = try? decoder.decode(GenericInit.self, from: jsonData) {
@@ -102,6 +108,28 @@ public func sw_component_create_hb(_ p: UnsafeMutableRawPointer?) {
             newItem = StackItem(type: .webview, id: id)
             setupGeometry(item: newItem!, from: initial)
         }
+
+    case 14: // Get (TextField with Pictures)
+        if let initial = try? decoder.decode(GetInit.self, from: jsonData) {
+            let state = GetState(id: id, 
+                               text: initial.text ?? "", 
+                               picture: initial.picture ?? "", 
+                               placeholder: initial.placeholder ?? "", 
+                               issecure: initial.issecure ?? false)
+            ViewRegistry.register(state, for: id)
+            newItem = StackItem(type: .get, id: id)
+            setupGeometry(item: newItem!, from: initial)
+        }
+
+    case 100: // Window (Special Root Component)
+        if let initial = try? decoder.decode(GenericInit.self, from: jsonData) {
+            // Llamamos a la lógica física de creación de ventana que ya tenemos
+            sw_createwindow_hb_internal(title: initial.title ?? "", 
+                                        width: initial.width ?? 500, 
+                                        height: initial.height ?? 400, 
+                                        id: id)
+            // No creamos StackItem porque la ventana es el contenedor raíz nativo
+        }
         
     default:
         print("SwComponentFactory: Tipo \(typeId) no implementado aún en el factory unificado.")
@@ -113,14 +141,14 @@ public func sw_component_create_hb(_ p: UnsafeMutableRawPointer?) {
         ViewRegistry.register(item, for: id)
         
         if !parentId.isEmpty {
+            print("SwFactory: Intentando añadir hijo \(id) al padre \(parentId)")
             ViewRegistry.registerParent(id: id, parentId: parentId)
             if let parentState = ViewRegistry.getState(for: parentId) as? StackStateProtocol {
-                Task { @MainActor in
-                    parentState.items.append(item)
-                    parentState.lastItem = item
-                }
+                parentState.items.append(item)
+                parentState.lastItem = item
+                print("SwFactory: Hijo \(id) añadido con éxito a la lista de items del padre.")
             } else {
-                print("SwComponentFactory: Error - El padre con ID \(parentId) no soporta hijos.")
+                print("SwFactory: Error - El padre con ID \(parentId) NO encontrado o no soporta hijos en el registro.")
             }
         }
     }
@@ -134,25 +162,31 @@ private func setupGeometry(item: StackItem, from initial: Any) {
         item.x = initObj.left ?? 0
         item.y = initObj.top ?? 0
         item.resizemask = initObj.resizemask ?? 0
-        item.hasScroll = initObj.hasScroll ?? false
-        item.isInteractive = initObj.interactive ?? false
+        item.hasscroll = initObj.hasscroll ?? false
     }
 }
 
-// Generic protocol to handle common fields in different Init structs
 protocol GeometryProtocol {
+    var title: String? { get }
     var width: Double? { get }
     var height: Double? { get }
     var top: Double? { get }
     var left: Double? { get }
     var resizemask: Int? { get }
-    var hasScroll: Bool? { get }
-    var interactive: Bool? { get }
+    var hasscroll: Bool? { get }
 }
 
-// Extend existing structs to conform to GeometryProtocol
+extension GeometryProtocol {
+    public var title: String? { return nil }
+    public var width: Double? { return nil }
+    public var height: Double? { return nil }
+    public var top: Double? { return nil }
+    public var left: Double? { return nil }
+    public var resizemask: Int? { return nil }
+    public var hasscroll: Bool? { return nil }
+}
+
 extension LabelInit: GeometryProtocol {}
-extension ImageInit: GeometryProtocol {}
 extension ListInit: GeometryProtocol {}
 extension ButtonInit: GeometryProtocol {}
 extension ToggleInit: GeometryProtocol {}
@@ -160,16 +194,29 @@ extension SliderInit: GeometryProtocol {}
 extension WebViewInit: GeometryProtocol {}
 
 struct GenericInit: Codable, GeometryProtocol {
+    let title: String?
     let width: Double?
     let height: Double?
     let top: Double?
     let left: Double?
     let resizemask: Int?
-    let hasScroll: Bool?
-    let interactive: Bool?
+    let hasscroll: Bool?
 }
 
-struct ImageInit: Codable {
+struct GetInit: Codable, GeometryProtocol {
+    let text: String?
+    let picture: String?
+    let placeholder: String?
+    let issecure: Bool?
+    let width: Double?
+    let height: Double?
+    let top: Double?
+    let left: Double?
+    let resizemask: Int?
+    let hasscroll: Bool?
+}
+
+struct ImageInit: Codable, GeometryProtocol {
     let symbol: String?
     let file: String?
     let url: String?
@@ -178,6 +225,5 @@ struct ImageInit: Codable {
     let top: Double?
     let left: Double?
     let resizemask: Int?
-    let hasScroll: Bool?
-    let interactive: Bool?
+    let hasscroll: Bool?
 }

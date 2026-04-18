@@ -46,7 +46,6 @@ public struct ToggleInit: Codable {
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
-    public let hasScroll: Bool?
 }
 
 

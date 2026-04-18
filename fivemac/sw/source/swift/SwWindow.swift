@@ -10,14 +10,11 @@ class SwWindowDelegate: NSObject, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         print("SwiftWindow: Ventana \(windowId) cerrándose...")
         
-        // 1. Notificar primero el evento de cierre para que Harbour pueda reaccionar
         let closeJson = "{\"\(windowId)\":{\"event\":\"close\"}}"
         Harbour.call("SW_PIPELINE_SYNC", closeJson)
         
-        // 2. Limpieza recursiva de memoria nativa y recolección de IDs
         let deadIds = ViewRegistry.recursiveClean(id: windowId)
         
-        // 3. Notificar a Harbour para desregistro masivo definitivo
         let idsJson = deadIds.map { "\"\($0)\"" }.joined(separator: ", ")
         let json = "{\"_system\":{\"unregister\":[\(idsJson)]}}"
         
@@ -34,20 +31,17 @@ class SwAppDelegate: NSObject, NSApplicationDelegate {
 
 private let appDelegate = SwAppDelegate()
 
-@_cdecl("HB_FUN_SW_CREATEWINDOW")
-public func sw_createwindow_hb(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer? {
-    let title = hb_parc(1).map { String(cString: $0) } ?? "FiveMac SwiftUI"
-    let width = hb_parni(2)
-    let height = hb_parni(3)
-    let windowId = hb_parc(4).map { String(cString: $0) } ?? UUID().uuidString
+// --- MOTOR UNIFICADO DE CREACIÓN ---
+@MainActor
+private func createPhysicalWindow(title: String, width: Double, height: Double, id: String) {
+    // 1. Registro del Estado (Ancla para la Mensajería)
+    let windowState = SwiftWindowState(id: id)
+    ViewRegistry.register(windowState, for: id)
+    windowState.apply(property: "title", value: title)
     
-    print("SwiftWindow: Creando ventana \(windowId) - \(title) (\(width)x\(height))")
-    
-    let state = SwiftWindowState(id: windowId)
-    ViewRegistry.register(state, for: windowId)
-    
+    // 2. Operaciones de UI en Hilo Principal
     DispatchQueue.main.async {
-        let windowView = SwWindowView(state: state, id: windowId)
+        let windowView = SwWindowView(state: windowState, id: id)
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -58,32 +52,34 @@ public func sw_createwindow_hb(_ p: UnsafeMutableRawPointer?) -> UnsafeMutableRa
         window.center()
         window.backgroundColor = .windowBackgroundColor
         
-        // Creamos la hosting view y forzamos la persistencia de su capa
+        // --- INYECCIÓN DE CONTENIDO (Lo que faltaba) ---
         let hostingView = NSHostingView(rootView: windowView)
         hostingView.wantsLayer = true
-        if let layer = hostingView.layer {
-            layer.backgroundColor = NSColor.windowBackgroundColor.cgColor
-            // Política de redibujado manual: no limpies la capa automáticamente
-            hostingView.layerContentsRedrawPolicy = .onSetNeedsDisplay
-        }
-        
         window.contentView = hostingView
         
-        let delegate = SwWindowDelegate(windowId: windowId)
+        // --- DELEGADO PARA EVENTOS ---
+        let delegate = SwWindowDelegate(windowId: id)
         window.delegate = delegate
-        // Persist the delegate too
-        ViewRegistry.register(delegate, for: "Delegate_\(windowId)")
+        ViewRegistry.register(delegate, for: "Delegate_\(id)")
         
+        // --- EXPOSICIÓN FINAL ---
         window.makeKeyAndOrderFront(nil)
+        ViewRegistry.register(window, for: "NSWindow_\(id)")
         
-        // Save the window object in the registry so it doesn't get deallocated
-        ViewRegistry.register(window, for: "NSWindow_\(windowId)")
+        print("SwiftWindow: Ventana \(id) ['\(title)'] creada físicamente con éxito.")
     }
-    
-    return UnsafeMutableRawPointer(bitPattern: 1)
 }
 
-// HB_FUN_SW_ADD_WINDOW_ITEM eliminada: delegamos en SwComponentFactory para evitar duplicados
+// Wrapper para llamadas desde el Dispatcher (SD/SDS:Create)
+@MainActor
+public func sw_createwindow_hb_internal(title: String, width: Double, height: Double, id: String) {
+    createPhysicalWindow(title: title, width: width, height: height, id: id)
+}
+
+@_cdecl("HB_FUN_SW_APPISRUNNING")
+public func sw_appisrunning_hb(_ p: UnsafeMutableRawPointer?) {
+    Harbour.ret(NSApp.isRunning)
+}
 
 @_cdecl("HB_FUN_SW_APPRUN")
 public func sw_apprun_hb(_ p: UnsafeMutableRawPointer?) {

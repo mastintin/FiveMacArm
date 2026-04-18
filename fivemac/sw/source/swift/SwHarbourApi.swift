@@ -58,39 +58,28 @@ public struct Harbour {
     public static func call(_ funcName: String, _ args: Any...) {
         funcName.uppercased().withCString { cName in
             guard let ds = hb_dynsymFindName(cName),
-                  let sym = hb_dynsymSymbol(ds) else { 
-                print("HarbourBridge: Function \(funcName) not found")
-                return 
-            }
+                  let sym = hb_dynsymSymbol(ds) else { return }
             
             hb_vmPushSymbol(sym)
-            hb_vmPushNil() // Receiver (Self = nil for functions)
+            hb_vmPushNil()
             
             for arg in args {
                 if let s = arg as? String {
                     s.withCString { ptr in
                         let len = Int(strlen(ptr))
-                        print("HarbourBridge: Empujando String '\(s)' longitud \(len)")
                         hb_vmPushString(ptr, len)
                     }
                 } else if let i = arg as? Int {
-                    print("HarbourBridge: Empujando Int \(i)")
                     hb_vmPushLong(i)
                 } else if let d = arg as? Double {
-                    print("HarbourBridge: Empujando Double \(d)")
                     hb_vmPushNumber(d, 0)
                 } else if let b = arg as? Bool {
-                    print("HarbourBridge: Empujando Bool \(b)")
                     hb_vmPushLogical(b ? 1 : 0)
                 } else {
-                    print("HarbourBridge: Empujando Nil")
                     hb_vmPushNil()
                 }
             }
-            
-            print("HarbourBridge: Ejecutando hb_vmDo(\(args.count))...")
             hb_vmDo(Int32(args.count))
-            print("HarbourBridge: ¡Llamada completada con éxito!")
         }
     }
 }

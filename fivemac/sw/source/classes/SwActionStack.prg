@@ -6,9 +6,14 @@
 
 CLASS TSwActionStack
 
+   CLASSDATA oActive
    DATA aActions   INIT {}
 
    METHOD New() CONSTRUCTOR
+   
+   // Control de Grabación Global (Universal)
+   METHOD Begin()
+   METHOD End()
    
    // Métodos de UI (Compatibles con SwApplyable en Swift)
    METHOD AddUpdate( oControl, cText )
@@ -23,6 +28,7 @@ CLASS TSwActionStack
    
    // Invocación Genérica Dinámica
    METHOD AddCall( cCmd, hParams )
+   METHOD AddControlCall( oControl, cMsg, aArgs )
    
    METHOD Execute()
    METHOD Clear()  INLINE ::aActions := {}
@@ -33,6 +39,16 @@ ENDCLASS
 
 METHOD New() CLASS TSwActionStack
 return Self
+
+// -------------------------------------------------------------------------- //
+
+METHOD Begin() CLASS TSwActionStack
+   ::oActive := Self
+return Self
+
+METHOD End() CLASS TSwActionStack
+   ::oActive := nil
+return nil
 
 // -------------------------------------------------------------------------- //
 
@@ -80,8 +96,32 @@ METHOD AddCall( cCmd, hParams ) CLASS TSwActionStack
       hAction := hb_HClone( hParams )
    endif
    
-   hAction[ "cmd" ] := cCmd // Usamos "cmd" uniformemente en lugar de "func"
+   hAction[ "cmd" ] := Lower( cCmd ) // Forzamos minúsculas para el Dispatcher
    AAdd( ::aActions, hAction )
+return nil
+
+METHOD AddControlCall( oControl, cMsg, aArgs ) CLASS TSwActionStack
+   local hParams := {=>}
+   local cProp, n
+   
+   cMsg := Lower( cMsg )
+   
+   // Si es un SetXXXX, lo tratamos como APPLY para mayor universalidad
+   if Left( cMsg, 3 ) == "set"
+      cProp := SubStr( cMsg, 4 )
+      hParams[ "cmd" ] := "apply"
+      hParams[ "id" ]  := oControl:cId
+      hParams[ cProp ] := aArgs[1]
+   else
+      hParams[ "cmd" ] := cMsg
+      hParams[ "id" ]  := oControl:cId
+      // Empaquetamos argumentos p1, p2...
+      for n := 1 to Len( aArgs )
+         hParams[ "p" + AllTrim( Str( n ) ) ] := aArgs[ n ]
+      next
+   endif
+   
+   AAdd( ::aActions, hParams )
 return nil
 
 // -------------------------------------------------------------------------- //

@@ -1,34 +1,38 @@
 #include "FiveMac.ch"
 
-// -------------------------------------------------------------------------- //
-// Test de Action Stacking (Pila de Acciones)
-// Demostración de cómo enviar múltiples comandos de UI en un solo lote.
-// -------------------------------------------------------------------------- //
-
-function Main()
-   local oWnd, oBtn1, oBtn2, oBtnBatch, oLabel, oStack
+FUNCTION Main()
+   local oWnd, oBtn, oStack
    
-   oWnd := TSwWindow():New( "Test Action Stacking - Swift", 600, 500 )
+   DEFINE WINDOW oWnd TITLE "Test ActionStack Universal" ;
+          FROM 100, 100 TO 500, 600
    
-   // Etiqueta de título
-   oLabel := TSwLabel():New( 50, 100, 400, 30, "LISTO PARA LA ACCIÓN MÚLTIPLE", oWnd )
+   @ 100, 100 BUTTON oBtn PROMPT "Botón de Prueba" OF oWnd
+   
+   ACTIVATE WINDOW oWnd ON INIT ( TestUniversal( oBtn ) )
+   
+return nil
 
-   // Botones que se moverán
-   oBtn1 := TSwButton():New( 150, 100, 180, 40, "ESTÁTICO A", oWnd )
-   oBtn2 := TSwButton():New( 150, 320, 180, 40, "ESTÁTICO B", oWnd )
-
-   // Botón disparador del Batch
-   oBtnBatch := TSwButton():New( 350, 200, 200, 50, "¡LANZAR BATCH!", oWnd, ;
-      { || ;
-         oStack := TSwActionStack():New(), ;
-         oStack:AddUpdate( oLabel, "¡EXPLOSIÓN VISUAL COMPLETADA!" ), ;
-         oStack:AddColor( oLabel, 255, 20, 20 ), ;
-         oStack:AddMove( oBtn1, 250, 50 ), ;
-         oStack:AddMove( oBtn2, 250, 370 ), ;
-         oStack:Execute(), ;
-         SwMsgInfo( "Harbour: Pila de acciones enviada a Swift. Todo debería haber cambiado de golpe." ) ;
-      } )
-
-   ACTIVATE WINDOW oWnd CENTERED
+FUNCTION TestUniversal( oBtn )
+   local oStack := TSwActionStack():New()
+   
+   SW_LOG( ">>> Iniciando Grabación Universal <<<" )
+   
+   oStack:Begin()
+      
+      // 1. Llamada a método (Captura automática via OnError/AddControlCall)
+      oBtn:SetText( "Cambiado por Stack!" )
+      
+      // 2. Asignación de propiedad (Captura automática via SD:Apply interceptado)
+      oBtn:nTop  := 200
+      oBtn:nLeft := 200
+      
+      // 3. Llamada directa al dispatcher global
+      SD:Alert( "Esta alerta viajará dentro del stack" )
+      
+   oStack:End()
+   
+   SW_LOG( ">>> Grabación finalizada. Ejecutando Lote... <<<" )
+   
+   oStack:Execute()
    
 return nil

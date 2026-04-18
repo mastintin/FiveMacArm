@@ -105,7 +105,7 @@ public class ViewRegistry {
 @Observable
 public class StackItem: Identifiable {
     public enum ItemType: Int, Codable {
-        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, aichat = 17
+        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, get = 14, aichat = 17
     }
     public let id: String
     public var type: ItemType
@@ -116,7 +116,7 @@ public class StackItem: Identifiable {
     public var resizemask: Int = 0
     public var initialParentSize: CGSize? = nil
     public var fgColor: ColorRGBA?
-    public var hasScroll: Bool = false
+    public var hasscroll: Bool = false
     public var isInteractive: Bool = false
     
     public init(type: ItemType, id: String = UUID().uuidString) {
@@ -219,6 +219,43 @@ public class SwiftWindowState: SwiftVStackState {
     }
 }
 
+@Observable
+public class GetState: SwApplyable {
+    public let id: String
+    public var text: String = ""
+    public var picture: String = ""
+    public var placeholder: String = ""
+    public var issecure: Bool = false
+    
+    public init(id: String, text: String = "", picture: String = "", placeholder: String = "", issecure: Bool = false) {
+        self.id = id
+        self.text = text
+        self.picture = picture
+        self.placeholder = placeholder
+        self.issecure = issecure
+    }
+    
+    @MainActor
+    public func apply(property: String, value: Any) {
+        let prop = property.lowercased()
+        print("🏝️ [Swift-In] Property: \(prop), Value: \(value)")
+        switch prop {
+        case "text":
+            if let s = value as? String, self.text != s { 
+                self.text = s 
+            }
+        case "picture":
+            if let s = value as? String { self.picture = s }
+        case "placeholder":
+            if let s = value as? String { self.placeholder = s }
+        case "issecure":
+            if let b = value as? Bool { self.issecure = b }
+        default:
+            break
+        }
+    }
+}
+
 // MARK: - Layout Utilities
 public func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Double, left: Double, w: Double, h: Double) {
     let targetView: NSView? = (parent as? NSWindow)?.contentView ?? (parent as? NSView)
@@ -232,11 +269,15 @@ public func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Doubl
 // MARK: - Bridge
 public struct SwiftBridge {
     public static func onAction(_ id: String) {
-        "SW_ONACTION".withCString { ptr in
-            if let ds = hb_dynsymFindName(ptr), let sym = hb_dynsymSymbol(ds) {
-                hb_vmPushSymbol(sym); hb_vmPushNil(); hb_vmPushString(id, -1); hb_vmDo(1)
-            }
-        }
+        let json = "{\"\(id)\":{\"event\":\"click\"}}"
+        Harbour.call("SW_PIPELINE_SYNC", json)
+    }
+    
+    public static func onChange(_ id: String, _ value: String) {
+        print("🏝️ [Swift-Out] ID: \(id), Value: [\(value)]")
+        // Segurísimo: el JSON nunca mide 0 bytes
+        let json = "{\"\(id)\":{\"text\":\"\(value)\"}}"
+        Harbour.call("SW_PIPELINE_SYNC", json)
     }
 }
 

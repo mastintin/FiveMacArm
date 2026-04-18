@@ -6,18 +6,7 @@
      DATA oWnd
      DATA oParent
      DATA hState INIT {=>}
-     DATA lScroll
      DATA lSincro   INIT .F.
-  
-     ACCESS bAction          INLINE ::hState["action"]
-     ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
-                                      ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bPipeline ),;
-                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
-  
-     ACCESS bPipeline        INLINE ::hState["pipeline"]
-     ASSIGN bPipeline( u )   INLINE ( ::hState["pipeline"] := u,;
-                                      ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
-                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
   
      ACCESS nTop          INLINE ::hState["top"]
      ASSIGN nTop( n )     INLINE ( ::hState["top"] := n, SD:Apply( ::cId, { "top" => n } ) )
@@ -34,9 +23,6 @@
      ACCESS nAutoResize      INLINE ::hState["resizemask"]
      ASSIGN nAutoResize( n ) INLINE ( ::hState["resizemask"] := n, SD:Apply( ::cId, { "resizemask" => n } ) )
  
-     ACCESS lScroll          INLINE hb_HGetDef( ::hState, "hasscroll", .F. )
-     ASSIGN lScroll( l )     INLINE ( ::hState["hasscroll"] := l, SD:Apply( ::cId, { "hasscroll" => l } ) )
- 
      METHOD New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
      METHOD Create( nType )
      METHOD SetText( cText )
@@ -52,45 +38,46 @@
   
  ENDCLASS
   
+ //----------------------------------------------------------------------------//
+
   METHOD New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize ) CLASS TSwiftControl
+      if Empty( cId ) ; cId := hb_UUID() ; endif
       ::cId     := cId
       
       DEFAULT nWidth := 100, nHeight := 30, nAutoResize := 0
  
-     // Inicialización de Estado
+     // Inicialización de Estado Mínima y Pura
      ::hState["id"]          := ::cId
      ::hState["top"]         := nTop
      ::hState["left"]        := nLeft
      ::hState["width"]       := nWidth
      ::hState["height"]      := nHeight
      ::hState["resizemask"]  := nAutoResize
-     ::hState["hasscroll"]   := .F.
      ::hState["type"]        := 0
-     ::hState["action"]      := nil
-     ::hState["pipeline"]    := nil
-     ::hState["interactive"] := .F.
  
      SwiftRegisterItem( ::cId, Self )
   return Self
  
  //----------------------------------------------------------------------------//
  
- METHOD Create( nType ) CLASS TSwiftControl
-    local cParentId := ""
+  METHOD Create( nType ) CLASS TSwiftControl
+     local hInit := hb_HClone( ::hState )
+     local cParentId := ""
  
-    if nType != nil
-       ::hState["type"] := nType
-    endif
-    
-    if !Empty( ::oParent )
-       cParentId := ::oParent:cId
-    elseif !Empty( ::oWnd )
-       cParentId := ::oWnd:cId
-    endif
+     if !Empty( ::oParent )
+        cParentId := ::oParent:cId 
+     elseif !Empty( ::oWnd )
+        cParentId := ::oWnd:cId 
+     endif
  
-    SW_COMPONENT_CREATE( ::cId, ::hState["type"], hb_jsonEncode( ::hState ), cParentId )
-    
- return nil
+     hInit[ "typeid" ]   := nType
+     hInit[ "parentid" ] := cParentId
+     hInit[ "id" ]       := ::cId
+ 
+     // Enviamos el mensaje de creación al Pipeline asíncrono
+     SD:Create( hInit )
+ 
+  return nil
  
  //----------------------------------------------------------------------------//
  
@@ -116,7 +103,6 @@
              uVal := hNewState[ cProp ]
              SW_LOG( "TSwiftControl:Update [" + ::cId + "] -> " + cProp + " = " + hb_valToStr( uVal ) )
              if Lower( cProp ) == "event" .and. ( uVal == "click" .or. uVal == "select" )
-                SW_LOG( "TSwiftControl:Update -> Triggering OnAction for " + ::cId )
                 ::OnAction()
              else
                 ::hState[ Lower( cProp ) ] := uVal
@@ -135,21 +121,12 @@
  //----------------------------------------------------------------------------//
  
  METHOD OnAction() CLASS TSwiftControl
-     if hb_HHasKey( ::hState, "pipeline" ) .and. ::hState["pipeline"] != nil
-        WITH OBJECT Sw_GetProxy()
-           :Pipeline( ::hState["pipeline"] )
-        END
-     elseif hb_HHasKey( ::hState, "action" ) .and. ::hState["action"] != nil
-        Eval( ::hState["action"], Self )
-     endif
+    // Método virtual para ser sobreescrito por clases interactivas
  return nil
  
  METHOD SetText( cText ) CLASS TSwiftControl
      ::Send():Text( cText )
  return nil
- 
- //----------------------------------------------------------------------------//
- 
  
  METHOD Refresh() CLASS TSwiftControl
  return nil

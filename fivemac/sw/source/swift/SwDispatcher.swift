@@ -98,7 +98,12 @@ public class SwDispatcher {
                              // 1. Quitar visualmente de SwiftUI
                              ViewRegistry.removeFromParent(id: id)
                              
-                             // 2. Matanza recursiva nativa
+                             // 2. REPARAR: Si es una ventana nativa, cerrarla físicamente
+                             if let window = ViewRegistry.get("NSWindow_\(id)") as? NSWindow {
+                                 window.close()
+                             }
+
+                             // 3. Matanza recursiva nativa (IDs de Swift)
                              let deadIds = ViewRegistry.recursiveClean(id: id)
                              
                              // 3. Notificar a Harbour para la matanza en PRG

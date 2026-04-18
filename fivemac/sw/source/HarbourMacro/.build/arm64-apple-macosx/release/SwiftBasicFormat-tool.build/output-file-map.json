@@ -1,31 +1,31 @@
 {
   "": {
-    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SwiftBasicFormat.d",
-    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SwiftBasicFormat.o",
-    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/primary.swiftdeps"
+    "dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SwiftBasicFormat.d",
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SwiftBasicFormat.o",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/primary.swiftdeps"
   },
-  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/BasicFormat.swift": {
-    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat.swift.o",
-    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat~partial.swiftmodule",
-    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat.swiftdeps",
-    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat.dia"
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/BasicFormat.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/BasicFormat.dia"
   },
-  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Syntax+Extensions.swift": {
-    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions.swift.o",
-    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions~partial.swiftmodule",
-    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions.swiftdeps",
-    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions.dia"
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Syntax+Extensions.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Syntax+Extensions.dia"
   },
-  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/SyntaxProtocol+Formatted.swift": {
-    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.swift.o",
-    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted~partial.swiftmodule",
-    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.swiftdeps",
-    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.dia"
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/SyntaxProtocol+Formatted.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/SyntaxProtocol+Formatted.dia"
   },
-  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Trivia+FormatExtensions.swift": {
-    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.swift.o",
-    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions~partial.swiftmodule",
-    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.swiftdeps",
-    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.dia"
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Trivia+FormatExtensions.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftBasicFormat-tool.build/Trivia+FormatExtensions.dia"
   }
 }

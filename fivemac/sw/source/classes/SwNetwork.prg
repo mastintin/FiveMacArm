@@ -46,10 +46,8 @@ ENDCLASS
 //----------------------------------------------------------------------------//
 
 METHOD New( lSync ) CLASS TSwNetwork
-   ::cId   := hb_UUID() 
+   ::Super:New()
    ::hState["lSync"] := hb_defaultValue( lSync, .F. )
-   
-   SwiftRegisterItem( ::cId, self )
 return self
 
 //----------------------------------------------------------------------------//

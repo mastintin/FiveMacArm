@@ -31,9 +31,8 @@ public struct LabelInit: Codable {
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
-    public let hasScroll: Bool?
-    public let interactive: Bool?
-}
+    public let hasscroll: Bool?
+ }
 
 
 // MARK: - Label View
