@@ -1,13 +1,15 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 //----------------------------------------------------------------------------//
 
 CLASS TSwApplication
 
     DATA cId
+    DATA lRunning INIT .F.
     
     METHOD New()
     METHOD Activate()
+    METHOD isRunning() INLINE Sw_GetQueryProxy():isRunning()
 
 ENDCLASS
 
@@ -26,8 +28,17 @@ return Self
 
 METHOD Activate() CLASS TSwApplication
 
-    // Delegate idempotency to Swift (NSApp.isRunning)
+    if ::lRunning
+       return nil
+    endif
+
+    ::lRunning := .T.
+    
+    // El motor de la Isla toma el control (Bloqueante)
     SW_APPRUN()
+
+    // Cuando el bucle termina, actualizamos el estado real
+    ::lRunning := ::isRunning()
 
 return nil
 

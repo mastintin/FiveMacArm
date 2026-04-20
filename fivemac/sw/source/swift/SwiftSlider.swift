@@ -47,7 +47,7 @@ public struct SliderInit: Codable {
     public let value: Double?
     public let min: Double?
     public let max: Double?
-    public let showValue: Bool?
+    public let showvalue: Bool?
     public let interactive: Bool?
     public let width: Double?
     public let height: Double?

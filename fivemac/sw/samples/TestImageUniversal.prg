@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 #include "SwFive.ch"
 
 function Main()

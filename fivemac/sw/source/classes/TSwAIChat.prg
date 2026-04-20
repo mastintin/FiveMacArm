@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 CLASS TSwAIChat FROM TSwiftControl
 
@@ -8,7 +8,7 @@ CLASS TSwAIChat FROM TSwiftControl
 ENDCLASS
 
 METHOD Clear() CLASS TSwAIChat
-   SwMsgInfo( "Harbour: Entrando en AIChat:Clear() para " + ::cId )
+   Sw_MsgInfo_Bridge( "Harbour: Entrando en AIChat:Clear() para " + ::cId )
    SW_AICHAT_CLEAR( ::cId )
 return nil
 

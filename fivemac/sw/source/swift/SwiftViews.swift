@@ -3,13 +3,26 @@ import AppKit
 
 internal struct ViewsCommands {
     static func register(in sd: SwDispatcher) {
-        sd.register("update") { params in await ViewsCommands.update(params) }
-        sd.register("create") { params in await ViewsCommands.create(params) }
+        sd.register("update") { params in return await ViewsCommands.update(params) }
+        sd.register("create") { params in return await ViewsCommands.create(params) }
         sd.register("text")   { params in 
             var p = params
             p["property"] = "text"
             p["value"] = params["p2"] ?? params["value"]
-            await ViewsCommands.update(p) 
+            return await ViewsCommands.update(p) 
+        }
+
+        sd.register("getindex") { params in
+            let listId = ((params["id"] as? String) ?? (params["p1"] as? String) ?? "").lowercased().trimmingCharacters(in: .whitespaces)
+            let rowId = ((params["rowid"] as? String) ?? (params["p2"] as? String) ?? "").lowercased().trimmingCharacters(in: .whitespaces)
+            
+            return await MainActor.run { () -> [String: Any]? in
+                if let state = ViewRegistry.getState(for: listId) as? ListState {
+                    let index = state.items.firstIndex(where: { $0.id.lowercased() == rowId }) ?? -1
+                    return ["result": index]
+                }
+                return ["result": -1]
+            }
         }
 
         SwCapabilities.shared.register(
@@ -17,41 +30,41 @@ internal struct ViewsCommands {
             commands: [
                 "SWUPDATE": "update",
                 "SWCREATE": "create",
-                "SWTEXT":   "text"
+                "SWTEXT":   "text",
+                "SWGETINDEX": "getindex"
             ],
             fields: [:]
         )
     }
 
-    @MainActor static func update(_ params: [String: Any]) async {
+    @MainActor static func update(_ params: [String: Any]) async -> [String: Any]? {
         let id = (params["id"] as? String) ?? (params["p1"] as? String) ?? ""
         let property = (params["property"] as? String) ?? "text"
         let value = params["value"] ?? params["p2"]
 
-        // 1. Actualizar el Estado Lógico (ButtonState, etc.)
         if let state = ViewRegistry.getState(for: id) as? SwApplyable {
             state.apply(property: property, value: value as Any)
+            SwDispatcher.shared.recordChange(id: id, property: property, value: value as Any)
+            return ["status": "ok", "id": id, "property": property]
         }
         
-
-        // 3. EL CHIVATAZO: Registramos el cambio para el Tren de Vuelta a Harbour
-        SwDispatcher.shared.recordChange(id: id, property: property, value: value as Any)
+        return ["status": "error", "message": "ID not found"]
     }
 
-    @MainActor static func create(_ params: [String: Any]) async {
-        // El Proxy de Harbour suele envolver el primer argumento en "p1"
+    @MainActor static func create(_ params: [String: Any]) async -> [String: Any]? {
         let data = (params["p1"] as? [String: Any]) ?? params
         
         let id = (data["id"] as? String) ?? (params["id"] as? String) ?? ""
-        let typeId = (data["typeid"] as? Int) ?? (params["typeid"] as? Int) ?? 0
-        let parentId = (data["parentid"] as? String) ?? (params["parentid"] as? String) ?? ""
+        let typeId = (data["type"] as? Int) ?? (params["type"] as? Int) ?? 0
+        let parentid = (data["parentid"] as? String) ?? (params["parentid"] as? String) ?? ""
         
-        // Convertimos los datos finales a JSON para el Factory 
         if let jsonData = try? JSONSerialization.data(withJSONObject: data, options: []),
            let jsonStr = String(data: jsonData, encoding: .utf8) {
             
             print("SwFactory: Petición de creación procesada para ID \(id) [Tipo \(typeId)]")
-            sw_component_create_internal(id: id, typeId: typeId, jsonStr: jsonStr, parentId: parentId)
+            sw_component_create_internal(id: id, typeId: typeId, jsonStr: jsonStr, parentid: parentid)
+            return ["status": "ok", "id": id, "type": typeId]
         }
+        return ["status": "error", "message": "Invalid JSON data"]
     }
 }

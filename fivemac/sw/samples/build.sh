@@ -72,18 +72,16 @@ echo "Linking..."
 # Setup Frameworks for Linking
 FRAMEWORKS="-framework Cocoa -framework SwiftUI -framework WebKit -framework AVFoundation -framework AVKit -framework CoreMedia -framework ScreenCaptureKit -framework UserNotifications -framework UniformTypeIdentifiers -framework ScriptingBridge -framework MusicKit -framework Network -framework SystemConfiguration"
 HARBOUR_LIBS="-L$HARBOUR_PATH/lib -lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx"
-FIVEMAC_LIBS="-L$FIVEMAC_PATH/nativo/lib -lfive -lfivec"
 
 # Linking the sample with the lib
 swiftc -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
     "obj/$APP_NAME.o" \
     -L"../lib" -Xlinker -force_load -Xlinker ../lib/libSwiftFive.a \
     -L"$SDK_PATH/usr/lib" \
-    $FIVEMAC_LIBS \
     $SCINTILLA_LIB \
     $HARBOUR_LIBS \
-    $MYSQL_LIBS \
     $FRAMEWORKS \
+    -lsqlite3 \
     -F"$FIVEMAC_PATH/Resources/frameworks" $SCINTILLA_FRAMEWORK \
     -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
     -Xlinker -rpath -Xlinker ../../Resources/frameworks

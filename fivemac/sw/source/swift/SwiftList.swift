@@ -9,6 +9,7 @@ public class ListState: SwApplyable, StackStateProtocol {
     public var lastItem: StackItem? = nil
     public var selectedId: String? = nil
     public var filterText: String = ""
+    public var isInteractive: Bool = false
     
     // Style
     public var backgroundColor: Color = .clear
@@ -27,6 +28,8 @@ public class ListState: SwApplyable, StackStateProtocol {
              if let sVal = value as? String { self.selectedId = sVal }
         case "filter":
              if let sVal = value as? String { self.filterText = sVal.lowercased() }
+        case "interactive":
+             self.isInteractive = (value as? Bool) ?? false
         case "clear":
              self.items.removeAll()
              self.lastItem = nil
@@ -37,17 +40,6 @@ public class ListState: SwApplyable, StackStateProtocol {
     }
 }
 
-// MARK: - List Initialization
-public struct ListInit: Codable {
-    public let top: Double?
-    public let left: Double?
-    public let width: Double?
-    public let height: Double?
-    public let resizemask: Int?
-    public let hasscroll: Bool?
-    public let interactive: Bool?
-}
-
 // MARK: - List View
 public struct SwiftListView: View {
     @Bindable var state: ListState
@@ -56,7 +48,6 @@ public struct SwiftListView: View {
         if state.filterText.isEmpty {
             return state.items
         } else {
-            // Un filtrado básico pero efectivo por ID o por búsqueda recursiva simple (mejora futura)
             return state.items
         }
     }
@@ -64,25 +55,28 @@ public struct SwiftListView: View {
     public var body: some View {
         List(selection: $state.selectedId) {
             ForEach(filteredItems) { item in
-                // Cada fila es un organismo independiente
                 SwRecursiveItemView(item: item)
+                    .tag(item.id as String?) // Crucial para la selección nativa
                     .listRowInsets(EdgeInsets(top: 1, leading: 10, bottom: 1, trailing: 10))
                     .listRowBackground(
                         Rectangle()
                             .fill(state.selectedId == item.id ? Color.accentColor.opacity(0.15) : Color.clear)
                             .contentShape(Rectangle())
-                            .onTapGesture {
-                                selectRow(item.id, state: state)
-                            }
                     )
             }
         }
         .listStyle(.plain)
-        .background(state.backgroundColor)
+        .background(state.backgroundColor == .clear ? Color.gray.opacity(0.1) : state.backgroundColor)
+        .onChange(of: state.selectedId) { oldId, newId in
+            if let id = newId {
+                print("🏝️ [Swift] Detectado cambio de selección: \(id)")
+                selectRow(id, state: state)
+            }
+        }
     }
 
     private func selectRow(_ rowId: String, state: ListState) {
-        state.selectedId = rowId
+        print("🏝️ [Swift] selectRow enviando pipeline para: \(rowId)")
         let json = "{\"\(state.id)\":{\"SelectedId\":\"\(rowId)\",\"event\":\"select\"}}"
         Harbour.call("SW_PIPELINE_SYNC", json)
     }

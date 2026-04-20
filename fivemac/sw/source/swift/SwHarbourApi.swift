@@ -45,6 +45,19 @@ public func sw_msginfo_hb(_ p: UnsafeMutableRawPointer?) {
     }
 }
 
+@_cdecl("HB_FUN_HB_UUID")
+public func hb_uuid_hb(_ p: UnsafeMutableRawPointer?) {
+    let uuid = UUID().uuidString.lowercased()
+    uuid.withCString { hb_retc($0) }
+}
+
+@_cdecl("HB_FUN_ERRORLINK")
+public func hb_errorlink_hb(_ p: UnsafeMutableRawPointer?) {
+    // No-Op por ahora para independencia de build
+}
+
+    // MSGBEEP is now handled by SwDispatcher
+
 // MARK: - Intelligent Harbour Bridge
 public struct Harbour {
     public static func ret(_ value: Int64) { hb_retnll(value) }
@@ -53,9 +66,20 @@ public struct Harbour {
     public static func ret(_ value: String) { value.withCString { hb_retc($0) } }
     public static func ret(_ value: Bool) { hb_retl(value ? 1 : 0) }
     public static func ret() { hb_vmPushNil() }
+
+    /// Forzamos la permanencia de los símbolos de puente
+    internal static func _keepAlive() {
+        if (1 == 2) { // Nunca se ejecutará, pero el compilador debe creerlo
+            hb_uuid_hb(nil)
+            hb_msgbeep_hb(nil)
+            hb_errorlink_hb(nil)
+        }
+    }
     
     /// Calls a Harbour function intelligently resolving types
     public static func call(_ funcName: String, _ args: Any...) {
+        _keepAlive() // Referencia forzada
+
         funcName.uppercased().withCString { cName in
             guard let ds = hb_dynsymFindName(cName),
                   let sym = hb_dynsymSymbol(ds) else { return }

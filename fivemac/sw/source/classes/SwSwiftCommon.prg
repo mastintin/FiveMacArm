@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 static s_hRegistry := {=>}
 static s_aControls := {}
@@ -40,7 +40,7 @@ function SwiftRegisterItem( cId, oItem )
     endif
 
     if ValType( cId ) == "C"
-        cId = Upper( AllTrim( cId ) )
+        cId = Lower( AllTrim( cId ) )
     endif
 
     s_hRegistry[ cId ] := oItem
@@ -54,7 +54,7 @@ function SwiftUnregisterItem( cId )
     if s_hRegistry == nil ; return nil ; endif
 
     if !Empty( cId ) .and. ValType( cId ) == "C"
-        cId = Upper( AllTrim( cId ) )
+        cId = Lower( AllTrim( cId ) )
         if hb_HHasKey( s_hRegistry, cId )
             hb_HDel( s_hRegistry, cId )
         endif
@@ -66,7 +66,7 @@ return nil
 
 function SwiftGetItem( cId )
     if ValType( cId ) == "C"
-        cId = Upper( AllTrim( cId ) )
+        cId = Lower( AllTrim( cId ) )
     endif
 return If( hb_HHasKey( s_hRegistry, cId ), s_hRegistry[ cId ], nil )
 

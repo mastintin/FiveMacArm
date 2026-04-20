@@ -29,6 +29,8 @@ public class ToggleState: SwApplyable {
             if let sVal = value as? String { self.tintColor = Color(hex: sVal) }
         case "textcolor":
             if let sVal = value as? String { self.textColor = Color(hex: sVal) }
+        case "isswitch":
+             if let bVal = value as? Bool { self.isSwitch = bVal }
         default:
             break
         }
@@ -39,7 +41,7 @@ public class ToggleState: SwApplyable {
 public struct ToggleInit: Codable {
     public let value: Bool?
     public let prompt: String?
-    public let isSwitch: Bool?
+    public let isswitch: Bool?
     public let interactive: Bool?
     public let width: Double?
     public let height: Double?

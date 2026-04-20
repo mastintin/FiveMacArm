@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 // -------------------------------------------------------------------------- //
 // Clase para gestionar lotes (batches) de acciones para Swift

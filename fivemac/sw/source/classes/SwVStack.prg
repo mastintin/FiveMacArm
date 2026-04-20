@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 #define SW_TYPE_VSTACK 1
 
@@ -12,14 +12,22 @@ ENDCLASS
 
 METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize ) CLASS TSwVStack
 
-    DEFAULT nWidth := 100, nHeight := 100, oParent := GetWndDefault(), nAutoResize := 0
+    DEFAULT nWidth := 100, nHeight := 100, nAutoResize := 0
     
-    if Empty( cId ) ; cId := hb_UUID() ; endif
+    if Empty( cId ) ; cId := Lower( hb_uuid() ) ; endif
 
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
-    ::oWnd    := if( __ObjHasData( oParent, "oWnd" ), oParent:oWnd, oParent )
+    
+    if hb_IsObject( oParent )
+       ::oWnd               := if( __ObjHasData( oParent, "oWnd" ), oParent:oWnd, oParent )
+       ::hState["parentid"] := if( __ObjHasData( oParent, "cId"  ), oParent:cId , "NONE" )
+    else 
+       ::oWnd := oParent
+    endif 
+    
     ::oParent := oParent
     
-    ::Create( SW_TYPE_VSTACK )
+    ::hState["type"] := SW_TYPE_VSTACK
+    ::Create()
 
 return Self

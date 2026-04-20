@@ -1,11 +1,9 @@
 import SwiftUI
-import AppKit
 import Observation
-import HarbourMacro
 
 // MARK: - Button State
 @Observable
-public class ButtonState {
+public class ButtonState: SwApplyable {
     public var id: String
     public var caption: String
     public var backgroundColor: Color
@@ -21,83 +19,64 @@ public class ButtonState {
         self.cornerRadius = cornerRadius
     }
 
-    /// Motor central de cambios (Cero Hardcode en el Dispatcher)
     @MainActor
     public func apply(property: String, value: Any) {
         switch property.lowercased() {
         case "caption", "text", "settext":
             self.caption = String(describing: value)
-            
         case "bgcolor", "background":
             if let color = value as? Color { self.backgroundColor = color }
-            
         case "fgcolor", "foreground":
             if let color = value as? Color { self.foregroundColor = color }
-            
         case "corner", "cornerradius":
             if let n = value as? CGFloat { self.cornerRadius = n }
-            else if let s = value as? String { self.cornerRadius = CGFloat(Double(s) ?? 8) }
-            
         case "visible":
             if let b = value as? Bool { self.isVisible = b }
-            
-        case "hasscroll", "interactive", "resizemask":
-            break // Propiedades generales manejadas por el contenedor
-            
         default:
-            print("SwButton [\(id)]: Propiedad '\(property)' no reconocida.")
+            break
         }
     }
 }
 
-
-
-
-
-// MARK: - Button Initialization (Codable)
-public struct ButtonInit: Codable {
-    public let caption: String?
-    public let interactive: Bool?
-    public let width: Double?
-    public let height: Double?
-    public let top: Double?
-    public let left: Double?
-    public let resizemask: Int?
-}
-
-
-// MARK: - Button View (Visual)
-public struct SwiftButtonView: View {
-    @Bindable var state: ButtonState
-    @State private var isPressed = false
+// MARK: - Button Style
+struct IslandButtonStyle: ButtonStyle {
+    let bgColor: Color
+    let fgColor: Color
+    let radius: CGFloat
     
-    public var body: some View {
-        Text(state.caption)
-            .font(.system(size: 14, weight: .bold))
-            .foregroundStyle(state.foregroundColor)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .background {
-                Capsule()
-                    .fill(
-                        isPressed 
-                        ? LinearGradient(colors: [state.backgroundColor.opacity(0.8), state.backgroundColor], startPoint: .top, endPoint: .bottom)
-                        : LinearGradient(colors: [state.backgroundColor, state.backgroundColor.opacity(0.8)], startPoint: .top, endPoint: .bottom)
-                    )
-                    .shadow(color: .black.opacity(0.2), radius: isPressed ? 1 : 3, x: 0, y: isPressed ? 1 : 2)
-            }
-            .scaleEffect(isPressed ? 0.96 : 1.0)
-            .contentShape(Capsule())
-            .onTapGesture {
-                let json = "{\"\(state.id)\":{\"event\":\"click\"}}"
-                Harbour.call("SW_PIPELINE_SYNC", json)
-            }
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, 4)
+            .padding(.vertical, 2)
+            .background(
+                RoundedRectangle(cornerRadius: radius)
+                    .fill(bgColor.opacity(configuration.isPressed ? 0.8 : 1.0))
+            )
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
-// Al final de SwiftButton.swift
-extension ButtonState: SwApplyable {
-    // Como ya creamos el método apply(property:value:) con la firma exacta,
-    // simplemente declarar la extensión ya lo hace compatible.
+// MARK: - Button View
+public struct SwiftButtonView: View {
+    var state: ButtonState
+    
+    public var body: some View {
+        Button(action: {
+            let json = "{\"\(state.id)\":{\"event\":\"click\"}}"
+            Harbour.call("SW_PIPELINE_SYNC", json)
+        }) {
+            Text(state.caption)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(state.foregroundColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .buttonStyle(IslandButtonStyle(
+            bgColor: state.backgroundColor,
+            fgColor: state.foregroundColor, 
+            radius: state.cornerRadius
+        ))
+    }
 }
-

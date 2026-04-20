@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 // -------------------------------------------------------------------------- //
 // Test de Invocación Dinámica de Funciones

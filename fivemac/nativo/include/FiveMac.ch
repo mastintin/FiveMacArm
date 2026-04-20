@@ -3,6 +3,14 @@
 #ifndef __FiveMac
 #define __FiveMac
 
+#ifndef SD
+   #define SD  Sw_GetProxy()
+#endif
+
+#ifndef SDS
+   #define SDS SD:Sync()
+#endif
+
 #include "hbclass.ch"
 #include "anclas.ch"
 #include "colors.ch"
@@ -928,8 +936,6 @@ REQUEST HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
 //----------------------------------------------------------------------------//
 
 // Definición del Objeto Proxy para llamadas dinámicas a Swift
-#define SD  Sw_GetProxy()
-#define SDS SD:Sync()
 
 //----------------------------------------------------------------------------//
 

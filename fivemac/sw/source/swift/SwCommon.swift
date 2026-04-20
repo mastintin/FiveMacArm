@@ -188,6 +188,16 @@ public class ImageState: SwApplyable, RGBAColorableState {
             if let i = value as? Int { self.contentMode = i }
         case "resizable":
             if let b = value as? Bool { self.resizable = b }
+        case "color":
+            if let s = value as? String {
+                DispatchQueue.main.async {
+                    self.foregroundColor = Color(hex: s)
+                }
+            } else if let i = value as? Int {
+                DispatchQueue.main.async {
+                    self.foregroundColor = Color(hex: String(format: "#%06X", i))
+                }
+            }
         default:
             break
         }

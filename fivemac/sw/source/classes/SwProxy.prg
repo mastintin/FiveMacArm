@@ -21,6 +21,16 @@ function Sw_GetProxy( lRefresh )
       endif
    endif
 return oProxy
+ 
+ function Sw_GetQueryProxy()
+    static oProxy
+     if oProxy == nil
+        oProxy := TSwProxy():New( Sw_GetProxy():hMap )
+        oProxy:lQuery      := .T.
+        oProxy:lPersistent := .T.
+     endif
+ return oProxy
+
 
 
 // -------------------------------------------------------------------------- //
@@ -28,12 +38,15 @@ return oProxy
 CLASS TSwProxy
    DATA lBuffering    INIT .F.
    DATA lSync         INIT .F.
+   DATA lQuery        INIT .F.   
+   DATA lPersistent   INIT .F.   
    DATA oCurrentStack INIT nil
    DATA hMap
-
+ 
    METHOD New( hMap ) CONSTRUCTOR
    METHOD Pipeline( bAction )
-   METHOD Sync()      INLINE ( ::lSync := .T., Self )
+   METHOD Sync()      INLINE ( ::lSync := .T., ::lQuery := .F., Self )
+   METHOD Query()     INLINE ( ::lQuery := .T., ::lSync := .F., Self ) 
    ERROR HANDLER OnError( ... )
 ENDCLASS
 
@@ -64,12 +77,15 @@ METHOD OnError( ... ) CLASS TSwProxy
    local cMsg    := __GetMessage() 
    local aArgs   := hb_AParams()   
    local hParams := {=>}
-   local n, uRet
-   local lSync   := ::lSync
-   local oActive := TSwActionStack():oActive
-   
-   // Reseteamos el flag de sincronía para la siguiente llamada
-   ::lSync := .F.
+   local n, uRet, hRet
+    local lSync   := ::lSync
+    local lQuery  := ::lQuery 
+    local oActive := TSwActionStack():oActive
+    
+    if !::lPersistent
+       ::lSync  := .F.
+       ::lQuery := .F.
+    endif
 
    // 1. Prioridad: Intercepción Universal (ActionStack Global)
    if oActive != nil
@@ -109,16 +125,30 @@ METHOD OnError( ... ) CLASS TSwProxy
    if ::lBuffering
       ::oCurrentStack:AddCall( cMsg, hParams )
    else
-      // Ejecución inmediata
-      if lSync
-         hParams[ "cmd" ] := cMsg 
+      hParams[ "cmd" ] := cMsg 
+      if lQuery 
+         hRet := { "status" => "error", "message" => "Internal Proxy Fail" }
+         uRet := SW_PIPELINE_QUERY( hb_jsonEncode( { hParams } ) )
+         
+         if ValType( uRet ) == "C" .and. !Empty( uRet )
+            hRet := {=>}
+            hb_jsonDecode( uRet, @hRet )
+         endif
+
+         if hRet == nil ; hRet := {=>} ; endif 
+         
+         if hb_HHasKey( hRet, "result" ) 
+            return hRet["result"] 
+         endif
+
+         return hRet
+      elseif lSync
          uRet := SW_PIPELINE_EXEC_SYNC( hb_jsonEncode( { hParams } ) )
          return uRet
       else
-
          with object TSwActionStack():New()
-         :AddCall( cMsg, hParams )
-         :Execute()
+            :AddCall( cMsg, hParams )
+            :Execute()
          end
       endif
    endif
@@ -131,14 +161,16 @@ return nil
 CLASS TSwControlProxy
    DATA cId
    DATA lSync
+   DATA lQuery 
    
-   METHOD New( cId, lSync ) CONSTRUCTOR
+   METHOD New( cId, lSync, lQuery ) CONSTRUCTOR
    ERROR HANDLER OnError( ... )
 ENDCLASS
 
-METHOD New( cId, lSync ) CLASS TSwControlProxy
-   ::cId   := cId
-   ::lSync := lSync
+METHOD New( cId, lSync, lQuery ) CLASS TSwControlProxy
+   ::cId    := cId
+   ::lSync  := if( lSync == nil, .F., lSync )
+   ::lQuery := if( lQuery == nil, .F., lQuery )
 return self
 
 METHOD OnError( ... ) CLASS TSwControlProxy
@@ -146,7 +178,7 @@ METHOD OnError( ... ) CLASS TSwControlProxy
    local aArgs   := hb_AParams()   
    local oProxy  := Sw_GetProxy()
    local hParams := {=>}
-   local n, uRet, cProp
+   local n, uRet, cProp, hRet
    local oActive := TSwActionStack():oActive
    
    // 1. Intercepción Universal (ActionStack Global)
@@ -185,15 +217,29 @@ METHOD OnError( ... ) CLASS TSwControlProxy
    if oProxy:lBuffering
       oProxy:oCurrentStack:AddCall( cMsg, hParams )
    else
-      if ::lSync
-         hParams[ "cmd" ] := cMsg 
+      hParams[ "cmd" ] := cMsg 
+      if ::lQuery 
+         hRet := { "status" => "error", "message" => "Internal Control Proxy Fail" }
+         uRet := SW_PIPELINE_QUERY( hb_jsonEncode( { hParams } ) )
+         
+         if ValType( uRet ) == "C" .and. !Empty( uRet )
+            hRet := {=>}
+            hb_jsonDecode( uRet, @hRet )
+         endif
+
+         if hRet == nil ; hRet := {=>} ; endif 
+         
+         if hb_HHasKey( hRet, "result" ) ; return hRet["result"] ; endif
+
+         return hRet
+      elseif ::lSync
          uRet := SW_PIPELINE_EXEC_SYNC( hb_jsonEncode( { hParams } ) )
          return uRet
       else
-         with object TSwActionStack():New()
-            :AddCall( cMsg, hParams )
-            :Execute()
-         end
+         oProxy:oCurrentStack := TSwActionStack():New()
+         oProxy:oCurrentStack:AddCall( cMsg, hParams )
+         oProxy:oCurrentStack:Execute()
+         oProxy:oCurrentStack := nil
       endif
    endif
 return nil

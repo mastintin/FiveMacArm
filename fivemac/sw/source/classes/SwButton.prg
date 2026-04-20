@@ -1,9 +1,9 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
  
  CLASS TSwButton FROM TSwiftControl
  
      ACCESS Caption      INLINE ::hState["caption"]
-     ASSIGN Caption( c ) INLINE ::SetText( c )
+     ASSIGN Caption( c ) INLINE ( ::hState["caption"] := c, SD:Apply( ::cId, { "caption" => c } ) )
  
      ACCESS bAction          INLINE hb_HGetDef( ::hState, "action", nil )
      ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
@@ -31,13 +31,18 @@
      ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
      
      ::oWnd     := oWnd
+     
+     if hb_IsObject( oWnd )
+        ::hState["parentid"] := oWnd:cId
+     endif
+
      ::hState["caption"] := cPrompt
      ::hState["type"]    := 9
      ::hState["interactive"] := .F.
 
      ::bAction  := bAction
     
-     ::Create( 9 )
+     ::Create()
      
   return Self
  
@@ -56,7 +61,7 @@
  //----------------------------------------------------------------------------//
 
  METHOD SetText( cText ) CLASS TSwButton
-     SD:Text( ::cId, cText )
+    ::Caption := cText
  return nil
   
  //----------------------------------------------------------------------------//

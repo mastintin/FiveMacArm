@@ -223,17 +223,21 @@ public func sw_http_download(url: String, destination: String, id: String = "", 
 
 internal struct NetworkCommands {
     static func register(in sd: SwDispatcher) {
-        sd.register("httpget")        { params in await NetworkCommands.get(params) }
-        sd.register("httppost")       { params in await NetworkCommands.post(params) }
-        sd.register("httpput")        { params in await NetworkCommands.put(params) }
-        sd.register("httpdelete")     { params in await NetworkCommands.delete(params) }
-        sd.register("httpdownload")   { params in await NetworkCommands.download(params) }
-        sd.register("httpheader")     { params in NetworkCommands.setHeader(params) }
-        sd.register("httpclear")      { params in NetworkCommands.clearHeaders(params) }
-        sd.register("httpupload")     { params in await NetworkCommands.upload(params) }
-        sd.register("httpcanresume")  { params in await NetworkCommands.canResume(params) }
-        sd.register("getip")          { params in await NetworkCommands.getIP(params) }
-        sd.register("isconnected")    { params in await NetworkCommands.isConnected(params) }
+        sd.register("httpget")        { params in return ["result": await NetworkCommands.get(params)] }
+        sd.register("httppost")       { params in return ["result": await NetworkCommands.post(params)] }
+        sd.register("httpput")        { params in return ["result": await NetworkCommands.put(params)] }
+        sd.register("httpdelete")     { params in return ["result": await NetworkCommands.delete(params)] }
+        sd.register("httpdownload")   { params in return ["result": await NetworkCommands.download(params)] }
+        sd.register("httpheader")     { params in NetworkCommands.setHeader(params); return nil }
+        sd.register("httpclear")      { params in NetworkCommands.clearHeaders(params); return nil }
+        sd.register("httpupload")     { params in return ["result": await NetworkCommands.upload(params)] }
+        sd.register("httpcanresume")  { params in return ["result": await NetworkCommands.canResume(params)] }
+        sd.register("getip")          { params in 
+            let ip = await NetworkCommands.getIP(params)
+            print("🏝️ [Networks] Comando 'getip' ejecutado. Resultado: \(ip)")
+            return ["result": ip] 
+        }
+        sd.register("isconnected")    { params in return ["result": await NetworkCommands.isConnected(params)] }
     }
 
     @discardableResult
@@ -349,6 +353,7 @@ internal struct NetworkCommands {
         let id = (params["id"] as? String) ?? ""
         let targetId = (params["targetId"] as? String) ?? ""
         let ip = sw_getIP()
+        print("🏝️ [Networks] sw_getIP() produjo: '\(ip)'")
         
         SwWorkflowContext.shared.set(ip, for: "local_ip")
         

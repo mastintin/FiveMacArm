@@ -123,3 +123,16 @@ public struct SwiftGetView: View {
     }
 }
 
+
+// MARK: - Get Initialization (Codable)
+public struct GetInit: Codable {
+    public let text: String?
+    public let picture: String?
+    public let placeholder: String?
+    public let issecure: Bool?
+    public let width: Double?
+    public let height: Double?
+    public let top: Double?
+    public let left: Double?
+    public let resizemask: Int?
+}

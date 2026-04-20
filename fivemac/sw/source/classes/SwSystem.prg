@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 static oSystem 
 static nLastStatusId := 0
@@ -42,6 +42,7 @@ CLASS TSwSystem FROM TSwiftControl
    METHOD GetFile( cTitle, cTypes )    INLINE SDS:GetFile( hb_defaultValue( cTitle, "Seleccionar Archivo" ), hb_defaultValue( cTypes, "" ) )
    METHOD GetDir( cTitle )             INLINE SDS:GetDir( hb_defaultValue( cTitle, "Seleccionar Carpeta" ) )
    METHOD SaveFile( cTitle, cName )    INLINE SDS:SaveFile( hb_defaultValue( cTitle, "Guardar como" ), hb_defaultValue( cName, "" ) )
+   METHOD MsgBeep()                   INLINE SD:Beep()
 
 ENDCLASS
 
@@ -86,7 +87,8 @@ static function GetSystem()
    if oSystem == nil ; oSystem := TSwSystem():New() ; endif
 return oSystem
 
-FUNCTION SwMsgInfo( cMsg, cTitle ) ; return GetSystem():MsgInfo( cMsg, cTitle )
+FUNCTION MsgBeep() ; return GetSystem():MsgBeep()
+FUNCTION Sw_MsgInfo_Bridge( cMsg, cTitle ) ; return GetSystem():MsgInfo( cMsg, cTitle )
 FUNCTION SwMsgStop( cMsg, cTitle ) ; return GetSystem():MsgStop( cMsg, cTitle )
 FUNCTION SwMsgYesNo( cMsg, cTitle ) ; return GetSystem():MsgYesNo( cMsg, cTitle )
 FUNCTION SwMsgNoYes( cMsg, cTitle ) ; return GetSystem():MsgNoYes( cMsg, cTitle )

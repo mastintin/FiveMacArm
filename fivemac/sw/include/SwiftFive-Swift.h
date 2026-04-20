@@ -366,15 +366,17 @@ extern "C" {
 
 #if defined(__OBJC__)
 
+SWIFT_EXTERN void HB_FUN_ERRORLINK(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_MSGBEEP(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_HB_UUID(void * _Nullable p) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SW_AICHAT_CLEAR(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_AICHAT_CREATE_STATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN void HB_FUN_SW_APPISRUNNING(void * _Nullable p) SWIFT_NOEXCEPT;
-
 SWIFT_EXTERN void HB_FUN_SW_APPRUN(void * _Nullable p) SWIFT_NOEXCEPT;
-
-SWIFT_EXTERN void HB_FUN_SW_COMPONENT_CREATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_GET_PROXY_MAP(void * _Nullable p) SWIFT_NOEXCEPT;
 
@@ -383,6 +385,8 @@ SWIFT_EXTERN void HB_FUN_SW_MSGINFO(void * _Nullable p) SWIFT_NOEXCEPT;
 SWIFT_EXTERN void HB_FUN_SW_PIPELINE_EXEC(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_PIPELINE_EXEC_SYNC(void * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void HB_FUN_SW_PIPELINE_QUERY(void * _Nullable p) SWIFT_NOEXCEPT;
 
 #endif // defined(__OBJC__)
 #if __has_attribute(external_source_symbol)

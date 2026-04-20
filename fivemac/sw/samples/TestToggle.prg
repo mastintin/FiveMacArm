@@ -13,9 +13,9 @@ function Main()
     @ 100, 20 TOGGLE oTgl3 PROMPT "Classic Checkbox" VALUE .F. OF oWnd
 
     @ 160, 20 BUTTON "Set Premium Styles" OF oWnd SIZE 200, 40 ;
-        ACTION ( oTgl2:SetColor( "#FF1493" ), ;   // Rosa Neón
-                 oTgl1:SetTextColor( "#0000FF" ), ; // Azul
-                 oTgl1:SetColor( "#32CD32" ) )     // Verde Lima
+        ACTION ( oTgl2:Color := "#FF1493", ;    // Rosa Neón
+                 oTgl1:TextColor := "#0000FF", ; // Azul
+                 oTgl1:Color := "#32CD32" )      // Verde Lima
 
     ACTIVATE WINDOW oWnd CENTER
 

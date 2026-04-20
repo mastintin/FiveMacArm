@@ -1,4 +1,5 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
+#include "SwFive.ch"
  
   CLASS TSwWindow FROM TSwiftControl
   
@@ -19,8 +20,7 @@
   
       ::oParent         := oParent
       ::hState["title"] := cTitle
-      ::hState["type"]  := "window"
-      ::hState["typeid"] := 100 
+      ::hState["type"]  := 100
    
       // CREACIÓN POR MENSAJERÍA ASÍNCRONA (Fire-and-Forget)
       // Ahora Harbour no espera, confía en el orden del Pipeline
@@ -32,7 +32,7 @@
  
   METHOD Activate() CLASS TSwWindow
      // Si es la primera ventana, arrancamos el motor
-     if !Sw_AppIsRunning()
+     if !TSwApplication():isRunning()
         SD:Sync():Apply( ::cId, { "center" => .t. } )
         Sw_AppRun()
      else

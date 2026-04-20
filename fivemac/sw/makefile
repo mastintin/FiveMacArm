@@ -30,19 +30,21 @@ SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-nam
 # Files
 SWIFT_SOURCES=$(wildcard source/swift/*.swift)
 PRG_SOURCES=$(wildcard source/classes/*.prg)
+C_SOURCES=$(wildcard source/sqlite/*.c)
 
 SWIFT_OBJ=obj/SwiftFive.o
 PRG_OBJS=$(patsubst source/classes/%.prg,obj/Hrb_%.o,$(PRG_SOURCES))
+C_OBJS=$(patsubst source/sqlite/%.c,obj/%.o,$(C_SOURCES))
 
 LIB_NAME=lib/libSwiftFive.a
 
 # Rules
 all: $(LIB_NAME)
 
-$(LIB_NAME): $(SWIFT_OBJ) $(PRG_OBJS)
+$(LIB_NAME): $(SWIFT_OBJ) $(PRG_OBJS) $(C_OBJS)
 	@mkdir -p lib
 	@echo "Archiving $@..."
-	ar rc $@ $(SWIFT_OBJ) obj/Hrb_*.o
+	ar rc $@ $(SWIFT_OBJ) obj/Hrb_*.o $(C_OBJS)
 	ranlib $@
 
 # Compile Swift
@@ -51,6 +53,12 @@ $(SWIFT_OBJ): $(SWIFT_SOURCES)
 	@mkdir -p include
 	@echo "Compiling Swift..."
 	swiftc $(SWIFT_SOURCES) $(SWIFTFLAGS) -o $@
+
+# Compile Native C modules
+obj/%.o: source/sqlite/%.c
+	@mkdir -p obj
+	@echo "Compiling Native C: $<..."
+	$(CC) $(CFLAGS) $< -o $@
 
 # Compile Harbour to C then to O
 obj/Hrb_%.o: source/classes/%.prg

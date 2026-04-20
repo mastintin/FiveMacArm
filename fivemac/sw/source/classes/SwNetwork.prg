@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 //----------------------------------------------------------------------------//
 
@@ -11,8 +11,8 @@ CLASS TSwNetwork FROM TSwiftControl
    METHOD SetSync()   INLINE ( ::lSync := .T., self )
    METHOD SetAsync()  INLINE ( ::lSync := .F., self )
 
-   ACCESS lSync          INLINE ::hState["lSync"]
-   ASSIGN lSync( l )     INLINE ::hState["lSync"] := l
+   ACCESS lSync          INLINE ::hState["lsync"]
+   ASSIGN lSync( l )     INLINE ::hState["lsync"] := l
 
    // Motor Genérico (Fontanería Unificada)
    METHOD Query( cCmd, hParams, bAction, lSync )
@@ -47,7 +47,7 @@ ENDCLASS
 
 METHOD New( lSync ) CLASS TSwNetwork
    ::Super:New()
-   ::hState["lSync"] := hb_defaultValue( lSync, .F. )
+   ::hState["lsync"] := hb_defaultValue( lSync, .F. )
 return self
 
 //----------------------------------------------------------------------------//

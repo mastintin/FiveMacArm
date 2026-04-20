@@ -1,4 +1,4 @@
-#include "FiveMac.ch"
+#include "swfive.ch"
 
 FUNCTION Main()
    local oWnd, oBtn, oStack

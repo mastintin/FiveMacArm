@@ -21,6 +21,17 @@ Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras
 *   **Protocolo de Comunicación "Zero-Bridge"**: Se elimina la necesidad de `HarbourDirect` y de crear manualmente funciones puente para cada control. Todo fluye a través de un canal JSON unificado.
 *   **Estado Sincronizado (Return Train)**: Swift notifica automáticamente a Harbour de cualquier cambio de estado, manteniendo los objetos de Harbour siempre sincronizados.
 
+## 🏝️ Independencia de Build y Soporte SQLite Nativo (v2.0)
+Hemos alcanzado un hito arquitectónico clave: el desarrollo de **"La Isla" (sw)** es ahora un ecosistema **totalmente autónomo e independiente**.
+
+*   **Desacoplamiento Total**: Se han eliminado las dependencias de las librerías nativas legacy (`libfive.a`, `libfivec.a`) y MariaDB en el proceso de construcción de La Isla. El framework se compila ahora como una entidad ligera y moderna.
+*   **Motor SQLite Nativo Directo**: Integración de un motor SQLite síncrono que ataca directamente la librería del sistema de macOS (`libsqlite3.dylib`). 
+    *   **SwSqliteBridge.c**: Puente en C puro para máxima velocidad y mínima fricción.
+    *   **TSwSqlite**: Clase Harbour portada para gestión de datos, navegación xBase y soporte de inserción mediante Hashes.
+    *   **Zero-Dependency**: No requiere instalaciones externas; utiliza el motor residente y optimizado de macOS.
+*   **Reducción de Puntos de Riesgo**: Saneamiento de las exportaciones `@_cdecl`. Funciones como `MSGBEEP` han sido refactorizadas para usar el despachador centralizado, mejorando la robustez futura del framework.
+*   **Diálogos Nativos Directos**: Implementación de un canal de emergencia para mensajes (`SW_MSGINFO`) basado en `NSAlert` de Swift, garantizando la visibilidad de diagnósticos incluso si el pipeline de eventos principal no está disponible.
+
 ## 📝 Modernización de Motores de Edición
 Gran salto adelante en las capacidades de edición de código:
 

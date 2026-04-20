@@ -5,8 +5,8 @@ import AppKit
 public class SwDispatcher {
     public static let shared = SwDispatcher()
     
-    /// Diccionario de comandos ejecutables
-    private var commands: [String: ([String: Any]) async -> Void] = [:]
+    /// Diccionario de comandos ejecutables (Ahora devuelven un resultado opcional)
+    private var commands: [String: ([String: Any]) async -> [String: Any]?] = [:]
     
     /// Tacógrafo para registrar cambios de estado hacia Harbour
     private var stateChanges: [String: [String: Any]] = [:]
@@ -17,25 +17,33 @@ public class SwDispatcher {
         registerBaseCommands()
     }
     
-    public func register(_ name: String, action: @escaping ([String: Any]) async -> Void) {
+    public func register(_ name: String, action: @escaping ([String: Any]) async -> [String: Any]?) {
         queue.sync(flags: .barrier) {
             commands[name.lowercased()] = action
         }
     }
     
-    public func execute(name: String, params: [String: Any]) async {
+    @discardableResult
+    public func execute(name: String, params: [String: Any]) async -> [String: Any]? {
         let cleanName = name.lowercased()
         let resolvedParams = resolvePiping(params)
         
-        var action: (([String: Any]) async -> Void)?
+        var action: (([String: Any]) async -> [String: Any]?)?
         queue.sync {
             action = commands[cleanName]
         }
         
         if let action = action {
-            await action(resolvedParams)
+            let result = await action(resolvedParams)
+            if let res = result {
+               print("🏝️ [Dispatcher] '\(name)' devolvió: \(res)")
+            } else {
+               print("🏝️ [Dispatcher] ADVERTENCIA: '\(name)' devolvió NIL.")
+            }
+            return result
         } else {
             print("SwDispatcher: Error - Comando '\(name)' no registrado en el motor Swift.")
+            return nil
         }
     }
     
@@ -77,8 +85,6 @@ public class SwDispatcher {
     // MARK: - Registro de Comandos Core
     
     private func registerBaseCommands() {
-        // Pasamos 'self' (la instancia actual que se está creando) 
-        // para evitar llamar a .shared antes de tiempo (Recursion Lock)
         NetworkCommands.register(in: self)
         FilesCommands.register(in: self)
         ViewsCommands.register(in: self)
@@ -90,23 +96,17 @@ public class SwDispatcher {
 
         self.shared.register("apply") { params in
             let id = ((params["id"] as? String) ?? (params["p1"] as? String) ?? "").lowercased()
-            await MainActor.run {
+            
+            return await MainActor.run { () -> [String: Any]? in
                 if let state = ViewRegistry.getState(for: id) as? SwApplyable {
                     for (key, value) in params {
                         // DETONADOR DE BORRADO UNIVERSAL
                         if key.lowercased() == "close" && (value as? Bool == true || (value as? Int == 1)) {
-                             // 1. Quitar visualmente de SwiftUI
                              ViewRegistry.removeFromParent(id: id)
-                             
-                             // 2. REPARAR: Si es una ventana nativa, cerrarla físicamente
                              if let window = ViewRegistry.get("NSWindow_\(id)") as? NSWindow {
                                  window.close()
                              }
-
-                             // 3. Matanza recursiva nativa (IDs de Swift)
                              let deadIds = ViewRegistry.recursiveClean(id: id)
-                             
-                             // 3. Notificar a Harbour para la matanza en PRG
                              let idsStr = deadIds.map { "\"\($0)\"" }.joined(separator: ", ")
                              let json = "{\"_system\":{\"unregister\":[\(idsStr)]}}"
                              Harbour.call("SW_PIPELINE_SYNC", json)
@@ -116,7 +116,6 @@ public class SwDispatcher {
                         if key != "id" && !key.hasPrefix("p") && key != "cmd" {
                             state.apply(property: key, value: value)
                             
-                            // MEJORA: Si es una propiedad de geometría, actualizar también el StackItem (Item de Layout)
                             if let item = ViewRegistry.getItem(for: id) {
                                 switch key.lowercased() {
                                 case "top":
@@ -135,12 +134,12 @@ public class SwDispatcher {
                                     break
                                 }
                             }
-
-                            // INFORMAMOS DE VUELTA: Para que Harbour confirme su hState
                             self.shared.recordChange(id: id, property: key, value: value)
                         }
                     }
+                    return ["status": "ok", "id": id]
                 }
+                return nil
             }
         }
     }
