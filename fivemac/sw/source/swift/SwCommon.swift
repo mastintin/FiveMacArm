@@ -234,6 +234,9 @@ public class SwiftWindowState: SwiftVStackState {
                     if v { win.level = .modalPanel }
                 } else if prop == "interactive", let v = value as? Bool {
                     win.alphaValue = v ? 1.0 : 0.95
+                } else if prop == "visible" && (value as? Bool == true || (value as? Int == 1)) {
+                    win.makeKeyAndOrderFront(nil)
+                    NSApp.activate(ignoringOtherApps: true)
                 } else if prop == "close" {
                     win.close()
                 }

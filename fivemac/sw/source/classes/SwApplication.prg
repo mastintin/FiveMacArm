@@ -35,7 +35,7 @@ METHOD Activate() CLASS TSwApplication
     ::lRunning := .T.
     
     // El motor de la Isla toma el control (Bloqueante)
-    SW_APPRUN()
+    // El motor ahora se inicia vía HSW_START_SWIFT()
 
     // Cuando el bucle termina, actualizamos el estado real
     ::lRunning := ::isRunning()

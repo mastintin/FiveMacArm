@@ -45,7 +45,14 @@ public func hb_errorlink_hb(_ p: UnsafeMutableRawPointer?) {
 @_cdecl("HB_FUN_SW_PIPELINE_EXEC_SYNC")
 public func sw_pipeline_exec_sync_hb(_ p: UnsafeMutableRawPointer?) {
     let json = hb_parc(1).map { String(cString: $0) } ?? "[]"
-    let result = SwDispatcher.shared.executeSync(json: json)
+    
+    let semaphore = DispatchSemaphore(value: 0)
+    var result = "{}"
+    Task {
+        result = await SwDispatcher.shared.executeSyncInternal(json: json)
+        semaphore.signal()
+    }
+    _ = semaphore.wait(timeout: .distantFuture)
     Harbour.ret(result)
 }
 
@@ -58,42 +65,29 @@ public struct Harbour {
     public static func ret(_ value: Bool) { hb_retl(value ? 1 : 0) }
     public static func ret() { hb_vmPushNil() }
 
-    /// Forzamos la permanencia de los símbolos de puente
-    internal static func _keepAlive() {
-        if ProcessInfo.processInfo.arguments.contains("--debug-bridge-symbols") { 
-            hb_uuid_hb(nil)
-            hb_errorlink_hb(nil)
+    /// Calls a Harbour function intelligently (Asynchronous in HSW)
+    public static func call(_ funcName: String, _ args: Any...) {
+        var data: [String: Any] = [:]
+        for (index, arg) in args.enumerated() {
+            data["p\(index+1)"] = arg
         }
+        SwDispatcher.shared.enqueueEvent(id: funcName, type: "call", data: data)
+    }
+}
+
+@_cdecl("HB_FUN_SW_GET_EVENTS")
+public func sw_get_events_hb(_ p: UnsafeMutableRawPointer?) {
+    let events = SwDispatcher.shared.flushEvents()
+    if events.isEmpty {
+        Harbour.ret("[]")
+        return
     }
     
-    /// Calls a Harbour function intelligently resolving types
-    public static func call(_ funcName: String, _ args: Any...) {
-        _keepAlive() // Referencia forzada
-
-        funcName.uppercased().withCString { cName in
-            guard let ds = hb_dynsymFindName(cName),
-                  let sym = hb_dynsymSymbol(ds) else { return }
-            
-            hb_vmPushSymbol(sym)
-            hb_vmPushNil()
-            
-            for arg in args {
-                if let s = arg as? String {
-                    s.withCString { ptr in
-                        let len = Int(strlen(ptr))
-                        hb_vmPushString(ptr, len)
-                    }
-                } else if let i = arg as? Int {
-                    hb_vmPushLong(i)
-                } else if let d = arg as? Double {
-                    hb_vmPushNumber(d, 0)
-                } else if let b = arg as? Bool {
-                    hb_vmPushLogical(b ? 1 : 0)
-                } else {
-                    hb_vmPushNil()
-                }
-            }
-            hb_vmDo(Int32(args.count))
-        }
+    print("🏝️ [Swift-Bridge] Entregando \(events.count) eventos a Harbour")
+    if let data = try? JSONSerialization.data(withJSONObject: events),
+       let json = String(data: data, encoding: .utf8) {
+        Harbour.ret(json)
+    } else {
+        Harbour.ret("[]")
     }
 }

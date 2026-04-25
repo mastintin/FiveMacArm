@@ -370,25 +370,31 @@ SWIFT_EXTERN void HB_FUN_ERRORLINK(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_HB_UUID(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void HSW_SEND_COMMAND(int8_t const * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN void hsw_swift_start(void) SWIFT_NOEXCEPT;
+
 SWIFT_EXTERN void HB_FUN_SW_AICHAT_CLEAR(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_AICHAT_CREATE_STATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN void HB_FUN_SW_APPRUN(void * _Nullable p) SWIFT_NOEXCEPT;
+SWIFT_EXTERN void HB_FUN_SW_GET_EVENTS(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_GET_PROXY_MAP(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_PIPELINE_EXEC(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN void SW_PIPELINE_EXEC(int8_t const * _Nullable p) SWIFT_NOEXCEPT;
+
+SWIFT_EXTERN int8_t const * _Nullable SW_PIPELINE_EXEC_SYNC(int8_t const * _Nullable p) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
 SWIFT_EXTERN void HB_FUN_SW_PIPELINE_EXEC_SYNC(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_PIPELINE_QUERY(void * _Nullable p) SWIFT_NOEXCEPT;
 
+SWIFT_EXTERN int8_t const * _Nullable SW_PIPELINE_QUERY(int8_t const * _Nullable p) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+
 SWIFT_EXTERN void HB_FUN_SW_PROCESSEVENTS(void * _Nullable p) SWIFT_NOEXCEPT;
-
-SWIFT_EXTERN void HB_FUN_SW_WINDOW_WAIT(void * _Nullable p) SWIFT_NOEXCEPT;
-
-SWIFT_EXTERN void HB_FUN_SW_WINDOWMODAL(void * _Nullable p) SWIFT_NOEXCEPT;
 
 #endif // defined(__OBJC__)
 #if __has_attribute(external_source_symbol)

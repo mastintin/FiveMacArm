@@ -34,4 +34,4 @@ HB_FUNC(HB_UUID) {
       uuid[15]);
 
   hb_retc(szUUID);
-}
+}

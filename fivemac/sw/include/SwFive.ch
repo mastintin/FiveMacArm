@@ -101,9 +101,10 @@
    [ PROMPT <cPrompt> ] ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ <switch: SWITCH> ] ;
    [ ACTION <uAction> ] ;
    => ;
-   [ <oTgl> := ] TSwToggle():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<lValue>], [<cPrompt>], <oWnd>, , , , [<{uAction}>] )
+   [ <oTgl> := ] TSwToggle():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<lValue>], [<cPrompt>], <oWnd>, , <.switch.>, , [<{uAction}>] )
 
 #xcommand @ <nRow>, <nCol> LIST <oList> ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
@@ -122,14 +123,15 @@
 //----------------------------------------------------------------------------//
 
 #xcommand @ <nRow>, <nCol> GET [ <oGet> VAR ] <uVar> ;
-   [ OF <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ PICTURE <cPicture> ] ;
    [ <password: PASSWORD> ] ;
+   [ PLACEHOLDER <cPlaceholder> ] ;
    [ ACTION <uAction> ] ;
    => ;
    [ <oGet> := ] SwGet():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>],;
-   <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], , <.password.> )
+   <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], , <.password.>, [<cPlaceholder>] )
 
 #xcommand @ <nRow>, <nCol> PROGRESS [ <oProg> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;

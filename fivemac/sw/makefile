@@ -31,7 +31,7 @@ SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-nam
 SWIFT_SOURCES=$(wildcard source/swift/*.swift)
 PRG_SOURCES=$(wildcard source/classes/*.prg)
 C_SOURCES=$(wildcard source/sqlite/*.c)
-OBJC_SOURCES=$(wildcard source/objc/SwMsgs.m)
+OBJC_SOURCES=$(wildcard source/objc/*.m)
 
 SWIFT_OBJ=obj/SwiftFive.o
 PRG_OBJS=$(patsubst source/classes/%.prg,obj/Hrb_%.o,$(PRG_SOURCES))

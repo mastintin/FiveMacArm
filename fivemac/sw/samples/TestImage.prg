@@ -1,13 +1,15 @@
 #include "SwFive.ch"
 
 function Main()
+   HSW_START_SWIFT( "AppMain" )
+return nil
+
+function AppMain()
    local oWnd, oImg1, oImg2, oImg3
    local oBtn
    
-   // oWnd := TSwWindow():New( "La Isla: SF Symbols", 500, 400 )
-   DEFINE WINDOW oWnd TITLE "La Isla: SF Symbols" SIZE 500, 400
+   DEFINE WINDOW oWnd TITLE "La Isla HSW: SF Symbols" SIZE 500, 400
    
-   // oSay := TSwLabel():New( 20, 20, 300, 20, "Galería de SF Symbols Dinámicos", oWnd )
    @ 20, 20 SAY "Galería de SF Symbols Dinámicos" SIZE 300, 20 OF oWnd
    
    // Imagen 1: El sol en naranja

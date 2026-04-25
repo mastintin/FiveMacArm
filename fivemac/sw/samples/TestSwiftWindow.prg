@@ -1,6 +1,17 @@
 #include "swfive.ch"
 
+// ---------------------------------------------------------
+// El punto de entrada REAL (Thread 0)
+// ---------------------------------------------------------
 function Main()
+   // Iniciamos Swift y le decimos que ejecute "AppMain" en un hilo de Harbour
+   HSW_START_SWIFT( "AppMain" )
+return nil
+
+// ---------------------------------------------------------
+// La lógica de tu aplicación (Ahora corre en Thread 1)
+// ---------------------------------------------------------
+function AppMain()
    local oWnd, oBtn, oChat
    local cApiKey := "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"
    

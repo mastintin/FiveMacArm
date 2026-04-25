@@ -1,10 +1,13 @@
 #include "SwFive.ch"
 
 function Main()
+   HSW_START_SWIFT( "AppMain" )
+return nil
 
+function AppMain()
     local oWnd, oTgl1, oTgl2, oTgl3
 
-    DEFINE WINDOW oWnd TITLE "Test: Swift Island Premium" SIZE 400, 300
+    DEFINE WINDOW oWnd TITLE "Test Toggle HSW: Swift Island" SIZE 400, 300
 
     @ 20, 20 TOGGLE oTgl1 PROMPT "Modern Switch" VALUE .T. SWITCH OF oWnd
     

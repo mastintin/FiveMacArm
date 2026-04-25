@@ -44,11 +44,28 @@ public class ListState: SwApplyable, StackStateProtocol {
 public struct SwiftListView: View {
     @Bindable var state: ListState
     
+    private func hasText(_ item: StackItem, _ text: String) -> Bool {
+        // 1. Miramos si el objeto actual tiene texto
+        if let labelState = ViewRegistry.get(item.id) as? GetState,
+           labelState.text.lowercased().contains(text) {
+            return true
+        }
+        
+        // 2. Si es un contenedor, buscamos en sus hijos
+        if let state = ViewRegistry.get(item.id) as? StackStateProtocol {
+            for child in state.items {
+                if hasText(child, text) { return true }
+            }
+        }
+        
+        return false
+    }
+
     var filteredItems: [StackItem] {
         if state.filterText.isEmpty {
             return state.items
         } else {
-            return state.items
+            return state.items.filter { hasText($0, state.filterText) }
         }
     }
     

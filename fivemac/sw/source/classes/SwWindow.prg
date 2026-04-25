@@ -32,7 +32,6 @@
        ::hState["type"]  := 100
     
        // CREACIÓN POR MENSAJERÍA ASÍNCRONA (Fire-and-Forget)
-       // Ahora Harbour no espera, confía en el orden del Pipeline
        SDS:Create( ::hState )
      
     return self
@@ -49,10 +48,14 @@
          SDS:Apply( ::cId, { "modal" => .t. } ) 
       endif
    
-      // Si es la primera ventana, arrancamos el motor
-      if !TSwApplication():isRunning()
-         Sw_AppRun()
-      endif
+       // Notificamos a Swift que debe mostrar la ventana
+       SDS:Apply( ::cId, { "visible" => .t. } )
+    
+       // BUCLE DE EVENTOS HSW (Thread 1)
+       while ::lVisible
+          SW_PROCESS_EVENTS()
+          hb_idleSleep( 0.01 )
+       end
    
    RETURN nil
    

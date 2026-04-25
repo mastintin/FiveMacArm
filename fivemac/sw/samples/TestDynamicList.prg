@@ -1,10 +1,14 @@
 #include "SwFive.ch"
  
 function Main()
+   HSW_START_SWIFT( "AppMain" )
+return nil
+
+function AppMain()
    local oWnd, oList, oBtn
    static nItems := 0
     
-   DEFINE WINDOW oWnd TITLE "Isla: Consulta de Índices" SIZE 400, 500
+   DEFINE WINDOW oWnd TITLE "Isla HSW: Consulta de Índices" SIZE 400, 500
     
    @ 20, 20 LIST oList OF oWnd SIZE 360, 380 ANCHOR SW_RESIZE_WIDTH + SW_RESIZE_HEIGHT
    

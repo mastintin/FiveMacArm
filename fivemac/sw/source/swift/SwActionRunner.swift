@@ -34,8 +34,22 @@ public func sw_pipeline_exec_hb(_ p: UnsafeMutableRawPointer?) {
 @_cdecl("HB_FUN_SW_PIPELINE_QUERY")
 public func sw_pipeline_query_hb(_ p: UnsafeMutableRawPointer?) {
     let json = hb_parc(1).map { String(cString: $0) } ?? "{}"
-    let result = SwDispatcher.shared.executeSync(json: json)
+    
+    // NOTA: Como esto se llama desde el puente nativo de Harbour (C),
+    // y queremos que sea síncrono, usamos el despachador de compatibilidad.
+    let result = sw_pipeline_query_hb_internal(json)
     Harbour.ret(result)
+}
+
+private func sw_pipeline_query_hb_internal(_ json: String) -> String {
+    let semaphore = DispatchSemaphore(value: 0)
+    var result = "{}"
+    Task {
+        result = await SwDispatcher.shared.executeSyncInternal(json: json)
+        semaphore.signal()
+    }
+    _ = semaphore.wait(timeout: .distantFuture)
+    return result
 }
 
 // MARK: - Motores de Ejecución del Tren (Batch Runners)

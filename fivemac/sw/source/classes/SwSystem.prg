@@ -4,9 +4,9 @@
 //----------------------------------------------------------------------------//
 
 // Funciones de Refresco Globales
-FUNCTION SysRefresh()      ; return SW_PROCESSEVENTS()
-FUNCTION DoEvents()        ; return SW_PROCESSEVENTS()
-FUNCTION SwProcessEvents() ; return SW_PROCESSEVENTS()
+FUNCTION SysRefresh()      ; SW_PROCESSEVENTS() ; return SW_PROCESS_EVENTS()
+FUNCTION DoEvents()        ; SW_PROCESSEVENTS() ; return SW_PROCESS_EVENTS()
+FUNCTION SwProcessEvents() ; SW_PROCESSEVENTS() ; return SW_PROCESS_EVENTS()
 
 // Funciones de Estado y Notificaciones (Nativas directas en SwMsgs.m)
 // Se acceden directamente: MsgStatus(), MsgStatusClose(), MsgStatusUpdate(), MsgToast()
@@ -45,18 +45,14 @@ FUNCTION MsgWaitNS( cMsg, cTitle ); return MsgStatus( cMsg, cTitle )
 FUNCTION MsgWaitNSStop()          ; return MsgStatusClose()
 FUNCTION MsgChoice( cMsg, cTitle, aItems ) ; return SD:Query():MsgChoice( cMsg, cTitle, aItems )
 FUNCTION SwMsgList( cTitle, aItems )
-   local n, aClean := {}
-   for n := 1 to Len( aItems )
-      AAdd( aClean, hb_ValToStr( aItems[n] ) )
-   next
-return NAT_MsgSelectList( cTitle, aClean )
+return MsgList( aItems, cTitle )
 
 FUNCTION MsgList( aItems, cTitle )
-   local n, aClean := {}
-   for n := 1 to Len( aItems )
-      AAdd( aClean, hb_ValToStr( aItems[n] ) )
-   next
-return NAT_MsgSelectList( cTitle, aClean )
+   local nResult := SD:Query():MsgList( aItems, cTitle )
+   if hb_IsNumeric( nResult ) .and. nResult > 0 .and. nResult <= Len( aItems )
+      return aItems[ nResult ]
+   endif
+return nil
 
 // Selectores de Archivos
 FUNCTION GetFile( cTitle, cTypes, cPrompt ) ; return SD:Query():GetFile( cTitle, cTypes, cPrompt )

@@ -12,7 +12,7 @@ class SwWindowDelegate: NSObject, NSWindowDelegate {
         print("SwiftWindow: Ventana \(windowId) cerrándose...")
         
         let deadIds = ViewRegistry.recursiveClean(id: windowId)
-        let idsJson = deadIds.map { "\($0)" }.joined(separator: ", ")
+        let idsJson = deadIds.map { "\"\($0)\"" }.joined(separator: ", ")
         let json = "{\"_system\":{\"unregister\":[\(idsJson)]}}"
         
         DispatchQueue.global().async {
@@ -25,30 +25,12 @@ class SwWindowDelegate: NSObject, NSWindowDelegate {
 
 @_cdecl("HB_FUN_SW_PROCESSEVENTS")
 public func sw_processevents_hb(_ p: UnsafeMutableRawPointer?) {
-    // 1. Bombeo de alto nivel (RunLoop) - Crucial para SwiftUI
+    // 1. En HSW, el Hilo 0 ya bombea NSApp.run().
+    // Aquí solo permitimos que el RunLoop del hilo secundario respire.
     let next = Date(timeIntervalSinceNow: 0.001)
     RunLoop.current.run(mode: .default, before: next)
-    RunLoop.current.run(mode: .common, before: next)
-    
-    // 2. Bombeo de bajo nivel (NSEvent) - Crucial para clics y dibujo
-    var event: NSEvent?
-    repeat {
-        event = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true)
-        if let event = event {
-            NSApp.sendEvent(event)
-        }
-    } while event != nil
 }
 
-
-class SwAppDelegate: NSObject, NSApplicationDelegate {
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        print("SwiftApp: Última ventana cerrada. Terminando proceso...")
-        return true
-    }
-}
-
-private let appDelegate = SwAppDelegate()
 
 // --- MOTOR UNIFICADO DE CREACIÓN ---
 @MainActor
@@ -75,26 +57,14 @@ public func sw_createwindow_hb_internal(title: String, width: Double, height: Do
     hostingView.autoresizingMask = [.width, .height]
     window.contentView = hostingView
     
-    // --- DELEGADO ---
+    // --- REGISTRO ---
+    ViewRegistry.register(window, for: "NSWindow_\(id)")
+    
     let delegate = SwWindowDelegate(windowId: id)
     window.delegate = delegate
     ViewRegistry.register(delegate, for: "Delegate_\(id)")
     
-    // --- EXPOSICIÓN ---
-    window.makeKeyAndOrderFront(nil)
-    ViewRegistry.register(window, for: "NSWindow_\(id)")
-    
-    print("SwiftWindow: Ventana \(id) ['\(title)'] creada físicamente con éxito.")
+    print("SwiftWindow: Ventana \(id) ['\(title)'] creada y registrada físicamente.")
 }
 
-
-@_cdecl("HB_FUN_SW_APPRUN")
-public func sw_apprun_hb(_ p: UnsafeMutableRawPointer?) {
-    if NSApp.isRunning {
-        return
-    }
-    NSApp.setActivationPolicy(.regular)
-    NSApp.delegate = appDelegate
-    NSApp.activate(ignoringOtherApps: true)
-    NSApp.run()
-}
+// --- MOTOR DE ARRANQUE OBSOLETO (Eliminado en favor de SwMain.m) ---

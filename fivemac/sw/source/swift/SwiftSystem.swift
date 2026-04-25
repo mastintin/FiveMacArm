@@ -14,6 +14,7 @@ internal struct SystemCommands {
         sd.register("alert")      { params in await SystemCommands.alert(params) }
         sd.register("msgyesno")   { params in await SystemCommands.msgYesNo(params) }
         sd.register("msgchoice")  { params in await SystemCommands.msgChoice(params) }
+        sd.register("msglist")    { params in await SystemCommands.msgList(params) }
         
         // --- NOTIFICACIONES Y ESTADOS ASÍNCRONOS ---
         sd.register("doevents")     { _ in await SystemCommands.doEvents() ; return nil }
@@ -262,6 +263,7 @@ struct SwHUDView: View {
     var searchText: String = ""
     var selectedIndex: Int? = nil
     var isClosed: Bool = false
+    var onSelect: ((Int) -> Void)? = nil
     
     var filteredItems: [(originalIndex: Int, text: String)] {
         if searchText.isEmpty {
@@ -312,17 +314,19 @@ struct SwListView: View {
             // Lista de elementos
             List {
                 ForEach(state.filteredItems, id: \.originalIndex) { item in
-                    HStack {
-                        Text(item.text)
-                            .font(.system(size: 13))
-                        Spacer()
+                    Button(action: {
+                        state.onSelect?(item.originalIndex + 1)
+                    }) {
+                        HStack {
+                            Text(item.text)
+                                .font(.system(size: 13))
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                        .padding(.vertical, 4)
+                        .background(Color.primary.opacity(0.001))
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        state.selectedIndex = item.originalIndex + 1 // Harbour es 1-based
-                        state.isClosed = true
-                    }
-                    .padding(.vertical, 4)
+                    .buttonStyle(.plain)
                 }
             }
             .listStyle(.plain)
@@ -438,6 +442,39 @@ extension SystemCommands {
         
         await msgStatusClose()
         return nil
+    }
+
+    @MainActor static func msgList(_ params: [String: Any]) async -> [String: Any]? {
+        let title = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Seleccione un elemento"
+        let items = (params["items"] as? [String]) ?? (params["p1"] as? [Any])?.compactMap { "\($0)" } ?? []
+        
+        let state = SwListState()
+        state.title = title
+        state.items = items
+        
+        let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 350, height: 450),
+                            styleMask: [.titled, .fullSizeContentView, .closable],
+                            backing: .buffered, defer: false)
+        
+        state.onSelect = { index in
+            state.selectedIndex = index
+            NSApp.stopModal()
+        }
+        
+        panel.isMovableByWindowBackground = true
+        panel.titleVisibility = .hidden
+        panel.titlebarAppearsTransparent = true
+        panel.hasShadow = true
+        
+        let hostingView = NSHostingView(rootView: SwListView(state: state))
+        panel.contentView = hostingView
+        panel.center()
+        
+        // Ejecución modal pura
+        NSApp.runModal(for: panel)
+        
+        panel.close()
+        return ["result": state.selectedIndex ?? 0]
     }
 
     @MainActor static func msgToast(_ params: [String: Any]) async {

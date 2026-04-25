@@ -8,7 +8,25 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 
 ---
 
-# Recent Updates (April 2026)
+# Recent Updates (April 2026 - FINAL HSW)
+
+## 🏎️ HSW (High-performance SwiftWindow): El Motor de Doble Hilo
+Hemos culminado la evolución de "La Isla" con la arquitectura **HSW**, eliminando definitivamente los bloqueos de interfaz y proporcionando un rendimiento de grado profesional.
+
+*   **Arquitectura Dual-Thread Nativa**: 
+    *   **Hilo 0 (Main)**: Dedicado exclusivamente a Swift, SwiftUI y el bombeo de eventos de Cocoa. La UI nunca se congela.
+    *   **Hilo 1 (Secondary)**: Donde reside la VM de Harbour y toda la lógica de negocio.
+*   **Pipeline Asíncrono de Alta Velocidad**: La comunicación entre Harbour y Swift se realiza mediante una cola JSON no bloqueante. Se acabó el "beach ball" de macOS durante procesos largos de Harbour.
+*   **SysRefresh Thread-Safe**: Rediseño total del sistema de refresco. `SysRefresh()` ahora es seguro para multihilo, procesando eventos internos sin interferir con el bucle principal de Cocoa.
+*   **Componentes Atómicos Premium**:
+    *   **MsgList 2.0**: Diálogo de selección atómico con buscador integrado, diseño centrado y animaciones fluidas, gestionado 100% en el lado de Swift.
+    *   **Switch Toggle**: Soporte para la cláusula `SWITCH` en el comando `@ TOGGLE`, ofreciendo el aspecto nativo de interruptor de macOS.
+*   **Limpieza Recursiva Inteligente**: Nuevo sistema de desregistro basado en IDs que garantiza la liberación total de memoria al cerrar ventanas complejas, recorriendo de forma automática toda la jerarquía de controles.
+*   **Zero-Crash Event Model**: Corrección crítica en el bombeo de eventos que evita colisiones entre hilos, garantizando la estabilidad absoluta de la aplicación.
+
+---
+
+# Previous Updates (April 2026)
 
 ## 🏝️ Swift Island (sw): Revolucionaria Arquitectura Harbour-Swift
 Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.

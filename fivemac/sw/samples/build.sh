@@ -71,7 +71,8 @@ mkdir -p "$APP_NAME.app/Contents/Frameworks"
 echo "Linking..."
 # Setup Frameworks for Linking
 FRAMEWORKS="-framework Cocoa -framework SwiftUI -framework WebKit -framework AVFoundation -framework AVKit -framework CoreMedia -framework ScreenCaptureKit -framework UserNotifications -framework UniformTypeIdentifiers -framework ScriptingBridge -framework MusicKit -framework Network -framework SystemConfiguration -framework QuartzCore"
-HARBOUR_LIBS="-L$HARBOUR_PATH/lib -lhbdebug -lhbvm -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx"
+HARBOUR_LIBS="-L$HARBOUR_PATH/lib -lhbdebug -lhbvmmt -lhbrtl -lhblang -lhbrdd -lgttrm -lhbmacro -lhbpp -lrddntx -lrddcdx -lrddfpt -lhbsix -lhbcommon -lhbcplr -lhbcpage -lhbhsx -lrddnsx -lhbmysql"
+NATIVO_LIBS="-L$FIVEMAC_PATH/nativo/lib -lfive -lfivec -lfiveextras"
 
 # Linking the sample with the lib
 swiftc -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
@@ -80,6 +81,7 @@ swiftc -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
     -L"$SDK_PATH/usr/lib" \
     $SCINTILLA_LIB \
     $HARBOUR_LIBS \
+    $NATIVO_LIBS \
     $FRAMEWORKS \
     -lsqlite3 \
     -F"$FIVEMAC_PATH/Resources/frameworks" $SCINTILLA_FRAMEWORK \
