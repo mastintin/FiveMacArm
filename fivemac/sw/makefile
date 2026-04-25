@@ -23,7 +23,7 @@ MACRO_BIN=source/HarbourMacro/bin/HarbourMacroPlugin
 MACRO_INC=source/HarbourMacro/bin
 
 # Flags
-CFLAGS=$(TARGET_FLAG) -c -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include -fmodules
+CFLAGS=$(TARGET_FLAG) -c -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(FIVEMAC_PATH)/nativo/source/winapi -I$(HARBOUR_PATH)/include -fmodules
 HBFLAGS=-n -w -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include
 SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-name SwiftFive $(TARGET_FLAG) -emit-objc-header-path include/SwiftFive-Swift.h -I $(MACRO_INC) -load-plugin-executable $(MACRO_BIN)\#HarbourMacroImpl
 
@@ -31,20 +31,22 @@ SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-nam
 SWIFT_SOURCES=$(wildcard source/swift/*.swift)
 PRG_SOURCES=$(wildcard source/classes/*.prg)
 C_SOURCES=$(wildcard source/sqlite/*.c)
+OBJC_SOURCES=$(wildcard source/objc/SwMsgs.m)
 
 SWIFT_OBJ=obj/SwiftFive.o
 PRG_OBJS=$(patsubst source/classes/%.prg,obj/Hrb_%.o,$(PRG_SOURCES))
-C_OBJS=$(patsubst source/sqlite/%.c,obj/%.o,$(C_SOURCES))
+C_OBJS=$(addprefix obj/,$(notdir $(C_SOURCES:.c=.o)))
+OBJC_OBJS=$(addprefix obj/,$(notdir $(OBJC_SOURCES:.m=.o)))
 
 LIB_NAME=lib/libSwiftFive.a
 
 # Rules
 all: $(LIB_NAME)
 
-$(LIB_NAME): $(SWIFT_OBJ) $(PRG_OBJS) $(C_OBJS)
+$(LIB_NAME): $(SWIFT_OBJ) $(PRG_OBJS) $(C_OBJS) $(OBJC_OBJS)
 	@mkdir -p lib
 	@echo "Archiving $@..."
-	ar rc $@ $(SWIFT_OBJ) obj/Hrb_*.o $(C_OBJS)
+	ar rc $@ $(SWIFT_OBJ) obj/Hrb_*.o $(C_OBJS) $(OBJC_OBJS)
 	ranlib $@
 
 # Compile Swift
@@ -58,6 +60,17 @@ $(SWIFT_OBJ): $(SWIFT_SOURCES)
 obj/%.o: source/sqlite/%.c
 	@mkdir -p obj
 	@echo "Compiling Native C: $<..."
+	$(CC) $(CFLAGS) $< -o $@
+
+# Compile Objective-C modules
+obj/%.o: source/objc/%.m
+	@mkdir -p obj
+	@echo "Compiling Objective-C: $<..."
+	$(CC) $(CFLAGS) $< -o $@
+
+obj/formatters.o: ../nativo/source/winapi/formatters.m
+	@mkdir -p obj
+	@echo "Compiling Native Formatter: $<..."
 	$(CC) $(CFLAGS) $< -o $@
 
 # Compile Harbour to C then to O

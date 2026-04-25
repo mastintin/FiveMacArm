@@ -12,8 +12,9 @@
   
      ACCESS bPipeline        INLINE hb_HGetDef( ::hState, "pipeline", nil )
      ASSIGN bPipeline( u )   INLINE ( ::hState["pipeline"] := u,;
+                                      ::hState["pipeline_json"] := if( !Empty(u), Sw_GetProxy():Cook( u )["json"], nil ),;
                                       ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
-                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
+                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"], "pipeline_json" => ::hState["pipeline_json"] } ) )
 
      METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId )
      METHOD SetText( cText )

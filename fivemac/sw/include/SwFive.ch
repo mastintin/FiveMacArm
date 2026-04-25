@@ -57,13 +57,15 @@
 #xcommand DEFINE WINDOW <oWnd> ;
    [ TITLE <cTitle> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oParent> ] ;
    => ;
-   <oWnd> := TSwWindow():New( [<cTitle>], [<nWidth>], [<nHeight>] )
+   <oWnd> := TSwWindow():New( [<cTitle>], [<nWidth>], [<nHeight>], , [<oParent>] )
 
 #xcommand ACTIVATE WINDOW <oWnd> ;
    [ <center: CENTER, CENTERED> ] ;
+   [ <modal: MODAL> ] ;
    => ;
-   <oWnd>:Activate() [; SwAppRun() ]
+   <oWnd>:Activate( <.modal.> )
 
 #xcommand @ <nRow>, <nCol> SAY [ <oSay> PROMPT ] <cText> ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
@@ -129,20 +131,14 @@
    [ <oGet> := ] SwGet():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>],;
    <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], , <.password.> )
 
+#xcommand @ <nRow>, <nCol> PROGRESS [ <oProg> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ VALUE <nValue> ] ;
+   => ;
+   [ <oProg> := ] SwProgress():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nValue>] )
+
 #endif
-  #translate MsgInfo( <a> )          => SW_MSGINFO( <a> )
-  #translate MsgInfo( <a>, <b> )     => SW_MSGINFO( <a>, <b> )
-  #translate MsgStop( <a> )          => SW_MSGINFO( <a>, "🛑 Stop" )
-  #translate MsgStop( <a>, <b> )     => SW_MSGINFO( <a>, <b> )
-  #translate MsgYesNo( <a>, <b> )    => SwMsgYesNo( <a>, <b> )
-  #translate MsgNoYes( <a>, <b> )    => SwMsgNoYes( <a>, <b> )
-  #translate Alert( <a> )            => SW_MSGINFO( <a>, "⚠️ Alerta" )
- #translate MsgList( <a>, <b> )     => SwMsgList( <a>, <b> )
- #translate MsgSelect( <a>, <b> )   => SwMsgSelect( <a>, <b> )
- #translate GetFile( <a>, <b> )     => SwGetFile( <a>, <b> )
- #translate GetDir( <a> )           => SwGetDir( <a> )
- #translate SaveFile( <a>, <b> )    => SwSaveFile( <a>, <b> )
- #translate MsgRun( <a>, <b>, <c> ) => SwMsgRun( <a>, <b>, <c> )
  
  #ifndef TSQLite
     #define TSQLite TSwSqlite

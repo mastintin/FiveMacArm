@@ -7,7 +7,7 @@ function Main()
    oWnd := TSwWindow():New( "FiveMac SwiftUI - AI Chat Island", 800, 600 )
    
     oBtn := TSwButton():New( 20, 20, 150, 40, "Limpiar Chat", oWnd, ;
-       { || oChat:Clear(), SwMsgInfo( "El chat ha sido vaciado localmente." ) } )
+       { || oChat:Clear(), MsgInfo( "El chat ha sido vaciado localmente." ) } )
       
    // Creamos el Chat ocupando menos ancho
    oChat := TSwAIChat():New( 80, 20, 500, 480, oWnd, ;

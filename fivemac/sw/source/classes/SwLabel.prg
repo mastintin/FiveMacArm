@@ -12,6 +12,7 @@
   
     METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize )
     METHOD SetText( cText, lSync )
+    METHOD SetPrompt( cText ) INLINE ::SetText( cText )
   
  ENDCLASS
  

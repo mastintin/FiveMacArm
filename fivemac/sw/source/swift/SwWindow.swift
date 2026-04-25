@@ -11,17 +11,35 @@ class SwWindowDelegate: NSObject, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         print("SwiftWindow: Ventana \(windowId) cerrándose...")
         
-        let closeJson = "{\"\(windowId)\":{\"event\":\"close\"}}"
-        Harbour.call("SW_PIPELINE_SYNC", closeJson)
-        
         let deadIds = ViewRegistry.recursiveClean(id: windowId)
-        
         let idsJson = deadIds.map { "\($0)" }.joined(separator: ", ")
         let json = "{\"_system\":{\"unregister\":[\(idsJson)]}}"
         
-        Harbour.call("SW_PIPELINE_SYNC", json)
+        DispatchQueue.global().async {
+            Harbour.call("SW_PIPELINE_SYNC", json)
+        }
+        
     }
 }
+
+
+@_cdecl("HB_FUN_SW_PROCESSEVENTS")
+public func sw_processevents_hb(_ p: UnsafeMutableRawPointer?) {
+    // 1. Bombeo de alto nivel (RunLoop) - Crucial para SwiftUI
+    let next = Date(timeIntervalSinceNow: 0.001)
+    RunLoop.current.run(mode: .default, before: next)
+    RunLoop.current.run(mode: .common, before: next)
+    
+    // 2. Bombeo de bajo nivel (NSEvent) - Crucial para clics y dibujo
+    var event: NSEvent?
+    repeat {
+        event = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true)
+        if let event = event {
+            NSApp.sendEvent(event)
+        }
+    } while event != nil
+}
+
 
 class SwAppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -68,6 +86,7 @@ public func sw_createwindow_hb_internal(title: String, width: Double, height: Do
     
     print("SwiftWindow: Ventana \(id) ['\(title)'] creada físicamente con éxito.")
 }
+
 
 @_cdecl("HB_FUN_SW_APPRUN")
 public func sw_apprun_hb(_ p: UnsafeMutableRawPointer?) {

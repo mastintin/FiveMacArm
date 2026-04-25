@@ -124,16 +124,20 @@ function SW_PIPELINE_SYNC( cJson )
                         oItem:Update( hProps )
                         lChanged := .T.
                     else
-                        for each cProp in hb_HKeys( hProps )
-                            uVal := hProps[ cProp ]
-                            if __ObjHasMsg( oItem, cProp )
-                                HB_ExecFromArray( oItem, "_" + cProp, { uVal } )
-                                lChanged := .T.
-                            elseif __ObjHasMsg( oItem, "HSTATE" ) .and. ValType( oItem:hState ) == "H"
-                                oItem:hState[ cProp ] := uVal
-                                lChanged := .T.
-                            endif
-                        next
+                        // Blindaje contra 1077: Verificar que hb_HKeys devuelva algo recorrible
+                        aIds := hb_HKeys( hProps )
+                        if ValType( aIds ) == "A"
+                           for each cProp in aIds
+                               uVal := hProps[ cProp ]
+                               if __ObjHasMsg( oItem, cProp )
+                                   HB_ExecFromArray( oItem, "_" + cProp, { uVal } )
+                                   lChanged := .T.
+                               elseif __ObjHasMsg( oItem, "HSTATE" ) .and. ValType( oItem:hState ) == "H"
+                                   oItem:hState[ cProp ] := uVal
+                                   lChanged := .T.
+                               endif
+                           next
+                        endif
                     endif
                 endif
                 

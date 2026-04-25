@@ -41,10 +41,12 @@ CLASS TSwProxy
    DATA lQuery        INIT .F.   
    DATA lPersistent   INIT .F.   
    DATA oCurrentStack INIT nil
+   DATA lCaptured     INIT .F.
    DATA hMap
  
    METHOD New( hMap ) CONSTRUCTOR
    METHOD Pipeline( bAction )
+   METHOD Cook( bAction )
    METHOD Sync()      INLINE ( ::lSync := .T., ::lQuery := .F., Self )
    METHOD Query()     INLINE ( ::lQuery := .T., ::lSync := .F., Self ) 
    ERROR HANDLER OnError( ... )
@@ -73,6 +75,33 @@ METHOD Pipeline( bAction ) CLASS TSwProxy
    ::oCurrentStack := oOldStack
 return nil
 
+METHOD Cook( bAction ) CLASS TSwProxy
+   local lOldBuffering := ::lBuffering
+   local oOldStack     := ::oCurrentStack
+   local lOldCaptured  := ::lCaptured
+   local cJson         := ""
+   local hResult       := {=>}
+   
+   ::lBuffering    := .T.
+   ::lCaptured     := .F.
+   ::oCurrentStack := TSwActionStack():New()
+   
+   BEGIN SEQUENCE
+      Eval( bAction )
+      cJson := ::oCurrentStack:GetJSON()
+   RECOVER
+      ::oCurrentStack:Clear()
+   END SEQUENCE
+   
+   hResult["json"]     := cJson
+   hResult["captured"] := ::lCaptured
+
+   ::lBuffering    := lOldBuffering
+   ::oCurrentStack := oOldStack
+   ::lCaptured     := lOldCaptured
+
+return hResult
+
 METHOD OnError( ... ) CLASS TSwProxy
    local cMsg    := __GetMessage() 
    local aArgs   := hb_AParams()   
@@ -100,8 +129,6 @@ METHOD OnError( ... ) CLASS TSwProxy
       endif
       return nil
    endif
-
-   SW_LOG( "TSwProxy:OnError -> " + cMsg )
    
    // Caso especial para comando universal
    if Upper( cMsg ) == "APPLY"
@@ -115,14 +142,14 @@ METHOD OnError( ... ) CLASS TSwProxy
       if hb_HHasKey( ::hMap, cMsg )
          cMsg := ::hMap[ cMsg ]
       endif
-      
-      // Empaquetamos argumentos posicionales para el Dispatcher de Swift
+            // Empaquetamos argumentos posicionales para el Dispatcher de Swift
       for n := 1 to Len( aArgs )
          hParams[ "p" + AllTrim( Str( n ) ) ] := aArgs[ n ]
       next
    endif
    
    if ::lBuffering
+      ::lCaptured := .T.
       ::oCurrentStack:AddCall( cMsg, hParams )
    else
       hParams[ "cmd" ] := cMsg 
@@ -215,6 +242,7 @@ METHOD OnError( ... ) CLASS TSwControlProxy
 
    
    if oProxy:lBuffering
+      oProxy:lCaptured := .T.
       oProxy:oCurrentStack:AddCall( cMsg, hParams )
    else
       hParams[ "cmd" ] := cMsg 
@@ -230,7 +258,7 @@ METHOD OnError( ... ) CLASS TSwControlProxy
          if hRet == nil ; hRet := {=>} ; endif 
          
          if hb_HHasKey( hRet, "result" ) ; return hRet["result"] ; endif
-
+ 
          return hRet
       elseif ::lSync
          uRet := SW_PIPELINE_EXEC_SYNC( hb_jsonEncode( { hParams } ) )

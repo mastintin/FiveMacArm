@@ -8,7 +8,7 @@ CLASS TSwAIChat FROM TSwiftControl
 ENDCLASS
 
 METHOD Clear() CLASS TSwAIChat
-   Sw_MsgInfo_Bridge( "Harbour: Entrando en AIChat:Clear() para " + ::cId )
+   MsgInfo( "Harbour: Entrando en AIChat:Clear() para " + ::cId )
    SW_AICHAT_CLEAR( ::cId )
 return nil
 

@@ -35,16 +35,48 @@ public class SwDispatcher {
         
         if let action = action {
             let result = await action(resolvedParams)
-            if let res = result {
-               print("🏝️ [Dispatcher] '\(name)' devolvió: \(res)")
-            } else {
-               print("🏝️ [Dispatcher] ADVERTENCIA: '\(name)' devolvió NIL.")
-            }
             return result
         } else {
-            print("SwDispatcher: Error - Comando '\(name)' no registrado en el motor Swift.")
+            print("SwDispatcher: Error - Comando '\(name)' no registrado.")
             return nil
         }
+    }
+
+    // EJECUCIÓN SÍNCRONA REAL PARA EL PUENTE C/HARBOUR (Anti-Deadlock)
+    public func executeSync(json: String) -> String {
+        guard let data = json.data(using: .utf8),
+              let actions = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+            print("SW_BRIDGE_ERROR: No se pudo parsear el JSON -> \(json)")
+            return "{}"
+        }
+        
+        print("SW_BRIDGE_JSON_IN: \(json)")
+        
+        var finalResult: [String: Any] = [:]
+        var finished = false
+        
+        Task {
+            for params in actions {
+                guard let cmd = (params["cmd"] as? String) ?? (params["func"] as? String) else { continue }
+                if let res = await self.execute(name: cmd, params: params) {
+                    finalResult = res
+                }
+            }
+            finished = true
+        }
+        
+        // Bombeamos el RunLoop mientras esperamos. 
+        // Esto permite que el MainActor y SwiftUI sigan trabajando.
+        let limit = Date(timeIntervalSinceNow: 10.0)
+        while !finished && Date() < limit {
+            RunLoop.current.run(mode: .default, before: Date(timeIntervalSinceNow: 0.01))
+        }
+        
+        if let resData = try? JSONSerialization.data(withJSONObject: finalResult),
+           let resStr = String(data: resData, encoding: .utf8) {
+            return resStr
+        }
+        return "{}"
     }
     
     // MARK: - State Tracking (The Train Reporting)

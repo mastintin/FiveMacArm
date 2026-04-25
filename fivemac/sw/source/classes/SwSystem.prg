@@ -1,129 +1,66 @@
 #include "swfive.ch"
 
-static oSystem 
-static nLastStatusId := 0
-
+// Funciones de Sistema y Notificaciones (Globales)
 //----------------------------------------------------------------------------//
 
-CLASS TSwSystem FROM TSwiftControl
-   
-   METHOD New() 
-   
-   DATA hTimerBlocks INIT {=>}
-   
-   // Diálogos de Información Clásicos (Síncronos)
-   METHOD Alert( cText, cTitle )    INLINE SDS:Alert( cText, hb_defaultValue( cTitle, "Atención" ) )
-   METHOD MsgInfo( cText, cTitle )  INLINE SDS:MsgInfo( cText, hb_defaultValue( cTitle, "Información" ) )
-   METHOD MsgStop( cText, cTitle )  INLINE SDS:MsgStop( cText, hb_defaultValue( cTitle, "Error" ) )
-   
-   // --- NOTIFICACIONES ASÍNCRONAS (Fire & Forget) ---
-   METHOD AlertAsync( cText, cTitle, nType, nSeconds ) ;
-      INLINE SD:AlertAsync( cText, hb_defaultValue( cTitle, "Aviso" ), hb_defaultValue( nType, 1 ), hb_defaultValue( nSeconds, 5 ) )
+// Funciones de Refresco Globales
+FUNCTION SysRefresh()      ; return SW_PROCESSEVENTS()
+FUNCTION DoEvents()        ; return SW_PROCESSEVENTS()
+FUNCTION SwProcessEvents() ; return SW_PROCESSEVENTS()
 
-   // --- MENSAJES DE ESTADO (Lifecycle Manual) ---
-   METHOD Status( cText, cTitle, nType )
-   METHOD StatusClose( cId ) INLINE SD:StatusClose( cId )
+// Funciones de Estado y Notificaciones (Nativas directas en SwMsgs.m)
+// Se acceden directamente: MsgStatus(), MsgStatusClose(), MsgStatusUpdate(), MsgToast()
 
-   // --- REFRESCO DE EVENTOS ---
-   METHOD ProcessEvents()    INLINE SDS:DoEvents()
+FUNCTION MsgGet( cMsg, cTitle, cDefault )      ; return SD:Query():MsgGet( cMsg, cTitle, cDefault )
+FUNCTION MsgGetMultiline( cTitle, cDefault, nW, nH ) ; return SD:Query():MsgGetMulti( cTitle, cDefault, nW, nH )
+FUNCTION MsgToast( cMsg, cTitle, nType, nSec ) ; return SD:Query():MsgToast( cMsg, cTitle, nType, nSec )
+FUNCTION MsgStatus( cMsg, cTitle )             ; return SD:Query():MsgStatus( cMsg, cTitle )
+FUNCTION MsgStatusClose()                      ; return SD:Query():MsgStatusCls()
+FUNCTION MsgStatusUpdate( nVal )               ; return SD:Query():MsgStatusUpd( nVal )
+FUNCTION MsgBeep()                             ; return SD:Beep()
+FUNCTION MsgWait( cMsg, cTitle, nSec )         ; return SD:Query():MsgWait( cMsg, cTitle, nSec )
 
-   // --- MSGRUN MODERNO (Síncrono para Harbour) ---
-   METHOD MsgRun( cText, cTitle, bAction, nType )
-
-   // Diálogos de Decisión Clásicos
-   METHOD MsgGet( cText, cTitle, aButtons )
-   METHOD MsgGetMulti( cText, cTitle )
-   METHOD MsgYesNo( cText, cTitle )  INLINE ::MsgGet( cText, cTitle, { "Yes", "No" } )
-   METHOD MsgNoYes( cText, cTitle )  INLINE ::MsgGet( cText, cTitle, { "No", "Yes" } )
-
-   // Diálogos de Selección y Archivos
-   METHOD MsgList( aItems, cTitle )    INLINE SDS:MsgList( aItems, hb_defaultValue( cTitle, "Seleccionar" ) )
-   METHOD MsgSelect( aItems, cTitle )  INLINE ::MsgList( aItems, cTitle )
-   METHOD GetFile( cTitle, cTypes )    INLINE SDS:GetFile( hb_defaultValue( cTitle, "Seleccionar Archivo" ), hb_defaultValue( cTypes, "" ) )
-   METHOD GetDir( cTitle )             INLINE SDS:GetDir( hb_defaultValue( cTitle, "Seleccionar Carpeta" ) )
-   METHOD SaveFile( cTitle, cName )    INLINE SDS:SaveFile( hb_defaultValue( cTitle, "Guardar como" ), hb_defaultValue( cName, "" ) )
-   METHOD MsgBeep()                   INLINE SD:Beep()
-
-ENDCLASS
-
-//----------------------------------------------------------------------------//
-
-METHOD New() CLASS TSwSystem
-   ::Super:New()
-return self
-
-//----------------------------------------------------------------------------//
-
-METHOD Status( cText, cTitle, nType ) CLASS TSwSystem
-   local cId 
-   nLastStatusId++
-   cId := "ST_" + AllTrim( Str( nLastStatusId ) )
-   SD:StatusShow( cId, cText, hb_defaultValue( cTitle, "Procesando" ), hb_defaultValue( nType, 1 ) )
-return cId 
-
-//----------------------------------------------------------------------------//
-
-METHOD MsgGet( cText, cTitle, aButtons ) CLASS TSwSystem
-   local hParams := { "text" => cText, "title" => hb_defaultValue( cTitle, "Confirmación" ) }
-   if !Empty( aButtons ) ; hParams["buttons"] := aButtons ; endif
-return SDS:MsgGet( hParams )
-
-//----------------------------------------------------------------------------//
-
-METHOD MsgGetMulti( cText, cTitle ) CLASS TSwSystem
-return SDS:MsgGetMulti( cText, hb_defaultValue( cTitle, "Instrucciones" ) )
-
-//----------------------------------------------------------------------------//
-
-METHOD MsgRun( cText, cTitle, bAction, nType ) CLASS TSwSystem
-   local hStatus := SDS:StatusShow( "", cText, hb_defaultValue( cTitle, "Procesando" ), hb_defaultValue( nType, 1 ) )
-   if bAction != nil ; Eval( bAction ) ; endif
-   SDS:StatusClose( hStatus )
-return nil
-
-//----------------------------------------------------------------------------//
-
-static function GetSystem()
-   if oSystem == nil ; oSystem := TSwSystem():New() ; endif
-return oSystem
-
-FUNCTION MsgBeep() ; return GetSystem():MsgBeep()
-FUNCTION Sw_MsgInfo_Bridge( cMsg, cTitle ) ; return GetSystem():MsgInfo( cMsg, cTitle )
-FUNCTION SwMsgStop( cMsg, cTitle ) ; return GetSystem():MsgStop( cMsg, cTitle )
-FUNCTION SwMsgYesNo( cMsg, cTitle ) ; return GetSystem():MsgYesNo( cMsg, cTitle )
-FUNCTION SwMsgNoYes( cMsg, cTitle ) ; return GetSystem():MsgNoYes( cMsg, cTitle )
-FUNCTION SwMsgList( aItems, cTitle ) ; return GetSystem():MsgList( aItems, cTitle )
-FUNCTION SwMsgSelect( aItems, cTitle ) ; return GetSystem():MsgSelect( aItems, cTitle )
-FUNCTION SwMsgGet( cMsg, cTitle, aButtons ) ; return GetSystem():MsgGet( cMsg, cTitle, aButtons )
-FUNCTION SwMsgNoob( cMsg, cTitle ) ; return GetSystem():AlertAsync( cMsg, cTitle, 1, 5 )
-FUNCTION SwMsgGetMulti( cText, cTitle ) ; return GetSystem():MsgGetMulti( cText, cTitle )
-FUNCTION SwNotify( cMsg, cTitle ) ; return GetSystem():Alert( cMsg, cTitle )
-FUNCTION SwGetFile( cTitle, cTypes ) ; return GetSystem():GetFile( cTitle, cTypes )
-FUNCTION SwGetDir( cTitle ) ; return GetSystem():GetDir( cTitle )
-FUNCTION SwSaveFile( cTitle, cName ) ; return GetSystem():SaveFile( cTitle, cName )
-
-// Funciones de Refresco
-FUNCTION SwProcessEvents() ; return GetSystem():ProcessEvents()
-
-// Funciones Notificaciones Modernas
-FUNCTION SwAlertAsync( cMsg, cTitle, nType, nSec ) ; return GetSystem():AlertAsync( cMsg, cTitle, nType, nSec )
-FUNCTION SwStatus( cMsg, cTitle, nType ) ; return GetSystem():Status( cMsg, cTitle, nType )
-FUNCTION SwStatusClose( cId ) ; return GetSystem():StatusClose( cId )
-FUNCTION SwMsgRun( cMsg, cTitle, bAction, nType ) ; return GetSystem():MsgRun( cMsg, cTitle, bAction, nType )
-
-// --- Gestión de Temporizadores ---
-FUNCTION SwTimer( nMs, bAction )
-   local cId := hb_uuid()
-   GetSystem():hTimerBlocks[ cId ] := bAction
-   SD:Timer( nMs, cId )
-return cId
-
-// Receptor de avisos desde Swift
-FUNCTION SwTimerDone( hParams )
-   local cId := hParams[ "p1" ] // El ID que enviamos
-   local oSys := GetSystem()
-   if hb_HHasKey( oSys:hTimerBlocks, cId )
-      Eval( oSys:hTimerBlocks[ cId ] )
-      hb_HDel( oSys:hTimerBlocks, cId )
+FUNCTION MsgRun( cMsg, cTitle, bAction )
+   MsgStatus( cMsg, cTitle )
+   if hb_isBlock( bAction )
+      Eval( bAction )
    endif
+   MsgStatusClose()
 return nil
+
+//----------------------------------------------------------------------------//
+// REDIRECCIONES AL MOTOR SWIFTVIE (Dispatcher Síncrono)
+//----------------------------------------------------------------------------//
+// Usamos SD:Query() porque gestiona automáticamente el puente síncrono con Swift,
+// incluyendo la codificación de parámetros y la decodificación de la respuesta.
+// Esto garantiza que Harbour se detenga hasta que el usuario responda al diálogo.
+
+FUNCTION MsgYesNo( cMsg, cTitle ) ; return SD:Query():MsgYesNo( cMsg, cTitle )
+FUNCTION MsgInfo( cMsg, cTitle )  ; return SD:Query():Alert( cMsg, cTitle, 0 )
+FUNCTION MsgAlert( cMsg, cTitle ) ; return SD:Query():Alert( cMsg, cTitle, 1 )
+FUNCTION MsgStop( cMsg, cTitle )  ; return SD:Query():Alert( cMsg, cTitle, 2 )
+FUNCTION MsgNoYes( cMsg, cTitle ) ; return SD:Query():MsgYesNo( cMsg, cTitle, .T. )
+FUNCTION MsgDebug( cMsg )         ; return MsgInfo( cMsg, "Debug Info" )
+FUNCTION MsgWaitNS( cMsg, cTitle ); return MsgStatus( cMsg, cTitle )
+FUNCTION MsgWaitNSStop()          ; return MsgStatusClose()
+FUNCTION MsgChoice( cMsg, cTitle, aItems ) ; return SD:Query():MsgChoice( cMsg, cTitle, aItems )
+FUNCTION SwMsgList( cTitle, aItems )
+   local n, aClean := {}
+   for n := 1 to Len( aItems )
+      AAdd( aClean, hb_ValToStr( aItems[n] ) )
+   next
+return NAT_MsgSelectList( cTitle, aClean )
+
+FUNCTION MsgList( aItems, cTitle )
+   local n, aClean := {}
+   for n := 1 to Len( aItems )
+      AAdd( aClean, hb_ValToStr( aItems[n] ) )
+   next
+return NAT_MsgSelectList( cTitle, aClean )
+
+// Selectores de Archivos
+FUNCTION GetFile( cTitle, cTypes, cPrompt ) ; return SD:Query():GetFile( cTitle, cTypes, cPrompt )
+FUNCTION GetDir( cTitle, cPrompt )          ; return SD:Query():GetDir( cTitle, cPrompt )
+FUNCTION SaveFile( cName, cTitle, cPrompt ) ; return SD:Query():SaveFile( cTitle, cName, cPrompt )
+
+// EOF

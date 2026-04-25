@@ -37,6 +37,8 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderSlider())
             case .toggle:
                 AnyView(renderToggle())
+            case .progress:
+                AnyView(renderProgress())
             default:
                 AnyView(EmptyView())
             }
@@ -109,6 +111,13 @@ public struct SwRecursiveItemView: View {
             SwiftToggleView(state: state)
         }
     }
+
+    @ViewBuilder
+    private func renderProgress() -> some View {
+        if let state = ViewRegistry.getState(for: item.id) as? ProgressState {
+            SwiftProgressView(state: state)
+        }
+    }
 }
 
 /// Motor de observación reactiva para Stacks
@@ -179,6 +188,14 @@ public struct SwWindowView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .disabled(!state.isInteractive)
+        .onAppear {
+            print("🏝️ [Swift-Window] onAppear detectado para \(id). Programando evento 'init'...")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                let json = "{\"\(id)\":{\"event\":\"init\"}}"
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
+        }
     }
     
     private func calculateGeometry(for item: StackItem, in currentSize: CGSize) -> (x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {

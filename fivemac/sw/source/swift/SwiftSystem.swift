@@ -1,192 +1,481 @@
 import Foundation
 import AppKit
+import SwiftUI
 import UniformTypeIdentifiers
+import UserNotifications
+import HarbourMacro
+
+// MARK: - Swift Universal Dispatcher System
+//----------------------------------------------------------------------------//
 
 internal struct SystemCommands {
     static func register(in sd: SwDispatcher) {
         // Registro de los comandos en el despacho universal (Ahora con retorno)
-        sd.register("alert")    { params in await SystemCommands.alert(params) }
-        sd.register("msginfo")  { params in await SystemCommands.alert(params) }
-        sd.register("msgstop")  { params in await SystemCommands.alert(params, style: .critical) }
-        sd.register("msgalert") { params in await SystemCommands.alert(params, style: .warning) }
-        sd.register("msgnoob")  { params in await SystemCommands.alert(params, style: .informational) }
-        sd.register("msgget")   { params in await SystemCommands.msgGet(params) }
-        sd.register("msggetmulti") { params in await SystemCommands.msgGetMulti(params) }
-        sd.register("msglist")  { params in await SystemCommands.msgList(params) }
-        sd.register("msgselect") { params in await SystemCommands.msgList(params) }
-        sd.register("getfile")  { params in await SystemCommands.getFile(params) }
-        sd.register("getdir")   { params in await SystemCommands.getFile(params, onlyDirs: true) }
-        sd.register("savefile") { params in await SystemCommands.saveFile(params) }
-        sd.register("beep")     { _ in NSSound.beep(); return nil }
+        sd.register("alert")      { params in await SystemCommands.alert(params) }
+        sd.register("msgyesno")   { params in await SystemCommands.msgYesNo(params) }
+        sd.register("msgchoice")  { params in await SystemCommands.msgChoice(params) }
         
         // --- NOTIFICACIONES Y ESTADOS ASÍNCRONOS ---
-        sd.register("alertasync")  { params in await SystemCommands.alertAsync(params) ; return nil }
-        sd.register("statusshow")   { params in return await SystemCommands.statusShow(params) }
-        sd.register("statusclose")  { params in await SystemCommands.statusClose(params) ; return nil }
         sd.register("doevents")     { _ in await SystemCommands.doEvents() ; return nil }
-        sd.register("timer")        { params in await SystemCommands.timer(params) ; return nil }
-        
-        // --- NUEVOS COMANDOS DE CONSULTA (QUERY) ---
         sd.register("isrunning")    { _ in return ["result": await NSApp.isRunning] }
+        sd.register("msgstatus")    { params in await SystemCommands.msgStatus(params) ; return nil }
+        sd.register("msgstatusupd") { params in await SystemCommands.msgStatusUpdate(params) ; return nil }
+        sd.register("msgstatuscls") { _ in await SystemCommands.msgStatusClose() ; return nil }
+        sd.register("beep")         { params in await SystemCommands.beep(params) }
+        sd.register("msgget")       { params in await SystemCommands.msgGet(params) }
+        sd.register("msggetmulti")  { params in await SystemCommands.msgGetMultiline(params) }
+        sd.register("msgwait")      { params in await SystemCommands.msgWait(params) }
+        sd.register("msgtoast")     { params in await SystemCommands.msgToast(params) ; return nil }
     }
 
-    // MARK: - Temporizador Asíncrono
-    @MainActor static func timer(_ params: [String: Any]) async {
-        let ms = (params["ms"] as? Double) ?? (params["p1"] as? Double) ?? 1000
-        let tag = (params["tag"] as? String) ?? (params["p2"] as? String) ?? ""
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + (ms / 1000.0)) {
-            let cmd: [String: Any] = ["_COMMAND": ["name": "SwTimerDone", "p1": tag]]
-            if let data = try? JSONSerialization.data(withJSONObject: cmd),
-               let json = String(data: data, encoding: .utf8) {
-                Harbour.call("SW_PIPELINE_SYNC", json)
+// --- VISTA PARA MSGWAIT/TOAST (HUD) ---
+// Estado global moderno para el sistema de Status/Progress (Swift 6 + Observation)
+@Observable class SwStatusState {
+    var msg: String = ""
+    var title: String = ""
+    var progress: Double = 0.0
+    var showProgress: Bool = false
+    
+    static let shared = SwStatusState()
+}
+
+struct SwHUDView: View {
+    var state = SwStatusState.shared
+    @Environment(\.colorScheme) var colorScheme
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 22) {
+            // Sección Icono/Progreso
+            ZStack {
+                if state.showProgress {
+                    ZStack {
+                        // Fondo del progreso
+                        Circle()
+                            .stroke(Color.primary.opacity(0.1), lineWidth: 4)
+                        
+                        // Barra de progreso circular (activa)
+                        Circle()
+                            .trim(from: 0.0, to: CGFloat(min(max(state.progress / 100.0, 0.0), 1.0)))
+                            .stroke(colorScheme == .dark ? Color.orange : Color.red, 
+                                    style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                            .animation(.easeInOut(duration: 0.2), value: state.progress)
+                            .id("progress_circle")
+                        
+                        Text("\(Int(state.progress))%")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.primary)
+                    }
+                    .frame(width: 44, height: 44)
+                } else {
+                    Image(systemName: "info.circle.fill")
+                        .symbolRenderingMode(.multicolor)
+                        .font(.system(size: 34))
+                }
             }
+            .frame(width: 44, height: 44)
+            
+            // Sección Textos
+            VStack(alignment: .leading, spacing: 4) {
+                if !state.title.isEmpty {
+                    Text(state.title.uppercased())
+                        .font(.system(size: 11, weight: .black, design: .rounded))
+                        .kerning(1.2)
+                        .foregroundColor(colorScheme == .dark ? .orange : .red)
+                        .opacity(0.9)
+                }
+                
+                Text(state.msg)
+                    .font(.system(size: 14, weight: .medium, design: .default))
+                    .foregroundColor(.primary)
+                    .lineLimit(3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, 28)
+        .padding(.vertical, 22)
+        .frame(minWidth: 340, maxWidth: 500, alignment: .leading)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(LinearGradient(colors: [.white.opacity(0.2), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 1)
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+}
+
+// --- IMPLEMENTACIONES SÍNCRONAS ---
+
+    @MainActor static func alert(_ params: [String: Any]) async -> [String: Any]? {
+        let msg   = (params["msg"] as? String) ?? (params["p1"] as? String) ?? ""
+        let title = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Información"
+        let type  = (params["type"] as? Int) ?? (params["p3"] as? Int) ?? 0
+        
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = msg
+        
+        switch type {
+        case 1: alert.alertStyle = .warning
+        case 2: alert.alertStyle = .critical
+        default: alert.alertStyle = .informational
+        }
+        
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+        
+        return ["result": true]
+    }
+
+    @MainActor static func msgYesNo(_ params: [String: Any]) async -> [String: Any]? {
+        let msg      = (params["msg"] as? String) ?? (params["p1"] as? String) ?? ""
+        let title    = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Seleccione"
+        
+        // Detección robusta de booleano (acepta Bool o Int 1)
+        let p3Raw    = params["defaultNo"] ?? params["p3"]
+        let defNo    = (p3Raw as? Bool) ?? ((p3Raw as? Int) == 1)
+        
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = msg
+        alert.alertStyle = .informational
+        
+        if defNo {
+            alert.addButton(withTitle: "No")  // NSAlertFirstButtonReturn
+            alert.addButton(withTitle: "Yes") // NSAlertSecondButtonReturn
+            let res = alert.runModal() == .alertSecondButtonReturn
+            return ["result": res]
+        } else {
+            alert.addButton(withTitle: "Yes") // NSAlertFirstButtonReturn
+            alert.addButton(withTitle: "No")  // NSAlertSecondButtonReturn
+            let res = alert.runModal() == .alertFirstButtonReturn
+            return ["result": res]
         }
     }
 
+    @MainActor static func msgChoice(_ params: [String: Any]) async -> [String: Any]? {
+        let msg   = (params["msg"] as? String) ?? (params["p1"] as? String) ?? ""
+        let title = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Seleccione"
+        let items = (params["items"] as? [String]) ?? (params["p3"] as? [Any])?.compactMap { "\($0)" } ?? []
+        
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = msg
+        alert.alertStyle = .informational
+        
+        for item in items {
+            alert.addButton(withTitle: item)
+        }
+        
+        let response = alert.runModal()
+        let index = response.rawValue - NSApplication.ModalResponse.alertFirstButtonReturn.rawValue
+        
+        return ["result": index + 1]
+    }
+
+    @MainActor static func beep(_ params: [String: Any]) async -> [String: Any]? {
+        NSSound.beep()
+        return nil
+    }
+
+    // --- IMPLEMENTACIONES ASÍNCRONAS (SIN RETORNO PARA HARBOUR) ---
+
     @MainActor static func doEvents() async {
-        let end = Date(timeIntervalSinceNow: 0.005)
-        while let event = NSApp.nextEvent(matching: .any, until: end, inMode: .default, dequeue: true) {
+        let event = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true)
+        if let e = event {
+            NSApp.sendEvent(e)
+        }
+    }
+
+    @MainActor static func msgStatus(_ params: [String: Any]) async {
+        let msg   = (params["msg"] as? String) ?? (params["p1"] as? String) ?? "Cargando..."
+        let title = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Espere"
+        
+        let state = SwStatusState.shared
+        state.msg = msg
+        state.title = title
+        state.progress = 0
+        state.showProgress = true
+        
+        if currentStatusPanel == nil {
+            let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 340, height: 120),
+                                styleMask: [.borderless, .nonactivatingPanel],
+                                backing: .buffered, defer: false)
+            panel.isOpaque = false
+            panel.backgroundColor = .clear
+            panel.hasShadow = true
+            panel.level = .floating
+            panel.center()
+            
+            let hostingView = NSHostingView(rootView: SwHUDView())
+            hostingView.frame = panel.contentView!.bounds
+            hostingView.wantsLayer = true
+            hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+            panel.contentView?.addSubview(hostingView)
+            
+            currentStatusPanel = panel
+        }
+        currentStatusPanel?.orderFrontRegardless()
+    }
+
+    @MainActor static func msgStatusUpdate(_ params: [String: Any]) async {
+        let val = (params["value"] as? Double) ?? (params["p1"] as? Double) ?? 0.0
+        SwStatusState.shared.progress = val
+        
+        // FORZAMOS EL REFRESCO TOTAL REASIGNANDO LA VISTA
+        if let panel = currentStatusPanel, 
+           let hostingView = panel.contentView?.subviews.first as? NSHostingView<SwHUDView> {
+            hostingView.rootView = SwHUDView()
+        }
+        
+        // Forzamos al panel a redibujarse inmediatamente y vaciamos el pipeline gráfico
+        CATransaction.begin()
+        currentStatusPanel?.display()
+        CATransaction.flush()
+        CATransaction.commit()
+        
+        // Bombeo rápido de eventos para asegurar que la ventana procese el refresco
+        if let event = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) {
             NSApp.sendEvent(event)
         }
     }
 
-    @MainActor static func alertAsync(_ params: [String: Any]) async {
-        let text    = (params["text"] as? String) ?? (params["p1"] as? String) ?? "Sin mensaje"
-        let title   = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Aviso"
-        let type    = (params["type"] as? Int) ?? (params["p3"] as? Int) ?? 1
-        let seconds = (params["seconds"] as? Double) ?? (params["p4"] as? Double) ?? 5.0
-        
-        let randomId = "alert_\(UUID().uuidString.prefix(8))"
-        SwNotificationCenter.shared.show(id: randomId, text: text, title: title, type: type, seconds: seconds)
+    @MainActor static func msgStatusClose() async {
+        currentStatusPanel?.close()
+        currentStatusPanel = nil
     }
+}
 
-    @MainActor static func statusShow(_ params: [String: Any]) async -> [String: Any]? {
-        var id      = (params["id"] as? String) ?? (params["p1"] as? String) ?? ""
-        let text    = (params["text"] as? String) ?? (params["p2"] as? String) ?? "Procesando..."
-        let title   = (params["title"] as? String) ?? (params["p3"] as? String) ?? "Estado"
-        let type    = (params["type"] as? Int) ?? (params["p4"] as? Int) ?? 1
-        
-        if id.isEmpty { id = "status_\(UUID().uuidString.prefix(8))" }
-        SwNotificationCenter.shared.show(id: id, text: text, title: title, type: type, seconds: 0)
-        
-        return ["result": id]
-    }
+//----------------------------------------------------------------------------//
+// MARK: - Componentes de UI Auxiliares (SwiftUI)
+//----------------------------------------------------------------------------//
 
-    @MainActor static func statusClose(_ params: [String: Any]) async {
-        let id = (params["id"] as? String) ?? (params["p1"] as? String) ?? ""
-        if !id.isEmpty {
-            SwNotificationCenter.shared.dismiss(id: id)
+// Diálogo de Selección de Lista con Buscador
+
+@Observable class SwListState {
+    var title: String = ""
+    var items: [String] = []
+    var searchText: String = ""
+    var selectedIndex: Int? = nil
+    var isClosed: Bool = false
+    
+    var filteredItems: [(originalIndex: Int, text: String)] {
+        if searchText.isEmpty {
+            return items.enumerated().map { ($0, $1) }
+        } else {
+            let lowerSearch = searchText.lowercased()
+            return items.enumerated()
+                .filter { $0.element.lowercased().contains(lowerSearch) }
+                .map { ($0, $1) }
         }
     }
+}
 
-    @MainActor static func saveFile(_ params: [String: Any]) async -> [String: Any]? {
-        let title    = (params["title"] as? String) ?? (params["p1"] as? String) ?? "Guardar como"
-        let name     = (params["name"] as? String) ?? (params["p2"] as? String) ?? ""
-        
-        let panel = NSSavePanel()
-        panel.title = title
-        panel.nameFieldStringValue = name
-        
-        if panel.runModal() == .OK {
-            return ["result": panel.url?.path ?? ""]
+struct SwListView: View {
+    @Bindable var state: SwListState
+    @FocusState private var isSearchFocused: Bool
+    @Environment(\.colorScheme) var colorScheme
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Cabecera Premium
+            HStack {
+                Text(state.title)
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(colorScheme == .dark ? .orange : .red)
+                Spacer()
+                Button(action: { state.isClosed = true }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding()
+            .background(Color.primary.opacity(0.05))
+            
+            // Buscador
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                TextField("Buscar elemento...", text: $state.searchText)
+                    .textFieldStyle(.plain)
+                    .focused($isSearchFocused)
+            }
+            .padding(10)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
+            .padding()
+            
+            // Lista de elementos
+            List {
+                ForEach(state.filteredItems, id: \.originalIndex) { item in
+                    HStack {
+                        Text(item.text)
+                            .font(.system(size: 13))
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        state.selectedIndex = item.originalIndex + 1 // Harbour es 1-based
+                        state.isClosed = true
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+            .listStyle(.plain)
+            
+            // Footer
+            HStack {
+                Spacer()
+                Text("\(state.filteredItems.count) elementos")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .padding(8)
         }
-        return ["result": ""]
+        .frame(width: 350, height: 450)
+        .background(.ultraThinMaterial)
+        .onAppear {
+            isSearchFocused = true
+        }
     }
+}
 
-    @MainActor static func getFile(_ params: [String: Any], onlyDirs: Bool = false) async -> [String: Any]? {
-        let title    = (params["title"] as? String) ?? (params["p1"] as? String) ?? "Seleccionar"
-        let types    = (params["types"] as? String) ?? (params["p2"] as? String) ?? ""
-        
-        let panel = NSOpenPanel()
-        panel.title = title
-        panel.canChooseFiles = !onlyDirs
-        panel.canChooseDirectories = onlyDirs
-        panel.allowsMultipleSelection = false
-        
-        if !types.isEmpty {
-            panel.allowedContentTypes = types.components(separatedBy: ",").compactMap { UTType(filenameExtension: $0) }
-        }
-        
-        if panel.runModal() == .OK {
-            return ["result": panel.url?.path ?? ""]
-        }
-        return ["result": ""]
-    }
-
-    @MainActor static func alert(_ params: [String: Any], style: NSAlert.Style = .informational) async -> [String: Any]? {
-        let text     = (params["text"] as? String) ?? (params["p1"] as? String) ?? "Sin mensaje"
-        let title    = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Atención"
-        
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = text
-        alert.alertStyle = style
-        alert.addButton(withTitle: "OK")
-        
-        alert.runModal()
-        return ["result": true]
-    }
+extension SystemCommands {
+    static var currentStatusPanel: NSPanel?
 
     @MainActor static func msgGet(_ params: [String: Any]) async -> [String: Any]? {
-        let text     = (params["text"] as? String) ?? (params["p1"] as? String) ?? "¿Desea continuar?"
-        let title    = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Confirmación"
-        let customButtons = params["buttons"] as? [String]
+        let msg     = (params["msg"] as? String) ?? (params["p1"] as? String) ?? ""
+        let title   = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Entrada"
+        let defText = (params["default"] as? String) ?? (params["p3"] as? String) ?? ""
         
         let alert = NSAlert()
         alert.messageText = title
-        alert.informativeText = text
+        alert.informativeText = msg
         alert.alertStyle = .informational
+        alert.addButton(withTitle: "Aceptar")
+        alert.addButton(withTitle: "Cancelar")
         
-        if let buttons = customButtons {
-            buttons.forEach { alert.addButton(withTitle: $0) }
-        } else {
-            alert.addButton(withTitle: "Yes")
-            alert.addButton(withTitle: "No")
-        }
+        let input = NSTextField(frame: NSRect(x: 0, y: 0, width: 300, height: 24))
+        input.stringValue = defText
+        input.isEditable = true
+        input.isSelectable = true
+        alert.accessoryView = input
         
-        let modalResponse = alert.runModal()
-        var response: Any = false 
+        // Aseguramos que el foco vaya al input al abrirse
+        alert.window.initialFirstResponder = input
         
-        if let buttons = customButtons {
-            let index = Int(modalResponse.rawValue) - 1000 
-            if index >= 0 && index < buttons.count {
-                let clickedTitle = buttons[index].lowercased()
-                if clickedTitle == "yes" || clickedTitle == "si" || clickedTitle == "sí" { response = true }
-                else if clickedTitle == "no" { response = false }
-                else { response = buttons[index] }
-            }
-        } else {
-            response = modalResponse == .alertFirstButtonReturn
-        }
+        let response = alert.runModal()
+        let result = (response == .alertFirstButtonReturn) ? input.stringValue : ""
         
-        return ["result": response]
+        return ["result": result]
     }
 
-    @MainActor static func msgList(_ params: [String: Any]) async -> [String: Any]? {
-        let items    = (params["items"] as? [String]) ?? (params["p1"] as? [String]) ?? []
-        let title    = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Seleccionar"
+    @MainActor static func msgGetMultiline(_ params: [String: Any]) async -> [String: Any]? {
+        let title   = (params["title"] as? String) ?? (params["p1"] as? String) ?? "Entrada de texto"
+        let defText = (params["default"] as? String) ?? (params["p2"] as? String) ?? ""
+        let w       = (params["width"] as? CGFloat) ?? (params["p3"] as? CGFloat) ?? 400
+        let h       = (params["height"] as? CGFloat) ?? (params["p4"] as? CGFloat) ?? 150
         
-        let response = await withCheckedContinuation { continuation in
-            SwSelectionManager.shared.show(title: title, items: items, isSync: true) { result in
-                let nIdx = (result as? Int) ?? -1
-                let finalResult = (nIdx >= 0) ? (nIdx + 1) : 0
-                continuation.resume(returning: finalResult)
-            }
-        }
-        return ["result": response]
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = "Introduzca el texto:"
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "Aceptar")
+        alert.addButton(withTitle: "Cancelar")
+        
+        let sv = NSScrollView(frame: NSRect(x: 0, y: 0, width: w, height: h))
+        sv.hasVerticalScroller = true
+        sv.autohidesScrollers = true
+        sv.borderType = .bezelBorder
+        
+        let tv = NSTextView(frame: sv.bounds)
+        tv.minSize = NSSize(width: 0.0, height: h)
+        tv.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        tv.isVerticallyResizable = true
+        tv.isHorizontallyResizable = false
+        tv.autoresizingMask = .width
+        tv.textContainer?.containerSize = NSSize(width: w, height: CGFloat.greatestFiniteMagnitude)
+        tv.textContainer?.widthTracksTextView = true
+        tv.string = defText
+        tv.font = NSFont.systemFont(ofSize: 14)
+        
+        sv.documentView = tv
+        alert.accessoryView = sv
+        alert.window.initialFirstResponder = tv
+        
+        let response = alert.runModal()
+        let result = (response == .alertFirstButtonReturn) ? tv.string : ""
+        
+        return ["result": result]
     }
 
-    @MainActor static func msgGetMulti(_ params: [String: Any]) async -> [String: Any]? {
-        let text     = (params["text"] as? String)  ?? (params["p1"] as? String) ?? ""
-        let title    = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Instrucciones"
+    @MainActor static func msgWait(_ params: [String: Any]) async -> [String: Any]? {
+        let msg     = (params["msg"] as? String) ?? (params["p1"] as? String) ?? "Espere..."
+        let title   = (params["title"] as? String) ?? (params["p2"] as? String) ?? ""
+        let seconds = (params["seconds"] as? Double) ?? (params["p3"] as? Double) ?? 2.0
         
-        let response = await withCheckedContinuation { continuation in
-            SwSelectionManager.shared.show(title: title, text: text, mode: .multiline, isSync: true) { result in
-                let response = (result as? String) ?? ""
-                continuation.resume(returning: response)
+        let state = SwStatusState.shared
+        state.msg = msg
+        state.title = title
+        state.showProgress = true
+        state.progress = 0
+        
+        // Reutilizamos la lógica de msgStatus para el panel
+        await msgStatus(params)
+        
+        let endTime = Date().addingTimeInterval(seconds)
+        while Date() < endTime {
+            state.progress = (1.0 - (endTime.timeIntervalSinceNow / seconds)) * 100.0
+            if let event = NSApp.nextEvent(matching: .any, until: .distantPast, inMode: .default, dequeue: true) {
+                NSApp.sendEvent(event)
             }
+            try? await Task.sleep(nanoseconds: 10_000_000)
         }
-        return ["result": response]
+        
+        await msgStatusClose()
+        return nil
+    }
+
+    @MainActor static func msgToast(_ params: [String: Any]) async {
+        let msg     = (params["msg"] as? String) ?? (params["p1"] as? String) ?? ""
+        let title   = (params["title"] as? String) ?? (params["p2"] as? String) ?? "Aviso"
+        let seconds = (params["seconds"] as? Double) ?? (params["p4"] as? Double) ?? 3.0
+        
+        let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 350, height: 100),
+                            styleMask: [.borderless, .nonactivatingPanel],
+                            backing: .buffered, defer: false)
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
+        panel.level = .floating
+        panel.isMovableByWindowBackground = false
+        
+        let state = SwStatusState.shared
+        state.msg = msg
+        state.title = title
+        state.showProgress = false
+        
+        let hostingView = NSHostingView(rootView: SwHUDView())
+        hostingView.frame = panel.contentView!.bounds
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+        panel.contentView?.addSubview(hostingView)
+        
+        // Posición arriba a la derecha
+        if let screen = NSScreen.main {
+            let screenRect = screen.visibleFrame
+            panel.setFrameOrigin(NSPoint(x: screenRect.maxX - 370, y: screenRect.maxY - 120))
+        }
+        
+        panel.orderFrontRegardless()
+        
+        // Auto-cierre asíncrono
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            panel.close()
+        }
     }
 }

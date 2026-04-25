@@ -15,6 +15,10 @@ import AppKit
 @_silgen_name("hb_retnl") public func hb_retnl(_ value: Int)
 @_silgen_name("hb_retnll") public func hb_retnll(_ value: Int64)
 
+@_silgen_name("hb_arrayLen") public func hb_arrayLen(_ pArray: UnsafeMutableRawPointer?) -> Int
+@_silgen_name("hb_arrayGetCPtr") public func hb_arrayGetCPtr(_ pArray: UnsafeMutableRawPointer?, _ index: Int) -> UnsafePointer<Int8>?
+@_silgen_name("hb_param") public func hb_param(_ index: Int32, _ type: Int32) -> UnsafeMutableRawPointer?
+
 @_silgen_name("hb_dynsymFindName") public func hb_dynsymFindName(_ name: UnsafePointer<Int8>?) -> UnsafeMutableRawPointer?
 @_silgen_name("hb_dynsymSymbol") public func hb_dynsymSymbol(_ dynsym: UnsafeMutableRawPointer?) -> UnsafeMutableRawPointer?
 @_silgen_name("hb_vmPushSymbol") public func hb_vmPushSymbol(_ symbol: UnsafeMutableRawPointer?)
@@ -24,26 +28,6 @@ import AppKit
 @_silgen_name("hb_vmPushNumber") public func hb_vmPushNumber(_ value: Double, _ dec: Int32)
 @_silgen_name("hb_vmPushLogical") public func hb_vmPushLogical(_ value: Int32)
 @_silgen_name("hb_vmDo") public func hb_vmDo(_ count: Int32)
-
-@_cdecl("HB_FUN_SW_MSGINFO")
-public func sw_msginfo_hb(_ p: UnsafeMutableRawPointer?) {
-    let msg = hb_parc(1).map { String(cString: $0) } ?? ""
-    let title = hb_parc(2).map { String(cString: $0) } ?? "FiveMac SwiftUI"
-    
-    let block = {
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = msg
-        alert.addButton(withTitle: "OK")
-        alert.runModal()
-    }
-    
-    if Thread.isMainThread { 
-        block() 
-    } else { 
-        DispatchQueue.main.sync { block() } 
-    }
-}
 
 @_cdecl("HB_FUN_HB_UUID")
 public func hb_uuid_hb(_ p: UnsafeMutableRawPointer?) {
@@ -56,7 +40,14 @@ public func hb_errorlink_hb(_ p: UnsafeMutableRawPointer?) {
     // No-Op por ahora para independencia de build
 }
 
-    // MSGBEEP is now handled by SwDispatcher
+// MARK: - Pipeline Centralizado (Vía de Alta Velocidad)
+
+@_cdecl("HB_FUN_SW_PIPELINE_EXEC_SYNC")
+public func sw_pipeline_exec_sync_hb(_ p: UnsafeMutableRawPointer?) {
+    let json = hb_parc(1).map { String(cString: $0) } ?? "[]"
+    let result = SwDispatcher.shared.executeSync(json: json)
+    Harbour.ret(result)
+}
 
 // MARK: - Intelligent Harbour Bridge
 public struct Harbour {
@@ -69,9 +60,8 @@ public struct Harbour {
 
     /// Forzamos la permanencia de los símbolos de puente
     internal static func _keepAlive() {
-        if (1 == 2) { // Nunca se ejecutará, pero el compilador debe creerlo
+        if ProcessInfo.processInfo.arguments.contains("--debug-bridge-symbols") { 
             hb_uuid_hb(nil)
-            hb_msgbeep_hb(nil)
             hb_errorlink_hb(nil)
         }
     }

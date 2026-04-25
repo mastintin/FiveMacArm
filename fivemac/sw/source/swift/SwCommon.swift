@@ -105,7 +105,7 @@ public class ViewRegistry {
 @Observable
 public class StackItem: Identifiable {
     public enum ItemType: Int, Codable {
-        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, get = 14, aichat = 17
+        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, progress = 13, get = 14, aichat = 17
     }
     public let id: String
     public var type: ItemType
@@ -207,6 +207,7 @@ public class ImageState: SwApplyable, RGBAColorableState {
 @Observable
 public class SwiftWindowState: SwiftVStackState {
     public var windowId: String = ""
+    public var isInteractive: Bool = true
     
     public init(id: String) {
         self.windowId = id
@@ -215,15 +216,29 @@ public class SwiftWindowState: SwiftVStackState {
     
     public override func apply(property: String, value: Any) {
         let prop = property.lowercased()
+        print("🏝️ [Swift-Window] ID: \(self.windowId), Prop: \(prop), Val: \(value)")
+        
         DispatchQueue.main.async {
+            self.windowId = self.windowId.lowercased() // Aseguramos consistencia
+            if prop == "interactive", let v = value as? Bool {
+                print("🏝️ [Swift-Window] CAMBIANDO INTERACTIVE A \(v)")
+                self.isInteractive = v
+            }
+
             if let win = ViewRegistry.get("NSWindow_\(self.windowId)") as? NSWindow {
                 if prop == "title", let v = value as? String {
                     win.title = v
                 } else if prop == "center" {
                     win.center()
+                } else if prop == "modal", let v = value as? Bool {
+                    if v { win.level = .modalPanel }
+                } else if prop == "interactive", let v = value as? Bool {
+                    win.alphaValue = v ? 1.0 : 0.95
                 } else if prop == "close" {
                     win.close()
                 }
+            } else {
+                print("🏝️ [Swift-Window] ERROR: No se encontró la ventana NSWindow_\(self.windowId)")
             }
         }
     }

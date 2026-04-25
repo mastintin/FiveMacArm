@@ -10,6 +10,7 @@ public class ButtonState: SwApplyable {
     public var foregroundColor: Color
     public var cornerRadius: CGFloat
     public var isVisible: Bool = true
+    public var pipelineJSON: String? = nil
     
     public init(id: String, caption: String, backgroundColor: Color = .blue, foregroundColor: Color = .white, cornerRadius: CGFloat = 8) {
         self.id = id
@@ -32,6 +33,8 @@ public class ButtonState: SwApplyable {
             if let n = value as? CGFloat { self.cornerRadius = n }
         case "visible":
             if let b = value as? Bool { self.isVisible = b }
+        case "pipeline_json":
+            self.pipelineJSON = value as? String
         default:
             break
         }
@@ -43,16 +46,18 @@ struct IslandButtonStyle: ButtonStyle {
     let bgColor: Color
     let fgColor: Color
     let radius: CGFloat
+    @Environment(\.isEnabled) private var isEnabled
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .foregroundStyle(isEnabled ? fgColor : .secondary)
             .padding(.horizontal, 4)
             .padding(.vertical, 2)
             .background(
                 RoundedRectangle(cornerRadius: radius)
-                    .fill(bgColor.opacity(configuration.isPressed ? 0.8 : 1.0))
+                    .fill(isEnabled ? bgColor.opacity(configuration.isPressed ? 0.8 : 1.0) : Color(NSColor.disabledControlTextColor).opacity(0.2))
             )
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .scaleEffect(configuration.isPressed && isEnabled ? 0.95 : 1.0)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
@@ -63,8 +68,16 @@ public struct SwiftButtonView: View {
     
     public var body: some View {
         Button(action: {
-            let json = "{\"\(state.id)\":{\"event\":\"click\"}}"
-            Harbour.call("SW_PIPELINE_SYNC", json)
+            if let batchJSON = state.pipelineJSON, let data = batchJSON.data(using: .utf8) {
+                // MODO AUTOPILOT: Ejecutamos localmente
+                Task { @MainActor in
+                    await executeWorkflowBatch(jsonData: data)
+                }
+            } else {
+                // MODO DINÁMICO: Notificamos a Harbour
+                let json = "{\"\(state.id)\":{\"event\":\"click\"}}"
+                Harbour.call("SW_PIPELINE_SYNC", json)
+            }
         }) {
             Text(state.caption)
                 .font(.system(size: 14, weight: .bold))

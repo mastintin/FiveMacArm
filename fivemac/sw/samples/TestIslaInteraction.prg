@@ -16,7 +16,7 @@ function Main()
    @ 120, 240 BUTTON oBtn PROMPT "¡Actualizar Label!" OF oWnd SIZE 140, 40 ;
       ACTION ( nClicks++, ;
                oLabel:SetText( "¡Hola! Has pulsado el botón " + AllTrim(Str(nClicks)) + " veces." ),;
-               SwMsgInfo( "El label ha sido actualizado satisfactoriamente desdeSwift.", "Isla Bridge" ) )
+               MsgInfo( "El label ha sido actualizado satisfactoriamente desde Swift.", "Isla Bridge" ) )
 
    ACTIVATE WINDOW oWnd CENTERED
 

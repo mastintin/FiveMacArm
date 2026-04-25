@@ -31,6 +31,7 @@ CLASS TSwActionStack
    METHOD AddControlCall( oControl, cMsg, aArgs )
    
    METHOD Execute()
+   METHOD GetJSON()
    METHOD Clear()  INLINE ::aActions := {}
 
 ENDCLASS
@@ -130,10 +131,17 @@ METHOD Execute() CLASS TSwActionStack
    local cJson 
 
    if !Empty( ::aActions )
-      cJson := hb_jsonEncode( ::aActions )
+      cJson := ::GetJSON()
       SW_LOG( "TSwActionStack:Execute -> " + cJson )
       // Importante: Llamamos a la función que definimos en SwActionRunner.swift
       SW_PIPELINE_EXEC( cJson )
       ::aActions := {}
    endif
 return nil
+
+METHOD GetJSON() CLASS TSwActionStack
+   local cJson := ""
+   if !Empty( ::aActions )
+      cJson := hb_jsonEncode( ::aActions )
+   endif
+return cJson

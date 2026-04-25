@@ -4,6 +4,7 @@ import AppKit
 internal struct ViewsCommands {
     static func register(in sd: SwDispatcher) {
         sd.register("update") { params in return await ViewsCommands.update(params) }
+        sd.register("apply")  { params in return await ViewsCommands.apply(params) }
         sd.register("create") { params in return await ViewsCommands.create(params) }
         sd.register("text")   { params in 
             var p = params
@@ -35,6 +36,24 @@ internal struct ViewsCommands {
             ],
             fields: [:]
         )
+    }
+
+    @MainActor static func apply(_ params: [String: Any]) async -> [String: Any]? {
+        let id = (params["id"] as? String) ?? (params["p1"] as? String) ?? ""
+        
+        if let state = ViewRegistry.getState(for: id) as? SwApplyable {
+            for (key, value) in params {
+                // Evitamos procesar las claves de control
+                if key != "id" && key != "cmd" && key != "p1" && key != "func" {
+                    print("🏝️ [ViewsCommands] Apply key: \(key) = \(value)")
+                    state.apply(property: key, value: value)
+                    SwDispatcher.shared.recordChange(id: id, property: key, value: value)
+                }
+            }
+            return ["status": "ok", "id": id]
+        }
+        
+        return ["status": "error", "message": "ID \(id) not found for apply"]
     }
 
     @MainActor static func update(_ params: [String: Any]) async -> [String: Any]? {

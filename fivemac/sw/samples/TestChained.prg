@@ -8,7 +8,7 @@
     @ 30, 20 SAY "Monitor de la Isla" SIZE 300, 20 OF oWnd
     
     @ 70, 20 BUTTON "ACTUALIZAR CONTADOR" ;
-             ACTION SwMsgInfo( "Objetos en Harbour: " + hb_ValToStr( SwiftCountItems() ), "Contador" ) ;
+             ACTION MsgInfo( "Objetos en Harbour: " + hb_ValToStr( SwiftCountItems() ), "Contador" ) ;
              SIZE 200, 30 OF oWnd
     
     @ 110, 20 BUTTON "ABRIR VENTANA HIJA" ;
@@ -39,7 +39,7 @@
              SIZE 200, 30 OF oWndHija
  
     @ 110, 20 BUTTON "2. CONSULTAR VIVOS" ;
-             ACTION SwMsgInfo( "Vivos: " + hb_ValToStr( SwiftCountItems() ) ) ;
+             ACTION MsgInfo( "Vivos: " + hb_ValToStr( SwiftCountItems() ) ) ;
              SIZE 200, 30 OF oWndHija
  
     @ 160, 20 BUTTON "3. CERRAR HIJA" ;
@@ -60,7 +60,7 @@
     @ 30, 20 SAY "Generación 3 (Nieta)" SIZE 200, 20 OF oWndNieta
     
     @ 70, 20 BUTTON "SALUDAR DESDE NIETA" ;
-             ACTION SwMsgInfo( "¡Hola! La comunicación con la nieta funciona.", "Éxito" ) ;
+             ACTION MsgInfo( "¡Hola! La comunicación con la nieta funciona.", "Éxito" ) ;
              SIZE 220, 30 OF oWndNieta
               
     @ 110, 20 BUTTON "CERRAR NIETA" ;

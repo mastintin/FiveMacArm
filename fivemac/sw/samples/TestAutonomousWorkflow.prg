@@ -28,7 +28,7 @@ function Main()
          oStack:AddAlert( "La misión autónoma ha finalizado con éxito. Revisa el archivo en tu Home.", "mi_descarga" ), ;
          ;
          oStack:Execute(), ;
-         SwMsgInfo( "Harbour: He enviado la misión a Swift. Ahora Swift trabaja solo en el fondo." ) ;
+         MsgInfo( "Harbour: He enviado la misión a Swift. Ahora Swift trabaja solo en el fondo." ) ;
       } )
 
    ACTIVATE WINDOW oWnd CENTERED

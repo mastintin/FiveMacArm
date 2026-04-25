@@ -54,6 +54,10 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             let initial = try decoder.decode(WebViewInit.self, from: jsonData)
             newItem = createWebView(id: cleanid, initial: initial)
 
+        case 13: // Progress
+            let initial = try decoder.decode(ProgressInit.self, from: jsonData)
+            newItem = createProgress(id: cleanid, initial: initial)
+
         case 100: // Window
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             sw_createwindow_hb_internal(title: initial.title ?? "", 
@@ -155,6 +159,17 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
     return item
 }
 
+@MainActor private func createProgress(id: String, initial: ProgressInit) -> StackItem {
+    let state = ProgressState(id: id, 
+                             value: initial.value ?? 0.0,
+                             min: initial.min ?? 0.0,
+                             max: initial.max ?? 100.0)
+    ViewRegistry.register(state, for: id)
+    let item = StackItem(type: .progress, id: id)
+    setupGeometry(item: item, from: initial)
+    return item
+}
+
 @MainActor private func createWebView(id: String, initial: WebViewInit) -> StackItem {
     let state = WebViewState(id: id)
     if let urlStr = initial.url { state.apply(property: "url", value: urlStr) }
@@ -225,4 +240,5 @@ extension LabelInit: GeometryProtocol {}
 extension ToggleInit: GeometryProtocol {}
 extension SliderInit: GeometryProtocol {}
 extension WebViewInit: GeometryProtocol {}
+extension ProgressInit: GeometryProtocol {}
 extension GetInit: GeometryProtocol {}

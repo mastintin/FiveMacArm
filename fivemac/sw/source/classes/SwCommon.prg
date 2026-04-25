@@ -18,14 +18,3 @@ function SW_LOG( cMsg )
    endif
 return nil
 
-// SW_FMH is the Event Dispatcher called from Swift
-function SW_FMH( cId, nMsg, uParam1 )
-   local oControl
-   oControl := SwiftGetItem( cId )
-   
-   if oControl != nil
-      if nMsg == 9 // WM_BTNCLICK
-         return oControl:OnAction()
-      endif
-   endif
-return nil
