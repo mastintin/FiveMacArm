@@ -72,7 +72,7 @@ return If( hb_HHasKey( s_hRegistry, cId ), s_hRegistry[ cId ], nil )
 
 // -------------------------------------------------------------------------------- //
 
-function SW_PIPELINE_SYNC( cJson )
+function SW_UPDATE_HB( cJson )
     local hChanges 
     local cId, hProps, cProp, uVal
     local oItem, lChanged, aIds, n
@@ -80,7 +80,7 @@ function SW_PIPELINE_SYNC( cJson )
     if Empty( cJson ) ; return nil ; endif
     
     s_lInSync := .T.
-    SW_LOG( "SW_PIPELINE_SYNC: Received -> " + cJson )
+    SW_LOG( "SW_UPDATE_HB: Received -> " + cJson )
     hb_jsonDecode( cJson, @hChanges )
     
     if ValType( hChanges ) == "H"
@@ -93,7 +93,7 @@ function SW_PIPELINE_SYNC( cJson )
                hProps := hChanges[ cId ]
                if hb_HHasKey( hProps, "unregister" ) .and. ValType( hProps["unregister"] ) == "A"
                   for each uVal in hProps["unregister"]
-                     SW_LOG( "SW_PIPELINE_SYNC: System Unregister -> " + hb_ValToStr( uVal ) )
+                     SW_LOG( "SW_UPDATE_HB: System Unregister -> " + hb_ValToStr( uVal ) )
                      SwiftUnregisterItem( uVal )
                   next
                endif
@@ -106,7 +106,7 @@ function SW_PIPELINE_SYNC( cJson )
                if hb_HHasKey( hProps, "name" )
                   cProp := hProps[ "name" ]
                   if Upper( Right( cProp, 2 ) ) == "()" ; cProp := SubStr( cProp, 1, Len( cProp ) - 2 ) ; endif
-                  SW_LOG( "SW_PIPELINE_SYNC: Executing Global Command -> " + cProp )
+                  SW_LOG( "SW_UPDATE_HB: Executing Global Command -> " + cProp )
                   &( cProp )( hProps )
                endif
                loop

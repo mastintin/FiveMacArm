@@ -38,17 +38,6 @@ public class ProgressState: SwApplyable {
     }
 }
 
-// MARK: - Progress Initialization (Codable)
-public struct ProgressInit: Codable {
-    public let value: Double?
-    public let min: Double?
-    public let max: Double?
-    public let width: Double?
-    public let height: Double?
-    public let top: Double?
-    public let left: Double?
-    public let resizemask: Int?
-}
 
 // MARK: - Progress View
 public struct SwiftProgressView: View {
@@ -64,4 +53,30 @@ public struct SwiftProgressView: View {
                 .id(state.value) // Hack para forzar redibujado en actualizaciones rápidas
         }
     }
+}
+
+// MARK: - Factory Logic (Encapsulada)
+extension SwiftProgressView {
+    @MainActor
+    public static func create(id: String, from jsonData: Data) throws -> StackItem {
+        let decoder = JSONDecoder()
+        let initial = try decoder.decode(ProgressInit.self, from: jsonData)
+        
+        let state = ProgressState(id: id, 
+                                 value: initial.value ?? 0, 
+                                 min: initial.min ?? 0, 
+                                 max: initial.max ?? 100)
+        ViewRegistry.register(state, for: id)
+        
+        let item = StackItem(type: .progress, id: id)
+        setupGeometry(item: item, from: initial)
+        return item
+    }
+}
+
+// MARK: - Protocols & Data Structures
+public struct ProgressInit: Codable, GeometryProtocol {
+    public let value, min, max: Double?
+    public let width, height, top, left: Double?
+    public let resizemask: Int?
 }

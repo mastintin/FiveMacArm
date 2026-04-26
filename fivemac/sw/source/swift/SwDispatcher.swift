@@ -1,7 +1,6 @@
 import Foundation
-import AppKit
 
-/// El motor de despacho central (El Cerebro) - Versión Unificada HSW
+/// El motor de despacho central (El Cerebro) - Versión Simplificada HSW
 public class SwDispatcher {
     public static let shared = SwDispatcher()
     
@@ -14,23 +13,35 @@ public class SwDispatcher {
     /// Cola de eventos pendientes para que Harbour los recoja
     private var eventQueue: [[String: Any]] = []
     
+    /// Cola de despacho para asegurar thread-safety (Lectores/Escritores)
     private let queue = DispatchQueue(label: "com.fivemac.dispatcher", attributes: .concurrent)
 
     private init() {
-        registerBaseCommands()
+        // Registro de módulos de comandos
+        NetworkCommands.register(in: self)
+        FilesCommands.register(in: self)
+        ViewsCommands.register(in: self)
+        SystemCommands.register(in: self)
+        TimerCommands.register(in: self)
+        UniversalCommands.register(in: self)
     }
     
+    /// Registra un nuevo comando en el despachador
     public func register(_ name: String, action: @escaping ([String: Any]) async -> [String: Any]?) {
         queue.sync(flags: .barrier) {
             commands[name.lowercased()] = action
         }
     }
     
+    /// Ejecuta un comando por nombre
     @discardableResult
     public func execute(name: String, params: [String: Any]) async -> [String: Any]? {
         let cleanName = name.lowercased()
-        let resolvedParams = resolvePiping(params)
         
+        // 1. Resolver Piping (Comodines ctx:)
+        let resolvedParams = UniversalCommands.resolvePiping(params)
+        
+        // 2. Buscar y ejecutar acción
         var action: (([String: Any]) async -> [String: Any]?)?
         queue.sync {
             action = commands[cleanName]
@@ -44,7 +55,8 @@ public class SwDispatcher {
         }
     }
 
-    // EJECUCIÓN SÍNCRONA INTERNA (Para ser llamada desde el puente C)
+    // MARK: - Bridge Helpers (Internal)
+
     func executeSyncInternal(json: String) async -> String {
         guard let data = json.data(using: .utf8),
               let actions = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
@@ -59,6 +71,18 @@ public class SwDispatcher {
             }
         }
         
+        // Sincronización automática: Si hay cambios de estado acumulados, notificamos a Harbour
+        let changes = self.flushStateChanges()
+        if !changes.isEmpty {
+            if let data = try? JSONSerialization.data(withJSONObject: changes),
+               let jsonStr = String(data: data, encoding: .utf8) {
+                // Usamos el hilo principal para llamar a Harbour y evitar conflictos
+                DispatchQueue.main.async {
+                    Harbour.call("SW_UPDATE_HB", jsonStr)
+                }
+            }
+        }
+        
         if let resData = try? JSONSerialization.data(withJSONObject: finalResult),
            let resStr = String(data: resData, encoding: .utf8) {
             return resStr
@@ -66,7 +90,6 @@ public class SwDispatcher {
         return "{}"
     }
 
-    // EJECUCIÓN ASÍNCRONA INTERNA
     func executeAsyncInternal(json: String) async {
         guard let data = json.data(using: .utf8) else { return }
         
@@ -75,6 +98,17 @@ public class SwDispatcher {
         } else if let actions = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
             for params in actions {
                 await processCommand(params)
+            }
+        }
+        
+        // Sincronización automática de estado
+        let changes = self.flushStateChanges()
+        if !changes.isEmpty {
+            if let data = try? JSONSerialization.data(withJSONObject: changes),
+               let jsonStr = String(data: data, encoding: .utf8) {
+                DispatchQueue.main.async {
+                    Harbour.call("SW_UPDATE_HB", jsonStr)
+                }
             }
         }
     }
@@ -122,122 +156,4 @@ public class SwDispatcher {
         }
         return events
     }
-    
-    // MARK: - Piping Logic
-    
-    private func resolvePiping(_ params: [String: Any]) -> [String: Any] {
-        var resolved = params
-        for (key, value) in params {
-            if let str = value as? String, str.hasPrefix("ctx:") {
-                let contextKey = String(str.dropFirst(4))
-                if let contextValue = SwWorkflowContext.shared.get(contextKey) {
-                    resolved[key] = contextValue
-                }
-            }
-        }
-        return resolved
-    }
-
-    private func registerBaseCommands() {
-        NetworkCommands.register(in: self)
-        FilesCommands.register(in: self)
-        ViewsCommands.register(in: self)
-        SystemCommands.register(in: self)
-    }
-
-    // DISPATCHER UNIVERSAL
-    public static func registerUniversal() {
-        self.shared.register("apply") { params in
-            let id = ((params["id"] as? String) ?? (params["p1"] as? String) ?? "").lowercased()
-            
-            return await MainActor.run { () -> [String: Any]? in
-                if let state = ViewRegistry.getState(for: id) as? SwApplyable {
-                    for (key, value) in params {
-                        if key.lowercased() == "close" && (value as? Bool == true || (value as? Int == 1)) {
-                             ViewRegistry.removeFromParent(id: id)
-                             if let window = ViewRegistry.get("NSWindow_\(id)") as? NSWindow {
-                                 window.close()
-                             }
-                             let deadIds = ViewRegistry.recursiveClean(id: id)
-                             let idsStr = deadIds.map { "\"\($0)\"" }.joined(separator: ", ")
-                             let json = "{\"_system\":{\"unregister\":[\(idsStr)]}}"
-                             Harbour.call("SW_PIPELINE_SYNC", json)
-                             continue
-                        }
-
-                        if key != "id" && !key.hasPrefix("p") && key != "cmd" {
-                            state.apply(property: key, value: value)
-                            if let item = ViewRegistry.getItem(for: id) {
-                                switch key.lowercased() {
-                                    case "top": if let n = (value as? NSNumber)?.doubleValue { item.y = n }
-                                    case "left": if let n = (value as? NSNumber)?.doubleValue { item.x = n }
-                                    case "width": if let n = (value as? NSNumber)?.doubleValue { item.itemWidth = n }
-                                    case "height": if let n = (value as? NSNumber)?.doubleValue { item.itemHeight = n }
-                                    case "resizemask": if let n = (value as? NSNumber)?.intValue { item.resizemask = n }
-                                    case "interactive": if let b = value as? Bool { item.isInteractive = b }
-                                    default: break
-                                }
-                            }
-                            self.shared.recordChange(id: id, property: key, value: value)
-                        }
-                    }
-                    return ["status": "ok", "id": id]
-                }
-                return nil
-            }
-        }
-    }
-}
-
-// MARK: - HSW Hybrid Bridge (Top Level @_cdecl)
-
-class SwAppDelegate: NSObject, NSApplicationDelegate {
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        return true
-    }
-}
-
-private let appDelegate = SwAppDelegate()
-
-@_cdecl("hsw_swift_start")
-public func hsw_swift_start() {
-    let app = NSApplication.shared
-    app.setActivationPolicy(.regular)
-    app.delegate = appDelegate
-    app.activate(ignoringOtherApps: true)
-    app.run()
-}
-
-@_cdecl("HSW_SEND_COMMAND")
-public func hsw_send_command_hb(_ p: UnsafePointer<Int8>?) {
-    guard let p = p else { return }
-    let jsonStr = String(cString: p)
-    Task {
-        await SwDispatcher.shared.executeAsyncInternal(json: jsonStr)
-    }
-}
-
-@_cdecl("SW_PIPELINE_EXEC")
-public func sw_pipeline_exec_hb(_ p: UnsafePointer<Int8>?) {
-    hsw_send_command_hb(p)
-}
-
-@_cdecl("SW_PIPELINE_EXEC_SYNC")
-public func sw_pipeline_exec_sync_hb(_ p: UnsafePointer<Int8>?) -> UnsafePointer<Int8>? {
-    guard let p = p else { return nil }
-    let json = String(cString: p)
-    var resultJson: String = "{}"
-    let semaphore = DispatchSemaphore(value: 0)
-    
-    Task {
-        resultJson = await SwDispatcher.shared.executeSyncInternal(json: json)
-        semaphore.signal()
-    }
-    _ = semaphore.wait(timeout: .distantFuture)
-    return (resultJson as NSString).utf8String
-}
-
-@_cdecl("SW_PIPELINE_QUERY")
-public func sw_pipeline_query_hb(_ p: UnsafePointer<Int8>?) -> UnsafePointer<Int8>? {
-    return sw_pipeline_exec_sync_hb(p)
 }

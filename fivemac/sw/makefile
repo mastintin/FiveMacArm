@@ -25,6 +25,16 @@ MACRO_INC=source/HarbourMacro/bin
 # Flags
 CFLAGS=$(TARGET_FLAG) -c -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(FIVEMAC_PATH)/nativo/source/winapi -I$(HARBOUR_PATH)/include -fmodules
 HBFLAGS=-n -w -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/include
+#SWIFT_SOURCES = source/swift/SwAIChat.swift source/swift/SwActionRunner.swift source/swift/SwCommon.swift \
+#                source/swift/SwComponentFactory.swift source/swift/SwDispatcher.swift source/swift/SwHarbourApi.swift \
+#                source/swift/SwNotificationCenter.swift source/swift/SwProtocols.swift source/swift/SwRecursiveItemView.swift \
+#                source/swift/SwRegistry.swift source/swift/SwWindow.swift source/swift/SwWorkflowContext.swift \
+#                source/swift/SwApp.swift source/swift/SwBridge.swift source/swift/SwUniversalCommands.swift \
+#                source/swift/SwiftButton.swift source/swift/SwiftFiles.swift source/swift/SwiftGet.swift \
+#                source/swift/SwiftImage.swift source/swift/SwiftLabel.swift source/swift/SwiftList.swift \
+#                source/swift/SwiftNetworks.swift source/swift/SwiftProgress.swift source/swift/SwiftSlider.swift \
+#                source/swift/SwiftSystem.swift source/swift/SwiftTimer.swift source/swift/SwiftToggle.swift \
+#                source/swift/SwiftViews.swift source/swift/SwiftWebView.swift
 SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-name SwiftFive $(TARGET_FLAG) -emit-objc-header-path include/SwiftFive-Swift.h -I $(MACRO_INC) -load-plugin-executable $(MACRO_BIN)\#HarbourMacroImpl
 
 # Files

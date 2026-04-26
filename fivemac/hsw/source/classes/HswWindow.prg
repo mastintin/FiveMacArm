@@ -10,34 +10,48 @@
 #xcommand ACTIVATE WINDOW <oWnd> => <oWnd>:Activate()
 
 CLASS HswWindow
-   DATA cTitle
-   DATA nWidth, nHeight
-   DATA bOnActivate
+   DATA cId
+   DATA hState INIT {=>}
+
+   ACCESS cTitle        INLINE ::hState["title"]
+   ASSIGN cTitle(c)     INLINE ( ::hState["title"] := c, ::Apply( { "title" => c } ) )
+
+   ACCESS nWidth        INLINE ::hState["width"]
+   ASSIGN nWidth(n)     INLINE ( ::hState["width"] := n, ::Apply( { "width" => n } ) )
+
+   ACCESS nHeight       INLINE ::hState["height"]
+   ASSIGN nHeight(n)    INLINE ( ::hState["height"] := n, ::Apply( { "height" => n } ) )
 
    METHOD New( cTitle, nWidth, nHeight )
    METHOD Activate()
+   METHOD Apply( hProps )
 ENDCLASS
 
 METHOD New( cTitle, nWidth, nHeight ) CLASS HswWindow
-   ::cTitle  := cTitle
-   ::nWidth  := nWidth
-   ::nHeight := nHeight
+   ::cId := hb_uuid()
    
-   if ::cTitle == nil ; ::cTitle := "HSW Window" ; endif
-   if ::nWidth == nil ; ::nWidth := 400 ; endif
-   if ::nHeight == nil ; ::nHeight := 300 ; endif
+   ::hState["title"]  := hb_defaultValue( cTitle, "HSW Window" )
+   ::hState["width"]  := hb_defaultValue( nWidth, 400 )
+   ::hState["height"] := hb_defaultValue( nHeight, 300 )
+   
 return self
 
 METHOD Activate() CLASS HswWindow
-   Local cJson
+   Local hCommand := {=>}
    
-   // Construimos el mensaje para Swift de forma segura
-   cJson := '{ "cmd": "create_window", ' 
-   cJson += '  "title": "' + hb_valToStr(::cTitle) + '", ' 
-   cJson += '  "width": ' + hb_valToStr(::nWidth) + ', ' 
-   cJson += '  "height": ' + hb_valToStr(::nHeight) + ' }'
+   hCommand["cmd"]    := "create_window"
+   hCommand["id"]     := ::cId
+   hCommand["title"]  := ::cTitle
+   hCommand["width"]  := ::nWidth
+   hCommand["height"] := ::nHeight
    
-   // Enviamos al otro hilo
-   HSW_SEND_COMMAND( cJson )
-   
+   HSW_SEND_COMMAND( hb_jsonEncode( hCommand ) )
+return nil
+
+METHOD Apply( hProps ) CLASS HswWindow
+   Local hCommand := {=>}
+   hCommand["cmd"]   := "apply"
+   hCommand["id"]    := ::cId
+   hCommand["props"] := hProps
+   HSW_SEND_COMMAND( hb_jsonEncode( hCommand ) )
 return nil

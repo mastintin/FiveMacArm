@@ -8,21 +8,31 @@ FiveMac bridges the gap between xBase/Harbour code and the native macOS Objectiv
 
 ---
 
-# Recent Updates (April 2026 - FINAL HSW)
+# Recent Updates (April 2026 - MODULAR & PREMIUM)
+
+## 🏗️ Arquitectura Modular Descentralizada (Swift-Side)
+Hemos completado una reingeniería profunda del framework Swift para pasar de una fábrica centralizada a un modelo **propietario y modular**:
+
+*   **Componentes Autónomos**: Cada control (`Label`, `Button`, `Toggle`, `Get`, `Slider`, `Progress`, `WebView`) ahora gestiona su propia inicialización, estado y lógica de fábrica en su propio archivo fuente.
+*   **Fábrica Optimizada (Lean Factory)**: `SwComponentFactory.swift` se ha reducido en un 60%, actuando ahora como un orquestador ligero que delega la creación a los métodos `.create()` nativos de cada vista.
+*   **Estado Encapsulado**: Traslado de todas las clases `State` y estructuras `Init` desde el núcleo global (`SwCommon`) a sus respectivos componentes, eliminando colisiones de nombres y mejorando la legibilidad.
+*   **Geometría Compartida**: Implementación de `GeometryProtocol` para unificar el posicionamiento de todos los controles de "La Isla" de forma estandarizada.
+
+## 💎 Controles Premium 2.0
+Mejoras estéticas y funcionales para elevar la experiencia de usuario:
+
+*   **Premium Toggle (The Bounce Effect)**: 
+    *   Integración de `.symbolEffect(.bounce)` para un feedback visual premium al activar interruptores.
+    *   Soporte para **Subtítulos** y **Iconos SF Symbols** integrados directamente en el control.
+*   **Advanced Get (Integrated Prompts)**: 
+    *   Nuevo sistema de etiquetas flotantes/integradas (`prompt`) que no requieren un Label externo.
+    *   Formateo reactivo en tiempo real (Pictures de Harbour: Mayúsculas, separadores de miles, etc.).
+*   **Refactorización de Label & Button**: Limpieza total de código legacy, mejorando la velocidad de instanciación y la fidelidad visual.
 
 ## 🏎️ HSW (High-performance SwiftWindow): El Motor de Doble Hilo
-Hemos culminado la evolución de "La Isla" con la arquitectura **HSW**, eliminando definitivamente los bloqueos de interfaz y proporcionando un rendimiento de grado profesional.
-
-*   **Arquitectura Dual-Thread Nativa**: 
-    *   **Hilo 0 (Main)**: Dedicado exclusivamente a Swift, SwiftUI y el bombeo de eventos de Cocoa. La UI nunca se congela.
-    *   **Hilo 1 (Secondary)**: Donde reside la VM de Harbour y toda la lógica de negocio.
-*   **Pipeline Asíncrono de Alta Velocidad**: La comunicación entre Harbour y Swift se realiza mediante una cola JSON no bloqueante. Se acabó el "beach ball" de macOS durante procesos largos de Harbour.
-*   **SysRefresh Thread-Safe**: Rediseño total del sistema de refresco. `SysRefresh()` ahora es seguro para multihilo, procesando eventos internos sin interferir con el bucle principal de Cocoa.
-*   **Componentes Atómicos Premium**:
-    *   **MsgList 2.0**: Diálogo de selección atómico con buscador integrado, diseño centrado y animaciones fluidas, gestionado 100% en el lado de Swift.
-    *   **Switch Toggle**: Soporte para la cláusula `SWITCH` en el comando `@ TOGGLE`, ofreciendo el aspecto nativo de interruptor de macOS.
-*   **Limpieza Recursiva Inteligente**: Nuevo sistema de desregistro basado en IDs que garantiza la liberación total de memoria al cerrar ventanas complejas, recorriendo de forma automática toda la jerarquía de controles.
-*   **Zero-Crash Event Model**: Corrección crítica en el bombeo de eventos que evita colisiones entre hilos, garantizando la estabilidad absoluta de la aplicación.
+*   **Arquitectura Dual-Thread Nativa**: Hilo 0 para UI (SwiftUI) e Hilo 1 para Lógica (Harbour).
+*   **Zero-Crash Event Model**: Estabilidad absoluta mediante colas JSON no bloqueantes.
+*   **Limpieza Recursiva Inteligente**: Gestión automática de memoria al cerrar jerarquías de ventanas.
 
 ---
 

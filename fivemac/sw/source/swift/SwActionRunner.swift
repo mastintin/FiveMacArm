@@ -4,54 +4,6 @@ import AppKit
 
 // MARK: - Bridge con Harbour (Entrada de C)
 
-@_cdecl("HB_FUN_SW_GET_PROXY_MAP")
-public func sw_get_proxy_map_hb(_ p: UnsafeMutableRawPointer?) {
-    _ = SwDispatcher.shared
-    SwDispatcher.registerUniversal()
-    
-    let map = SwCapabilities.shared.getProxyMap()
-    if let data = try? JSONSerialization.data(withJSONObject: map),
-       let jsonStr = String(data: data, encoding: .utf8) {
-        Harbour.ret(jsonStr)
-    } else {
-        Harbour.ret("{}")
-    }
-}
-
-@_cdecl("HB_FUN_SW_PIPELINE_EXEC")
-public func sw_pipeline_exec_hb(_ p: UnsafeMutableRawPointer?) {
-    guard let jsonStr = hb_parc(1).map({ String(cString: $0) }) else { return }
-    print("ActionRunner: Recibido Pipeline -> \(jsonStr)")
-    guard let data = jsonStr.data(using: .utf8) else { return }
-    
-    Task(priority: .userInitiated) {
-        await executeWorkflowBatch(jsonData: data)
-    }
-}
-
-// ELIMINADAS FUNCIONES DUPLICADAS (Ahora en SwHarbourApi.swift para mayor estabilidad)
-
-@_cdecl("HB_FUN_SW_PIPELINE_QUERY")
-public func sw_pipeline_query_hb(_ p: UnsafeMutableRawPointer?) {
-    let json = hb_parc(1).map { String(cString: $0) } ?? "{}"
-    
-    // NOTA: Como esto se llama desde el puente nativo de Harbour (C),
-    // y queremos que sea síncrono, usamos el despachador de compatibilidad.
-    let result = sw_pipeline_query_hb_internal(json)
-    Harbour.ret(result)
-}
-
-private func sw_pipeline_query_hb_internal(_ json: String) -> String {
-    let semaphore = DispatchSemaphore(value: 0)
-    var result = "{}"
-    Task {
-        result = await SwDispatcher.shared.executeSyncInternal(json: json)
-        semaphore.signal()
-    }
-    _ = semaphore.wait(timeout: .distantFuture)
-    return result
-}
-
 // MARK: - Motores de Ejecución del Tren (Batch Runners)
 
 func executeWorkflowBatch(jsonData: Data) async {
@@ -76,7 +28,7 @@ private func executeWorkflowQuery(jsonData: Data) async -> [String: Any]? {
             if let data = try? JSONSerialization.data(withJSONObject: changes),
                let jsonStr = String(data: data, encoding: .utf8) {
                 DispatchQueue.main.async {
-                    Harbour.call("SW_PIPELINE_SYNC", jsonStr)
+                    Harbour.call("SW_UPDATE_HB", jsonStr)
                 }
             }
         }

@@ -370,29 +370,32 @@ SWIFT_EXTERN void HB_FUN_ERRORLINK(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_HB_UUID(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN void HSW_SEND_COMMAND(int8_t const * _Nullable p) SWIFT_NOEXCEPT;
-
+/// Punto de entrada para arrancar el motor de UI de Swift desde Harbour
 SWIFT_EXTERN void hsw_swift_start(void) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_AICHAT_CLEAR(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_AICHAT_CREATE_STATE(void * _Nullable p) SWIFT_NOEXCEPT;
 
+/// SW_GET_EVENTS() -> cJsonEvents
+/// Harbour llama a esto en cada SysRefresh para recoger la cola de eventos
 SWIFT_EXTERN void HB_FUN_SW_GET_EVENTS(void * _Nullable p) SWIFT_NOEXCEPT;
 
+/// SW_GET_PROXY_MAP() -> cJsonMap
+/// Retorna el mapa de proxies registrados en la Isla
 SWIFT_EXTERN void HB_FUN_SW_GET_PROXY_MAP(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN void HB_FUN_SW_PIPELINE_EXEC(void * _Nullable p) SWIFT_NOEXCEPT;
+/// SW_HB_QUERY_SW( cJson ) -> cResultJson
+/// Realiza una consulta de datos y espera respuesta
+SWIFT_EXTERN void HB_FUN_SW_HB_QUERY_SW(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN void SW_PIPELINE_EXEC(int8_t const * _Nullable p) SWIFT_NOEXCEPT;
+/// SW_HB_SEND_SW( cJson )
+/// Envía un comando JSON a Swift de forma asíncrona
+SWIFT_EXTERN void HB_FUN_SW_HB_SEND_SW(void * _Nullable p) SWIFT_NOEXCEPT;
 
-SWIFT_EXTERN int8_t const * _Nullable SW_PIPELINE_EXEC_SYNC(int8_t const * _Nullable p) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
-
-SWIFT_EXTERN void HB_FUN_SW_PIPELINE_EXEC_SYNC(void * _Nullable p) SWIFT_NOEXCEPT;
-
-SWIFT_EXTERN void HB_FUN_SW_PIPELINE_QUERY(void * _Nullable p) SWIFT_NOEXCEPT;
-
-SWIFT_EXTERN int8_t const * _Nullable SW_PIPELINE_QUERY(int8_t const * _Nullable p) SWIFT_NOEXCEPT SWIFT_WARN_UNUSED_RESULT;
+/// SW_HB_SEND_SYNC( cJson ) -> cResultJson
+/// Ejecuta un comando y espera el resultado (Síncrono)
+SWIFT_EXTERN void HB_FUN_SW_HB_SEND_SYNC(void * _Nullable p) SWIFT_NOEXCEPT;
 
 SWIFT_EXTERN void HB_FUN_SW_PROCESSEVENTS(void * _Nullable p) SWIFT_NOEXCEPT;
 

@@ -48,18 +48,6 @@ public class WebViewState: SwApplyable {
     }
 }
 
-// MARK: - WebView Initialization (Codable)
-public struct WebViewInit: Codable {
-    public let url: String?
-    public let html: String?
-    public let interactive: Bool?
-    public let width: Double?
-    public let height: Double?
-    public let top: Double?
-    public let left: Double?
-    public let resizemask: Int?
-    public let hasscroll: Bool?
-}
 
 
 // MARK: - SwiftUI Representable
@@ -138,4 +126,28 @@ struct WKWebViewRepresentable: NSViewRepresentable {
             })
         }
     }
+}
+
+// MARK: - Factory Logic (Encapsulada)
+extension SwiftWebView {
+    @MainActor
+    public static func create(id: String, from jsonData: Data) throws -> StackItem {
+        let decoder = JSONDecoder()
+        let initial = try decoder.decode(WebViewInit.self, from: jsonData)
+        
+        let state = WebViewState(id: id)
+        if let urlStr = initial.url { state.apply(property: "url", value: urlStr) }
+        ViewRegistry.register(state, for: id)
+        
+        let item = StackItem(type: .webview, id: id)
+        setupGeometry(item: item, from: initial)
+        return item
+    }
+}
+
+// MARK: - Protocols & Data Structures
+public struct WebViewInit: Codable, GeometryProtocol {
+    public let url, html: String?
+    public let width, height, top, left: Double?
+    public let resizemask: Int?
 }

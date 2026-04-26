@@ -5,19 +5,28 @@
  CLASS TSwToggle FROM TSwiftControl
  
      ACCESS Value      INLINE ::hState["value"]
-     ASSIGN Value( l ) INLINE ( ::hState["value"] := l, SD:Apply( ::cId, { "value" => l } ), ::OnAction() )
+     ASSIGN Value( l ) INLINE ( ::hState["value"] := l, ::Apply( { "value" => l } ), ::OnAction() )
  
      ACCESS Prompt     INLINE ::hState["prompt"]
-     ASSIGN Prompt( c ) INLINE ( ::hState["prompt"] := c, SD:Apply( ::cId, { "prompt" => c } ) )
+     ASSIGN Prompt( c ) INLINE ( ::hState["prompt"] := c, ::Apply( { "prompt" => c } ) )
+ 
+     ACCESS Subtitle   INLINE hb_HGetDef( ::hState, "subtitle", "" )
+     ASSIGN Subtitle( c ) INLINE ( ::hState["subtitle"] := c, ::Apply( { "subtitle" => c } ) )
+ 
+     ACCESS Icon       INLINE hb_HGetDef( ::hState, "icon", "" )
+     ASSIGN Icon( c )   INLINE ( ::hState["icon"] := c, ::Apply( { "icon" => c } ) )
+ 
+     ACCESS Style      INLINE hb_HGetDef( ::hState, "style", 1 )
+     ASSIGN Style( n )  INLINE ( ::hState["style"] := n, ::Apply( { "style" => n } ) )
  
      ACCESS Switch     INLINE ::hState["isswitch"]
-     ASSIGN Switch( l ) INLINE ( ::hState["isswitch"] := l, SD:Apply( ::cId, { "isswitch" => l } ) )
+     ASSIGN Switch( l ) INLINE ( ::Style := if( l, 1, 0 ) )
  
      ACCESS Color      INLINE hb_HGetDef( ::hState, "color", "" )
-     ASSIGN Color( c )  INLINE ( ::hState["color"] := c, SD:Apply( ::cId, { "color" => c } ) )
+     ASSIGN Color( c )  INLINE ( ::hState["color"] := c, ::Apply( { "color" => c } ) )
  
      ACCESS TextColor      INLINE hb_HGetDef( ::hState, "textcolor", "" )
-     ASSIGN TextColor( c )  INLINE ( ::hState["textcolor"] := c, SD:Apply( ::cId, { "textcolor" => c } ) )
+     ASSIGN TextColor( c )  INLINE ( ::hState["textcolor"] := c, ::Apply( { "textcolor" => c } ) )
  
      METHOD SetColor( c ) INLINE ( ::Color := c )
      METHOD SetTextColor( c ) INLINE ( ::TextColor := c )
@@ -25,29 +34,31 @@
      ACCESS bAction          INLINE hb_HGetDef( ::hState, "action", nil )
      ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
                                       ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bPipeline ),;
-                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
+                                      ::Apply( { "interactive" => ::hState["interactive"] } ) )
    
      ACCESS bPipeline        INLINE hb_HGetDef( ::hState, "pipeline", nil )
      ASSIGN bPipeline( u )   INLINE ( ::hState["pipeline"] := u,;
                                       ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
-                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
+                                      ::Apply( { "interactive" => ::hState["interactive"] } ) )
  
-    METHOD New( nTop, nLeft, nWidth, nHeight, lValue, cPrompt, oWnd, cId, lSwitch, nAutoResize, bAction ) CONSTRUCTOR
-    METHOD SetValue( lValue, lSync )
-    METHOD OnAction()
+     METHOD New( nTop, nLeft, nWidth, nHeight, lValue, cPrompt, oWnd, cId, nStyle, nAutoResize, bAction, cSubtitle, cIcon ) CONSTRUCTOR
+     METHOD SetValue( lValue, lSync )
+     METHOD OnAction()
  
  ENDCLASS
  
  // -------------------------------------------------------------------------------- //
  
- METHOD New( nTop, nLeft, nWidth, nHeight, lValue, cPrompt, oWnd, cId, lSwitch, nAutoResize, bAction ) CLASS TSwToggle
+ METHOD New( nTop, nLeft, nWidth, nHeight, lValue, cPrompt, oWnd, cId, nStyle, nAutoResize, bAction, cSubtitle, cIcon ) CLASS TSwToggle
      
-     DEFAULT nWidth := 200, nHeight := 30, lValue := .F., cPrompt := "", lSwitch := .F.
+     DEFAULT nWidth := 200, nHeight := 45, lValue := .F., cPrompt := "", nStyle := 1
      ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
      
      ::hState["value"]       := lValue
      ::hState["prompt"]      := cPrompt
-     ::hState["isswitch"]    := lSwitch
+     ::hState["style"]       := nStyle
+     ::hState["subtitle"]    := hb_DefaultValue( cSubtitle, "" )
+     ::hState["icon"]        := hb_DefaultValue( cIcon, "" )
      ::hState["type"]        := SW_TYPE_TOGGLE
      ::hState["interactive"] := .F.
  
@@ -63,7 +74,7 @@
  METHOD SetValue( lValue, lSync ) CLASS TSwToggle
      if hb_DefaultValue( lSync, .F. )
         ::hState["value"] := lValue
-        SDS:Apply( ::cId, { "value" => lValue } )
+        ::Apply( { "value" => lValue } ):Sync()
         ::OnAction()
      else
         ::Value := lValue

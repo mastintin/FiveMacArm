@@ -64,16 +64,15 @@ public struct SwRecursiveItemView: View {
     
     @ViewBuilder
     private func renderButton() -> some View {
-        if let state = ViewRegistry.getState(for: item.id) as? ButtonState {
-            SwiftButtonView(state: state)
+        if let buttonState = ViewRegistry.get(item.id) as? SwiftButtonState {
+            SwiftButtonView(state: buttonState)
         }
     }
     
     @ViewBuilder
     private func renderText() -> some View {
-        if let state = ViewRegistry.getState(for: item.id) as? LabelState {
-            Text(state.text)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        if let labelState = ViewRegistry.get(item.id) as? SwiftLabelState {
+            SwiftLabelView(state: labelState)
         }
     }
 
@@ -93,7 +92,7 @@ public struct SwRecursiveItemView: View {
     
     @ViewBuilder
     private func renderGet() -> some View {
-        if let state = ViewRegistry.getState(for: item.id) as? GetState {
+        if let state = ViewRegistry.getState(for: item.id) as? SwiftGetState {
             SwiftGetView(state: state)
         }
     }
@@ -166,8 +165,13 @@ public struct SwWindowView: View {
     
     public var body: some View {
         ZStack(alignment: .topLeading) {
-            Color(NSColor.windowBackgroundColor)
-                .edgesIgnoringSafeArea(.all)
+            if let bg = state.backgroundColor {
+                Rectangle().fill(bg)
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                Color(NSColor.windowBackgroundColor)
+                    .edgesIgnoringSafeArea(.all)
+            }
             
             GeometryReader { proxy in
                 ZStack(alignment: .topLeading) {
@@ -193,7 +197,7 @@ public struct SwWindowView: View {
             print("🏝️ [Swift-Window] onAppear detectado para \(id). Programando evento 'init'...")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 let json = "{\"\(id)\":{\"event\":\"init\"}}"
-                Harbour.call("SW_PIPELINE_SYNC", json)
+                Harbour.call("SW_UPDATE_HB", json)
             }
         }
     }

@@ -108,7 +108,7 @@
  METHOD GetIndex( cRowId ) CLASS TSwList
     local nIndex
     // El Proxy ya nos devuelve el valor contenido en la clave "result" directamente
-    nIndex := Sw_GetQueryProxy():GetIndex( ::cId, cRowId )
+    nIndex := SWProxy("q"):GetIndex( ::cId, cRowId )
     if !hb_IsNumeric( nIndex ) .or. nIndex == -1
        return 0
     endif

@@ -23,8 +23,7 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
     do {
         switch typeId {
         case 0: // Label
-            let initial = try decoder.decode(LabelInit.self, from: jsonData)
-            newItem = createLabel(id: cleanid, initial: initial)
+            newItem = try SwiftLabelView.create(id: cleanid, from: jsonData)
 
         case 1, 2, 3: // Stacks
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
@@ -39,24 +38,19 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             newItem = createList(id: cleanid, initial: initial)
 
         case 9: // Button
-            let initial = try decoder.decode(GenericInit.self, from: jsonData)
-            newItem = createButton(id: cleanid, initial: initial)
+            newItem = try SwiftButtonView.create(id: cleanid, from: jsonData)
             
         case 10: // Toggle
-            let initial = try decoder.decode(ToggleInit.self, from: jsonData)
-            newItem = createToggle(id: cleanid, initial: initial)
+            newItem = try SwiftToggleView.create(id: cleanid, from: jsonData)
 
         case 11: // Slider
-            let initial = try decoder.decode(SliderInit.self, from: jsonData)
-            newItem = createSlider(id: cleanid, initial: initial)
+            newItem = try SwiftSliderView.create(id: cleanid, from: jsonData)
 
         case 12: // WebView
-            let initial = try decoder.decode(WebViewInit.self, from: jsonData)
-            newItem = createWebView(id: cleanid, initial: initial)
+            newItem = try SwiftWebView.create(id: cleanid, from: jsonData)
 
         case 13: // Progress
-            let initial = try decoder.decode(ProgressInit.self, from: jsonData)
-            newItem = createProgress(id: cleanid, initial: initial)
+            newItem = try SwiftProgressView.create(id: cleanid, from: jsonData)
 
         case 100: // Window
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
@@ -66,8 +60,7 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
                                         id: cleanid)
 
         case 14: // Get
-            let initial = try decoder.decode(GetInit.self, from: jsonData)
-            newItem = createGet(id: cleanid, initial: initial)
+            newItem = try SwiftGetView.create(id: cleanid, from: jsonData)
 
         default:
             print("SwFactory: [AVISO] Tipo de componente \(typeId) no implementado.")
@@ -94,13 +87,6 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
 
 // MARK: - Component Specific Creators (Desacoplados para ayudar al compilador)
 
-@MainActor private func createLabel(id: String, initial: LabelInit) -> StackItem {
-    let state = LabelState(id: id, text: initial.text ?? "")
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .text, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
 
 @MainActor private func createStack(id: String, typeId: Int, initial: GenericInit) -> StackItem {
     let state = SwiftVStackState()
@@ -130,70 +116,9 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
     return item
 }
 
-@MainActor private func createButton(id: String, initial: GenericInit) -> StackItem {
-    let state = ButtonState(id: id, caption: initial.caption ?? initial.title ?? "")
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .button, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createToggle(id: String, initial: ToggleInit) -> StackItem {
-    let state = ToggleState(id: id, isOn: initial.value ?? false, prompt: initial.prompt ?? "")
-    state.isSwitch = initial.isswitch ?? false
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .toggle, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createSlider(id: String, initial: SliderInit) -> StackItem {
-    let state = SliderState(id: id, 
-                           value: initial.value ?? 0.0,
-                           min: initial.min ?? 0.0,
-                           max: initial.max ?? 100.0,
-                           showValue: initial.showvalue ?? true)
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .slider, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createProgress(id: String, initial: ProgressInit) -> StackItem {
-    let state = ProgressState(id: id, 
-                             value: initial.value ?? 0.0,
-                             min: initial.min ?? 0.0,
-                             max: initial.max ?? 100.0)
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .progress, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createWebView(id: String, initial: WebViewInit) -> StackItem {
-    let state = WebViewState(id: id)
-    if let urlStr = initial.url { state.apply(property: "url", value: urlStr) }
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .webview, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createGet(id: String, initial: GetInit) -> StackItem {
-    let state = GetState(id: id, 
-                         text: initial.text ?? "", 
-                         picture: initial.picture ?? "", 
-                         placeholder: initial.placeholder ?? "", 
-                         issecure: initial.issecure ?? false)
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .get, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
 // MARK: - Geometry & Protocols
 
-private func setupGeometry(item: StackItem, from config: GeometryProtocol) {
+func setupGeometry(item: StackItem, from config: GeometryProtocol) {
     item.itemWidth = config.width ?? 100
     item.itemHeight = config.height ?? 30
     item.x = config.left ?? 0
@@ -236,9 +161,8 @@ public struct ImageInit: Codable, GeometryProtocol {
 
 // MARK: - Conformance Extensions (Para tipos externos definidos en otros archivos)
 
-extension LabelInit: GeometryProtocol {}
-extension ToggleInit: GeometryProtocol {}
-extension SliderInit: GeometryProtocol {}
-extension WebViewInit: GeometryProtocol {}
-extension ProgressInit: GeometryProtocol {}
-extension GetInit: GeometryProtocol {}
+
+
+
+
+

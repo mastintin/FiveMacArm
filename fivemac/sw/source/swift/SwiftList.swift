@@ -46,7 +46,7 @@ public struct SwiftListView: View {
     
     private func hasText(_ item: StackItem, _ text: String) -> Bool {
         // 1. Miramos si el objeto actual tiene texto
-        if let labelState = ViewRegistry.get(item.id) as? GetState,
+        if let labelState = ViewRegistry.get(item.id) as? SwiftGetState,
            labelState.text.lowercased().contains(text) {
             return true
         }
@@ -95,6 +95,6 @@ public struct SwiftListView: View {
     private func selectRow(_ rowId: String, state: ListState) {
         print("🏝️ [Swift] selectRow enviando pipeline para: \(rowId)")
         let json = "{\"\(state.id)\":{\"SelectedId\":\"\(rowId)\",\"event\":\"select\"}}"
-        Harbour.call("SW_PIPELINE_SYNC", json)
+        Harbour.call("SW_UPDATE_HB", json)
     }
 }

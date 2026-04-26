@@ -1,139 +1,206 @@
-import Foundation
-import AppKit
 import SwiftUI
 
-// --- EL DELEGADO DE LA APP ---
-class HswAppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        print("🏝️ [HSW] Swift: App lista y Hilo 0 bajo control.")
-    }
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-        return true
+// --- EL ESTADO GLOBAL DE LA APP (Fuente de Verdad) ---
+@Observable @MainActor
+class HswAppState {
+    static let shared = HswAppState()
+    
+    // Lista de datos de ventanas que SwiftUI debe renderizar
+    var windowList: [HswWindowData] = []
+    
+    func addWindow(id: String, title: String, width: Double, height: Double) {
+        let newWindow = HswWindowData(id: id, title: title, width: width, height: height)
+        windowList.append(newWindow)
+        print("🏝️ [HSW] Estado: Añadida ventana '\(title)' con ID \(id)")
     }
 }
 
-private let appDelegate = HswAppDelegate()
+// --- DATOS DE UNA VENTANA ---
+struct HswWindowData: Identifiable {
+    let id: String // ID enviado por Harbour (ej: "W12345")
+    var title: String
+    var width: Double
+    var height: Double
+}
 
-// --- PUNTO DE ENTRADA DESDE C ---
+// --- LA APLICACIÓN SWIFTUI PURA (El camino de Apple) ---
+struct HswApp: App {
+    @State private var appState = HswAppState.shared
+    
+    var body: some Scene {
+        WindowGroup {
+            HswMainContainerView(state: appState)
+        }
+        .windowStyle(.hiddenTitleBar)
+    }
+}
+
+// --- CONTENEDOR PRINCIPAL ---
+struct HswMainContainerView: View {
+    var state: HswAppState
+    
+    var body: some View {
+        if state.windowList.isEmpty {
+            VStack {
+                ProgressView()
+                Text("Esperando órdenes de Harbour...")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(width: 300, height: 200)
+        } else {
+            // Renderizamos todas las ventanas activas
+            ZStack {
+                ForEach(state.windowList) { windowData in
+                    HswPoCView(data: windowData)
+                }
+            }
+        }
+    }
+}
+
+// --- PUNTO DE ENTRADA DESDE HARBOUR ---
 @_cdecl("hsw_swift_start")
 public func hsw_swift_start() {
-    let app = NSApplication.shared
-    app.setActivationPolicy(.regular)
-    app.delegate = appDelegate
-    
-    print("🏝️ [HSW] Swift: Motor de UI iniciado.")
-    
-    // Lanzamos el bucle infinito de macOS
-    app.activate(ignoringOtherApps: true)
-    app.run()
+    print("🏝️ [HSW] Swift: Iniciando App SwiftUI...")
+    HswApp.main()
 }
 
 // --- COMUNICACIÓN ENTRE HILOS ---
 @_cdecl("HSW_SEND_COMMAND")
 public func hsw_send_command_hb(_ p: UnsafePointer<Int8>?) {
-    // 1. Recibimos el puntero directo de Harbour
     guard let p = p else { return }
     let jsonStr = String(cString: p)
     
-    // 2. Despachamos al hilo principal
     DispatchQueue.main.async {
         HswDispatcher.shared.execute(json: jsonStr)
     }
 }
 
-// --- ESTRUCTURA DE COMANDO ---
+// --- ESTRUCTURA DE COMANDO (Flexible) ---
 struct HswCommand: Decodable {
     let cmd: String
+    let id: String?
     let title: String?
     let width: Double?
     let height: Double?
+    let props: [String: HswValue]?
 }
 
-// --- EL DESPACHADOR (DISPATCHER) ---
+enum HswValue: Decodable {
+    case string(String)
+    case double(Double)
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let s = try? container.decode(String.self) { self = .string(s) }
+        else if let d = try? container.decode(Double.self) { self = .double(d) }
+        else { throw DecodingError.dataCorruptedError(in: container, debugDescription: "Tipo no soportado") }
+    }
+}
+
+// --- EL DESPACHADOR (Actualiza el Estado, no la UI) ---
 @MainActor
 class HswDispatcher {
     static let shared = HswDispatcher()
-    
-    // Almacén para que las ventanas no sean recolectadas por el sistema
-    private var windows: [NSWindow] = []
     
     func execute(json: String) {
         print("🏝️ [HSW] Dispatcher: Recibido -> \(json)")
         
         guard let data = json.data(using: .utf8),
               let command = try? JSONDecoder().decode(HswCommand.self, from: data) else {
-            print("🏝️ [HSW] Error: JSON inválido")
             return
         }
         
         switch command.cmd {
         case "create_window":
-            createWindow(title: command.title ?? "HSW", width: command.width ?? 400, height: command.height ?? 300)
+            HswAppState.shared.addWindow(
+                id: command.id ?? "W\(Date().timeIntervalSince1970)",
+                title: command.title ?? "HSW Window",
+                width: command.width ?? 400,
+                height: command.height ?? 300
+            )
+            
+        case "apply":
+            if let id = command.id, let props = command.props {
+                applyProperties(id: id, props: props)
+            }
+            
         default:
-            print("🏝️ [HSW] Comando desconocido: \(command.cmd)")
+            break
         }
     }
     
-    private func createWindow(title: String, width: Double, height: Double) {
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: width, height: height),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = title
-        window.center()
+    private func applyProperties(id: String, props: [String: HswValue]) {
+        guard let index = HswAppState.shared.windowList.firstIndex(where: { $0.id == id }) else { return }
         
-        let contentView = NSHostingView(rootView: HswPoCView())
-        window.contentView = contentView
-        
-        // Guardamos la referencia para que viva
-        windows.append(window)
-        
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-        
-        print("🏝️ [HSW] Swift: Ventana '\(title)' creada y mostrada.")
+        for (key, value) in props {
+            switch (key, value) {
+            case ("title", .string(let s)):
+                HswAppState.shared.windowList[index].title = s
+            case ("width", .double(let d)):
+                HswAppState.shared.windowList[index].width = d
+            case ("height", .double(let d)):
+                HswAppState.shared.windowList[index].height = d
+            default:
+                break
+            }
+        }
+        print("🏝️ [HSW] Estado: Actualizadas propiedades de ventana \(id)")
     }
 }
 
 // --- VISTA SwiftUI DEL POC ---
 struct HswPoCView: View {
+    let data: HswWindowData
     @State private var rotation: Double = 0
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Un círculo girando para demostrar fluidez (60 fps)
-            Circle()
-                .trim(from: 0, to: 0.7)
-                .stroke(AngularGradient(gradient: .init(colors: [.blue, .purple, .blue]), center: .center), lineWidth: 8)
-                .frame(width: 80, height: 80)
-                .rotationEffect(.degrees(rotation))
-                .onAppear {
-                    withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
-                        rotation = 360
-                    }
+        VStack(spacing: 25) {
+            ZStack {
+                Circle()
+                    .stroke(Color.primary.opacity(0.1), lineWidth: 8)
+                
+                Circle()
+                    .trim(from: 0, to: 0.6)
+                    .stroke(LinearGradient(colors: [.blue, .cyan], startPoint: .top, endPoint: .bottom), 
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                    .rotationEffect(.degrees(rotation))
+            }
+            .frame(width: 100, height: 100)
+            .onAppear {
+                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                    rotation = 360
                 }
-            
-            Text("¡Arquitectura HSW Activa!")
-                .font(.headline)
-            
-            Button("Click (Hilo UI)") {
-                print("🏝️ [HSW] SwiftUI: Click instantáneo detectado.")
             }
-            .buttonStyle(.borderedProminent)
             
-            Button("Cerrar App") {
-                print("🏝️ [HSW] SwiftUI: Cerrando aplicación...")
-                NSApp.terminate(nil)
+            VStack(spacing: 5) {
+                Text(data.title)
+                    .font(.system(size: 22, weight: .black, design: .rounded))
+                
+                Text("SwiftUI Data-Driven Window")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-            .buttonStyle(.bordered)
-            .tint(.red)
             
-            Text("Harbour está procesando en el otro hilo...")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            Divider().padding(.horizontal)
+            
+            HStack(spacing: 15) {
+                Button(action: {}) {
+                    Label("Aceptar", systemImage: "checkmark.circle.fill")
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                
+                Button(action: { NSApp.terminate(nil) }) {
+                    Text("Salir")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+            }
         }
-        .frame(width: 400, height: 300)
+        .padding(30)
+        .frame(width: CGFloat(data.width), height: CGFloat(data.height))
+        .background(.ultraThinMaterial)
     }
 }

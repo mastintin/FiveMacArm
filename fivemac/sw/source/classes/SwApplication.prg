@@ -9,7 +9,7 @@ CLASS TSwApplication
     
     METHOD New()
     METHOD Activate()
-    METHOD isRunning() INLINE Sw_GetQueryProxy():isRunning()
+    METHOD isRunning() INLINE SWProxy("q"):isRunning()
 
 ENDCLASS
 

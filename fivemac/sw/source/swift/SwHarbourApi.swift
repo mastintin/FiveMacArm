@@ -40,22 +40,6 @@ public func hb_errorlink_hb(_ p: UnsafeMutableRawPointer?) {
     // No-Op por ahora para independencia de build
 }
 
-// MARK: - Pipeline Centralizado (Vía de Alta Velocidad)
-
-@_cdecl("HB_FUN_SW_PIPELINE_EXEC_SYNC")
-public func sw_pipeline_exec_sync_hb(_ p: UnsafeMutableRawPointer?) {
-    let json = hb_parc(1).map { String(cString: $0) } ?? "[]"
-    
-    let semaphore = DispatchSemaphore(value: 0)
-    var result = "{}"
-    Task {
-        result = await SwDispatcher.shared.executeSyncInternal(json: json)
-        semaphore.signal()
-    }
-    _ = semaphore.wait(timeout: .distantFuture)
-    Harbour.ret(result)
-}
-
 // MARK: - Intelligent Harbour Bridge
 public struct Harbour {
     public static func ret(_ value: Int64) { hb_retnll(value) }
@@ -75,19 +59,3 @@ public struct Harbour {
     }
 }
 
-@_cdecl("HB_FUN_SW_GET_EVENTS")
-public func sw_get_events_hb(_ p: UnsafeMutableRawPointer?) {
-    let events = SwDispatcher.shared.flushEvents()
-    if events.isEmpty {
-        Harbour.ret("[]")
-        return
-    }
-    
-    print("🏝️ [Swift-Bridge] Entregando \(events.count) eventos a Harbour")
-    if let data = try? JSONSerialization.data(withJSONObject: events),
-       let json = String(data: data, encoding: .utf8) {
-        Harbour.ret(json)
-    } else {
-        Harbour.ret("[]")
-    }
-}

@@ -42,19 +42,6 @@ public class SliderState: SwApplyable {
     }
 }
 
-// MARK: - Slider Initialization (Codable)
-public struct SliderInit: Codable {
-    public let value: Double?
-    public let min: Double?
-    public let max: Double?
-    public let showvalue: Bool?
-    public let interactive: Bool?
-    public let width: Double?
-    public let height: Double?
-    public let top: Double?
-    public let left: Double?
-    public let resizemask: Int?
-}
 
 
 // MARK: - Slider View
@@ -68,16 +55,39 @@ public struct SwiftSliderView: View {
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
-            Slider(value: Binding(
-                get: { state.value },
-                set: { newValue in
-                    state.value = newValue
-                    let sVal = Int(newValue)
-                    let json = "{\"\(state.id)\":{\"value\":\(sVal)}}"
-                    Harbour.call("SW_PIPELINE_SYNC", json)
+            Slider(value: $state.value, in: state.min...state.max)
+                .controlSize(.small)
+                .onChange(of: state.value) { oldValue, newValue in
+                    print("🎚️ [Slider] Nuevo valor detectado: \(newValue)")
+                    SwDispatcher.shared.enqueueEvent(id: state.id, type: "action", data: ["value": newValue])
                 }
-            ), in: state.min...state.max)
-            .controlSize(.small)
         }
     }
+}
+
+// MARK: - Factory Logic (Encapsulada)
+extension SwiftSliderView {
+    @MainActor
+    public static func create(id: String, from jsonData: Data) throws -> StackItem {
+        let decoder = JSONDecoder()
+        let initial = try decoder.decode(SliderInit.self, from: jsonData)
+        
+        let state = SliderState(id: id, 
+                               value: initial.value ?? 0, 
+                               min: initial.min ?? 0, 
+                               max: initial.max ?? 100, 
+                               showValue: initial.showvalue ?? true)
+        ViewRegistry.register(state, for: id)
+        
+        let item = StackItem(type: .slider, id: id)
+        setupGeometry(item: item, from: initial)
+        return item
+    }
+}
+
+// MARK: - Protocols & Data Structures
+public struct SliderInit: Codable, GeometryProtocol {
+    public let value, min, max: Double?, showvalue: Bool?
+    public let width, height, top, left: Double?
+    public let resizemask: Int?
 }

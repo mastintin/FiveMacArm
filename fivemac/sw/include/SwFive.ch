@@ -11,9 +11,9 @@
    <uVar1> := hb_defaultValue( <uVar1>, <uVal1> ) [; <uVarN> := hb_defaultValue( <uVarN>, <uValN> ) ]
 #endif
 
-#define SD    Sw_GetProxy()
-#define SDS   Sw_GetProxy():Sync()
-#define SDQ   Sw_GetQueryProxy()
+#define SD    SWProxy("a")
+#define SDS   SWProxy("s")
+#define SDQ   SWProxy("q")
 #define CRLF hb_OsNewLine()
 
 //----------------------------------------------------------------------------//
@@ -49,6 +49,20 @@
 #define AnclaBottom     32
 #define SW_RESIZE_WIDTH  AnchoMovil
 #define SW_RESIZE_HEIGHT AltoMovil
+ 
+//----------------------------------------------------------------------------//
+// BUTTON ROLES
+//----------------------------------------------------------------------------//
+#define SW_ROLE_NORMAL        0
+#define SW_ROLE_DESTRUCTIVE   1
+#define SW_ROLE_CANCEL        2
+ 
+ //----------------------------------------------------------------------------//
+ // TOGGLE STYLES
+ //----------------------------------------------------------------------------//
+ #define SW_TOGGLE_CHECKBOX    0
+ #define SW_TOGGLE_SWITCH      1
+ #define SW_TOGGLE_BUTTON      2
 
 //----------------------------------------------------------------------------//
 // BASIC COMMANDS
@@ -99,12 +113,14 @@
 #xcommand @ <nRow>, <nCol> TOGGLE [ <oTgl> ] ;
    [ <v: VAR, VALUE> <lValue> ] ;
    [ PROMPT <cPrompt> ] ;
+   [ SUBTITLE <cSubtitle> ] ;
+   [ ICON <cIcon> ] ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
-   [ <switch: SWITCH> ] ;
+   [ STYLE <nStyle> ] ;
    [ ACTION <uAction> ] ;
    => ;
-   [ <oTgl> := ] TSwToggle():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<lValue>], [<cPrompt>], <oWnd>, , <.switch.>, , [<{uAction}>] )
+   [ <oTgl> := ] TSwToggle():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<lValue>], [<cPrompt>], <oWnd>, , [<nStyle>], , [<{uAction}>], [<cSubtitle>], [<cIcon>] )
 
 #xcommand @ <nRow>, <nCol> LIST <oList> ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
@@ -125,13 +141,15 @@
 #xcommand @ <nRow>, <nCol> GET [ <oGet> VAR ] <uVar> ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ PROMPT <cPrompt> ] ;
    [ PICTURE <cPicture> ] ;
    [ <password: PASSWORD> ] ;
    [ PLACEHOLDER <cPlaceholder> ] ;
+   [ VALID <uValid> ] ;
    [ ACTION <uAction> ] ;
    => ;
    [ <oGet> := ] SwGet():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>],;
-   <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], , <.password.>, [<cPlaceholder>] )
+   <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], [<uValid>], <.password.>, [<cPlaceholder>], [<cPrompt>] )
 
 #xcommand @ <nRow>, <nCol> PROGRESS [ <oProg> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;

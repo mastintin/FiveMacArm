@@ -28,7 +28,9 @@ mkdir -p $OBJ_DIR
 # 2. Compilar Swift (Motor UI en Hilo 0)
 echo "Compiling Swift UI Engine..."
 swiftc source/swift/HswSystem.swift \
+       source/swift/HswHarbourApi.swift \
        -emit-object \
+       -whole-module-optimization \
        -module-name HswSwift \
        -parse-as-library \
        -target arm64-apple-macosx26.0 \

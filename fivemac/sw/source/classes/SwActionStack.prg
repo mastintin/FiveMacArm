@@ -134,7 +134,7 @@ METHOD Execute() CLASS TSwActionStack
       cJson := ::GetJSON()
       SW_LOG( "TSwActionStack:Execute -> " + cJson )
       // Importante: Llamamos a la función que definimos en SwActionRunner.swift
-      SW_PIPELINE_EXEC( cJson )
+      SW_HB_SEND_SW( cJson )
       ::aActions := {}
    endif
 return nil

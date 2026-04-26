@@ -197,7 +197,7 @@ public func sw_http_download(url: String, destination: String, id: String = "", 
             if let data = try? JSONSerialization.data(withJSONObject: update),
                let json = String(data: data, encoding: .utf8) {
                 DispatchQueue.main.async {
-                    Harbour.call("SW_PIPELINE_SYNC", json)
+                    Harbour.call("SW_UPDATE_HB", json)
                 }
             }
         }
@@ -262,7 +262,7 @@ internal struct NetworkCommands {
             let update: [String: Any] = [notifyId: [id: result]]
             if let data = try? JSONSerialization.data(withJSONObject: update),
                let json = String(data: data, encoding: .utf8) {
-                Harbour.call("SW_PIPELINE_SYNC", json)
+                Harbour.call("SW_UPDATE_HB", json)
             }
         }
         return result
@@ -322,7 +322,7 @@ internal struct NetworkCommands {
             let update: [String: Any] = [notifyId: [id: success]]
             if let data = try? JSONSerialization.data(withJSONObject: update),
                let jsonStr = String(data: data, encoding: .utf8) {
-                Harbour.call("SW_PIPELINE_SYNC", jsonStr)
+                Harbour.call("SW_UPDATE_HB", jsonStr)
             }
         }
         return success
@@ -342,7 +342,7 @@ internal struct NetworkCommands {
             let update: [String: Any] = [notifyId: [id: result]]
             if let data = try? JSONSerialization.data(withJSONObject: update),
                let json = String(data: data, encoding: .utf8) {
-                Harbour.call("SW_PIPELINE_SYNC", json)
+                Harbour.call("SW_UPDATE_HB", json)
             }
         }
         return result
@@ -362,7 +362,7 @@ internal struct NetworkCommands {
             let update: [String: Any] = [notifyId: [id: ip]]
             if let data = try? JSONSerialization.data(withJSONObject: update),
                let json = String(data: data, encoding: .utf8) {
-                Harbour.call("SW_PIPELINE_SYNC", json)
+                Harbour.call("SW_UPDATE_HB", json)
             }
         }
         return ip
@@ -381,7 +381,7 @@ internal struct NetworkCommands {
             let update: [String: Any] = [notifyId: [id: status]]
             if let data = try? JSONSerialization.data(withJSONObject: update),
                let json = String(data: data, encoding: .utf8) {
-                Harbour.call("SW_PIPELINE_SYNC", json)
+                Harbour.call("SW_UPDATE_HB", json)
             }
         }
         return status

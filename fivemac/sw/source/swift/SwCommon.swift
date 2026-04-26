@@ -208,6 +208,7 @@ public class ImageState: SwApplyable, RGBAColorableState {
 public class SwiftWindowState: SwiftVStackState {
     public var windowId: String = ""
     public var isInteractive: Bool = true
+    public var backgroundColor: AnyShapeStyle? = nil
     
     public init(id: String) {
         self.windowId = id
@@ -219,10 +220,17 @@ public class SwiftWindowState: SwiftVStackState {
         print("🏝️ [Swift-Window] ID: \(self.windowId), Prop: \(prop), Val: \(value)")
         
         DispatchQueue.main.async {
-            self.windowId = self.windowId.lowercased() // Aseguramos consistencia
+            self.windowId = self.windowId.lowercased() 
             if prop == "interactive", let v = value as? Bool {
-                print("🏝️ [Swift-Window] CAMBIANDO INTERACTIVE A \(v)")
                 self.isInteractive = v
+            } else if prop == "backcolor" {
+                if let sVal = value as? String {
+                    if sVal.hasPrefix(".gradient") {
+                        self.backgroundColor = parseGradient(sVal)
+                    } else {
+                        self.backgroundColor = AnyShapeStyle(Color(hex: sVal))
+                    }
+                }
             }
 
             if let win = ViewRegistry.get("NSWindow_\(self.windowId)") as? NSWindow {
@@ -232,57 +240,83 @@ public class SwiftWindowState: SwiftVStackState {
                     win.center()
                 } else if prop == "modal", let v = value as? Bool {
                     if v { win.level = .modalPanel }
-                } else if prop == "interactive", let v = value as? Bool {
-                    win.alphaValue = v ? 1.0 : 0.95
                 } else if prop == "visible" && (value as? Bool == true || (value as? Int == 1)) {
                     win.makeKeyAndOrderFront(nil)
                     NSApp.activate(ignoringOtherApps: true)
                 } else if prop == "close" {
                     win.close()
                 }
-            } else {
-                print("🏝️ [Swift-Window] ERROR: No se encontró la ventana NSWindow_\(self.windowId)")
             }
         }
     }
 }
 
-@Observable
-public class GetState: SwApplyable {
-    public let id: String
-    public var text: String = ""
-    public var picture: String = ""
-    public var placeholder: String = ""
-    public var issecure: Bool = false
-    
-    public init(id: String, text: String = "", picture: String = "", placeholder: String = "", issecure: Bool = false) {
-        self.id = id
-        self.text = text
-        self.picture = picture
-        self.placeholder = placeholder
-        self.issecure = issecure
+public func parseGradient(_ s: String) -> AnyShapeStyle? {
+    let low = s.lowercased()
+    guard low.hasPrefix(".gradient("), low.hasSuffix(")") else { return nil }
+    let colorsStr = low.replacingOccurrences(of: ".gradient(", with: "")
+                       .replacingOccurrences(of: ")", with: "")
+    let parts = colorsStr.split(separator: ",")
+    var colors: [Color] = []
+    for part in parts {
+        let p = part.trimmingCharacters(in: .whitespaces)
+        if p.hasPrefix("#") { colors.append(Color(hex: p)) }
+        else if p.hasPrefix(".") { colors.append(mapBaseColor(p)) }
     }
-    
-    @MainActor
-    public func apply(property: String, value: Any) {
-        let prop = property.lowercased()
-        print("🏝️ [Swift-In] Property: \(prop), Value: \(value)")
-        switch prop {
-        case "text":
-            if let s = value as? String, self.text != s { 
-                self.text = s 
-            }
-        case "picture":
-            if let s = value as? String { self.picture = s }
-        case "placeholder":
-            if let s = value as? String { self.placeholder = s }
-        case "issecure":
-            if let b = value as? Bool { self.issecure = b }
-        default:
-            break
-        }
+    if colors.count >= 2 {
+        return AnyShapeStyle(LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing))
+    }
+    return nil
+}
+
+public func mapMaterial(_ s: String) -> AnyShapeStyle? {
+    switch s.lowercased() {
+    case ".ultrathin": return AnyShapeStyle(.ultraThinMaterial)
+    case ".thin": return AnyShapeStyle(.thinMaterial)
+    case ".regular": return AnyShapeStyle(.regularMaterial)
+    case ".thick": return AnyShapeStyle(.thickMaterial)
+    case ".ultrathick": return AnyShapeStyle(.ultraThickMaterial)
+    default: return nil
     }
 }
+
+public func mapColorStyle(_ s: String) -> AnyShapeStyle {
+    if let grad = parseGradient(s) { return grad }
+    
+    switch s.lowercased() {
+    case ".primary": return AnyShapeStyle(.primary)
+    case ".secondary": return AnyShapeStyle(.secondary)
+    case ".tertiary": return AnyShapeStyle(.tertiary)
+    case ".quaternary": return AnyShapeStyle(.quaternary)
+    case ".accent": return AnyShapeStyle(Color.accentColor)
+    case ".blue": return AnyShapeStyle(Color.blue)
+    case ".red": return AnyShapeStyle(Color.red)
+    case ".green": return AnyShapeStyle(Color.green)
+    case ".orange": return AnyShapeStyle(Color.orange)
+    case ".pink": return AnyShapeStyle(Color.pink)
+    case ".purple": return AnyShapeStyle(Color.purple)
+    case ".yellow": return AnyShapeStyle(Color.yellow)
+    case ".gray": return AnyShapeStyle(Color.gray)
+    case ".black": return AnyShapeStyle(Color.black)
+    case ".white": return AnyShapeStyle(Color.white)
+    default: return AnyShapeStyle(.primary)
+    }
+}
+
+public func mapBaseColor(_ s: String) -> Color {
+    switch s.lowercased() {
+    case ".blue": return .blue
+    case ".purple": return .purple
+    case ".pink": return .pink
+    case ".orange": return .orange
+    case ".red": return .red
+    case ".white": return .white
+    case ".black": return .black
+    default: return .white
+    }
+}
+
+
 
 // MARK: - Layout Utilities
 public func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Double, left: Double, w: Double, h: Double) {
@@ -298,22 +332,25 @@ public func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Doubl
 public struct SwiftBridge {
     public static func onAction(_ id: String) {
         let json = "{\"\(id)\":{\"event\":\"click\"}}"
-        Harbour.call("SW_PIPELINE_SYNC", json)
+        Harbour.call("SW_UPDATE_HB", json)
     }
     
     public static func onChange(_ id: String, _ value: String) {
-        print("🏝️ [Swift-Out] ID: \(id), Value: [\(value)]")
-        // Segurísimo: el JSON nunca mide 0 bytes
         let json = "{\"\(id)\":{\"text\":\"\(value)\"}}"
-        Harbour.call("SW_PIPELINE_SYNC", json)
+        Harbour.call("SW_UPDATE_HB", json)
+    }
+    
+    public static func onValid(_ id: String, _ value: String) {
+        let json = "{\"\(id)\":{\"text\":\"\(value)\",\"event\":\"valid\"}}"
+        Harbour.call("SW_UPDATE_HB", json)
     }
 }
 
 // MARK: - Colors
 extension Color {
-    init(rgba: ColorRGBA) { self.init(red: Double(rgba.r)/255, green: Double(rgba.g)/255, blue: Double(rgba.b)/255, opacity: Double(rgba.a)/255) }
-    init(r: Int, g: Int, b: Int, a: Int) { self.init(red: Double(r)/255, green: Double(g)/255, blue: Double(b)/255, opacity: Double(a)/255) }
-    init(hex: String) {
+    public init(rgba: ColorRGBA) { self.init(red: Double(rgba.r)/255, green: Double(rgba.g)/255, blue: Double(rgba.b)/255, opacity: Double(rgba.a)/255) }
+    public init(r: Int, g: Int, b: Int, a: Int) { self.init(red: Double(r)/255, green: Double(g)/255, blue: Double(b)/255, opacity: Double(a)/255) }
+    public init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)

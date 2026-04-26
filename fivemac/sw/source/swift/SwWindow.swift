@@ -16,12 +16,11 @@ class SwWindowDelegate: NSObject, NSWindowDelegate {
         let json = "{\"_system\":{\"unregister\":[\(idsJson)]}}"
         
         DispatchQueue.global().async {
-            Harbour.call("SW_PIPELINE_SYNC", json)
+            Harbour.call("SW_UPDATE_HB", json)
         }
         
     }
 }
-
 
 @_cdecl("HB_FUN_SW_PROCESSEVENTS")
 public func sw_processevents_hb(_ p: UnsafeMutableRawPointer?) {
@@ -55,6 +54,10 @@ public func sw_createwindow_hb_internal(title: String, width: Double, height: Do
     let hostingView = NSHostingView(rootView: windowView)
     hostingView.frame = NSRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height))
     hostingView.autoresizingMask = [.width, .height]
+    
+    // Forzamos transparencia absoluta del contenedor
+    hostingView.layer?.backgroundColor = NSColor.clear.cgColor
+    
     window.contentView = hostingView
     
     // --- REGISTRO ---

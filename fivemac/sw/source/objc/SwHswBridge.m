@@ -4,12 +4,12 @@
 #import <hbthread.h>
 #import <hbvm.h>
 
-// Definimos los prototipos de las funciones Swift
+// Prototipo de la función de arranque en Swift
 extern void hsw_swift_start(void);
-extern void HSW_SEND_COMMAND(const char *json);
 
 static char * gcFuncName = NULL;
 
+/// Hilo secundario donde correrá la máquina virtual de Harbour
 static HB_THREAD_STARTFUNC( hsw_harbour_thread )
 {
    HB_SYMBOL_UNUSED( Cargo );
@@ -27,7 +27,10 @@ static HB_THREAD_STARTFUNC( hsw_harbour_thread )
    return NULL;
 }
 
-// Inicializa el motor Swift y mueve Harbour a un hilo secundario
+/// HB_FUNC( HSW_START_SWIFT )
+/// Punto de entrada inicial: 
+/// 1. Crea un hilo para Harbour
+/// 2. Arranca NSApplication en el hilo principal (bloqueante)
 HB_FUNC( HSW_START_SWIFT )
 {
    if( hb_param( 1, HB_IT_STRING ) != NULL )
@@ -38,20 +41,10 @@ HB_FUNC( HSW_START_SWIFT )
       gcFuncName = strdup( hb_parc( 1 ) );
       
       hb_threadCreate( &th_id, hsw_harbour_thread, NULL );
-      hsw_swift_start(); // Bloqueante, toma el control del Hilo 0
+      hsw_swift_start(); // Toma el control del Hilo 0 (UI)
    }
    else 
    {
        printf( "HSW Error: HSW_START_SWIFT requiere el nombre de la función de inicio.\n" );
-   }
-}
-
-// --- PUENTE: HSW_SEND_COMMAND( cJson ) ---
-// Llamado desde Harbour para enviar mensajes a la UI
-HB_FUNC( HSW_SEND_COMMAND )
-{
-   if( hb_param( 1, HB_IT_STRING ) != NULL )
-   {
-      HSW_SEND_COMMAND( hb_parc( 1 ) );
    }
 }

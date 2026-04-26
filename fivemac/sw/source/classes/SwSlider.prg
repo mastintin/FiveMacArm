@@ -5,23 +5,23 @@
  CLASS TSwSlider FROM TSwiftControl
  
      ACCESS Value      INLINE ::hState["value"]
-     ASSIGN Value( n ) INLINE ( ::hState["value"] := n, SD:Apply( ::cId, { "value" => n } ), ::OnAction() )
+     ASSIGN Value( n ) INLINE ( ::hState["value"] := n, ::Apply( { "value" => n } ), ::OnAction() )
  
      ACCESS Min        INLINE ::hState["min"]
-     ASSIGN Min( n )   INLINE ( ::hState["min"] := n, SD:Apply( ::cId, { "min" => n } ) )
+     ASSIGN Min( n )   INLINE ( ::hState["min"] := n, ::Apply( { "min" => n } ) )
  
      ACCESS Max        INLINE ::hState["max"]
-     ASSIGN Max( n )   INLINE ( ::hState["max"] := n, SD:Apply( ::cId, { "max" => n } ) )
+     ASSIGN Max( n )   INLINE ( ::hState["max"] := n, ::Apply( { "max" => n } ) )
  
      ACCESS bAction          INLINE hb_HGetDef( ::hState, "action", nil )
      ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
                                       ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bPipeline ),;
-                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
+                                      ::Apply( { "interactive" => ::hState["interactive"] } ) )
    
      ACCESS bPipeline        INLINE hb_HGetDef( ::hState, "pipeline", nil )
      ASSIGN bPipeline( u )   INLINE ( ::hState["pipeline"] := u,;
                                       ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
-                                      SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
+                                      ::Apply( { "interactive" => ::hState["interactive"] } ) )
  
      METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction, nAutoResize )
      METHOD SetValue( nVal, lSync )
@@ -57,7 +57,7 @@
  METHOD SetValue( nVal, lSync ) CLASS TSwSlider
      if hb_DefaultValue( lSync, .F. )
         ::hState["value"] := nVal
-        SDS:Apply( ::cId, { "value" => nVal } )
+        ::Apply( { "value" => nVal } ):Sync()
         ::OnAction()
      else
         ::Value := nVal

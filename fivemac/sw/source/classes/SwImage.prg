@@ -5,20 +5,20 @@
  CLASS TSwImage FROM TSwiftControl
   
       ACCESS cSymbol          INLINE ::hState["systemname"]
-      ASSIGN cSymbol( c )     INLINE ( ::hState["systemname"] := c, SD:Apply( ::cId, { "systemname" => c } ) )
+      ASSIGN cSymbol( c )     INLINE ( ::hState["systemname"] := c, ::Apply( { "systemname" => c } ) )
       
       ACCESS cFile            INLINE ::hState["file"]
-      ASSIGN cFile( c )       INLINE ( ::hState["file"] := c, ::Send():Apply( { "file" => c } ) )
-
+      ASSIGN cFile( c )       INLINE ( ::hState["file"] := c, ::Apply( { "file" => c } ) )
+ 
       ACCESS cUrl             INLINE ::hState["url"]
-      ASSIGN cUrl( c )        INLINE ( ::hState["url"] := c, ::Send():Apply( { "url" => c } ) )
-
+      ASSIGN cUrl( c )        INLINE ( ::hState["url"] := c, ::Apply( { "url" => c } ) )
+ 
       ACCESS nMode            INLINE ::hState["mode"]
-      ASSIGN nMode( n )       INLINE ( ::hState["mode"] := n, ::Send():Apply( { "mode" => n } ) )
-
+      ASSIGN nMode( n )       INLINE ( ::hState["mode"] := n, ::Apply( { "mode" => n } ) )
+ 
       ACCESS nColor           INLINE hb_HGetDef( ::hState, "color", CLR_BLACK )
-      ASSIGN nColor( n )      INLINE ( ::hState["color"] := n, SD:Apply( ::cId, { "color" => n } ) )
-
+      ASSIGN nColor( n )      INLINE ( ::hState["color"] := n, ::Apply( { "color" => n } ) )
+ 
       METHOD New( nTop, nLeft, nWidth, nHeight, cSymbol, oWnd, cFile, cUrl, cId, nAutoResize )
       METHOD SetSymbol( cName ) INLINE ::cSymbol := cName
       METHOD SetFile( cFile )   INLINE ::cFile := cFile
@@ -53,5 +53,5 @@
      ::Create()
   
   return Self
-  
+ 
  //----------------------------------------------------------------------------//
