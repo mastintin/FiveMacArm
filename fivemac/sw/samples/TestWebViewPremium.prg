@@ -16,8 +16,8 @@ function mainApp()
 
    DEFINE WINDOW oWnd TITLE "SwiftFive - Premium WebView & JS Bridge" SIZE 800, 600
 
-   // WebView con auto-redimensionado completo
-   @ 10, 10 WEBVIEW oWebView OF oWnd SIZE 780, 500 ;
+   // WebView: Redimensionado flexible pero con más margen (450 de alto en ventana de 600)
+   @ 10, 10 WEBVIEW oWebView OF oWnd SIZE 780, 450 ;
             AUTORESIZE SW_RESIZE_WIDTH + SW_RESIZE_HEIGHT
    
    oWebView:bAction := { | cMsg | MsgInfo( "Mensaje desde JS: " + cMsg, "Harbour Bridge" ) }
@@ -25,7 +25,8 @@ function mainApp()
    // Carga inicial
    oWebView:LoadHtml( cHtml )
 
-   // Botones anclados a la parte inferior (AnclaBottom)
+   // Botones: Anclados a la parte inferior para que bajen con la ventana
+   // pero mantengan su posición relativa respecto al borde inferior
    @ 520, 20 BUTTON "Ir a Google" OF oWnd SIZE 120, 30 ;
              ACTION oWebView:Load( "https://www.google.com" ) ;
              AUTORESIZE AnclaBottom
