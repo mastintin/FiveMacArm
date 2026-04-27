@@ -39,6 +39,10 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderToggle())
             case .progress:
                 AnyView(renderProgress())
+            case .spacer:
+                AnyView(Spacer())
+            case .divider:
+                AnyView(Divider())
             default:
                 AnyView(EmptyView())
             }
@@ -208,24 +212,44 @@ public struct SwWindowView: View {
         let initialW = CGFloat(item.itemWidth ?? 100)
         let initialH = CGFloat(item.itemHeight ?? 30)
         
-        if let initialParent = item.initialParentSize, item.resizemask != 0 {
-            let diffW = currentSize.width - initialParent.width
-            let diffH = currentSize.height - initialParent.height
-            
-            var finalX = initialX
-            var finalY = initialY
-            var finalW = initialW
-            var finalH = initialH
-            
-            let mask = item.resizemask
-            if (mask & 2) != 0 { finalW += diffW } 
-            else if (mask & 1) != 0 { finalX += diffW }
-            
-            if (mask & 16) != 0 { finalH += diffH } 
-            else if (mask & 32) != 0 { finalY += diffH }
-            
-            return (finalX, finalY, finalW, finalH)
+        let mask = item.resizemask
+        
+        // Si no hay máscara, devolvemos la posición absoluta original
+        if mask == 0 {
+            return (initialX, initialY, initialW, initialH)
         }
-        return (initialX, initialY, initialW, initialH)
+        
+        // Usamos un tamaño de padre por defecto si no ha llegado bien desde Harbour (fallback a 800x600)
+        let parentW = (item.initialParentSize?.width ?? 0) > 10 ? item.initialParentSize!.width : 800
+        let parentH = (item.initialParentSize?.height ?? 0) > 10 ? item.initialParentSize!.height : 600
+        
+        let diffW = currentSize.width - parentW
+        let diffH = currentSize.height - parentH
+        
+        var finalX = initialX
+        var finalY = initialY
+        var finalW = initialW
+        var finalH = initialH
+        
+        // Lógica de Redimensionado Cocoa (Autoresizing)
+        // 1: NSViewMinXMargin (Left flexible) -> X se mueve con diffW
+        // 2: NSViewWidthSizable -> Ancho crece con diffW
+        
+        if (mask & 2) != 0 {
+            finalW += diffW
+        } else if (mask & 1) != 0 {
+            finalX += diffW
+        }
+        
+        // 16: NSViewHeightSizable -> Alto crece con diffH
+        // 32: NSViewMaxYMargin (Bottom flexible) -> Mover hacia abajo
+        
+        if (mask & 16) != 0 {
+            finalH += diffH
+        } else if (mask & 32) != 0 {
+            finalY += diffH
+        }
+        
+        return (finalX, finalY, finalW, finalH)
     }
 }
