@@ -82,6 +82,16 @@
           ::hState[ "parentid" ] := ::oWnd:cId 
        endif
     endif
+
+    if !Empty( hb_HGetDef( ::hState, "parentid", "" ) )
+       if !Empty( ::oParent )
+          ::hState[ "parentwidth" ]  := ::oParent:nWidth
+          ::hState[ "parentheight" ] := ::oParent:nHeight
+       elseif !Empty( ::oWnd )
+          ::hState[ "parentwidth" ]  := ::oWnd:nWidth
+          ::hState[ "parentheight" ] := ::oWnd:nHeight
+       endif
+    endif
     
     SD:Create( ::hState )
   

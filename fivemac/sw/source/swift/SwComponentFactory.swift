@@ -55,9 +55,9 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
         case 100: // Window
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             sw_createwindow_hb_internal(title: initial.title ?? "", 
-                                        width: initial.width ?? 500, 
-                                        height: initial.height ?? 400, 
-                                        id: cleanid)
+                                         width: initial.width ?? 500, 
+                                         height: initial.height ?? 400, 
+                                         id: cleanid)
 
         case 14: // Get
             newItem = try SwiftGetView.create(id: cleanid, from: jsonData)
@@ -125,8 +125,12 @@ func setupGeometry(item: StackItem, from config: GeometryProtocol) {
     item.y = config.top ?? 0
     item.resizemask = config.resizemask ?? 0
     
-    if let w = config.width, let h = config.height {
-        item.initialParentSize = CGSize(width: w, height: h)
+    // El initialParentSize debe venir del padre real enviado desde Harbour
+    if let pw = config.parentwidth, let ph = config.parentheight {
+        item.initialParentSize = CGSize(width: pw, height: ph)
+    } else {
+        // Fallback: Si no hay padre, usamos un tamaño razonable para evitar saltos
+        item.initialParentSize = CGSize(width: config.width ?? 800, height: config.height ?? 600)
     }
 }
 
@@ -136,6 +140,8 @@ public protocol GeometryProtocol {
     var top: Double? { get }
     var left: Double? { get }
     var resizemask: Int? { get }
+    var parentwidth: Double? { get }
+    var parentheight: Double? { get }
 }
 
 public struct GenericInit: Codable, GeometryProtocol {
@@ -146,6 +152,8 @@ public struct GenericInit: Codable, GeometryProtocol {
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
+    public let parentwidth: Double?
+    public let parentheight: Double?
 }
 
 public struct ImageInit: Codable, GeometryProtocol {
@@ -157,12 +165,6 @@ public struct ImageInit: Codable, GeometryProtocol {
     public let top: Double?
     public let left: Double?
     public let resizemask: Int?
+    public let parentwidth: Double?
+    public let parentheight: Double?
 }
-
-// MARK: - Conformance Extensions (Para tipos externos definidos en otros archivos)
-
-
-
-
-
-

@@ -330,6 +330,7 @@ public struct GetInit: Codable, GeometryProtocol {
     public let text, picture, placeholder, prompt: String?, issecure: Bool?
     public let width, height, top, left: Double?
     public let resizemask: Int?
+    public let parentwidth, parentheight: Double?
 }
 
 

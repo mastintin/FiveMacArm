@@ -220,6 +220,7 @@ public struct SwWindowView: View {
             let mask = item.resizemask
             if (mask & 2) != 0 { finalW += diffW } 
             else if (mask & 1) != 0 { finalX += diffW }
+            
             if (mask & 16) != 0 { finalH += diffH } 
             else if (mask & 32) != 0 { finalY += diffH }
             

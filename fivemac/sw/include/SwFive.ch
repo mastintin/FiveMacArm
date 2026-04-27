@@ -98,8 +98,9 @@
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ ACTION <uAction> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
-   [ <oBtn> := ] TSwButton():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cPrompt>, <oWnd>, [<{uAction}>] )
+   [ <oBtn> := ] TSwButton():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cPrompt>, <oWnd>, [<{uAction}>], [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> SLIDER [ <oSld> ] [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
             [ <of: OF, WINDOW, DIALOG> <oWnd> ] [ SIZE <nWidth>, <nHeight> ] ;
@@ -168,6 +169,14 @@
    => ;
    [ <oProg> := ] SwProgress():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nValue>], [<nMin>], [<nMax>], ;
                                    [<cPrompt>], [<cSubtitle>], [<cIcon>], [<cColor>], <.indet.>, [<nStyle>], <.showval.> )
+
+#xcommand @ <nRow>, <nCol> WEBVIEW [ <oWv> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ URL <cUrl> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oWv> := ] TSwWebView():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cUrl>], <oWnd>, , [<nRes>] )
 
 #endif
  

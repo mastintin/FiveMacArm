@@ -151,4 +151,5 @@ public struct ProgressInit: Codable, GeometryProtocol {
     public let style: Int?
     public let width, height, top, left: Double?
     public let resizemask: Int?
+    public let parentwidth, parentheight: Double?
 }

@@ -202,4 +202,5 @@ public struct ButtonInit: Codable, GeometryProtocol {
     public let caption: String?, title: String?
     public let width, height, top, left: Double?
     public let resizemask: Int?
+    public let parentwidth, parentheight: Double?
 }
