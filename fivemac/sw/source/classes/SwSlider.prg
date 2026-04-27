@@ -12,6 +12,21 @@
  
      ACCESS Max        INLINE ::hState["max"]
      ASSIGN Max( n )   INLINE ( ::hState["max"] := n, ::Apply( { "max" => n } ) )
+
+     ACCESS Prompt        INLINE hb_HGetDef( ::hState, "prompt", "" )
+     ASSIGN Prompt( c )   INLINE ( ::hState["prompt"] := c, ::Apply( { "prompt" => c } ) )
+
+     ACCESS IconMin       INLINE hb_HGetDef( ::hState, "iconmin", "" )
+     ASSIGN IconMin( c )  INLINE ( ::hState["iconmin"] := c, ::Apply( { "iconmin" => c } ) )
+
+     ACCESS IconMax       INLINE hb_HGetDef( ::hState, "iconmax", "" )
+     ASSIGN IconMax( c )  INLINE ( ::hState["iconmax"] := c, ::Apply( { "iconmax" => c } ) )
+
+     ACCESS TintColor     INLINE hb_HGetDef( ::hState, "tintcolor", "" )
+     ASSIGN TintColor( c ) INLINE ( ::hState["tintcolor"] := c, ::Apply( { "tintcolor" => c } ) )
+
+     ACCESS Step          INLINE hb_HGetDef( ::hState, "step", 0 )
+     ASSIGN Step( n )     INLINE ( ::hState["step"] := n, ::Apply( { "step" => n } ) )
  
      ACCESS bAction          INLINE hb_HGetDef( ::hState, "action", nil )
      ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
@@ -23,27 +38,40 @@
                                       ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
                                       ::Apply( { "interactive" => ::hState["interactive"] } ) )
  
-     METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction, nAutoResize )
+     METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction,;
+                 cPrompt, cIconMin, cIconMax, cColor, nStep, lDisabled, nAutoResize )
      METHOD SetValue( nVal, lSync )
      METHOD Update( hNewState )
      METHOD OnAction()
+     METHOD SetEnabled( lEnabled ) INLINE If( lEnabled, ::Enable(), ::Disable() )
+     METHOD IsEnabled()            INLINE ::Super:isEnabled
+     METHOD SetVisible( lVisible ) INLINE If( lVisible, ::Show(), ::Hide() )
+     METHOD IsVisible()            INLINE ::Super:isVisible
  
  ENDCLASS
  
  //----------------------------------------------------------------------------//
  
- METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction, nAutoResize ) CLASS TSwSlider
+ METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction,;
+             cPrompt, cIconMin, cIconMax, cColor, nStep, lDisabled, nAutoResize ) CLASS TSwSlider
     
     DEFAULT nWidth := 200, nHeight := 30
     
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
     
-    ::hState["value"]       := nValue
-    ::hState["min"]         := nMin
-    ::hState["max"]         := nMax
+    ::hState["value"]       := hb_defaultValue( nValue, 0 )
+    ::hState["min"]         := hb_defaultValue( nMin, 0 )
+    ::hState["max"]         := hb_defaultValue( nMax, 100 )
     ::hState["showvalue"]   := .T.
     ::hState["type"]        := 11
     ::hState["interactive"] := .F.
+    
+    ::hState["prompt"]      := hb_defaultValue( cPrompt, "" )
+    ::hState["iconmin"]     := hb_defaultValue( cIconMin, "" )
+    ::hState["iconmax"]     := hb_defaultValue( cIconMax, "" )
+    ::hState["tintcolor"]   := hb_defaultValue( cColor, "" )
+    ::hState["step"]        := hb_defaultValue( nStep, 0 )
+    ::hState["enabled"]     := ! hb_defaultValue( lDisabled, .F. )
  
     ::bAction     := bAction
     ::oWnd        := oWnd

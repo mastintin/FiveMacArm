@@ -101,14 +101,14 @@
    => ;
    [ <oBtn> := ] TSwButton():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cPrompt>, <oWnd>, [<{uAction}>] )
 
-#xcommand @ <nRow>, <nCol> SLIDER [ <oSld> ] ;
-   [ <v: VAR, VALUE> <nValue> ] ;
-   [ RANGE <nMin>, <nMax> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
-   [ SIZE <nWidth>, <nHeight> ] ;
-   [ ACTION <uAction> ] ;
-   => ;
-   [ <oSld> := ] TSwSlider():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<nValue>], [<nMin>], [<nMax>], <oWnd>, , [<{uAction}>] )
+#xcommand @ <nRow>, <nCol> SLIDER [ <oSld> ] [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
+            [ <of: OF, WINDOW, DIALOG> <oWnd> ] [ SIZE <nWidth>, <nHeight> ] ;
+            [ PROMPT <cPrompt> ] [ ICONMIN <cIconMin> ] [ ICONMAX <cIconMax> ] ;
+            [ COLOR <cColor> ] [ STEP <nStep> ] [ <disabled: DISABLED> ] ;
+            [ ACTION <uAction> ] ;
+      => ;
+      [ <oSld> := ] TSwSlider():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<nValue>], [<nMin>], [<nMax>], <oWnd>, , [<{uAction}>], ;
+                                     [<cPrompt>], [<cIconMin>], [<cIconMax>], [<cColor>], [<nStep>], <.disabled.> )
 
 #xcommand @ <nRow>, <nCol> TOGGLE [ <oTgl> ] ;
    [ <v: VAR, VALUE> <lValue> ] ;
@@ -151,12 +151,23 @@
    [ <oGet> := ] SwGet():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>],;
    <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], [<uValid>], <.password.>, [<cPlaceholder>], [<cPrompt>] )
 
+//----------------------------------------------------------------------------//
+// PROGRESS STYLES
+//----------------------------------------------------------------------------//
+#define SW_PROGRESS_LINEAR    0
+#define SW_PROGRESS_CIRCULAR  1
+
 #xcommand @ <nRow>, <nCol> PROGRESS [ <oProg> ] ;
+   [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
-   [ VALUE <nValue> ] ;
+   [ PROMPT <cPrompt> ] [ SUBTITLE <cSubtitle> ] ;
+   [ ICON <cIcon> ] [ COLOR <cColor> ] ;
+   [ <indet: INDETERMINATE> ] [ STYLE <nStyle> ] ;
+   [ <showval: SHOWVALUE> ] ;
    => ;
-   [ <oProg> := ] SwProgress():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nValue>] )
+   [ <oProg> := ] SwProgress():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nValue>], [<nMin>], [<nMax>], ;
+                                   [<cPrompt>], [<cSubtitle>], [<cIcon>], [<cColor>], <.indet.>, [<nStyle>], <.showval.> )
 
 #endif
  
