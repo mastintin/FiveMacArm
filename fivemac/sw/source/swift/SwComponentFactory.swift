@@ -156,15 +156,3 @@ public struct GenericInit: Codable, GeometryProtocol {
     public let parentheight: Double?
 }
 
-public struct ImageInit: Codable, GeometryProtocol {
-    public let systemname: String?
-    public let file: String?
-    public let url: String?
-    public let width: Double?
-    public let height: Double?
-    public let top: Double?
-    public let left: Double?
-    public let resizemask: Int?
-    public let parentwidth: Double?
-    public let parentheight: Double?
-}

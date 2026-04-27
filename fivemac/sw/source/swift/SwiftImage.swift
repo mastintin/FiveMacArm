@@ -1,35 +1,158 @@
 import SwiftUI
 import Observation
+import CoreImage.CIFilterBuiltins
 
-// MARK: - Image View
+// MARK: - Image View (Premium with Universal Drop)
 public struct SwiftImageView: View {
     @Bindable var state: ImageState
+    @State private var isTargeted: Bool = false
     
     public var body: some View {
+        imageContent
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(frameBackground)
+            .overlay(frameOverlay)
+            .if(state.cornerRadius > 0) { $0.cornerRadius(state.cornerRadius) }
+            .if(state.shadowRadius > 0) { $0.shadow(color: state.shadowColor, radius: state.shadowRadius) }
+            .onTapGesture {
+                SwiftBridge.onAction(state.id)
+            }
+            // Aplicamos el manejador universal
+            .swDropHandler(id: state.id, isTargeted: $isTargeted)
+            .overlay(
+                 RoundedRectangle(cornerRadius: state.cornerRadius)
+                    .stroke(Color.blue.opacity(0.6), lineWidth: isTargeted ? 4 : 0)
+            )
+            .animation(.spring(), value: isTargeted)
+    }
+    
+    @ViewBuilder
+    private var imageContent: some View {
         Group {
-            if !state.systemName.isEmpty {
+            if !state.qrText.isEmpty {
+                Image(nsImage: generateQRCode(from: state.qrText, scale: state.qrScale))
+                    .interpolation(.none)
+                    .resizable()
+            } else if !state.systemName.isEmpty {
                 Image(systemName: state.systemName)
                     .resizable()
             } else if !state.filePath.isEmpty {
-                if let nsImage = NSImage(contentsOfFile: state.filePath) {
+                if let nsImage = loadSafeImage(from: state.filePath) {
                     Image(nsImage: nsImage)
                         .resizable()
                 } else {
-                    Image(systemName: "photo")
-                        .resizable()
+                    placeholderView
                 }
             } else if !state.urlStr.isEmpty, let url = URL(string: state.urlStr) {
-                AsyncImage(url: url) { image in
-                    image.resizable()
-                } placeholder: {
-                    ProgressView()
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image): image.resizable()
+                    case .failure: placeholderView
+                    case .empty: ProgressView().controlSize(.small)
+                    @unknown default: placeholderView
+                    }
                 }
             } else {
-                Image(systemName: "photo")
-                    .resizable()
+                placeholderView
             }
         }
-        .aspectRatio(contentMode: state.contentMode == 0 ? .fit : .fill)
-        .foregroundColor(state.foregroundColor)
+        .aspectRatio(contentMode: contentMode)
     }
+
+    private var contentMode: ContentMode {
+        switch state.scaling {
+        case 1, 3: return .fill
+        default: return .fit
+        }
+    }
+    
+    @ViewBuilder
+    private var frameBackground: some View {
+        switch state.frameStyle {
+        case 1: Color.white.padding(-5)
+        case 2: Color.gray.opacity(0.1)
+        default: Color.black.opacity(0.001)
+        }
+    }
+    
+    @ViewBuilder
+    private var frameOverlay: some View {
+        Group {
+            switch state.frameStyle {
+            case 1: Rectangle().stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+            case 2: Rectangle().stroke(Color.gray.opacity(0.5), lineWidth: 1)
+            case 3: Rectangle().stroke(Color.gray.opacity(0.5), lineWidth: 2)
+                        .padding(1).border(Color.white.opacity(0.5), width: 1)
+            case 4: RoundedRectangle(cornerRadius: 4).stroke(Color.blue.opacity(0.3), lineWidth: 2)
+            default:
+                if !state.borderColor.isClear {
+                    RoundedRectangle(cornerRadius: state.cornerRadius).stroke(state.borderColor, lineWidth: state.borderWidth)
+                }
+            }
+        }
+    }
+    
+    private var placeholderView: some View {
+        Image(systemName: "photo")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: 40, height: 40)
+            .opacity(0.2)
+    }
+
+    private func loadSafeImage(from path: String) -> NSImage? {
+        let cleanPath = path.replacingOccurrences(of: "file://", with: "")
+        if FileManager.default.fileExists(atPath: cleanPath) {
+            return NSImage(contentsOfFile: cleanPath)
+        }
+        return nil
+    }
+    
+    private func generateQRCode(from string: String, scale: Double) -> NSImage {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        if let outputImage = filter.outputImage {
+            let transformedImage = outputImage.transformed(by: CGAffineTransform(scaleX: CGFloat(scale), y: CGFloat(scale)))
+            if let cgimg = context.createCGImage(transformedImage, from: transformedImage.extent) {
+                return NSImage(cgImage: cgimg, size: NSSize(width: transformedImage.extent.width, height: transformedImage.extent.height))
+            }
+        }
+        return NSImage(size: NSSize(width: 10, height: 10))
+    }
+}
+
+// MARK: - Factory & Protocols (Igual)
+extension SwiftImageView {
+    @MainActor
+    public static func create(id: String, from jsonData: Data) throws -> StackItem {
+        let decoder = JSONDecoder()
+        let initial = try decoder.decode(ImageInit.self, from: jsonData)
+        let state = ImageState(id: id, systemName: initial.systemname ?? "", filePath: initial.file ?? "", url: initial.url ?? "")
+        state.contentMode = initial.mode ?? 0
+        state.scaling = initial.scaling ?? 0
+        state.frameStyle = initial.frame ?? 0
+        state.qrText = initial.qr ?? ""
+        state.qrScale = initial.qrscale ?? 10.0
+        if let colorHex = initial.color { state.foregroundColor = Color(hex: colorHex) }
+        state.cornerRadius = initial.corner ?? 0
+        state.shadowRadius = initial.shadow ?? 0
+        if let shColor = initial.shadowcolor { state.shadowColor = Color(hex: shColor) }
+        state.borderWidth = initial.borderwidth ?? 0
+        if let bColor = initial.bordercolor { state.borderColor = Color(hex: bColor) }
+        ViewRegistry.register(state, for: id)
+        let item = StackItem(type: .image, id: id)
+        setupGeometry(item: item, from: initial)
+        return item
+    }
+}
+
+public struct ImageInit: Codable, GeometryProtocol {
+    public let systemname, file, url, color, qr: String?
+    public let mode, scaling, frame: Int?
+    public let qrscale, corner, shadow, borderwidth: Double?
+    public let shadowcolor, bordercolor: String?
+    public let width, height, top, left: Double?
+    public let resizemask: Int?
+    public let parentwidth, parentheight: Double?
 }

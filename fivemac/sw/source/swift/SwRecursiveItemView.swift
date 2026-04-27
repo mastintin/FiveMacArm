@@ -178,6 +178,8 @@ public struct SwWindowView: View {
             }
             
             GeometryReader { proxy in
+                // Usamos un ZStack con alineación topLeading para posicionar con offsets
+                // Esto es más seguro para gestos que .position()
                 ZStack(alignment: .topLeading) {
                     ForEach(state.items) { item in
                         let geometry = calculateGeometry(for: item, in: proxy.size)
@@ -187,10 +189,7 @@ public struct SwWindowView: View {
                             width: geometry.width,
                             height: geometry.height
                         )
-                        .position(
-                            x: geometry.x + geometry.width / 2,
-                            y: geometry.y + geometry.height / 2
-                        )
+                        .offset(x: geometry.x, y: geometry.y)
                     }
                 }
             }
@@ -198,7 +197,7 @@ public struct SwWindowView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .disabled(!state.isInteractive)
         .onAppear {
-            print("🏝️ [Swift-Window] onAppear detectado para \(id). Programando evento 'init'...")
+            print("🏝️ [Swift-Window] onAppear detectado para \(id).")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 let json = "{\"\(id)\":{\"event\":\"init\"}}"
                 Harbour.call("SW_UPDATE_HB", json)
@@ -211,45 +210,18 @@ public struct SwWindowView: View {
         let initialY = CGFloat(item.y ?? 0)
         let initialW = CGFloat(item.itemWidth ?? 100)
         let initialH = CGFloat(item.itemHeight ?? 30)
-        
         let mask = item.resizemask
-        
-        // Si no hay máscara, devolvemos la posición absoluta original
-        if mask == 0 {
-            return (initialX, initialY, initialW, initialH)
-        }
-        
-        // Usamos un tamaño de padre por defecto si no ha llegado bien desde Harbour (fallback a 800x600)
+        if mask == 0 { return (initialX, initialY, initialW, initialH) }
         let parentW = (item.initialParentSize?.width ?? 0) > 10 ? item.initialParentSize!.width : 800
         let parentH = (item.initialParentSize?.height ?? 0) > 10 ? item.initialParentSize!.height : 600
-        
         let diffW = currentSize.width - parentW
         let diffH = currentSize.height - parentH
-        
         var finalX = initialX
         var finalY = initialY
         var finalW = initialW
         var finalH = initialH
-        
-        // Lógica de Redimensionado Cocoa (Autoresizing)
-        // 1: NSViewMinXMargin (Left flexible) -> X se mueve con diffW
-        // 2: NSViewWidthSizable -> Ancho crece con diffW
-        
-        if (mask & 2) != 0 {
-            finalW += diffW
-        } else if (mask & 1) != 0 {
-            finalX += diffW
-        }
-        
-        // 16: NSViewHeightSizable -> Alto crece con diffH
-        // 32: NSViewMaxYMargin (Bottom flexible) -> Mover hacia abajo
-        
-        if (mask & 16) != 0 {
-            finalH += diffH
-        } else if (mask & 32) != 0 {
-            finalY += diffH
-        }
-        
+        if (mask & 2) != 0 { finalW += diffW } else if (mask & 1) != 0 { finalX += diffW }
+        if (mask & 16) != 0 { finalH += diffH } else if (mask & 32) != 0 { finalY += diffH }
         return (finalX, finalY, finalW, finalH)
     }
 }

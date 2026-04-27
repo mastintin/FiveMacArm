@@ -22,6 +22,7 @@ function mainApp()
    @ 0, 0 WEBVIEW oWebView OF oWnd SIZE 800, 400 ;
       AUTORESIZE SW_RESIZE_WIDTH + SW_RESIZE_HEIGHT
    
+
    oWebView:bAction := { | cMsg | MsgInfo( "Mensaje desde JS: " + cMsg, "Harbour Bridge" ) }
 
    // Carga inicial

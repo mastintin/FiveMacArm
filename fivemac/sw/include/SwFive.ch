@@ -88,11 +88,15 @@
    [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cText>, <oWnd> )
 
 
-#xcommand @ <nRow>, <nCol> IMAGE [ <oImg> <p: PROMPT, SYMBOL> ] <cSymbol> ;
+#xcommand @ <nRow>, <nCol> IMAGE [ <oImg> ] ;
+   [ <p: PROMPT, SYMBOL> <cSymbol> ] ;
+   [ FILE <cFile> ] ;
+   [ URL <cUrl> ] ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
-   [ <oImg> := ] TSwImage():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cSymbol>, <oWnd> )
+   [ <oImg> := ] TSwImage():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cSymbol>], <oWnd>, [<cFile>], [<cUrl>], , [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> BUTTON [ <oBtn> PROMPT ] <cPrompt> ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;

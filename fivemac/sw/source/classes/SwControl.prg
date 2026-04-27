@@ -120,8 +120,12 @@
           
        for each cProp in hb_HKeys( hNewState )
           uVal := hNewState[ cProp ]
-          if Lower( cProp ) == "event" .and. ( uVal == "click" .or. uVal == "select" )
-             ::OnAction()
+          if Lower( cProp ) == "event"
+             if uVal == "click" .or. uVal == "select"
+                ::OnAction()
+             elseif uVal == "drop"
+                ::OnDrop( hb_HGetDef( hNewState, "files", {} ) )
+             endif
           else
              ::hState[ cProp ] := uVal
           endif
@@ -161,3 +165,6 @@
  METHOD OnError( ... ) CLASS TSwiftControl
  return HB_ExecFromArray( ::Send(), __GetMessage(), hb_AParams() )
  
+
+METHOD OnDrop( cFile ) CLASS TSwiftControl
+return nil
