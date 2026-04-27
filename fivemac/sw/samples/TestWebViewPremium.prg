@@ -19,8 +19,8 @@ function mainApp()
 
    // WebView: Alto de la ventana (600) - 30px = 570. Pero le daremos un poco más de margen
    // para que los botones quepan abajo. Ajustamos a 530 para dejar 70px abajo.
-   @ 0, 0 WEBVIEW oWebView OF oWnd SIZE 800, 530 ;
-            AUTORESIZE SW_RESIZE_WIDTH + SW_RESIZE_HEIGHT
+   @ 0, 0 WEBVIEW oWebView OF oWnd SIZE 800, 400 ;
+      AUTORESIZE SW_RESIZE_WIDTH + SW_RESIZE_HEIGHT
    
    oWebView:bAction := { | cMsg | MsgInfo( "Mensaje desde JS: " + cMsg, "Harbour Bridge" ) }
 
@@ -29,21 +29,21 @@ function mainApp()
 
    // Botones situados en la franja inferior (entre 540 y 600)
    @ 550, 20 BUTTON "Ir a Google" OF oWnd SIZE 120, 30 ;
-             ACTION oWebView:Load( "https://www.google.com" ) ;
-             AUTORESIZE AnclaBottom
+      ACTION oWebView:Load( "https://www.google.com" ) ;
+      AUTORESIZE AnclaBottom
 
    @ 550, 150 BUTTON "Inyectar JS" OF oWnd SIZE 120, 30 ;
-              ACTION oWebView:Eval( "document.body.style.backgroundColor = 'lightblue'; alert('JS Inyectado desde Harbour');" ) ;
-              AUTORESIZE AnclaBottom
+      ACTION oWebView:Eval( "document.body.style.backgroundColor = 'lightblue'; alert('JS Inyectado desde Harbour');" ) ;
+      AUTORESIZE AnclaBottom
 
    @ 550, 280 BUTTON oBtnPdf PROMPT "Exportar a PDF" OF oWnd SIZE 120, 30 ;
-              ACTION ( oBtnPdf:Disable(), oWebView:SaveToPDF( hb_GetEnv( "HOME" ) + "/Desktop/FiveMac_Export.pdf" ), ;
-                       MsgInfo( "Exportación iniciada al Escritorio..." ) ) ;
-              AUTORESIZE AnclaBottom
+      ACTION ( oBtnPdf:Disable(), oWebView:SaveToPDF( hb_GetEnv( "HOME" ) + "/Desktop/FiveMac_Export.pdf" ), ;
+      MsgInfo( "Exportación iniciada al Escritorio..." ) ) ;
+      AUTORESIZE AnclaBottom
 
    @ 550, 410 BUTTON "Reload" OF oWnd SIZE 100, 30 ;
-              ACTION oWebView:Reload() ;
-              AUTORESIZE AnclaBottom
+      ACTION oWebView:Reload() ;
+      AUTORESIZE AnclaBottom
 
    ACTIVATE WINDOW oWnd CENTER
 
