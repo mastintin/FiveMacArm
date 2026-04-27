@@ -16,25 +16,32 @@ function mainApp()
 
    DEFINE WINDOW oWnd TITLE "SwiftFive - Premium WebView & JS Bridge" SIZE 800, 600
 
-   @ 10, 10 WEBVIEW oWebView OF oWnd SIZE 780, 500
+   // WebView con auto-redimensionado completo
+   @ 10, 10 WEBVIEW oWebView OF oWnd SIZE 780, 500 ;
+            AUTORESIZE SW_RESIZE_WIDTH + SW_RESIZE_HEIGHT
    
    oWebView:bAction := { | cMsg | MsgInfo( "Mensaje desde JS: " + cMsg, "Harbour Bridge" ) }
 
    // Carga inicial
    oWebView:LoadHtml( cHtml )
 
+   // Botones anclados a la parte inferior (AnclaBottom)
    @ 520, 20 BUTTON "Ir a Google" OF oWnd SIZE 120, 30 ;
-             ACTION oWebView:Load( "https://www.google.com" )
+             ACTION oWebView:Load( "https://www.google.com" ) ;
+             AUTORESIZE AnclaBottom
 
    @ 520, 150 BUTTON "Inyectar JS" OF oWnd SIZE 120, 30 ;
-              ACTION oWebView:Eval( "document.body.style.backgroundColor = 'lightblue'; alert('JS Inyectado desde Harbour');" )
+              ACTION oWebView:Eval( "document.body.style.backgroundColor = 'lightblue'; alert('JS Inyectado desde Harbour');" ) ;
+              AUTORESIZE AnclaBottom
 
    @ 520, 280 BUTTON oBtnPdf PROMPT "Exportar a PDF" OF oWnd SIZE 120, 30 ;
               ACTION ( oBtnPdf:Disable(), oWebView:SaveToPDF( hb_GetEnv( "HOME" ) + "/Desktop/FiveMac_Export.pdf" ), ;
-                       MsgInfo( "Exportación iniciada al Escritorio..." ) )
+                       MsgInfo( "Exportación iniciada al Escritorio..." ) ) ;
+              AUTORESIZE AnclaBottom
 
    @ 520, 410 BUTTON "Reload" OF oWnd SIZE 100, 30 ;
-              ACTION oWebView:Reload()
+              ACTION oWebView:Reload() ;
+              AUTORESIZE AnclaBottom
 
    ACTIVATE WINDOW oWnd CENTER
 
