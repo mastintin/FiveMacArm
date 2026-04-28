@@ -57,6 +57,38 @@ internal struct UniversalCommands {
                 return nil
             }
         }
+        
+        sd.register("get") { params in
+            let id = ((params["id"] as? String) ?? (params["p1"] as? String) ?? "").lowercased()
+            let prop = ((params["property"] as? String) ?? (params["p2"] as? String) ?? "").lowercased()
+            
+            return await MainActor.run { () -> [String: Any]? in
+                guard let state = ViewRegistry.getState(for: id) else { return ["result": ""] }
+                
+                // Usamos reflexión para obtener el valor de la propiedad
+                let mirror = Mirror(reflecting: state)
+                for child in mirror.children {
+                    if let label = child.label, label.lowercased() == prop {
+                        // Formateo especial para fechas
+                        if let date = child.value as? Date {
+                            let formatter = ISO8601DateFormatter()
+                            formatter.formatOptions = [.withFullDate, .withDashSeparatorInDate, .withTime, .withColonSeparatorInTime]
+                            return ["result": formatter.string(from: date)]
+                        }
+                        return ["result": child.value]
+                    }
+                }
+                
+                // Si no está en el primer nivel del Mirror, probamos acceso manual para propiedades comunes
+                if prop == "date", let ds = state as? DatePickerState {
+                     let formatter = ISO8601DateFormatter()
+                     formatter.formatOptions = [.withFullDate, .withDashSeparatorInDate]
+                     return ["result": formatter.string(from: ds.date)]
+                }
+                
+                return ["result": ""]
+            }
+        }
     }
     
     /// Resuelve comodines (ctx:) en los parámetros

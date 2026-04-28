@@ -37,6 +37,19 @@ public class SwUtils {
         if hex.isEmpty { return nil }
         return Color(hex: hex)
     }
+    
+    /// Parsea fechas de Harbour (YYYYMMDD o YYYY-MM-DD)
+    public static func parseHarbourDate(_ s: String) -> Date? {
+        if s.count == 8 { // YYYYMMDD
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyyMMdd"
+            return formatter.date(from: s)
+        } else { // Probar ISO (YYYY-MM-DD)
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withFullDate, .withDashSeparatorInDate]
+            return formatter.date(from: s)
+        }
+    }
 }
 
 // MARK: - View Extensions
@@ -68,8 +81,8 @@ struct UniversalDropDelegate: DropDelegate {
         for provider in providers {
             // 1. Intentamos cargar como URL (archivos y links)
             if provider.canLoadObject(ofClass: URL.self) {
-                provider.loadObject(ofClass: URL.self) { (url, _) in
-                    if let u = url as? URL {
+                _ = provider.loadObject(ofClass: URL.self) { (url, _) in
+                    if let u = url {
                         self.processAndSend(url: u)
                     }
                 }

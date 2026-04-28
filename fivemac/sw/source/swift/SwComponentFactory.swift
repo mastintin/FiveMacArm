@@ -62,6 +62,17 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
         case 14: // Get
             newItem = try SwiftGetView.create(id: cleanid, from: jsonData)
 
+        case 15: // DatePicker
+            newItem = try SwiftDatePickerView.create(id: cleanid, from: jsonData)
+
+        case 16: // Grid
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = createGrid(id: cleanid, initial: initial)
+
+        case 18: // Picker
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = createPicker(id: cleanid, initial: initial)
+
         default:
             print("SwFactory: [AVISO] Tipo de componente \(typeId) no implementado.")
         }
@@ -112,6 +123,22 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
     let state = ListState(id: id)
     ViewRegistry.register(state, for: id)
     let item = StackItem(type: .list, id: id)
+    setupGeometry(item: item, from: initial)
+    return item
+}
+
+@MainActor private func createGrid(id: String, initial: GenericInit) -> StackItem {
+    let state = GridState(id: id)
+    ViewRegistry.register(state, for: id)
+    let item = StackItem(type: .grid, id: id)
+    setupGeometry(item: item, from: initial)
+    return item
+}
+
+@MainActor private func createPicker(id: String, initial: GenericInit) -> StackItem {
+    let state = SwiftPickerState(id: id)
+    ViewRegistry.register(state, for: id)
+    let item = StackItem(type: .picker, id: id)
     setupGeometry(item: item, from: initial)
     return item
 }

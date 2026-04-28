@@ -14,14 +14,17 @@ internal struct ViewsCommands {
         }
 
         sd.register("getindex") { params in
-            let listId = ((params["id"] as? String) ?? (params["p1"] as? String) ?? "").lowercased().trimmingCharacters(in: .whitespaces)
+            let listId = ((params["id"] as? String) ?? (params["p1"] as? String) ?? "").trimmingCharacters(in: .whitespaces)
             let rowId = ((params["rowid"] as? String) ?? (params["p2"] as? String) ?? "").lowercased().trimmingCharacters(in: .whitespaces)
             
+            print("🏝️ [Swift-GetIndex] Buscando en lista: '\(listId)' la fila: '\(rowId)'")
             return await MainActor.run { () -> [String: Any]? in
                 if let state = ViewRegistry.getState(for: listId) as? ListState {
                     let index = state.items.firstIndex(where: { $0.id.lowercased() == rowId }) ?? -1
+                    print("🏝️ [Swift-GetIndex] Encontrado index: \(index) de un total de \(state.items.count) items")
                     return ["result": index]
                 }
+                print("🏝️ [Swift-GetIndex] NO se encontró ListState para ID: '\(listId)'")
                 return ["result": -1]
             }
         }

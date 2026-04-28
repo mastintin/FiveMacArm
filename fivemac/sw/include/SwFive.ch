@@ -130,9 +130,30 @@
 #xcommand @ <nRow>, <nCol> LIST <oList> ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ STYLE <nStyle> ] ;
+   [ <anchor: ANCHOR, ANCHORS> <nAnchor> ] ;
+   [ <search: SEARCH> ] ;
+   => ;
+   <oList> := TSwList():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nAnchor>], , [<nStyle>], <.search.> )
+
+#xcommand @ <nRow>, <nCol> GRID [ <oGrid> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ COLUMNS <aCols> ] ;
    [ <anchor: ANCHOR, ANCHORS> <nAnchor> ] ;
    => ;
-   <oList> := TSwList():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nAnchor>] )
+   [ <oGrid> := ] TSwGrid():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nAnchor>], [<aCols>] )
+
+#xcommand @ <nRow>, <nCol> PICKER [ <oPkr> ] ;
+   [ ITEMS <aItems> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ PROMPT <cPrompt> ] ;
+   [ STYLE <nStyle> ] ;
+   [ ON CHANGE <uChange> ] ;
+   [ <anchor: ANCHOR, ANCHORS> <nAnchor> ] ;
+   => ;
+   [ <oPkr> := ] TSwPicker():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<aItems>], [<{uChange}>], , [<nAnchor>], [<cPrompt>], [<nStyle>] )
 
 #xcommand DEFINE ROW <oRow> OF <oList> [ ID <cId> ] ;
    => ;
@@ -208,3 +229,11 @@
  
  #xcommand SQLITE CLOSE [ <oDb> ] => <oDb>:End()
 
+
+#xcommand @ <nTop>, <nLeft> DATEPICKER <oDate> ;
+             [ SIZE <nWidth>, <nHeight> ] ;
+             [ OF <oWnd> ] ;
+             [ DATE <dDate> ] ;
+             [ STYLE <nStyle> ] ;
+             => ;
+             <oDate> := TSwDatePicker():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <dDate>, <nStyle> )

@@ -161,24 +161,32 @@ METHOD OnError( ... ) CLASS TSwControlProxy
    endif
  
    if Upper( cMsg ) == "APPLY"
-   if ValType( aArgs[1] ) == "H"
-      hParams := aArgs[1]
+      if ValType( aArgs[1] ) == "H"
+         hParams := aArgs[1]
+      else
+         hParams[ aArgs[1] ] := aArgs[2]
+      endif
+      cMsg := "apply"
    else
-      hParams[ aArgs[1] ] := aArgs[2]
-   endif
-   cMsg := "apply"
-   else
-   if hb_HHasKey( oProxy:hMap, cMsg )
-      cMsg := oProxy:hMap[ cMsg ]
-      hParams[ "p1" ] := ::cId
-      for n := 1 to Len( aArgs )
-         hParams[ "p" + AllTrim( Str( n + 1 ) ) ] := aArgs[ n ]
-      next
-   else
-      cProp := Lower( __GetMessage() )
-      if Left( cProp, 3 ) == "set" ; cProp := SubStr( cProp, 4 ) ; endif
-         cMsg := "apply"
-         hParams[ cProp ] := aArgs[1]
+      if hb_HHasKey( oProxy:hMap, cMsg )
+         cMsg := oProxy:hMap[ cMsg ]
+         hParams[ "p1" ] := ::cId
+         for n := 1 to Len( aArgs )
+            hParams[ "p" + AllTrim( Str( n + 1 ) ) ] := aArgs[ n ]
+         next
+      else
+         cProp := Lower( __GetMessage() )
+         if Left( cProp, 3 ) == "set" 
+            cProp := SubStr( cProp, 4 ) 
+            cMsg  := "apply"
+            hParams[ cProp ] := aArgs[1]
+         elseif Empty( aArgs )
+            cMsg := "get"
+            hParams[ "property" ] := cProp
+         else
+            cMsg := "apply"
+            hParams[ cProp ] := aArgs[1]
+         endif
       endif
    endif
  
@@ -255,7 +263,6 @@ function SWProxy( cType )
    endcase
  
 return nil
- 
  
 //----------------------------------------------------------------------------//
  

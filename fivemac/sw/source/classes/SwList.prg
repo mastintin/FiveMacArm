@@ -6,25 +6,33 @@
    
     DATA cSelectedId
  
-    ACCESS SelectedIndex   INLINE hb_HGetDef( ::hState, "selectedindex", 0 )
-    ASSIGN SelectedIndex(n) INLINE ::SelectIndex( n )
+    ACCESS SelectedIndex    INLINE hb_HGetDef( ::hState, "selectedindex", 0 )
+    ASSIGN SelectedIndex(n) INLINE ( ::hState["selectedindex"] := n, ::Apply( { "selectedindex" => n } ) )
  
+    ACCESS nStyle           INLINE hb_HGetDef( ::hState, "style", 0 )
+    ASSIGN nStyle( n )      INLINE ( ::hState["style"] := n, ::Apply( { "style" => n } ) )
+
     ACCESS bAction          INLINE hb_HGetDef( ::hState, "action", nil )
     ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
        ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bPipeline ),;
-       SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
+       ::Apply( { "interactive" => ::hState["interactive"] } ) )
    
     ACCESS bPipeline        INLINE hb_HGetDef( ::hState, "pipeline", nil )
     ASSIGN bPipeline( u )   INLINE ( ::hState["pipeline"] := u,;
        ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
-       SD:Apply( ::cId, { "interactive" => ::hState["interactive"] } ) )
+       ::Apply( { "interactive" => ::hState["interactive"] } ) )
  
     ACCESS lScroll          INLINE hb_HGetDef( ::hState, "hasscroll", .F. )
-    ASSIGN lScroll( l )     INLINE ( ::hState["hasscroll"] := l, SD:Apply( ::cId, { "hasscroll" => l } ) )
+    ASSIGN lScroll( l )     INLINE ( ::hState["hasscroll"] := l, ::Apply( { "hasscroll" => l } ) )
+    
+    ACCESS lSearch          INLINE hb_HGetDef( ::hState, "hassearch", .F. )
+    ASSIGN lSearch( l )     INLINE ( ::hState["hassearch"] := l, ::Apply( { "hassearch" => l } ) )
+    
+    ACCESS nSearchStyle          INLINE hb_HGetDef( ::hState, "searchstyle", 0 )
+    ASSIGN nSearchStyle( n )     INLINE ( ::hState["searchstyle"] := n, ::Apply( { "searchstyle" => n } ) )
    
-    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId, nAutoResize, bAction )
+    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId, nAutoResize, bAction, nStyle, lSearch )
     METHOD AddRow()
-    METHOD SelectIndex( nIndex )
     METHOD Clear()
     METHOD Filter( cText )
     METHOD GetIndex( cRowId )
@@ -35,9 +43,9 @@
    
  //----------------------------------------------------------------------------//
    
- METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId, nAutoResize, bAction ) CLASS TSwList
+ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId, nAutoResize, bAction, nStyle, lSearch ) CLASS TSwList
     
-    DEFAULT nWidth := 200, nHeight := 300, nAutoResize := 0
+    DEFAULT nWidth := 200, nHeight := 300, nAutoResize := 0, nStyle := 0, lSearch := .F.
        
     ::Super:New( nTop, nLeft, nWidth, nHeight, cId, nAutoResize )
     ::oWnd := oWnd
@@ -48,6 +56,8 @@
        
     ::hState["hasscroll"]   := .T. 
     ::hState["interactive"] := .F.
+    ::hState["style"]       := nStyle
+    ::hState["hassearch"]   := lSearch
  
     if !Empty( bAction )
        ::bAction := bAction
@@ -56,6 +66,7 @@
     ::hState["type"] := SW_TYPE_LIST
  
     ::Create()
+    ::Apply( { "style" => ::hState["style"], "hassearch" => ::hState["hassearch"] } )
     
  return Self
     
@@ -65,18 +76,13 @@
     return TSwListRow():New( 0, 0, 0, 0, Self, cId )
      
  //----------------------------------------------------------------------------//
-    
- METHOD SelectIndex( nIndex ) CLASS TSwList
-    ::hState["selectedindex"] := nIndex
-    SD:Apply( ::cId, { "selectedindex" => nIndex } )
- return nil
   
  METHOD Clear() CLASS TSwList
-    SD:Apply( ::cId, { "clear" => .T. } )
+    ::Apply( { "clear" => .T. } )
  return nil
   
  METHOD Filter( cText ) CLASS TSwList
-    SD:Apply( ::cId, { "filter" => cText } )
+    ::Apply( { "filter" => cText } )
  return nil
      
  //----------------------------------------------------------------------------//
@@ -85,6 +91,11 @@
      
     if hb_HHasKey( hNewState, "SelectedId" )
        ::cSelectedId := hNewState["SelectedId"]
+       // Update the index automatically based on the ID
+       ::hState["selectedindex"] := ::GetIndex( ::cSelectedId )
+    elseif hb_HHasKey( hNewState, "selectedId" )
+       ::cSelectedId := hNewState["selectedId"]
+       ::hState["selectedindex"] := ::GetIndex( ::cSelectedId )
     endif
  
     ::Super:Update( hNewState )

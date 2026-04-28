@@ -47,8 +47,10 @@
     METHOD SetPos( nTop, nLeft )
     METHOD SetSize( nWidth, nHeight )
     METHOD Sync()          INLINE ::Send( .T. )
+    METHOD Query()         INLINE TSwControlProxy():New( ::cId, .T., .T. )
     METHOD Refresh()
     METHOD SetFontSize( nSize ) INLINE ::Apply( "fontSize", nSize )
+    METHOD SetColor( cHexColor ) INLINE ::Apply( "backgroundcolor", cHexColor )
     
  ENDCLASS
    

@@ -43,6 +43,12 @@ public struct SwRecursiveItemView: View {
                 AnyView(Spacer())
             case .divider:
                 AnyView(Divider())
+            case .datepicker:
+                AnyView(renderDatePicker())
+            case .grid:
+                AnyView(renderGrid())
+            case .picker:
+                AnyView(renderPicker())
             default:
                 AnyView(EmptyView())
             }
@@ -117,8 +123,34 @@ public struct SwRecursiveItemView: View {
 
     @ViewBuilder
     private func renderProgress() -> some View {
-        if let state = ViewRegistry.getState(for: item.id) as? ProgressState {
-            SwiftProgressView(state: state)
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? ProgressState {
+                SwiftProgressView(state: state)
+            } else { EmptyView() }
+        }
+    }
+    
+    private func renderDatePicker() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? DatePickerState {
+                SwiftDatePickerView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderGrid() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? GridState {
+                SwiftGridView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderPicker() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftPickerState {
+                SwiftPickerView(state: state)
+            } else { EmptyView() }
         }
     }
 }
@@ -142,6 +174,8 @@ struct SwStackContent: View {
                 ZStack { content }
             }
         }
+        .background(state.backgroundColor ?? AnyShapeStyle(Color.clear))
+        .cornerRadius(state.cornerRadius)
     }
 }
 

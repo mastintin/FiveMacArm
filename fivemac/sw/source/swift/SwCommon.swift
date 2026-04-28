@@ -105,7 +105,7 @@ public class ViewRegistry {
 @Observable
 public class StackItem: Identifiable {
     public enum ItemType: Int, Codable {
-        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, progress = 13, get = 14, aichat = 17
+        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, progress = 13, get = 14, datepicker = 15, grid = 16, aichat = 17, picker = 18
     }
     public let id: String
     public var type: ItemType
@@ -129,120 +129,89 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyab
     public var items: [StackItem] = []
     public var lastItem: StackItem?
     public var scrollable: Bool = true
+    public var backgroundColor: AnyShapeStyle? = nil
+    public var cornerRadius: CGFloat = 0
+    
     public init() {}
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
     public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
     
     public func apply(property: String, value: Any) {
-        // Implementación base para propiedades genéricas si es necesario
+        let prop = property.lowercased()
+        if prop == "backgroundcolor" || prop == "backcolor" {
+            if let sVal = value as? String {
+                self.backgroundColor = mapColorStyle(sVal)
+            }
+        } else if prop == "corner" || prop == "cornerradius" {
+            if let n = (value as? NSNumber)?.doubleValue { self.cornerRadius = CGFloat(n) }
+            else if let n = value as? Double { self.cornerRadius = CGFloat(n) }
+            else if let n = value as? Int { self.cornerRadius = CGFloat(n) }
+        }
     }
 }
 
+// MARK: - Base State for all controls
 @Observable
-public class ImageState: SwApplyable, RGBAColorableState {
-    public let id: String
-    public var systemName: String = ""
-    public var filePath: String = ""
-    public var urlStr: String = ""
-    public var resizable: Bool = true
-    public var contentMode: Int = 0 // 0: fit, 1: fill
-    public var foregroundColor: Color = .primary
-    public var cornerRadius: CGFloat = 0
-    public var shadowRadius: CGFloat = 0
-    public var shadowColor: Color = .black.opacity(0.3)
-    public var borderWidth: CGFloat = 0
-    public var borderColor: Color = .clear
-    public var qrText: String = ""
-    public var qrScale: Double = 1.0
-    public var scaling: Int = 0 // 0: ProportionalDown, 1: AxesIndependently, 2: None, 3: UpOrDown
-    public var frameStyle: Int = 0 // 0: None, 1: Photo, 2: GrayBezel, 3: Groove, 4: Button
+public class BaseControlState: SwApplyable {
+    public var id: String
+    public var isVisible: Bool = true
+    public var isEnabled: Bool = true
     
-    public init(id: String, systemName: String = "", filePath: String = "", url: String = "") {
+    public init(id: String) {
         self.id = id
-        self.systemName = systemName
-        self.filePath = filePath
-        self.urlStr = url
     }
     
-    public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
-    
-    public func setTextColorRGBA(r: Int, g: Int, b: Int, a: Int) {
-        DispatchQueue.main.async {
-            self.foregroundColor = Color(r: r, g: g, b: b, a: a)
-        }
-    }
-    
-    public func apply(property: String, value: Any) {
-        let prop = property.lowercased()
-        switch prop {
-        case "systemname":
-            if let s = value as? String { 
-                DispatchQueue.main.async {
-                    self.systemName = s
-                    self.filePath = ""
-                    self.urlStr = ""
-                }
-            }
-        case "file":
-            if let s = value as? String {
-                DispatchQueue.main.async {
-                    self.filePath = s
-                    self.systemName = ""
-                    self.urlStr = ""
-                }
-            }
-        case "url":
-            if let s = value as? String {
-                DispatchQueue.main.async {
-                    self.urlStr = s
-                    self.systemName = ""
-                    self.filePath = ""
-                }
-            }
-        case "mode":
-            if let i = value as? Int { self.contentMode = i }
-        case "resizable":
-            if let b = value as? Bool { self.resizable = b }
-        case "color":
-            if let s = value as? String {
-                DispatchQueue.main.async { self.foregroundColor = Color(hex: s) }
-            }
-        case "corner", "cornerradius":
-            if let n = (value as? NSNumber)?.doubleValue { self.cornerRadius = CGFloat(n) }
-        case "shadow", "shadowradius":
-            if let n = (value as? NSNumber)?.doubleValue { self.shadowRadius = CGFloat(n) }
-        case "shadowcolor":
-            if let s = value as? String { self.shadowColor = Color(hex: s) }
-        case "borderwidth":
-            if let n = (value as? NSNumber)?.doubleValue { self.borderWidth = CGFloat(n) }
-        case "bordercolor":
-            if let s = value as? String {
-                DispatchQueue.main.async { self.borderColor = Color(hex: s) }
-            }
-        case "scaling":
-            if let i = value as? Int { self.scaling = i }
-        case "frame":
-            if let i = value as? Int { self.frameStyle = i }
-        case "qr":
-            if let s = value as? String { 
-                self.qrText = s
-                self.systemName = ""
-                self.filePath = ""
-                self.urlStr = ""
-            }
-        case "qrscale":
-            if let n = (value as? NSNumber)?.doubleValue { self.qrScale = n }
+    @MainActor
+    public func apply(property prop: String, value: Any) {
+        switch prop.lowercased() {
+        case "visible":
+            self.isVisible = SwUtils.toBool(value)
+        case "enabled":
+            self.isEnabled = SwUtils.toBool(value)
         default:
             break
         }
     }
 }
 
+// MARK: - DatePicker State
 @Observable
+public class DatePickerState: BaseControlState {
+    public var date: Date = Date()
+    public var style: Int = 0 // 0: compact, 1: graphical, 2: wheel, 3: field
+    public var showTime: Bool = false
+    public var showDate: Bool = true
+    
+    public init(id: String, date: Date = Date()) {
+        self.date = date
+        super.init(id: id)
+    }
+    
+    public override func apply(property prop: String, value: Any) {
+        super.apply(property: prop, value: value)
+        
+        switch prop.lowercased() {
+        case "date":
+            if let s = value as? String {
+                if let d = SwUtils.parseHarbourDate(s) {
+                    DispatchQueue.main.async { self.date = d }
+                }
+            }
+        case "style":
+            if let i = SwUtils.toInt(value) { self.style = i }
+        case "showtime":
+            self.showTime = SwUtils.toBool(value)
+        case "showdate":
+            self.showDate = SwUtils.toBool(value)
+        default:
+            break
+        }
+    }
+}
+
 public class SwiftWindowState: SwiftVStackState {
     public var windowId: String = ""
     public var isInteractive: Bool = true
-    public var backgroundColor: AnyShapeStyle? = nil
     
     public init(id: String) {
         self.windowId = id
@@ -316,6 +285,7 @@ public func mapMaterial(_ s: String) -> AnyShapeStyle? {
 
 public func mapColorStyle(_ s: String) -> AnyShapeStyle {
     if let grad = parseGradient(s) { return grad }
+    if s.hasPrefix("#") { return AnyShapeStyle(Color(hex: s)) }
     
     switch s.lowercased() {
     case ".primary": return AnyShapeStyle(.primary)
@@ -397,4 +367,13 @@ extension Color {
         }
         self.init(.sRGB, red: Double(r)/255, green: Double(g)/255, blue: Double(b)/255, opacity: Double(a)/255)
     }
+}
+
+public struct DatePickerInit: Codable, GeometryProtocol {
+    public let date: String?
+    public let style: Int?
+    public let showtime, showdate: Bool?
+    public let width, height, top, left: Double?
+    public let resizemask: Int?
+    public let parentwidth, parentheight: Double?
 }
