@@ -49,6 +49,12 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderGrid())
             case .picker:
                 AnyView(renderPicker())
+            case .panel:
+                AnyView(renderPanel())
+            case .sidebar:
+                AnyView(renderSidebar())
+            case .sidebaritem:
+                AnyView(renderSidebarItem())
             default:
                 AnyView(EmptyView())
             }
@@ -150,6 +156,30 @@ public struct SwRecursiveItemView: View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? SwiftPickerState {
                 SwiftPickerView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderPanel() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftPanelState {
+                SwPanelView(state: state, type: item.type)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderSidebar() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftSidebarState {
+                SwSidebarView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderSidebarItem() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftSidebarItemState {
+                SwSidebarItemView(state: state)
             } else { EmptyView() }
         }
     }

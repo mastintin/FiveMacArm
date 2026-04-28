@@ -125,12 +125,9 @@ public class SwiftPickerState: SwApplyable {
 // MARK: - Factory Logic
 extension SwiftPickerView {
     @MainActor
-    public static func create(id: String, from jsonData: Data) throws -> StackItem {
-        let decoder = JSONDecoder()
-        let initial = try decoder.decode(PickerInit.self, from: jsonData)
-        
+    public static func create(id: String, initial: GenericInit) -> StackItem {
         let state = SwiftPickerState(id: id)
-        state.prompt = initial.prompt ?? ""
+        state.prompt = initial.title ?? "" // En Picker, el prompt suele venir en title de GenericInit
         state.style = initial.style ?? 0
         
         ViewRegistry.register(state, for: id)

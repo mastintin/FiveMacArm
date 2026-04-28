@@ -35,7 +35,7 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
 
         case 8: // List
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
-            newItem = createList(id: cleanid, initial: initial)
+            newItem = SwiftListView.create(id: cleanid, initial: initial)
 
         case 9: // Button
             newItem = try SwiftButtonView.create(id: cleanid, from: jsonData)
@@ -67,11 +67,23 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
 
         case 16: // Grid
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
-            newItem = createGrid(id: cleanid, initial: initial)
+            newItem = SwiftGridView.create(id: cleanid, initial: initial)
 
         case 18: // Picker
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
-            newItem = createPicker(id: cleanid, initial: initial)
+            newItem = SwiftPickerView.create(id: cleanid, initial: initial)
+
+        case 20: // Panel
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = SwPanelView.create(id: cleanid, initial: initial)
+
+        case 21: // Sidebar
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = SwSidebarView.create(id: cleanid, initial: initial)
+
+        case 22: // SidebarItem
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = SwSidebarItemView.create(id: cleanid, initial: initial)
 
         default:
             print("SwFactory: [AVISO] Tipo de componente \(typeId) no implementado.")
@@ -119,30 +131,6 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
     return item
 }
 
-@MainActor private func createList(id: String, initial: GenericInit) -> StackItem {
-    let state = ListState(id: id)
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .list, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createGrid(id: String, initial: GenericInit) -> StackItem {
-    let state = GridState(id: id)
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .grid, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createPicker(id: String, initial: GenericInit) -> StackItem {
-    let state = SwiftPickerState(id: id)
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .picker, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
 // MARK: - Geometry & Protocols
 
 func setupGeometry(item: StackItem, from config: GeometryProtocol) {
@@ -169,6 +157,13 @@ public protocol GeometryProtocol {
     var resizemask: Int? { get }
     var parentwidth: Double? { get }
     var parentheight: Double? { get }
+    var interactive: Int? { get }
+    var style: Int? { get }
+}
+
+extension GeometryProtocol {
+    public var interactive: Int? { return nil }
+    public var style: Int? { return nil }
 }
 
 public struct GenericInit: Codable, GeometryProtocol {
@@ -181,5 +176,7 @@ public struct GenericInit: Codable, GeometryProtocol {
     public let resizemask: Int?
     public let parentwidth: Double?
     public let parentheight: Double?
+    public let interactive: Int?
+    public let style: Int?
 }
 

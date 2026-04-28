@@ -187,4 +187,13 @@ public struct SwiftListView: View {
         let json = "{\"\(state.id)\":{\"SelectedId\":\"\(rowId)\",\"event\":\"select\"}}"
         Harbour.call("SW_UPDATE_HB", json)
     }
+
+    @MainActor
+    public static func create(id: String, initial: GenericInit) -> StackItem {
+        let state = ListState(id: id)
+        ViewRegistry.register(state, for: id)
+        let item = StackItem(type: .list, id: id)
+        setupGeometry(item: item, from: initial)
+        return item
+    }
 }

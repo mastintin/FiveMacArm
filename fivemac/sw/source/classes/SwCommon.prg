@@ -17,4 +17,3 @@ function SW_LOG( cMsg )
       fClose( nHandle )
    endif
 return nil
-

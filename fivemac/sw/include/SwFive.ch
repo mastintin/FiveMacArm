@@ -57,12 +57,12 @@
 #define SW_ROLE_DESTRUCTIVE   1
 #define SW_ROLE_CANCEL        2
  
- //----------------------------------------------------------------------------//
- // TOGGLE STYLES
- //----------------------------------------------------------------------------//
- #define SW_TOGGLE_CHECKBOX    0
- #define SW_TOGGLE_SWITCH      1
- #define SW_TOGGLE_BUTTON      2
+//----------------------------------------------------------------------------//
+// TOGGLE STYLES
+//----------------------------------------------------------------------------//
+#define SW_TOGGLE_CHECKBOX    0
+#define SW_TOGGLE_SWITCH      1
+#define SW_TOGGLE_BUTTON      2
 
 //----------------------------------------------------------------------------//
 // BASIC COMMANDS
@@ -87,6 +87,30 @@
    => ;
    [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cText>, <oWnd> )
 
+#xcommand @ <nRow>, <nCol> PANEL [ <oPanel> ] ;
+   [ TITLE <cTitle> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>] )
+
+#xcommand @ <nRow>, <nCol> SIDEBAR [ <oSidebar> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oSidebar> := ] TSwSidebar():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+
+#xcommand @ <nRow>, <nCol> SIDEBAR ITEM [ <oItem> ] ;
+   [ PROMPT <cPrompt> ] ;
+   [ SYMBOL <cSymbol> ] ;
+   [ <of: OF, SIDEBAR> <oSidebar> ] ;
+   [ ACTION <uAction> ] ;
+   => ;
+   [ <oItem> := ] TSwSidebarItem():New( <nRow>, <nCol>, <oSidebar>, <cPrompt>, <cSymbol>, , [<{uAction}>] )
+
+
 
 #xcommand @ <nRow>, <nCol> IMAGE [ <oImg> ] ;
    [ <p: PROMPT, SYMBOL> <cSymbol> ] ;
@@ -107,13 +131,13 @@
    [ <oBtn> := ] TSwButton():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cPrompt>, <oWnd>, [<{uAction}>], [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> SLIDER [ <oSld> ] [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
-            [ <of: OF, WINDOW, DIALOG> <oWnd> ] [ SIZE <nWidth>, <nHeight> ] ;
-            [ PROMPT <cPrompt> ] [ ICONMIN <cIconMin> ] [ ICONMAX <cIconMax> ] ;
-            [ COLOR <cColor> ] [ STEP <nStep> ] [ <disabled: DISABLED> ] ;
-            [ ACTION <uAction> ] ;
-      => ;
-      [ <oSld> := ] TSwSlider():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<nValue>], [<nMin>], [<nMax>], <oWnd>, , [<{uAction}>], ;
-                                     [<cPrompt>], [<cIconMin>], [<cIconMax>], [<cColor>], [<nStep>], <.disabled.> )
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] [ SIZE <nWidth>, <nHeight> ] ;
+   [ PROMPT <cPrompt> ] [ ICONMIN <cIconMin> ] [ ICONMAX <cIconMax> ] ;
+   [ COLOR <cColor> ] [ STEP <nStep> ] [ <disabled: DISABLED> ] ;
+   [ ACTION <uAction> ] ;
+   => ;
+   [ <oSld> := ] TSwSlider():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<nValue>], [<nMin>], [<nMax>], <oWnd>, , [<{uAction}>], ;
+   [<cPrompt>], [<cIconMin>], [<cIconMax>], [<cColor>], [<nStep>], <.disabled.> )
 
 #xcommand @ <nRow>, <nCol> TOGGLE [ <oTgl> ] ;
    [ <v: VAR, VALUE> <lValue> ] ;
@@ -193,7 +217,7 @@
    [ <showval: SHOWVALUE> ] ;
    => ;
    [ <oProg> := ] SwProgress():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nValue>], [<nMin>], [<nMax>], ;
-                                   [<cPrompt>], [<cSubtitle>], [<cIcon>], [<cColor>], <.indet.>, [<nStyle>], <.showval.> )
+   [<cPrompt>], [<cSubtitle>], [<cIcon>], [<cColor>], <.indet.>, [<nStyle>], <.showval.> )
 
 #xcommand @ <nRow>, <nCol> WEBVIEW [ <oWv> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
@@ -205,35 +229,35 @@
 
 #endif
  
- #ifndef TSQLite
-    #define TSQLite TSwSqlite
- #endif
+#ifndef TSQLite
+#define TSQLite TSwSqlite
+#endif
  
- #xcommand SQLITE CONNECT <cDb> [ <lCreate: CREATE> ] [ INTO <oDb> ] => ;
-     [ <oDb> := ] If( <.lCreate.>, TSwSqlite():SqliteCreateDb( <cDb> ), TSwSqlite():SqliteUse( <cDb> ) )
+#xcommand SQLITE CONNECT <cDb> [ <lCreate: CREATE> ] [ INTO <oDb> ] => ;
+   [ <oDb> := ] If( <.lCreate.>, TSwSqlite():SqliteCreateDb( <cDb> ), TSwSqlite():SqliteUse( <cDb> ) )
  
- #xcommand SQLITE USE <cTable> [ IN <oDb> ] [ ORDER <cOrder> ] => ;
-     <oDb>:TableUse( <cTable> ) [; <oDb>:OrdSetFocus( <cOrder> ) ]
+#xcommand SQLITE USE <cTable> [ IN <oDb> ] [ ORDER <cOrder> ] => ;
+   <oDb>:TableUse( <cTable> ) [; <oDb>:OrdSetFocus( <cOrder> ) ]
  
- #xcommand SQLITE APPEND [ IN <oDb> ] => <oDb>:DbAppend()
+#xcommand SQLITE APPEND [ IN <oDb> ] => <oDb>:DbAppend()
  
- #xcommand SQLITE REPLACE <cField> WITH <uVal> [ IN <oDb> ] => <oDb>:FieldPutName( <cField>, <uVal> )
+#xcommand SQLITE REPLACE <cField> WITH <uVal> [ IN <oDb> ] => <oDb>:FieldPutName( <cField>, <uVal> )
  
- #xcommand SQLITE DELETE [ IN <oDb> ] => <oDb>:DelRecord()
+#xcommand SQLITE DELETE [ IN <oDb> ] => <oDb>:DelRecord()
  
- #xcommand SQLITE INSERT INTO <cTable> HASH <hData> [ IN <oDb> ] => <oDb>:Insert( <cTable>, <hData> )
+#xcommand SQLITE INSERT INTO <cTable> HASH <hData> [ IN <oDb> ] => <oDb>:Insert( <cTable>, <hData> )
  
- #xcommand SQLITE CREATE TABLE <cTable> FROM <aStruct> [ IN <oDb> ] => <oDb>:CreateTable( <(cTable)>, <aStruct> )
+#xcommand SQLITE CREATE TABLE <cTable> FROM <aStruct> [ IN <oDb> ] => <oDb>:CreateTable( <(cTable)>, <aStruct> )
  
- #xcommand SQLITE DROP TABLE <cTable> [ IN <oDb> ] => <oDb>:DelTable( <(cTable)> )
+#xcommand SQLITE DROP TABLE <cTable> [ IN <oDb> ] => <oDb>:DelTable( <(cTable)> )
  
- #xcommand SQLITE CLOSE [ <oDb> ] => <oDb>:End()
+#xcommand SQLITE CLOSE [ <oDb> ] => <oDb>:End()
 
 
 #xcommand @ <nTop>, <nLeft> DATEPICKER <oDate> ;
-             [ SIZE <nWidth>, <nHeight> ] ;
-             [ OF <oWnd> ] ;
-             [ DATE <dDate> ] ;
-             [ STYLE <nStyle> ] ;
-             => ;
-             <oDate> := TSwDatePicker():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <dDate>, <nStyle> )
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ OF <oWnd> ] ;
+   [ DATE <dDate> ] ;
+   [ STYLE <nStyle> ] ;
+   => ;
+   <oDate> := TSwDatePicker():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <dDate>, <nStyle> )

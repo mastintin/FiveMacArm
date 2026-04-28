@@ -72,4 +72,13 @@ public struct SwiftGridView: View {
         }
         .background(state.backgroundColor)
     }
+
+    @MainActor
+    public static func create(id: String, initial: GenericInit) -> StackItem {
+        let state = GridState(id: id)
+        ViewRegistry.register(state, for: id)
+        let item = StackItem(type: .grid, id: id)
+        setupGeometry(item: item, from: initial)
+        return item
+    }
 }

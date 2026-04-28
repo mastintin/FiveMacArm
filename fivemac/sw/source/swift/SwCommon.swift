@@ -105,7 +105,7 @@ public class ViewRegistry {
 @Observable
 public class StackItem: Identifiable {
     public enum ItemType: Int, Codable {
-        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, progress = 13, get = 14, datepicker = 15, grid = 16, aichat = 17, picker = 18
+        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, progress = 13, get = 14, datepicker = 15, grid = 16, aichat = 17, picker = 18, panel = 20, sidebar = 21, sidebaritem = 22
     }
     public let id: String
     public var type: ItemType
@@ -174,40 +174,7 @@ public class BaseControlState: SwApplyable {
     }
 }
 
-// MARK: - DatePicker State
-@Observable
-public class DatePickerState: BaseControlState {
-    public var date: Date = Date()
-    public var style: Int = 0 // 0: compact, 1: graphical, 2: wheel, 3: field
-    public var showTime: Bool = false
-    public var showDate: Bool = true
-    
-    public init(id: String, date: Date = Date()) {
-        self.date = date
-        super.init(id: id)
-    }
-    
-    public override func apply(property prop: String, value: Any) {
-        super.apply(property: prop, value: value)
-        
-        switch prop.lowercased() {
-        case "date":
-            if let s = value as? String {
-                if let d = SwUtils.parseHarbourDate(s) {
-                    DispatchQueue.main.async { self.date = d }
-                }
-            }
-        case "style":
-            if let i = SwUtils.toInt(value) { self.style = i }
-        case "showtime":
-            self.showTime = SwUtils.toBool(value)
-        case "showdate":
-            self.showDate = SwUtils.toBool(value)
-        default:
-            break
-        }
-    }
-}
+
 
 public class SwiftWindowState: SwiftVStackState {
     public var windowId: String = ""
@@ -369,11 +336,4 @@ extension Color {
     }
 }
 
-public struct DatePickerInit: Codable, GeometryProtocol {
-    public let date: String?
-    public let style: Int?
-    public let showtime, showdate: Bool?
-    public let width, height, top, left: Double?
-    public let resizemask: Int?
-    public let parentwidth, parentheight: Double?
-}
+
