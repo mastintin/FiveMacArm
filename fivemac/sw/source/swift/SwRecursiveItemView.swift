@@ -55,7 +55,13 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderSidebar())
             case .sidebaritem:
                 AnyView(renderSidebarItem())
-            default:
+            case .tabview:
+                if let state = ViewRegistry.getState(for: item.id) as? SwiftTabViewState {
+                    AnyView(SwiftTabView(state: state))
+                } else {
+                    AnyView(EmptyView())
+                }
+        default:
                 AnyView(EmptyView())
             }
             
@@ -163,7 +169,7 @@ public struct SwRecursiveItemView: View {
     private func renderPanel() -> some View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? SwiftPanelState {
-                SwPanelView(state: state, type: item.type)
+                SwiftPanelView(state: state)
             } else { EmptyView() }
         }
     }

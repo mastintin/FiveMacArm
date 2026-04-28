@@ -105,7 +105,7 @@ public class ViewRegistry {
 @Observable
 public class StackItem: Identifiable {
     public enum ItemType: Int, Codable {
-        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, progress = 13, get = 14, datepicker = 15, grid = 16, aichat = 17, picker = 18, panel = 20, sidebar = 21, sidebaritem = 22
+        case text = 0, vstack = 1, hstack = 2, scroll = 3, image = 4, spacer = 5, divider = 6, zstack = 7, list = 8, button = 9, toggle = 10, slider = 11, webview = 12, progress = 13, get = 14, datepicker = 15, grid = 16, aichat = 17, picker = 18, panel = 20, sidebar = 21, sidebaritem = 22, tabview = 23
     }
     public let id: String
     public var type: ItemType

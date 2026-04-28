@@ -75,7 +75,7 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
 
         case 20: // Panel
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
-            newItem = SwPanelView.create(id: cleanid, initial: initial)
+            newItem = SwiftPanelView.create(id: cleanid, initial: initial)
 
         case 21: // Sidebar
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
@@ -85,6 +85,11 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             newItem = SwSidebarItemView.create(id: cleanid, initial: initial)
 
+            
+        case 23: // TabView
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = SwiftTabView.create(id: cleanid, initial: initial)
+            
         default:
             print("SwFactory: [AVISO] Tipo de componente \(typeId) no implementado.")
         }

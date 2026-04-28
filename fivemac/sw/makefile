@@ -33,7 +33,8 @@ HBFLAGS=-n -w -Iinclude -I$(FIVEMAC_PATH)/nativo/include -I$(HARBOUR_PATH)/inclu
 #                source/swift/SwiftButton.swift source/swift/SwiftFiles.swift source/swift/SwiftGet.swift \
 #                source/swift/SwiftImage.swift source/swift/SwiftLabel.swift source/swift/SwiftList.swift \
 #                source/swift/SwiftNetworks.swift source/swift/SwiftProgress.swift source/swift/SwiftSlider.swift \
-#                source/swift/SwiftSystem.swift source/swift/SwiftTimer.swift source/swift/SwiftToggle.swift \
+#                source/swift/SwSystem.swift source/swift/SwTabView.swift source/swift/SwTimer.swift \
+#                source/swift/SwiftToggle.swift \
 #                source/swift/SwiftViews.swift source/swift/SwiftWebView.swift
 SWIFTFLAGS=-emit-object -whole-module-optimization -parse-as-library -module-name SwiftFive $(TARGET_FLAG) -emit-objc-header-path include/SwiftFive-Swift.h -I $(MACRO_INC) -load-plugin-executable $(MACRO_BIN)\#HarbourMacroImpl
 

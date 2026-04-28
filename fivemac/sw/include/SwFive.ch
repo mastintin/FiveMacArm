@@ -89,11 +89,12 @@
 
 #xcommand @ <nRow>, <nCol> PANEL [ <oPanel> ] ;
    [ TITLE <cTitle> ] ;
+   [ SYMBOL <cSymbol> ] ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
-   [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>] )
+   [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>], [<cSymbol>] )
 
 #xcommand @ <nRow>, <nCol> SIDEBAR [ <oSidebar> ] ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
@@ -218,6 +219,14 @@
    => ;
    [ <oProg> := ] SwProgress():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nValue>], [<nMin>], [<nMax>], ;
    [<cPrompt>], [<cSubtitle>], [<cIcon>], [<cColor>], <.indet.>, [<nStyle>], <.showval.> )
+
+#xcommand @ <nRow>, <nCol> TABVIEW [ <oTabs> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ STYLE <nStyle> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oTabs> := ] TSwTabView():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<nStyle>] )
 
 #xcommand @ <nRow>, <nCol> WEBVIEW [ <oWv> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
