@@ -34,4 +34,6 @@ Bienvenido a la documentación oficial de FiveMac. Aquí encontrarás guías det
     - El entorno de desarrollo integrado: Editor, Diseñador Visual y Builder.
 15. [Integración con Python (fivePython)](14_fivePython.md)
     - Embeber scripts Python (Pandas/Excel) directamente en aplicaciones Harbour.
+16. [Módulo SW (La Isla)](../doc/sw/SW_CONCEPT.md)
+    - El futuro de Fivemac: SwiftUI nativo, arquitectura reactiva y comunicación JSON.
 
