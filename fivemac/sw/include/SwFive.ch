@@ -111,6 +111,27 @@
    => ;
    [ <oItem> := ] TSwSidebarItem():New( <nRow>, <nCol>, <oSidebar>, <cPrompt>, <cSymbol>, , [<{uAction}>] )
 
+#xcommand @ <nRow>, <nCol> VSTACK [ <oStack> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oStack> := ] TSwVStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+
+#xcommand @ <nRow>, <nCol> HSTACK [ <oStack> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oStack> := ] TSwHStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+
+#xcommand @ <nRow>, <nCol> ZSTACK [ <oStack> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oStack> := ] TSwZStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+
 
 
 #xcommand @ <nRow>, <nCol> IMAGE [ <oImg> ] ;

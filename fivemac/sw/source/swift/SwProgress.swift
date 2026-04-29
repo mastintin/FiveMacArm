@@ -39,7 +39,10 @@ public class ProgressState: SwApplyable {
         case "icon":
             if let sVal = value as? String { self.icon = sVal }
         case "tintcolor", "color":
-            if let sVal = value as? String { self.tintColor = Color(hex: sVal) }
+            if let sVal = value as? String {
+                if sVal.hasPrefix(".") { self.tintColor = mapBaseColor(sVal) }
+                else { self.tintColor = Color(hex: sVal) }
+            }
         case "indeterminate":
             if let bVal = value as? Bool { self.isIndeterminate = bVal }
             else if let iVal = value as? Int { self.isIndeterminate = (iVal != 0) }
@@ -132,7 +135,8 @@ extension SwiftProgressView {
         state.style = initial.style ?? 0
         
         if let colorHex = initial.tintcolor, !colorHex.isEmpty {
-            state.tintColor = Color(hex: colorHex)
+            if colorHex.hasPrefix(".") { state.tintColor = mapBaseColor(colorHex) }
+            else { state.tintColor = Color(hex: colorHex) }
         }
         
         ViewRegistry.register(state, for: id)

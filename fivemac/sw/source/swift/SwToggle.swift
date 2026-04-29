@@ -35,9 +35,15 @@ public class ToggleState: SwApplyable {
             if let nVal = value as? Int { self.style = nVal }
             else if let nVal = value as? NSNumber { self.style = nVal.intValue }
         case "color", "tintcolor":
-            if let sVal = value as? String { self.tintColor = Color(hex: sVal) }
+            if let sVal = value as? String {
+                if sVal.hasPrefix(".") { self.tintColor = mapBaseColor(sVal) }
+                else { self.tintColor = Color(hex: sVal) }
+            }
         case "textcolor":
-            if let sVal = value as? String { self.textColor = Color(hex: sVal) }
+            if let sVal = value as? String {
+                if sVal.hasPrefix(".") { self.textColor = mapBaseColor(sVal) }
+                else { self.textColor = Color(hex: sVal) }
+            }
         case "isswitch":
              if let bVal = value as? Bool { self.style = bVal ? 1 : 0 }
         default:

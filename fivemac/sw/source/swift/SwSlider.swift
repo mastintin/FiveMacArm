@@ -56,7 +56,10 @@ public class SliderState: SwApplyable {
         case "iconmax":
             if let sVal = value as? String { self.iconMax = sVal }
         case "color", "tintcolor":
-            if let sVal = value as? String { self.tintColor = Color(hex: sVal) }
+            if let sVal = value as? String {
+                if sVal.hasPrefix(".") { self.tintColor = mapBaseColor(sVal) }
+                else { self.tintColor = Color(hex: sVal) }
+            }
         default:
             break
         }

@@ -70,7 +70,10 @@ public class ImageState: SwApplyable, RGBAColorableState {
             if let b = value as? Bool { self.resizable = b }
         case "color":
             if let s = value as? String {
-                DispatchQueue.main.async { self.foregroundColor = Color(hex: s) }
+                DispatchQueue.main.async {
+                    if s.hasPrefix(".") { self.foregroundColor = mapBaseColor(s) }
+                    else { self.foregroundColor = Color(hex: s) }
+                }
             }
         case "corner", "cornerradius":
             if let n = (value as? NSNumber)?.doubleValue { self.cornerRadius = CGFloat(n) }
@@ -136,6 +139,7 @@ public struct SwiftImageView: View {
                     .resizable()
             } else if !state.systemName.isEmpty {
                 Image(systemName: state.systemName)
+                    .renderingMode(.template)
                     .resizable()
             } else if !state.filePath.isEmpty {
                 if let nsImage = loadSafeImage(from: state.filePath) {
@@ -147,7 +151,9 @@ public struct SwiftImageView: View {
             } else if !state.urlStr.isEmpty, let url = URL(string: state.urlStr) {
                 AsyncImage(url: url) { phase in
                     switch phase {
-                    case .success(let image): image.resizable()
+                    case .success(let image): 
+                        image.resizable()
+                             .renderingMode(.template)
                     case .failure: placeholderView
                     case .empty: ProgressView().controlSize(.small)
                     @unknown default: placeholderView
@@ -158,6 +164,7 @@ public struct SwiftImageView: View {
             }
         }
         .aspectRatio(contentMode: contentMode)
+        .foregroundStyle(state.foregroundColor)
     }
 
     private var contentMode: ContentMode {

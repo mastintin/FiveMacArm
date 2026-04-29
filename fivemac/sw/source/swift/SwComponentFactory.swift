@@ -25,7 +25,7 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
         case 0: // Label
             newItem = try SwiftLabelView.create(id: cleanid, from: jsonData)
 
-        case 1, 2, 3: // Stacks
+        case 1, 2, 3, 24: // Stacks
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             newItem = createStack(id: cleanid, typeId: typeId, initial: initial)
 

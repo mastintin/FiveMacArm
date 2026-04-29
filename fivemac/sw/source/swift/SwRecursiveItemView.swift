@@ -73,7 +73,19 @@ public struct SwRecursiveItemView: View {
     @ViewBuilder
     private func renderStack() -> some View {
         if let state = ViewRegistry.getState(for: item.id) as? SwiftVStackState {
-            SwStackContent(state: state, type: item.type)
+            if item.type == .zstack {
+                ZStack {
+                    ForEach(state.items) { child in
+                        SwRecursiveItemView(item: child)
+                    }
+                }
+                .frame(width: (item.itemWidth ?? 0) > 0 ? CGFloat(item.itemWidth ?? 0) : nil,
+                       height: (item.itemHeight ?? 0) > 0 ? CGFloat(item.itemHeight ?? 0) : nil)
+                .background(state.backgroundColor ?? AnyShapeStyle(Color.clear))
+                .cornerRadius(state.cornerRadius)
+            } else {
+                SwStackContent(state: state, type: item.type)
+            }
         }
     }
 
