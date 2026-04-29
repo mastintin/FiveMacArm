@@ -190,4 +190,6 @@ To build the library and samples:
 
 ## Documentation
 
+Check the **[Full Documentation Index](docs/README.md)** for detailed guides, architecture overview, and component references.
+
 See `whatsnew.txt` for a detailed history of changes and new features.
