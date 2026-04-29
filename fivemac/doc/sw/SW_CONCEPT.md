@@ -49,6 +49,12 @@ Residen dentro de un contenedor de tipo Stack (`VStack`, `HStack`, `ZStack`).
 
 ---
 
+## 🗂️ Índice Maestro de Controles
+Para una navegación más cómoda por todos los componentes disponibles, consulta nuestro:
+[👉 **Ver Catálogo Completo de Controles con Sidebar**](CONTROLS_INDEX.md)
+
+---
+
 ## 7. Catálogo de Controles de Layout
 Contenedores para organizar la interfaz de forma reactiva y fluida.
 
