@@ -55,12 +55,16 @@ Contenedores para organizar la interfaz de forma reactiva y fluida.
 - **[TSwVStack](controls/TSwVStack.md)**: Organización vertical.
 - **TSwHStack**: Organización horizontal.
 - **TSwZStack**: Organización por capas (eje Z).
+- **[TSwGrid](controls/TSwGrid.md)**: Cuadrículas adaptativas y flexibles.
+- **[TSwTabView](controls/TSwTabView.md)**: Navegación por pestañas nativas.
+- **[TSwSidebar](controls/TSwSidebar.md)**: Barra lateral de navegación macOS.
 
 ---
 
 ## 8. Catálogo de Controles de Contenido
 Componentes individuales para interacción y visualización de datos.
 
+- **[TSwWindow](controls/TSwWindow.md)**: La base de la interfaz (Dual-Thread).
 - **[TSwLabel](controls/TSwLabel.md)**: Etiquetas de texto y símbolos.
 - **[TSwButton](controls/TSwButton.md)**: Botones interactivos.
 - **[TSwGet](controls/TSwGet.md)**: Campos de entrada de datos con validación.
@@ -69,7 +73,9 @@ Componentes individuales para interacción y visualización de datos.
 - **[TSwPicker](controls/TSwPicker.md)**: Listas desplegables y selectores.
 - **[TSwDatePicker](controls/TSwDatePicker.md)**: Selectores de fecha nativos.
 - **[TSwImage](controls/TSwImage.md)**: Visualización de imágenes, símbolos y QRs.
+- **[TSwProgress](controls/TSwProgress.md)**: Indicadores de progreso y carga.
 - **[TSwList](controls/TSwList.md)**: Contenedor de listas dinámicas con layouts.
+- **[TSwWebView](controls/TSwWebView.md)**: Motor web, JS y exportación PDF.
 
 ---
 
