@@ -41,7 +41,7 @@ Mejoras estéticas y funcionales para elevar la experiencia de usuario:
 ## 🏝️ Swift Island (sw): Revolucionaria Arquitectura Harbour-Swift
 Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.
 
-**[📖 Leer más sobre la Evolución de "La Isla" (Arquitectura SW)](fivemac/doc/sw/SW_CONCEPT.md)**
+**[📖 Leer más sobre la Evolución de "La Isla" (Arquitectura SW)](doc/sw/SW_CONCEPT.md)**
 
 *   **Universal Dispatcher 2.0 (Type-Agnostic)**: Se ha eliminado totalmente la necesidad de pasar tipos de control al orquestador de ventanas. Ahora el bridge solo maneja IDs, delegando la identidad y el renderizado al registro universal de Swift.
 *   **Geometría Reactiva en Tiempo Real**: Implementación de `ACCESS/ASSIGN` para `nTop`, `nLeft`, `nWidth` y `nHeight` en la clase base. Cualquier cambio en estas propiedades desde Harbour se refleja instantáneamente en la UI de SwiftUI sin parpadeos ni refrescos de ventana.
