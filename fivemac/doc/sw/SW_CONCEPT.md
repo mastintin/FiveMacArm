@@ -42,52 +42,28 @@ El framework distingue automáticamente entre dos tipos de comportamiento según
 ### 6.1 Controles Posicionales (Coordenadas Absolutas)
 Definidos directamente sobre la ventana principal o un panel.
 - **Definición**: `@ nRow, nCol ... OF oWnd`
-- **Comportamiento**: Se sitúan en las coordenadas indicadas.
 
 ### 6.2 Controles Contenidos (Layout Fluido en Stacks)
 Residen dentro de un contenedor de tipo Stack (`VStack`, `HStack`, `ZStack`).
 - **Definición**: `@ 0, 0 ... OF oStack`
-- **Comportamiento**: Las coordenadas son ignoradas. La posición la decide el Stack padre.
 
 ---
 
-## 7. Catálogo de Controles de Layout (Real)
+## 7. Catálogo de Controles de Layout
+Contenedores para organizar la interfaz de forma reactiva y fluida.
 
-### 7.1 [TSwVStack](controls/TSwVStack.md) / TSwHStack
-| Propiedad | Tipo | Descripción |
-| :--- | :--- | :--- |
-| `nSpacing` | Numérico | Espaciado entre elementos. |
-| `nAlignment`| Numérico | Alineación (0, 1, 2). |
-
-### 7.2 TSwZStack
-| Propiedad | Tipo | Descripción |
-| :--- | :--- | :--- |
-| `nAlignment`| Numérico | Alineación de las capas. |
+- **[TSwVStack](controls/TSwVStack.md)**: Organización vertical.
+- **TSwHStack**: Organización horizontal.
+- **TSwZStack**: Organización por capas (eje Z).
 
 ---
 
-## 8. Controles de Contenido (Real)
+## 8. Catálogo de Controles de Contenido
+Componentes individuales para interacción y visualización de datos.
 
-### 8.1 [TSwLabel](controls/TSwLabel.md)
-| Propiedad | Tipo | Descripción |
-| :--- | :--- | :--- |
-| `Caption` | String | Contenido del texto. |
-| `uFontSize`| Numérico/String | Tamaño de fuente. |
-| `nAlignment`| Numérico | Alineación del texto. |
-| `cColor` | String | Color del texto (Hex o Nombre). |
-
-### 8.2 [TSwButton](controls/TSwButton.md)
-| Propiedad | Tipo | Descripción |
-| :--- | :--- | :--- |
-| `Caption` | String | Texto del botón. |
-| `bAction` | Block | Acción al pulsar. |
-
-### 8.3 [TSwGet](controls/TSwGet.md)
-| Propiedad | Tipo | Descripción |
-| :--- | :--- | :--- |
-| `Value` | Mixto | Valor actual del campo. |
-| `cPicture` | String | Máscara de entrada (Picture). |
-| `bValid` | Block | Codeblock de validación. |
+- **[TSwLabel](controls/TSwLabel.md)**: Etiquetas de texto y símbolos.
+- **[TSwButton](controls/TSwButton.md)**: Botones interactivos.
+- **[TSwGet](controls/TSwGet.md)**: Campos de entrada de datos con validación.
 
 ---
 
