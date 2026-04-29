@@ -11,21 +11,7 @@ La transición no fue inmediata. Experimentamos con varios enfoques:
 - **Puente Clásico**: Inicialmente, usamos archivos Objective-C como intermediarios ("wrappers") para que Harbour pudiera hablar con Swift. Era funcional pero pesado de mantener.
 - **Macros de Swift**: Descubrimos que podíamos prescindir de esos archivos intermediarios aprovechando la potencia de las **Macros de Swift**. Esto nos permitió incrustar controles Swift dentro de vistas Objective-C clásicas de forma más directa.
 
-## 4. El Desafío del Hilo 0: La Revolución Multihilo
-Uno de los mayores obstáculos técnicos que superamos fue la "lucha de poder" entre Harbour y Swift por el **Hilo 0 (Main Thread)**. Apple exige que toda la interfaz gráfica resida en el Hilo 0, pero Harbour, por su naturaleza, también tendía a secuestrar dicho hilo, provocando bloqueos y cierres inesperados.
-
-La solución fue un salto arquitectónico sin precedentes en Fivemac:
-- **SwiftUI en Hilo 0**: Toda la gestión visual corre en el hilo principal, garantizando la fluidez que macOS exige.
-- **Harbour en Hilo 1**: Desplazamos el motor de Harbour a un hilo secundario dedicado. Esto permite que la lógica de negocio procese datos sin congelar la interfaz.
-- **Swift Concurrency**: Swift gestiona además múltiples hilos adicionales para procesos asíncronos pesados (red, bases de datos), manteniendo la respuesta de la App instantánea.
-
-### De la complejidad a la simplicidad
-Hemos pasado de un Fivemac monohilo, saturado de *callbacks*, *handleEvents* e infinitas funciones de control, a un sistema **Multihilo Limpio** que se basa en solo **3 llamadas maestras**:
-1. **Harbour -> Swift**: Envío de estados y comandos iniciales.
-2. **Swift -> Harbour**: Notificación reactiva de cambios de estado del usuario (vía JSON).
-3. **Query de Estado**: Consultas síncronas/asíncronas para obtener información precisa entre mundos.
-
-## 5. El Salto Conceptual: "La Isla" (SW)
+## 4. El Salto Conceptual: "La Isla" (SW)
 Llegados a este punto, surgió la pregunta definitiva: **¿Por qué seguir forzando a Swift a vivir dentro de vistas clásicas y complejas funciones de comunicación nativa?**
 
 De esta reflexión nació la idea de **SW (La Isla)**. Decidimos aislar ambos mundos:
@@ -35,33 +21,43 @@ De esta reflexión nació la idea de **SW (La Isla)**. Decidimos aislar ambos mu
 
 Este enfoque permite que Harbour viva en su mundo de datos y Swift en su mundo visual, comunicándose solo cuando es estrictamente necesario para actualizar el estado o notificar acciones del usuario.
 
+## 5. La Revolución Multihilo: Solucionando el conflicto del Hilo 0
+Una vez aislados los mundos, nos enfrentamos al mayor obstáculo técnico: la "lucha de poder" por el **Hilo 0 (Main Thread)**. Apple exige que toda la interfaz gráfica resida en el Hilo 0, pero Harbour también tendía a secuestrar dicho hilo, provocando bloqueos.
+
+La arquitectura de "La Isla" nos permitió dar el paso definitivo al multihilo:
+- **SwiftUI en Hilo 0**: La gestión visual corre en el hilo principal, garantizando fluidez total.
+- **Harbour en Hilo 1**: Desplazamos el motor de Harbour a un hilo secundario dedicado. La lógica procesa datos sin congelar la interfaz.
+- **Swift Concurrency**: Gestión de múltiples hilos adicionales para procesos asíncronos pesados.
+
+### De la complejidad a la simplicidad
+Hemos pasado de un Fivemac monohilo, saturado de *callbacks*, *handleEvents* e infinitas funciones de control, a un sistema **Multihilo Limpio** que se basa en solo **3 llamadas maestras**:
+1. **Harbour -> Swift**: Envío de estados y comandos iniciales.
+2. **Swift -> Harbour**: Notificación reactiva de cambios de estado del usuario (vía JSON).
+3. **Query de Estado**: Consultas síncronas/asíncronas para obtener información precisa entre mundos.
+
 ---
 
-## 5. Catálogo de Controles y Propiedades (SW)
-
-A continuación, enumeramos los componentes actuales de la arquitectura SW, su sintaxis en Harbour y las propiedades que pueden gestionarse de forma reactiva.
-
-## 5. Arquitectura de Layout: ¿Posicional o Contenido?
+## 6. Arquitectura de Layout: ¿Posicional o Contenido?
 
 Una de las innovaciones más potentes de **SW** es la capacidad de mezclar dos filosofías de diseño en una misma interfaz. El framework distingue automáticamente entre dos tipos de comportamiento según su contenedor:
 
-### 5.1 Controles Posicionales (Coordenadas Absolutas)
+### 6.1 Controles Posicionales (Coordenadas Absolutas)
 Son aquellos que se definen directamente sobre la ventana principal o un panel con dimensiones fijas.
 - **Definición**: `@ nRow, nCol ... OF oWnd`
 - **Comportamiento**: Se sitúan exactamente en las coordenadas indicadas. Son ideales para layouts tradicionales o para posicionar "Stacks" enteros como puntos de partida.
 
-### 5.2 Controles Contenidos (Layout Fluido en Stacks)
+### 6.2 Controles Contenidos (Layout Fluido en Stacks)
 Son aquellos que residen dentro de un contenedor de tipo Stack (`VStack`, `HStack`, `ZStack`).
 - **Definición**: `@ 0, 0 ... OF oStack`
 - **Comportamiento**: Las coordenadas `@ nRow, nCol` son ignoradas. La posición del control la decide el Stack padre basándose en el orden de creación, el `nSpacing` y el `nAlignment`. Esto permite que la interfaz sea dinámica, redimensionable y mucho más fácil de mantener.
 
 ---
 
-## 6. Catálogo de Controles de Layout (Stacks)
+## 7. Catálogo de Controles de Layout (Stacks)
 
 Los contenedores de layout son los cimientos de "La Isla". A diferencia del modelo clásico de coordenadas absolutas, los Stacks utilizan un motor de diseño fluido y reactivo.
 
-### 5.1 TSwVStack (Vertical Stack)
+### 7.1 TSwVStack (Vertical Stack)
 Organiza a sus hijos de arriba hacia abajo.
 
 | Propiedad | Tipo | Descripción |
@@ -80,7 +76,7 @@ Organiza a sus hijos de arriba hacia abajo.
 ACTIVATE VSTACK oVStack
 ```
 
-### 5.2 TSwHStack (Horizontal Stack)
+### 7.2 TSwHStack (Horizontal Stack)
 Organiza a sus hijos de izquierda a derecha.
 
 | Propiedad | Tipo | Descripción |
@@ -98,7 +94,7 @@ Organiza a sus hijos de izquierda a derecha.
 ACTIVATE HSTACK oHStack
 ```
 
-### 5.3 TSwZStack (Depth Stack)
+### 7.3 TSwZStack (Depth Stack)
 Superpone elementos uno encima de otro (eje Z). Es ideal para crear fondos personalizados o capas de interfaz.
 
 | Propiedad | Tipo | Descripción |
@@ -115,9 +111,9 @@ ACTIVATE ZSTACK oZStack
 
 ---
 
-## 6. Controles de Contenido
+## 8. Controles de Contenido
 
-### 6.1 TSwLabel
+### 8.1 TSwLabel
 Componente de texto nativo con soporte para estilos modernos.
 
 | Propiedad | Tipo | Descripción |
@@ -126,7 +122,7 @@ Componente de texto nativo con soporte para estilos modernos.
 | `nSize` | Numérico | Tamaño de la fuente. |
 | `lBold` | Lógico | Aplica peso negrita. |
 
-### 6.2 TSwButton
+### 8.2 TSwButton
 Botón nativo con soporte para codeblocks en Harbour.
 
 | Propiedad | Tipo | Descripción |
@@ -140,7 +136,7 @@ Botón nativo con soporte para codeblocks en Harbour.
    ACTION msgInfo( "Hola desde Swift!" )
 ```
 
-### 6.3 TSwImage
+### 8.3 TSwImage
 Renderizado de imágenes nativas.
 
 | Propiedad | Tipo | Descripción |
@@ -149,7 +145,7 @@ Renderizado de imágenes nativas.
 | `nWidth` | Numérico | Ancho deseado. |
 | `nHeight`| Numérico | Alto deseado. |
 
-### 6.4 TSwToggle
+### 8.4 TSwToggle
 Interruptor nativo (Switch).
 
 | Propiedad | Tipo | Descripción |
@@ -157,7 +153,7 @@ Interruptor nativo (Switch).
 | `cText` | String | Etiqueta descriptiva. |
 | `lValue` | Lógico | Estado del interruptor. |
 
-### 6.5 TSwSlider
+### 8.5 TSwSlider
 Control de selección de rango.
 
 | Propiedad | Tipo | Descripción |
@@ -168,9 +164,9 @@ Control de selección de rango.
 
 ---
 
-## 7. Componentes de Datos
+## 9. Componentes de Datos
 
-### 7.1 TSwBrowse (El Componente Estrella)
+### 9.1 TSwBrowse (El Componente Estrella)
 Un potente motor de tablas basado en `Table` de SwiftUI. 
 
 | Propiedad | Tipo | Descripción |
@@ -190,5 +186,5 @@ oBrw:SetArray( aData )
 
 ---
 
-## 8. Conclusión
+## 10. Conclusión
 La arquitectura **SW** no es solo un puente; es una nueva forma de entender el desarrollo con Harbour en macOS. Al delegar la complejidad visual a SwiftUI y mantener la lógica en Harbour, conseguimos aplicaciones con el rendimiento de Apple y la flexibilidad de xBase.
