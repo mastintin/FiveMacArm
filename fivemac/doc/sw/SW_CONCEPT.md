@@ -64,6 +64,12 @@ Componentes individuales para interacción y visualización de datos.
 - **[TSwLabel](controls/TSwLabel.md)**: Etiquetas de texto y símbolos.
 - **[TSwButton](controls/TSwButton.md)**: Botones interactivos.
 - **[TSwGet](controls/TSwGet.md)**: Campos de entrada de datos con validación.
+- **[TSwToggle](controls/TSwToggle.md)**: Interruptores y botones de estado.
+- **[TSwSlider](controls/TSwSlider.md)**: Selección de valores en rangos.
+- **[TSwPicker](controls/TSwPicker.md)**: Listas desplegables y selectores.
+- **[TSwDatePicker](controls/TSwDatePicker.md)**: Selectores de fecha nativos.
+- **[TSwImage](controls/TSwImage.md)**: Visualización de imágenes, símbolos y QRs.
+- **[TSwList](controls/TSwList.md)**: Contenedor de listas dinámicas con layouts.
 
 ---
 
