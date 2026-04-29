@@ -32,6 +32,13 @@ Hemos dado un salto generacional en la integración Harbour-Swift:
   - Support for **SF Symbols** (`ImgSymbols`) alongside traditional bitmaps.
   - Updated build system using `clang` and dynamic SDK path detection.
 
+## 🏝️ Swift Island (sw): Arquitectura 2.0
+Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.
+
+**[📖 Leer más sobre la Evolución de "La Isla" (Arquitectura SW)](fivemac/doc/sw/SW_CONCEPT.md)**
+
+---
+
 ## 🎯 Development Strategy
 
 In the recent evolution of FiveMac, we are prioritizing new developments in **Swift** over **Objective-C** for specific modules (especially in the `SwiftUI/` and modern network wrappers). This strategic shift is based on:
