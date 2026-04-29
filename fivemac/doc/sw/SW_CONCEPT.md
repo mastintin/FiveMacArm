@@ -53,8 +53,8 @@ Residen dentro de un contenedor de tipo Stack (`VStack`, `HStack`, `ZStack`).
 Contenedores para organizar la interfaz de forma reactiva y fluida.
 
 - **[TSwVStack](controls/TSwVStack.md)**: Organización vertical.
-- **TSwHStack**: Organización horizontal.
-- **TSwZStack**: Organización por capas (eje Z).
+- **[TSwHStack](controls/TSwHStack.md)**: Organización horizontal.
+- **[TSwZStack](controls/TSwZStack.md)**: Organización por capas (eje Z).
 - **[TSwGrid](controls/TSwGrid.md)**: Cuadrículas adaptativas y flexibles.
 - **[TSwTabView](controls/TSwTabView.md)**: Navegación por pestañas nativas.
 - **[TSwSidebar](controls/TSwSidebar.md)**: Barra lateral de navegación macOS.
