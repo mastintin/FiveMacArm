@@ -1,6 +1,10 @@
 # FiveMac Framework - Modernization Log (Abril 2026)
 
 ## 🏝️ Swift Island (sw): Arquitectura 2.0
+Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.
+
+**[📖 Leer más sobre la Evolución de "La Isla" (Arquitectura SW)](fivemac/doc/sw/SW_CONCEPT.md)**
+
 Hemos dado un salto generacional en la integración Harbour-Swift:
 *   **Universal Dispatcher (Type-Agnostic)**: El bridge ya no necesita conocer el tipo de control. Todo se maneja por IDs y estados atómicos, simplificando el mantenimiento un 90%.
 *   **Geometría Reactiva**: Primer sistema de coordenadas dinámicas en tiempo real. Al cambiar `oControl:nTop` en Harbour, el objeto se desplaza en SwiftUI instantáneamente.
