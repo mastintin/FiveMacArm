@@ -4,6 +4,12 @@
 
 CLASS TSwVStack FROM TSwiftControl
 
+    ACCESS nSpacing          INLINE ::hState["spacing"]
+    ASSIGN nSpacing( n )     INLINE ( ::hState["spacing"] := n, ::Apply( "spacing", n ) )
+    
+    ACCESS nAlignment        INLINE ::hState["alignment"]
+    ASSIGN nAlignment( n )   INLINE ( ::hState["alignment"] := n, ::Apply( "alignment", n ) )
+
     METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize )
 
 ENDCLASS

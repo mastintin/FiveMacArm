@@ -131,6 +131,8 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyab
     public var scrollable: Bool = true
     public var backgroundColor: AnyShapeStyle? = nil
     public var cornerRadius: CGFloat = 0
+    public var spacing: CGFloat = 0
+    public var alignment: Int = 0 // 0: center, 1: leading/top, 2: trailing/bottom
     
     public init() {}
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
@@ -146,6 +148,13 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyab
             if let n = (value as? NSNumber)?.doubleValue { self.cornerRadius = CGFloat(n) }
             else if let n = value as? Double { self.cornerRadius = CGFloat(n) }
             else if let n = value as? Int { self.cornerRadius = CGFloat(n) }
+        } else if prop == "spacing" {
+            if let n = (value as? NSNumber)?.doubleValue { self.spacing = CGFloat(n) }
+            else if let n = value as? Double { self.spacing = CGFloat(n) }
+            else if let n = value as? Int { self.spacing = CGFloat(n) }
+        } else if prop == "alignment" {
+            if let n = (value as? NSNumber)?.intValue { self.alignment = n }
+            else if let n = value as? Int { self.alignment = n }
         }
     }
 }

@@ -73,19 +73,7 @@ public struct SwRecursiveItemView: View {
     @ViewBuilder
     private func renderStack() -> some View {
         if let state = ViewRegistry.getState(for: item.id) as? SwiftVStackState {
-            if item.type == .zstack {
-                ZStack {
-                    ForEach(state.items) { child in
-                        SwRecursiveItemView(item: child)
-                    }
-                }
-                .frame(width: (item.itemWidth ?? 0) > 0 ? CGFloat(item.itemWidth ?? 0) : nil,
-                       height: (item.itemHeight ?? 0) > 0 ? CGFloat(item.itemHeight ?? 0) : nil)
-                .background(state.backgroundColor ?? AnyShapeStyle(Color.clear))
-                .cornerRadius(state.cornerRadius)
-            } else {
-                SwStackContent(state: state, type: item.type)
-            }
+            SwStackContent(state: state, type: item.type)
         }
     }
 
@@ -215,11 +203,38 @@ struct SwStackContent: View {
         
         Group {
             if type == .vstack {
-                VStack(spacing: 0) { content }
+                let align: HorizontalAlignment = {
+                    switch state.alignment {
+                    case 1: return .leading
+                    case 2: return .trailing
+                    default: return .center
+                    }
+                }()
+                VStack(alignment: align, spacing: state.spacing) { content }
             } else if type == .hstack {
-                HStack(spacing: 0) { content }
+                let align: VerticalAlignment = {
+                    switch state.alignment {
+                    case 1: return .top
+                    case 2: return .bottom
+                    default: return .center
+                    }
+                }()
+                HStack(alignment: align, spacing: state.spacing) { content }
             } else {
-                ZStack { content }
+                let align: Alignment = {
+                    switch state.alignment {
+                    case 1: return .topLeading
+                    case 2: return .top
+                    case 3: return .topTrailing
+                    case 4: return .leading
+                    case 5: return .trailing
+                    case 6: return .bottomLeading
+                    case 7: return .bottom
+                    case 8: return .bottomTrailing
+                    default: return .center
+                    }
+                }()
+                ZStack(alignment: align) { content }
             }
         }
         .background(state.backgroundColor ?? AnyShapeStyle(Color.clear))

@@ -12,6 +12,9 @@
  
      ACCESS nCorner          INLINE hb_HGetDef( ::hState, "corner", 0 )
      ASSIGN nCorner( n )     INLINE ( ::hState["corner"] := n, ::Apply( "corner", n ) )
+
+     ACCESS nAlignment       INLINE hb_HGetDef( ::hState, "alignment", 0 )
+     ASSIGN nAlignment( n )  INLINE ( ::hState["alignment"] := n, ::Apply( "alignment", n ) )
  
      METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize )
  
