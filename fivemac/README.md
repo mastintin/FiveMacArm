@@ -38,7 +38,7 @@ Mejoras estéticas y funcionales para elevar la experiencia de usuario:
 
 # Previous Updates (April 2026)
 
-## 🏝️ Swift Island (sw): Revolucionaria Arquitectura Harbour-Swift 
+## 🏝️ Swift Island (sw): Arquitectura 2.0 
 Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.
 
 **[📖 Leer más sobre la Evolución de "La Isla" (Arquitectura SW)](doc/sw/SW_CONCEPT.md)**
