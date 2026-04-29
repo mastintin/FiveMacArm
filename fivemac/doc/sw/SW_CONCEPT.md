@@ -53,7 +53,7 @@ Residen dentro de un contenedor de tipo Stack (`VStack`, `HStack`, `ZStack`).
 
 ## 7. Catálogo de Controles de Layout (Real)
 
-### 7.1 TSwVStack / TSwHStack
+### 7.1 [TSwVStack](controls/TSwVStack.md) / TSwHStack
 | Propiedad | Tipo | Descripción |
 | :--- | :--- | :--- |
 | `nSpacing` | Numérico | Espaciado entre elementos. |
@@ -68,7 +68,7 @@ Residen dentro de un contenedor de tipo Stack (`VStack`, `HStack`, `ZStack`).
 
 ## 8. Controles de Contenido (Real)
 
-### 8.1 TSwLabel
+### 8.1 [TSwLabel](controls/TSwLabel.md)
 | Propiedad | Tipo | Descripción |
 | :--- | :--- | :--- |
 | `Caption` | String | Contenido del texto. |
@@ -76,17 +76,18 @@ Residen dentro de un contenedor de tipo Stack (`VStack`, `HStack`, `ZStack`).
 | `nAlignment`| Numérico | Alineación del texto. |
 | `cColor` | String | Color del texto (Hex o Nombre). |
 
-### 8.2 TSwButton
+### 8.2 [TSwButton](controls/TSwButton.md)
 | Propiedad | Tipo | Descripción |
 | :--- | :--- | :--- |
 | `Caption` | String | Texto del botón. |
 | `bAction` | Block | Acción al pulsar. |
 
-### 8.3 TSwToggle
+### 8.3 [TSwGet](controls/TSwGet.md)
 | Propiedad | Tipo | Descripción |
 | :--- | :--- | :--- |
-| `Caption` | String | Texto descriptivo. |
-| `lValue` | Lógico | Estado On/Off. |
+| `Value` | Mixto | Valor actual del campo. |
+| `cPicture` | String | Máscara de entrada (Picture). |
+| `bValid` | Block | Codeblock de validación. |
 
 ---
 
