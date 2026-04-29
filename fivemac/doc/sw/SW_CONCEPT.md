@@ -11,7 +11,21 @@ La transición no fue inmediata. Experimentamos con varios enfoques:
 - **Puente Clásico**: Inicialmente, usamos archivos Objective-C como intermediarios ("wrappers") para que Harbour pudiera hablar con Swift. Era funcional pero pesado de mantener.
 - **Macros de Swift**: Descubrimos que podíamos prescindir de esos archivos intermediarios aprovechando la potencia de las **Macros de Swift**. Esto nos permitió incrustar controles Swift dentro de vistas Objective-C clásicas de forma más directa.
 
-## 4. El Salto Conceptual: "La Isla" (SW)
+## 4. El Desafío del Hilo 0: La Revolución Multihilo
+Uno de los mayores obstáculos técnicos que superamos fue la "lucha de poder" entre Harbour y Swift por el **Hilo 0 (Main Thread)**. Apple exige que toda la interfaz gráfica resida en el Hilo 0, pero Harbour, por su naturaleza, también tendía a secuestrar dicho hilo, provocando bloqueos y cierres inesperados.
+
+La solución fue un salto arquitectónico sin precedentes en Fivemac:
+- **SwiftUI en Hilo 0**: Toda la gestión visual corre en el hilo principal, garantizando la fluidez que macOS exige.
+- **Harbour en Hilo 1**: Desplazamos el motor de Harbour a un hilo secundario dedicado. Esto permite que la lógica de negocio procese datos sin congelar la interfaz.
+- **Swift Concurrency**: Swift gestiona además múltiples hilos adicionales para procesos asíncronos pesados (red, bases de datos), manteniendo la respuesta de la App instantánea.
+
+### De la complejidad a la simplicidad
+Hemos pasado de un Fivemac monohilo, saturado de *callbacks*, *handleEvents* e infinitas funciones de control, a un sistema **Multihilo Limpio** que se basa en solo **3 llamadas maestras**:
+1. **Harbour -> Swift**: Envío de estados y comandos iniciales.
+2. **Swift -> Harbour**: Notificación reactiva de cambios de estado del usuario (vía JSON).
+3. **Query de Estado**: Consultas síncronas/asíncronas para obtener información precisa entre mundos.
+
+## 5. El Salto Conceptual: "La Isla" (SW)
 Llegados a este punto, surgió la pregunta definitiva: **¿Por qué seguir forzando a Swift a vivir dentro de vistas clásicas y complejas funciones de comunicación nativa?**
 
 De esta reflexión nació la idea de **SW (La Isla)**. Decidimos aislar ambos mundos:
