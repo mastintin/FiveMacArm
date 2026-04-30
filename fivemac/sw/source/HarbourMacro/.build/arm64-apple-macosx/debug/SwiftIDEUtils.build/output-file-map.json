@@ -1,0 +1,33 @@
+{
+  "": {
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/master.swiftdeps"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftIDEUtils/SwiftIDEUtilsCompatibility.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SwiftIDEUtilsCompatibility.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SwiftIDEUtilsCompatibility.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SwiftIDEUtilsCompatibility~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SwiftIDEUtilsCompatibility.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SwiftIDEUtilsCompatibility.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftIDEUtils/Syntax+Classifications.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/Syntax+Classifications.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/Syntax+Classifications.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/Syntax+Classifications~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/Syntax+Classifications.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/Syntax+Classifications.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftIDEUtils/SyntaxClassification.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassification.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassification.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassification~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassification.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassification.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftIDEUtils/SyntaxClassifier.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassifier.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassifier.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassifier~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassifier.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftIDEUtils.build/SyntaxClassifier.dia"
+  }
+}
