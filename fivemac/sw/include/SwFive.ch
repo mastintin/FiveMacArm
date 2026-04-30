@@ -257,6 +257,53 @@
    => ;
    [ <oWv> := ] TSwWebView():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cUrl>], <oWnd>, , [<nRes>] )
 
+#xcommand @ <nRow>, <nCol> CONTROL MENU [ <oMenu> ] ;
+   [ PROMPT <cPrompt> ] ;
+   [ ICON <cIcon> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oMenu> := ] TSwMenu():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cPrompt>], <oWnd>, [<nRes>] )
+
+#xcommand CONTROL MENUITEM [ <oItem> ] ;
+   [ PROMPT <cPrompt> ] ;
+   [ ICON <cIcon> ] ;
+   [ <of: OF, MENU> <oMenu> ] ;
+   [ ACTION <uAction> ] ;
+   => ;
+   [ <oItem> := ] TSwMenuItem():New( 0, 0, <oMenu>, [<cPrompt>], [<{uAction}>] )
+
+// --- App Menu Commands ---
+
+#xcommand MENU [ <oMenu> ] ;
+   => ;
+   [ <oMenu> := ] sw_MenuStart()
+
+#xcommand ENDMENU ;
+   => ;
+   sw_MenuEnd()
+
+#xcommand MENUITEM <cPrompt> ;
+   [ ACTION <uAction> ] ;
+   [ SHORTCUT <cShortcut> ] ;
+   => ;
+   sw_MenuItemStackFix( <cPrompt>, [<{uAction}>], [<cShortcut>] )
+
+#xcommand MENUITEM [ <oItem> ] PROMPT <cPrompt> ;
+   [ ACTION <uAction> ] ;
+   [ SHORTCUT <cShortcut> ] ;
+   => ;
+   [ <oItem> := ] sw_MenuItemStackFix( <cPrompt>, [<{uAction}>], [<cShortcut>] )
+
+#xcommand SEPARATOR ;
+   => ;
+   sw_MenuItemStackFix( "-" )
+
+#xcommand SET MENU [ TO ] <oMenu> ;
+   => ;
+   <oMenu>:Activate()
+
 #endif
  
 #ifndef TSQLite

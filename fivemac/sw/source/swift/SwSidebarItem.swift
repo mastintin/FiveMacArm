@@ -67,7 +67,7 @@ public struct SwSidebarItemView: View {
 
     @MainActor
     public static func create(id: String, initial: GenericInit) -> StackItem {
-        let isInter = (initial.interactive ?? 0) != 0
+        let isInter = (initial.interactive ?? 1) != 0
         let state = SwiftSidebarItemState(id: id, prompt: initial.title ?? "", symbol: initial.caption ?? "", isInteractive: isInter)
         ViewRegistry.register(state, for: id)
         let item = StackItem(type: .sidebaritem, id: id)

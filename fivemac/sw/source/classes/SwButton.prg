@@ -7,13 +7,13 @@
  
      ACCESS bAction          INLINE hb_HGetDef( ::hState, "action", nil )
      ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
-                                      ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bPipeline ),;
+                                      ::hState["interactive"] := iif( !Empty( u ) .or. !Empty( ::bPipeline ), 1, 0 ),;
                                       ::Apply( "interactive", ::hState["interactive"] ) )
   
      ACCESS bPipeline        INLINE hb_HGetDef( ::hState, "pipeline", nil )
      ASSIGN bPipeline( u )   INLINE ( ::hState["pipeline"] := u,;
                                       ::hState["pipeline_json"] := if( !Empty(u), Sw_GetProxy():Cook( u )["json"], nil ),;
-                                      ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
+                                      ::hState["interactive"] := iif( !Empty( u ) .or. !Empty( ::bAction ), 1, 0 ),;
                                       ::Apply( { "interactive" => ::hState["interactive"], "pipeline_json" => ::hState["pipeline_json"] } ) )
  
      ACCESS cColor           INLINE hb_HGetDef( ::hState, "color", "" )
@@ -72,7 +72,7 @@
  
      ::hState["caption"] := cPrompt
      ::hState["type"]    := 9
-     ::hState["interactive"] := .F.
+     ::hState["interactive"] := 0
  
      ::bAction  := bAction
     

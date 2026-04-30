@@ -90,11 +90,20 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             newItem = SwiftTabView.create(id: cleanid, initial: initial)
             
+        case 25: // Menu
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = SwiftMenuView.create(id: cleanid, initial: initial)
+
+        case 26: // MenuItem
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = SwiftMenuItemView.create(id: cleanid, initial: initial)
+            
         default:
             print("SwFactory: [AVISO] Tipo de componente \(typeId) no implementado.")
         }
     } catch {
-        print("SwFactory: [ERROR] Error decodificando component \(typeId): \(error)")
+        print("SwFactory: [ERROR] ❌ Error decodificando component \(typeId): \(error)")
+        print("SwFactory: [DEBUG] JSON recibido: \(jsonStr)")
     }
     
     // Procesamiento de Jerarquía
@@ -105,10 +114,14 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
                 ViewRegistry.registerParent(id: cleanid, parentId: cleanParentId)
                 parentState.items.append(item)
                 parentState.lastItem = item
-                print("SwFactory: [JERARQUÍA] Añadido \(cleanid) al padre [\(cleanParentId)]. Total: \(parentState.items.count)")
+                print("SwFactory: [JERARQUÍA] ✅ Añadido \(cleanid) al padre [\(cleanParentId)]. Total items en padre: \(parentState.items.count)")
             } else {
-                print("SwFactory: [ERROR] No se encontró el padre o no es un contenedor: \(cleanParentId)")
+                print("SwFactory: [ERROR] ❌ No se encontró el padre o no es un contenedor válido: \(cleanParentId)")
+                // Si no se encuentra el padre, por seguridad lo añadimos a la última ventana activa?
+                // No, mejor dejarlo huérfano para ver el error en el log.
             }
+        } else {
+            print("SwFactory: [AVISO] ⚠️ Componente \(cleanid) creado sin parentid.")
         }
     }
 }

@@ -61,6 +61,10 @@ public struct SwRecursiveItemView: View {
                 } else {
                     AnyView(EmptyView())
                 }
+            case .menu:
+                AnyView(renderMenu())
+            case .menuitem:
+                AnyView(renderMenuItem())
         default:
                 AnyView(EmptyView())
             }
@@ -186,6 +190,22 @@ public struct SwRecursiveItemView: View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? SwiftSidebarItemState {
                 SwSidebarItemView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderMenu() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftMenuState {
+                SwiftMenuView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderMenuItem() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftMenuItemState {
+                SwiftMenuItemView(state: state)
             } else { EmptyView() }
         }
     }
