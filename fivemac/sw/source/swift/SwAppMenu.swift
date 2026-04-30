@@ -1,21 +1,14 @@
 import AppKit
 import Foundation
 
-@_cdecl("HB_FUN_SW_SETMAINMENU")
-public func sw_setmainmenu_hb(_ p: UnsafeMutableRawPointer?) {
-    print("🚀 [SwAppMenu] HB_FUN_SW_SETMAINMENU llamada")
-    guard let jsonStr = hb_parc(1).map({ String(cString: $0) }) else { 
-        print("❌ [SwAppMenu] No se recibió string de Harbour")
-        return 
-    }
-    
-    print("📦 [SwAppMenu] JSON recibido: \(jsonStr)")
-
-    DispatchQueue.main.async {
-        print("🧵 [SwAppMenu] Ejecutando en Main Thread")
-        guard let jsonData = jsonStr.data(using: .utf8),
-              let menuItems = try? JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]] else {
-            print("❌ [SwAppMenu] Error decodificando JSON")
+public class SwAppMenu {
+    @MainActor
+    public static func setup(from jsonData: Data) {
+        print("🚀 [SwAppMenu] setup llamado")
+        
+        guard let dict = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+              let menuItems = dict["items"] as? [[String: Any]] else {
+            print("❌ [SwAppMenu] Error decodificando JSON de AppMenu")
             return
         }
 

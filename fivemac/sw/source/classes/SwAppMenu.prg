@@ -27,9 +27,9 @@ METHOD ToHash() CLASS TSwAppMenu
 return aData
 
 METHOD Activate() CLASS TSwAppMenu
-    local cJson := hb_jsonEncode( ::ToHash() )
-    SW_LOG( "🚢 [TSwAppMenu:Activate] Enviando JSON a Swift: " + cJson )
-    SW_SETMAINMENU( cJson )
+    local hData := { "type" => SW_TYPE_APPMENU, "id" => "mainmenu", "items" => ::ToHash() }
+    SW_LOG( "🚢 [TSwAppMenu:Activate] Enviando mensaje de creación para MainMenu" )
+    SD:Create( hData )
 return nil
 
 // -------------------------------------------------------------------------- //
