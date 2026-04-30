@@ -1,2 +1,0 @@
-@protocol InfoBarCommunicator <NSObject>
-@end

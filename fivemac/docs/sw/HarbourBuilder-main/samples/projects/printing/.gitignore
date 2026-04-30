@@ -1,7 +1,0 @@
-*.o
-*.c
-*.dbf
-*.sqlite
-classes.o
-gtk3_core.o
-print_example
