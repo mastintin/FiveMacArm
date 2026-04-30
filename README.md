@@ -39,7 +39,7 @@ Hemos dado un salto generacional en la integración Harbour-Swift:
 ## 🏝️ Swift Island (sw): Arquitectura 2.0
 Esta nueva arquitectura representa el futuro de FiveMac, eliminando las barreras tradicionales entre el mundo xBase y el ecosistema moderno de Apple.
 
-**[📖 Leer más sobre la Evolución de "La Isla" (Arquitectura SW)](fivemac/doc/sw/SW_CONCEPT.md)**
+**[🚀 Acceder al Portal Interactivo de "La Isla" (Arquitectura SW)](https://mastintin.github.io/FiveMacArm/)**
 
 ---
 

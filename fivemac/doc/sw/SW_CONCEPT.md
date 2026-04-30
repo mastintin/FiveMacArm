@@ -1,4 +1,9 @@
-# SW: La Evolución de Fivemac hacia el futuro (SwiftUI)
+# 🏝️ Swift Island (SW): Arquitectura 2.0
+
+> [!TIP]
+> **Para una mejor experiencia y navegación, consulta esta documentación en nuestro [Portal Interactivo de La Isla](https://mastintin.github.io/FiveMacArm/)**
+
+---
 
 ## 1. El Origen: Modernización y ARM64
 El desarrollo de **SW** nace de la necesidad de modernizar el framework **Fivemac** original. El primer paso crítico fue adaptar el núcleo a la nueva arquitectura **Apple Silicon (ARM64)**, lo que implicó una reestructuración completa de las llamadas de Harbour y la puesta a punto de los controles existentes, eliminando APIs obsoletas (*deprecated*) y optimizando el motor nativo para los estándares actuales de macOS.
