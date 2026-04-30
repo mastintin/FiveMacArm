@@ -33,8 +33,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Desplegamos el root para que index.html funcione correctamente
-          path: '.'
+          # Desplegamos la carpeta de documentación interna que ahora es una carpeta normal
+          path: 'fivemac/docs/sw/'
           
       - name: Deploy to GitHub Pages
         id: deployment
