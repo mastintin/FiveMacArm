@@ -27,11 +27,14 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
 
         case 1, 2, 3, 24: // Stacks
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
-            newItem = createStack(id: cleanid, typeId: typeId, initial: initial)
+            let state = SwiftVStackState()
+            ViewRegistry.register(state, for: id)
+            let stackType: StackItem.ItemType = (typeId == 1) ? .vstack : (typeId == 2 ? .hstack : .zstack)
+            newItem = StackItem(type: stackType, id: cleanid)
+            setupGeometry(item: newItem!, from: initial)
 
         case 7: // Image
-            let initial = try decoder.decode(ImageInit.self, from: jsonData)
-            newItem = createImage(id: cleanid, initial: initial)
+            newItem = try SwiftImageView.create(id: cleanid, from: jsonData)
 
         case 8: // List
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
@@ -127,29 +130,6 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             print("SwFactory: [AVISO] ⚠️ Componente \(cleanid) creado sin parentid.")
         }
     }
-}
-
-// MARK: - Component Specific Creators (Desacoplados para ayudar al compilador)
-
-
-@MainActor private func createStack(id: String, typeId: Int, initial: GenericInit) -> StackItem {
-    let state = SwiftVStackState()
-    ViewRegistry.register(state, for: id)
-    let stackType: StackItem.ItemType = (typeId == 1) ? .vstack : (typeId == 2 ? .hstack : .zstack)
-    let item = StackItem(type: stackType, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
-}
-
-@MainActor private func createImage(id: String, initial: ImageInit) -> StackItem {
-    let state = ImageState(id: id, 
-                           systemName: initial.systemname ?? "", 
-                           filePath: initial.file ?? "",
-                           url: initial.url ?? "")
-    ViewRegistry.register(state, for: id)
-    let item = StackItem(type: .image, id: id)
-    setupGeometry(item: item, from: initial)
-    return item
 }
 
 // MARK: - Geometry & Protocols
