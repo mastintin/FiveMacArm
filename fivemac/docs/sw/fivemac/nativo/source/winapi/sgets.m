@@ -1,0 +1,76 @@
+#include <fivemac.h>
+
+static PHB_SYMB symFMH = NULL;
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+@interface SGet : NSSecureTextField <NSTextFieldDelegate>
+#else
+@interface SGet : NSSecureTextField
+#endif
+{
+@public
+  NSWindow *hWnd;
+}
+- (BOOL)textShouldEndEditing:(NSText *)text;
+- (void)controlTextDidChange:(NSNotification *)aNotification;
+@end
+
+@implementation SGet
+
+FIVEMAC_DRAGDROP_METHODS
+- (BOOL)textShouldEndEditing:(NSText *)text {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNLL((HB_LONGLONG)hWnd);
+  hb_vmPushLong(WM_GETVALID);
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmDo(3);
+
+  return hb_parl(-1);
+}
+
+- (void)controlTextDidChange:(NSNotification *)aNotification {
+  if (symFMH == NULL)
+    symFMH = hb_dynsymSymbol(hb_dynsymFindName("_FMO"));
+
+  hb_vmPushSymbol(symFMH);
+  hb_vmPushNil();
+  hb_vmPushNLL((HB_LONGLONG)hWnd);
+  hb_vmPushLong(WM_GETCHANGED);
+  hb_vmPushNLL((HB_LONGLONG)self);
+  hb_vmDo(3);
+
+  // NSLog( @"The contents of the text field changed" );
+}
+@end
+
+HB_FUNC(SGETCREATE) {
+  SGet *edit =
+      [[SGet alloc] initWithFrame:NSMakeRect(hb_parnl(2), hb_parnl(1),
+                                             hb_parnl(3), hb_parnl(4))];
+  NSWindow *window = (NSWindow *)hb_parnll(5);
+
+  [GetView(window) addSubview:edit];
+  edit->hWnd = window;
+  [edit setDelegate:edit];
+
+  hb_retnll((HB_LONGLONG)edit);
+}
+
+HB_FUNC(SGETRESCREATE) {
+  NSWindow *window = (NSWindow *)hb_parnll(1);
+  SGet *edit = (SGet *)[GetView(window) viewWithTag:hb_parni(2)];
+  edit->hWnd = window;
+  [edit setDelegate:edit];
+
+  hb_retnll((HB_LONGLONG)edit);
+}
+
+HB_FUNC(SGETSETISBULLETS) {
+  SGet *edit = (SGet *)hb_parnll(1);
+
+  [[edit cell] setEchosBullets:hb_parl(2)];
+}

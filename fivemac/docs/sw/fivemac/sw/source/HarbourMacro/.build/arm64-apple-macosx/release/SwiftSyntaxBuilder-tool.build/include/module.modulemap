@@ -1,0 +1,3 @@
+module SwiftSyntaxBuilder {
+    header "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxBuilder-tool.build/include/SwiftSyntaxBuilder-Swift.h"
+}

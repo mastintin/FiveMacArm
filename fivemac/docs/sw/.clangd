@@ -1,0 +1,8 @@
+CompileFlags:
+  Add: 
+    - -I/Users/manuel/Fivemac/harbour/include
+    - -I/Users/manuel/Fivemac/fivemac/nativo/include
+    - -DHB_FUNC(name)=void name(void)
+    - -isysroot
+    - /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+    - -fobjc-arc

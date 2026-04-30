@@ -1,0 +1,35 @@
+#line 14 "../../include/FiveMac.ch"
+EXTERNAL HB_GT_NUL_DEFAULT, ErrorLink, MsgBeep
+#line 4 "TestSwiftGet.prg"
+function Main()
+
+    local oWnd, oGet1, oGet2, oSay1, oSay2
+    local cText1 := "Auto-Batch 1"
+    local cText2 := "Auto-Batch 2"
+
+
+    oWnd := TWindow():New(,,,, "SwiftUI SWIFTGET Test",,,,,, 400, 400,, "oWnd", )
+
+    TSwiftLabel():New( 20, 20, 360, 20, "Using the NEW @ ... SWIFTGET command:", oWnd )
+
+
+
+
+    oGet1 := TSwiftTextField():New( 60, 20,,, cText1, "Type...", oWnd, { |cVal| oSay1:SetText( "Value 1: " + cVal ) } )
+
+
+
+    oGet2 := TSwiftTextField():New( 150, 20,,, cText2, "Type more...", oWnd, { |cVal| oSay2:SetText( "Value 2: " + cVal ) } )
+
+    oSay1 := TSwiftLabel():New( 90, 20, 360, 20, "Value 1: " + cText1, oWnd )
+    oSay2 := TSwiftLabel():New( 180, 20, 360, 20, "Value 2: " + cText2, oWnd )
+
+    TSwiftButton():New( 230, 20, 100, 30, "Set Text 1", oWnd, {|| ( oGet1:SetText( "It works!" ) )} )
+    TSwiftButton():New( 230, 130, 100, 30, "Get Text 2", oWnd, {|| ( MsgInfo( "Get 2: '" + oGet2:GetText() + "'" ) )} )
+
+    TSwiftButton():New( 300, 150, 100, 30, "Close", oWnd, {|| ( oWnd:End() )} )
+
+
+    oWnd:Activate(,, .F.,, .T.,,, )
+
+return nil

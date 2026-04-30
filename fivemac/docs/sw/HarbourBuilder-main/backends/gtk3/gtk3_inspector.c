@@ -1,0 +1,821 @@
+/*
+ * gtk3_inspector.c - Property inspector using GTK3 TreeView
+ * Replaces the Win32 ListView-based inspector for Linux.
+ *
+ * Exports: INS_Create, INS_RefreshWithData, INS_BringToFront, INS_Destroy
+ *          _INSGETDATA, _INSSETDATA
+ */
+
+#include <gtk/gtk.h>
+#include <hbapi.h>
+#include <hbapiitm.h>
+#include <hbvm.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+
+/* Defined in gtk3_core.c */
+extern void EnsureGTK( void );
+
+#define MAX_ROWS 64
+
+/* ======================================================================
+ * Data model
+ * ====================================================================== */
+
+typedef struct {
+   char szName[32];
+   char szValue[256];
+   char szCategory[32];
+   char cType;       /* S=string, N=number, L=logical, C=color, F=font */
+   int  bIsCat;      /* category header */
+   int  bCollapsed;
+   int  bVisible;
+} IROW;
+
+typedef struct {
+   GtkWidget *  window;
+   GtkWidget *  treeView;
+   GtkListStore * store;
+   HB_PTRUINT   hCtrl;       /* currently inspected control handle */
+   HB_PTRUINT   hFormCtrl;   /* form handle for combo enumeration */
+   IROW         rows[MAX_ROWS];
+   int          nRows;
+   int          map[MAX_ROWS]; /* visible row -> rows index */
+   int          nVisible;
+   GtkWidget *  combo;       /* control selection combo (GtkComboBoxText) */
+   PHB_ITEM     pOnComboSel; /* callback for combo selection change */
+   /* Properties/Events tabs */
+   GtkWidget *  tabWidget;   /* GtkNotebook for Properties/Events */
+   int          nTab;        /* 0 = Properties, 1 = Events */
+   /* Cached property rows (saved when switching to Events tab) */
+   IROW         propRows[MAX_ROWS];
+   int          nPropRows;
+   int          propMap[MAX_ROWS];
+   int          nPropVisible;
+   /* Events tab */
+   IROW         evRows[MAX_ROWS];
+   int          nEvRows;
+   int          evMap[MAX_ROWS];
+   int          nEvVisible;
+   /* Callbacks */
+   PHB_ITEM     pOnEventDblClick;  /* double-click on event row */
+   PHB_ITEM     pOnPropChanged;    /* after property edit (two-way sync) */
+} INSDATA;
+
+/* Columns in the GtkListStore */
+enum {
+   COL_NAME,       /* string */
+   COL_VALUE,      /* string */
+   COL_EDITABLE,   /* boolean - can this row be edited? */
+   COL_WEIGHT,     /* int (Pango weight) */
+   COL_BG_COLOR,   /* string (background color for row) */
+   COL_BG_SET,     /* boolean (whether to use bg color) */
+   COL_REAL_IDX,   /* int - index into INSDATA.rows[] */
+   NUM_COLS
+};
+
+/* ======================================================================
+ * Build rows from Harbour property array
+ * ====================================================================== */
+
+static void InsBuildRows( INSDATA * d, PHB_ITEM pArray )
+{
+   HB_SIZE nLen, i;
+   char szCats[16][32];
+   int nCats = 0, j;
+   int bNew;
+
+   d->nRows = 0;
+   if( !pArray || hb_arrayLen(pArray) == 0 ) return;
+
+   nLen = hb_arrayLen( pArray );
+
+   /* Collect categories */
+   for( i = 1; i <= nLen && nCats < 16; i++ )
+   {
+      PHB_ITEM pRow = hb_arrayGetItemPtr( pArray, i );
+      const char * c = hb_arrayGetCPtr( pRow, 3 );
+      bNew = 1;
+      for( j = 0; j < nCats; j++ )
+         if( strcasecmp(szCats[j], c) == 0 ) { bNew = 0; break; }
+      if( bNew ) strncpy( szCats[nCats++], c, 31 );
+   }
+
+   /* Build rows grouped by category */
+   for( j = 0; j < nCats && d->nRows < MAX_ROWS - 1; j++ )
+   {
+      /* Category header */
+      strncpy( d->rows[d->nRows].szName, szCats[j], 31 );
+      d->rows[d->nRows].szValue[0] = 0;
+      strncpy( d->rows[d->nRows].szCategory, szCats[j], 31 );
+      d->rows[d->nRows].cType = 0;
+      d->rows[d->nRows].bIsCat = 1;
+      d->rows[d->nRows].bCollapsed = 0;
+      d->rows[d->nRows].bVisible = 1;
+      d->nRows++;
+
+      for( i = 1; i <= nLen && d->nRows < MAX_ROWS; i++ )
+      {
+         PHB_ITEM pRow = hb_arrayGetItemPtr( pArray, i );
+         if( strcasecmp( hb_arrayGetCPtr(pRow,3), szCats[j] ) != 0 ) continue;
+
+         strncpy( d->rows[d->nRows].szName, hb_arrayGetCPtr(pRow,1), 31 );
+         strncpy( d->rows[d->nRows].szCategory, hb_arrayGetCPtr(pRow,3), 31 );
+         d->rows[d->nRows].cType = hb_arrayGetCPtr(pRow,4)[0];
+         d->rows[d->nRows].bIsCat = 0;
+         d->rows[d->nRows].bCollapsed = 0;
+         d->rows[d->nRows].bVisible = 1;
+
+         if( d->rows[d->nRows].cType == 'S' )
+            strncpy( d->rows[d->nRows].szValue, hb_arrayGetCPtr(pRow,2), 255 );
+         else if( d->rows[d->nRows].cType == 'N' )
+            sprintf( d->rows[d->nRows].szValue, "%d", hb_arrayGetNI(pRow,2) );
+         else if( d->rows[d->nRows].cType == 'L' )
+            strcpy( d->rows[d->nRows].szValue, hb_arrayGetL(pRow,2) ? ".T." : ".F." );
+         else if( d->rows[d->nRows].cType == 'C' )
+            sprintf( d->rows[d->nRows].szValue, "%u", (unsigned) hb_arrayGetNInt(pRow,2) );
+         else if( d->rows[d->nRows].cType == 'F' )
+            strncpy( d->rows[d->nRows].szValue, hb_arrayGetCPtr(pRow,2), 255 );
+
+         d->nRows++;
+      }
+   }
+
+   /* Build visible map */
+   d->nVisible = 0;
+   for( int k = 0; k < d->nRows; k++ )
+   {
+      if( d->rows[k].bVisible || d->rows[k].bIsCat )
+         d->map[d->nVisible++] = k;
+   }
+}
+
+/* ======================================================================
+ * Rebuild the GtkListStore from current row data
+ * ====================================================================== */
+
+static void InsRebuildStore( INSDATA * d )
+{
+   gtk_list_store_clear( d->store );
+
+   /* Rebuild visible map */
+   d->nVisible = 0;
+   for( int i = 0; i < d->nRows; i++ )
+   {
+      if( d->rows[i].bVisible || d->rows[i].bIsCat )
+         d->map[d->nVisible++] = i;
+   }
+
+   for( int i = 0; i < d->nVisible; i++ )
+   {
+      int nReal = d->map[i];
+      GtkTreeIter iter;
+      gtk_list_store_append( d->store, &iter );
+
+      if( d->rows[nReal].bIsCat )
+      {
+         char catName[64];
+         snprintf( catName, sizeof(catName), "%c  %s",
+            d->rows[nReal].bCollapsed ? '+' : '-',
+            d->rows[nReal].szName );
+
+         gtk_list_store_set( d->store, &iter,
+            COL_NAME, catName,
+            COL_VALUE, "",
+            COL_EDITABLE, FALSE,
+            COL_WEIGHT, PANGO_WEIGHT_BOLD,
+            COL_BG_COLOR, "#E6E6E6",
+            COL_BG_SET, TRUE,
+            COL_REAL_IDX, nReal,
+            -1 );
+      }
+      else
+      {
+         char dispName[72];
+         snprintf( dispName, sizeof(dispName), "    %s", d->rows[nReal].szName );
+
+         /* Color swatch for color properties */
+         gboolean hasBg = FALSE;
+         char bgColor[16] = "#FFFFFF";
+         if( d->rows[nReal].cType == 'C' )
+         {
+            unsigned int clr = (unsigned int) strtoul( d->rows[nReal].szValue, NULL, 10 );
+            int r = clr & 0xFF, g = (clr >> 8) & 0xFF, b = (clr >> 16) & 0xFF;
+            snprintf( bgColor, sizeof(bgColor), "#%02X%02X%02X", r, g, b );
+            hasBg = TRUE;
+         }
+         else if( i % 2 == 1 )
+         {
+            strcpy( bgColor, "#F8F8F8" );
+            hasBg = TRUE;
+         }
+
+         /* Events tab: not editable (double-click generates handler) */
+         gboolean editable = (d->nTab == 0) &&
+            (d->rows[nReal].cType != 'C' && d->rows[nReal].cType != 'F');
+
+         gtk_list_store_set( d->store, &iter,
+            COL_NAME, dispName,
+            COL_VALUE, d->rows[nReal].szValue,
+            COL_EDITABLE, editable,
+            COL_WEIGHT, PANGO_WEIGHT_NORMAL,
+            COL_BG_COLOR, hasBg ? bgColor : NULL,
+            COL_BG_SET, hasBg,
+            COL_REAL_IDX, nReal,
+            -1 );
+      }
+   }
+}
+
+/* ======================================================================
+ * Apply a value to the inspected control via UI_SetProp
+ * ====================================================================== */
+
+static void InsApplyValue( INSDATA * d, int nReal )
+{
+   PHB_DYNS pDyn = hb_dynsymFindName( "UI_SETPROP" );
+   if( !pDyn ) return;
+
+   hb_vmPushDynSym( pDyn ); hb_vmPushNil();
+   hb_vmPushNumInt( d->hCtrl );
+   hb_vmPushString( d->rows[nReal].szName, strlen(d->rows[nReal].szName) );
+
+   if( d->rows[nReal].cType == 'S' || d->rows[nReal].cType == 'F' )
+      hb_vmPushString( d->rows[nReal].szValue, strlen(d->rows[nReal].szValue) );
+   else if( d->rows[nReal].cType == 'N' )
+      hb_vmPushInteger( atoi(d->rows[nReal].szValue) );
+   else if( d->rows[nReal].cType == 'L' )
+      hb_vmPushLogical( strcasecmp(d->rows[nReal].szValue,".T.")==0 );
+   else if( d->rows[nReal].cType == 'C' )
+      hb_vmPushNumInt( (HB_MAXINT) strtoul(d->rows[nReal].szValue, NULL, 10) );
+   else
+      hb_vmPushNil();
+
+   hb_vmDo( 3 );
+
+   /* Notify property changed (two-way sync) */
+   if( d->pOnPropChanged && HB_IS_BLOCK( d->pOnPropChanged ) )
+      hb_itemDo( d->pOnPropChanged, 0 );
+}
+
+/* ======================================================================
+ * Callbacks
+ * ====================================================================== */
+
+/* Value cell edited */
+static void on_value_edited( GtkCellRendererText * renderer,
+   gchar * path, gchar * new_text, gpointer data )
+{
+   INSDATA * d = (INSDATA *)data;
+   GtkTreeIter iter;
+   if( !gtk_tree_model_get_iter_from_string( GTK_TREE_MODEL(d->store), &iter, path ) )
+      return;
+
+   int nReal;
+   gtk_tree_model_get( GTK_TREE_MODEL(d->store), &iter, COL_REAL_IDX, &nReal, -1 );
+
+   if( nReal < 0 || nReal >= d->nRows || d->rows[nReal].bIsCat ) return;
+   if( d->nTab == 1 ) return;  /* Events tab: no inline editing */
+
+   strncpy( d->rows[nReal].szValue, new_text, sizeof(d->rows[0].szValue) - 1 );
+   InsApplyValue( d, nReal );
+   InsRebuildStore( d );
+}
+
+/* Activate the current tab: swap rows/map/nVisible for display */
+static void InsActivateTab( INSDATA * d )
+{
+   if( d->nTab == 1 )
+   {
+      /* Show event rows */
+      memcpy( d->rows, d->evRows, sizeof(d->evRows) );
+      d->nRows = d->nEvRows;
+      memcpy( d->map, d->evMap, sizeof(d->evMap) );
+      d->nVisible = d->nEvVisible;
+   }
+   else
+   {
+      /* Restore property rows */
+      memcpy( d->rows, d->propRows, sizeof(d->propRows) );
+      d->nRows = d->nPropRows;
+      memcpy( d->map, d->propMap, sizeof(d->propMap) );
+      d->nVisible = d->nPropVisible;
+   }
+   InsRebuildStore( d );
+}
+
+/* Tab switch callback */
+static void on_inspector_tab_switched( GtkNotebook * nb, GtkWidget * page, guint nPage, gpointer data )
+{
+   INSDATA * d = (INSDATA *)data;
+   if( !d ) return;
+   d->nTab = (int)nPage;
+
+   /* Update column headers */
+   GList * cols = gtk_tree_view_get_columns( GTK_TREE_VIEW(d->treeView) );
+   if( cols )
+   {
+      GtkTreeViewColumn * nameCol = (GtkTreeViewColumn *)cols->data;
+      gtk_tree_view_column_set_title( nameCol, d->nTab == 0 ? "Property" : "Event" );
+      if( cols->next )
+      {
+         GtkTreeViewColumn * valCol = (GtkTreeViewColumn *)cols->next->data;
+         gtk_tree_view_column_set_title( valCol, d->nTab == 0 ? "Value" : "Handler" );
+      }
+      g_list_free( cols );
+   }
+
+   InsActivateTab( d );
+}
+
+/* Row activated (double-click) - toggle category, open picker, or fire event handler */
+static void on_row_activated( GtkTreeView * treeView, GtkTreePath * path,
+   GtkTreeViewColumn * column, gpointer data )
+{
+   INSDATA * d = (INSDATA *)data;
+   GtkTreeIter iter;
+   if( !gtk_tree_model_get_iter( GTK_TREE_MODEL(d->store), &iter, path ) )
+      return;
+
+   int nReal;
+   gtk_tree_model_get( GTK_TREE_MODEL(d->store), &iter, COL_REAL_IDX, &nReal, -1 );
+
+   if( nReal < 0 || nReal >= d->nRows ) return;
+
+   /* Category row: toggle collapse */
+   if( d->rows[nReal].bIsCat )
+   {
+      d->rows[nReal].bCollapsed = !d->rows[nReal].bCollapsed;
+      for( int k = nReal + 1; k < d->nRows && !d->rows[k].bIsCat; k++ )
+         d->rows[k].bVisible = !d->rows[nReal].bCollapsed;
+      InsRebuildStore( d );
+      return;
+   }
+
+   /* Color property: open color chooser */
+   if( d->rows[nReal].cType == 'C' )
+   {
+      unsigned int clr = (unsigned int) strtoul( d->rows[nReal].szValue, NULL, 10 );
+      GdkRGBA initial;
+      initial.red   = (clr & 0xFF) / 255.0;
+      initial.green  = ((clr >> 8) & 0xFF) / 255.0;
+      initial.blue   = ((clr >> 16) & 0xFF) / 255.0;
+      initial.alpha  = 1.0;
+
+      GtkWidget * dialog = gtk_color_chooser_dialog_new( "Choose Color", GTK_WINDOW(d->window) );
+      gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER(dialog), &initial );
+
+      if( gtk_dialog_run( GTK_DIALOG(dialog) ) == GTK_RESPONSE_OK )
+      {
+         GdkRGBA chosen;
+         gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER(dialog), &chosen );
+         unsigned int r = (unsigned int)(chosen.red * 255.0 + 0.5);
+         unsigned int g = (unsigned int)(chosen.green * 255.0 + 0.5);
+         unsigned int b = (unsigned int)(chosen.blue * 255.0 + 0.5);
+         unsigned int newClr = r | (g << 8) | (b << 16);
+         sprintf( d->rows[nReal].szValue, "%u", newClr );
+         InsApplyValue( d, nReal );
+         InsRebuildStore( d );
+      }
+      gtk_widget_destroy( dialog );
+      return;
+   }
+
+   /* Font property: open font chooser */
+   if( d->rows[nReal].cType == 'F' )
+   {
+      /* Convert "FontName,Size" to Pango format "FontName Size" */
+      char pangoDesc[128];
+      char szFace[64] = "Sans"; int nSize = 12;
+      const char * val = d->rows[nReal].szValue;
+      const char * comma = strchr( val, ',' );
+      if( comma ) {
+         int len = (int)(comma - val); if( len > 63 ) len = 63;
+         memcpy( szFace, val, len ); szFace[len] = 0;
+         nSize = atoi( comma + 1 );
+      } else strncpy( szFace, val, 63 );
+      if( nSize <= 0 ) nSize = 12;
+      snprintf( pangoDesc, sizeof(pangoDesc), "%s %d", szFace, nSize );
+
+      GtkWidget * dialog = gtk_font_chooser_dialog_new( "Choose Font", GTK_WINDOW(d->window) );
+      gtk_font_chooser_set_font( GTK_FONT_CHOOSER(dialog), pangoDesc );
+
+      if( gtk_dialog_run( GTK_DIALOG(dialog) ) == GTK_RESPONSE_OK )
+      {
+         PangoFontDescription * fd = gtk_font_chooser_get_font_desc( GTK_FONT_CHOOSER(dialog) );
+         if( fd )
+         {
+            const char * family = pango_font_description_get_family( fd );
+            int size = pango_font_description_get_size( fd ) / PANGO_SCALE;
+            snprintf( d->rows[nReal].szValue, sizeof(d->rows[0].szValue), "%s,%d", family, size );
+            InsApplyValue( d, nReal );
+            pango_font_description_free( fd );
+         }
+         InsRebuildStore( d );
+      }
+      gtk_widget_destroy( dialog );
+      return;
+   }
+
+   /* Events tab: double-click fires event handler callback */
+   if( d->nTab == 1 )
+   {
+      if( d->pOnEventDblClick && HB_IS_BLOCK( d->pOnEventDblClick ) )
+      {
+         const char * szEvent = d->rows[nReal].szName;
+         PHB_ITEM pArg1 = hb_itemPutNInt( hb_itemNew(NULL), d->hCtrl );
+         PHB_ITEM pArg2 = hb_itemPutC( hb_itemNew(NULL), szEvent );
+         hb_itemDo( d->pOnEventDblClick, 2, pArg1, pArg2 );
+         hb_itemRelease( pArg1 );
+         hb_itemRelease( pArg2 );
+      }
+      return;
+   }
+}
+
+/* Combo box selection changed */
+static void on_combo_sel_changed( GtkComboBox * widget, gpointer data )
+{
+   INSDATA * d = (INSDATA *)data;
+   int idx = gtk_combo_box_get_active( widget );
+   if( idx >= 0 && d->pOnComboSel && HB_IS_BLOCK( d->pOnComboSel ) )
+   {
+      PHB_ITEM pArg = hb_itemPutNI( hb_itemNew(NULL), idx );
+      hb_itemDo( d->pOnComboSel, 1, pArg );
+      hb_itemRelease( pArg );
+   }
+}
+
+/* Prevent window close from destroying it; just hide */
+static gboolean on_inspector_delete( GtkWidget * widget, GdkEvent * event, gpointer data )
+{
+   gtk_widget_hide( widget );
+   return TRUE;  /* prevent destroy */
+}
+
+/* ======================================================================
+ * Global inspector data storage
+ * ====================================================================== */
+
+static HB_PTRUINT s_insData = 0;
+
+HB_FUNC( _INSGETDATA ) { hb_retnint( s_insData ); }
+HB_FUNC( _INSSETDATA ) { s_insData = (HB_PTRUINT) hb_parnint(1); }
+
+/* ======================================================================
+ * INS_Create() --> hInsData
+ * ====================================================================== */
+
+HB_FUNC( INS_CREATE )
+{
+   EnsureGTK();
+
+   INSDATA * d = (INSDATA *) calloc( 1, sizeof(INSDATA) );
+
+   /* Create window */
+   d->window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
+   gtk_window_set_title( GTK_WINDOW(d->window), "Inspector" );
+   gtk_window_set_default_size( GTK_WINDOW(d->window), 320, 450 );
+   gtk_window_set_type_hint( GTK_WINDOW(d->window), GDK_WINDOW_TYPE_HINT_UTILITY );
+   g_signal_connect( d->window, "delete-event", G_CALLBACK(on_inspector_delete), d );
+
+   /* VBox: combo + property table */
+   GtkWidget * vbox = gtk_box_new( GTK_ORIENTATION_VERTICAL, 0 );
+   gtk_container_add( GTK_CONTAINER(d->window), vbox );
+
+   /* Control selection combo at top */
+   d->combo = gtk_combo_box_text_new();
+   gtk_box_pack_start( GTK_BOX(vbox), d->combo, FALSE, FALSE, 2 );
+   g_signal_connect( d->combo, "changed", G_CALLBACK(on_combo_sel_changed), d );
+
+   /* Properties / Events tabs */
+   d->nTab = 0;
+   d->tabWidget = gtk_notebook_new();
+   gtk_notebook_set_show_border( GTK_NOTEBOOK(d->tabWidget), FALSE );
+   GtkWidget * propLabel = gtk_label_new( "Properties" );
+   GtkWidget * evLabel   = gtk_label_new( "Events" );
+   GtkWidget * propDummy = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+   GtkWidget * evDummy   = gtk_box_new( GTK_ORIENTATION_HORIZONTAL, 0 );
+   gtk_notebook_append_page( GTK_NOTEBOOK(d->tabWidget), propDummy, propLabel );
+   gtk_notebook_append_page( GTK_NOTEBOOK(d->tabWidget), evDummy, evLabel );
+   gtk_box_pack_start( GTK_BOX(vbox), d->tabWidget, FALSE, FALSE, 0 );
+   g_signal_connect( d->tabWidget, "switch-page", G_CALLBACK(on_inspector_tab_switched), d );
+
+   /* List store */
+   d->store = gtk_list_store_new( NUM_COLS,
+      G_TYPE_STRING,   /* COL_NAME */
+      G_TYPE_STRING,   /* COL_VALUE */
+      G_TYPE_BOOLEAN,  /* COL_EDITABLE */
+      G_TYPE_INT,      /* COL_WEIGHT */
+      G_TYPE_STRING,   /* COL_BG_COLOR */
+      G_TYPE_BOOLEAN,  /* COL_BG_SET */
+      G_TYPE_INT       /* COL_REAL_IDX */
+   );
+
+   /* Tree view */
+   d->treeView = gtk_tree_view_new_with_model( GTK_TREE_MODEL(d->store) );
+   gtk_tree_view_set_headers_visible( GTK_TREE_VIEW(d->treeView), TRUE );
+
+   /* Name column */
+   {
+      GtkCellRenderer * renderer = gtk_cell_renderer_text_new();
+      GtkTreeViewColumn * col = gtk_tree_view_column_new_with_attributes(
+         "Property", renderer,
+         "text", COL_NAME,
+         "weight", COL_WEIGHT,
+         "cell-background", COL_BG_COLOR,
+         "cell-background-set", COL_BG_SET,
+         NULL );
+      gtk_tree_view_column_set_resizable( col, TRUE );
+      gtk_tree_view_column_set_min_width( col, 120 );
+      gtk_tree_view_append_column( GTK_TREE_VIEW(d->treeView), col );
+   }
+
+   /* Value column */
+   {
+      GtkCellRenderer * renderer = gtk_cell_renderer_text_new();
+      GtkTreeViewColumn * col = gtk_tree_view_column_new_with_attributes(
+         "Value", renderer,
+         "text", COL_VALUE,
+         "editable", COL_EDITABLE,
+         "cell-background", COL_BG_COLOR,
+         "cell-background-set", COL_BG_SET,
+         NULL );
+      gtk_tree_view_column_set_resizable( col, TRUE );
+      gtk_tree_view_column_set_min_width( col, 100 );
+      gtk_tree_view_append_column( GTK_TREE_VIEW(d->treeView), col );
+
+      g_signal_connect( renderer, "edited", G_CALLBACK(on_value_edited), d );
+   }
+
+   /* Double-click for category collapse and picker dialogs */
+   g_signal_connect( d->treeView, "row-activated", G_CALLBACK(on_row_activated), d );
+
+   /* Scroll view */
+   GtkWidget * scroll = gtk_scrolled_window_new( NULL, NULL );
+   gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(scroll),
+      GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC );
+   gtk_container_add( GTK_CONTAINER(scroll), d->treeView );
+   gtk_box_pack_start( GTK_BOX(vbox), scroll, TRUE, TRUE, 0 );
+
+   gtk_widget_show_all( d->window );
+
+   hb_retnint( (HB_PTRUINT) d );
+}
+
+/* ======================================================================
+ * INS_RefreshWithData( hInsData, hCtrl, aProps )
+ * ====================================================================== */
+
+HB_FUNC( INS_REFRESHWITHDATA )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   PHB_ITEM pArray = hb_param(3, HB_IT_ARRAY);
+
+   if( !d ) return;
+
+   d->hCtrl = (HB_PTRUINT) hb_parnint(2);
+
+   if( d->hCtrl == 0 || !pArray || hb_arrayLen(pArray) == 0 )
+   {
+      d->nRows = 0; d->nVisible = 0;
+      gtk_list_store_clear( d->store );
+      gtk_window_set_title( GTK_WINDOW(d->window), "Inspector" );
+      return;
+   }
+
+   /* Title from first prop (ClassName) */
+   {
+      PHB_ITEM pRow = hb_arrayGetItemPtr( pArray, 1 );
+      const char * cls = hb_arrayGetCPtr( pRow, 2 );
+      char title[128];
+      snprintf( title, sizeof(title), "Inspector: %s", cls ? cls : "" );
+      gtk_window_set_title( GTK_WINDOW(d->window), title );
+   }
+
+   InsBuildRows( d, pArray );
+
+   /* Cache property rows */
+   memcpy( d->propRows, d->rows, sizeof(d->rows) );
+   d->nPropRows = d->nRows;
+   memcpy( d->propMap, d->map, sizeof(d->map) );
+   d->nPropVisible = d->nVisible;
+
+   /* If Events tab is active, show events instead */
+   if( d->nTab == 1 )
+      InsActivateTab( d );
+   else
+      InsRebuildStore( d );
+}
+
+/* ======================================================================
+ * INS_BringToFront( hInsData )
+ * ====================================================================== */
+
+HB_FUNC( INS_BRINGTOFRONT )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   if( d && d->window )
+   {
+      gtk_widget_show( d->window );
+      gtk_window_present( GTK_WINDOW(d->window) );
+   }
+}
+
+/* ======================================================================
+ * INS_Destroy( hInsData )
+ * ====================================================================== */
+
+HB_FUNC( INS_DESTROY )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   if( !d ) return;
+   if( d->pOnComboSel ) { hb_itemRelease( d->pOnComboSel ); d->pOnComboSel = NULL; }
+   if( d->window ) gtk_widget_destroy( d->window );
+   free( d );
+}
+
+/* ======================================================================
+ * INS_SetFormCtrl( hInsData, hForm )
+ * ====================================================================== */
+
+HB_FUNC( INS_SETFORMCTRL )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   if( d ) d->hFormCtrl = (HB_PTRUINT) hb_parnint(2);
+}
+
+/* ======================================================================
+ * INS_SetOnComboSel( hInsData, bBlock )
+ * ====================================================================== */
+
+HB_FUNC( INS_SETONCOMBOSEL )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   PHB_ITEM pBlock = hb_param(2, HB_IT_BLOCK);
+   if( d )
+   {
+      if( d->pOnComboSel ) hb_itemRelease( d->pOnComboSel );
+      d->pOnComboSel = pBlock ? hb_itemNew( pBlock ) : NULL;
+   }
+}
+
+/* ======================================================================
+ * INS_ComboAdd( hInsData, cText )
+ * ====================================================================== */
+
+HB_FUNC( INS_COMBOADD )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   if( d && d->combo && HB_ISCHAR(2) )
+      gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT(d->combo), hb_parc(2) );
+}
+
+/* ======================================================================
+ * INS_ComboSelect( hInsData, nIndex )
+ * ====================================================================== */
+
+HB_FUNC( INS_COMBOSELECT )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   int idx = hb_parni(2);
+   if( d && d->combo )
+      gtk_combo_box_set_active( GTK_COMBO_BOX(d->combo), idx );
+}
+
+/* ======================================================================
+ * INS_ComboClear( hInsData )
+ * ====================================================================== */
+
+HB_FUNC( INS_COMBOCLEAR )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   if( d && d->combo )
+      gtk_combo_box_text_remove_all( GTK_COMBO_BOX_TEXT(d->combo) );
+}
+
+/* ======================================================================
+ * INS_SetPos( hInsData, nLeft, nTop, nWidth, nHeight )
+ * ====================================================================== */
+
+HB_FUNC( INS_SETPOS )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   if( !d || !d->window ) return;
+
+   int nLeft   = hb_parni(2);
+   int nTop    = hb_parni(3);
+   int nWidth  = hb_parni(4);
+   int nHeight = hb_parni(5);
+
+   gtk_window_move( GTK_WINDOW(d->window), nLeft, nTop );
+   gtk_window_resize( GTK_WINDOW(d->window), nWidth, nHeight );
+}
+
+/* ======================================================================
+ * INS_SetEvents( hInsData, aEvents )
+ * Store events array for inspector Events tab
+ * Each event: { cName, lAssigned, cCategory }
+ * ====================================================================== */
+
+HB_FUNC( INS_SETEVENTS )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   PHB_ITEM pArray = hb_param(2, HB_IT_ARRAY);
+   if( !d ) return;
+
+   d->nEvRows = 0;
+   if( !pArray ) return;
+
+   HB_SIZE nLen = hb_arrayLen( pArray );
+   char lastCat[32] = "";
+
+   for( HB_SIZE i = 1; i <= nLen && d->nEvRows < MAX_ROWS; i++ )
+   {
+      PHB_ITEM pRow = hb_arrayGetItemPtr( pArray, i );
+      if( !pRow || hb_arrayLen( pRow ) < 3 ) continue;
+
+      const char * name = hb_arrayGetCPtr( pRow, 1 );
+      const char * cat = hb_arrayGetCPtr( pRow, 3 );
+
+      /* Field 2: handler name (string) or assigned flag (logical) */
+      char handlerName[64] = "";
+      PHB_ITEM pField2 = hb_arrayGetItemPtr( pRow, 2 );
+      if( pField2 && HB_IS_STRING( pField2 ) )
+         strncpy( handlerName, hb_itemGetCPtr( pField2 ), 63 );
+      else if( pField2 && HB_IS_LOGICAL( pField2 ) && hb_itemGetL( pField2 ) )
+         strcpy( handlerName, "(assigned)" );
+
+      /* Insert category header if new category */
+      if( strcmp( cat, lastCat ) != 0 && d->nEvRows < MAX_ROWS )
+      {
+         IROW * r = &d->evRows[d->nEvRows++];
+         strncpy( r->szName, cat, 31 );
+         r->szValue[0] = 0;
+         strncpy( r->szCategory, cat, 31 );
+         r->cType = 'S';
+         r->bIsCat = 1;
+         r->bCollapsed = 0;
+         r->bVisible = 1;
+         strncpy( lastCat, cat, 31 );
+      }
+
+      if( d->nEvRows < MAX_ROWS )
+      {
+         IROW * r = &d->evRows[d->nEvRows++];
+         strncpy( r->szName, name, 31 );
+         strncpy( r->szValue, handlerName, 255 );
+         strncpy( r->szCategory, cat, 31 );
+         r->cType = 'S';
+         r->bIsCat = 0;
+         r->bCollapsed = 0;
+         r->bVisible = 1;
+      }
+   }
+
+   /* Build visible map */
+   d->nEvVisible = 0;
+   for( int k = 0; k < d->nEvRows; k++ )
+   {
+      if( d->evRows[k].bVisible || d->evRows[k].bIsCat )
+         d->evMap[d->nEvVisible++] = k;
+   }
+
+   /* If Events tab is active, refresh display */
+   if( d->nTab == 1 )
+      InsActivateTab( d );
+}
+
+/* ======================================================================
+ * INS_SetOnEventDblClick( hInsData, bBlock )
+ * Callback when event row is double-clicked: bBlock( hCtrl, cEventName )
+ * ====================================================================== */
+
+HB_FUNC( INS_SETONEVENTDBLCLICK )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   PHB_ITEM pBlock = hb_param(2, HB_IT_BLOCK);
+   if( d )
+   {
+      if( d->pOnEventDblClick ) hb_itemRelease( d->pOnEventDblClick );
+      d->pOnEventDblClick = pBlock ? hb_itemNew( pBlock ) : NULL;
+   }
+}
+
+/* ======================================================================
+ * INS_SetOnPropChanged( hInsData, bBlock )
+ * Callback after any property is edited (for two-way sync)
+ * ====================================================================== */
+
+HB_FUNC( INS_SETONPROPCHANGED )
+{
+   INSDATA * d = (INSDATA *)(HB_PTRUINT) hb_parnint(1);
+   PHB_ITEM pBlock = hb_param(2, HB_IT_BLOCK);
+   if( d )
+   {
+      if( d->pOnPropChanged ) hb_itemRelease( d->pOnPropChanged );
+      d->pOnPropChanged = pBlock ? hb_itemNew( pBlock ) : NULL;
+   }
+}

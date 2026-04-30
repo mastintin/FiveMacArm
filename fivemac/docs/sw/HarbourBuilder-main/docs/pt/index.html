@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentacao do HarbourBuilder</title>
+  <link rel="stylesheet" href="../assets/css/docs.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'dark'});</script>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <a class="logo" href="index.html">
+    <span>HB</span> HarbourBuilder Docs
+  </a>
+  <nav>
+    <input class="search-box" type="text" placeholder="Pesquisar docs..." oninput="doSearch(this.value)">
+    <a class="lang-btn" href="../en/index.html">EN</a>
+    <a class="lang-btn" href="../es/index.html">ES</a>
+    <button class="lang-btn active">PT</button>
+    <button class="theme-toggle" onclick="toggleTheme()">&#9788;</button>
+  </nav>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="nav-section">
+    <h3>Primeiros Passos</h3>
+    <a href="index.html" class="active">Visao Geral</a>
+    <a href="quickstart.html">Inicio Rapido</a>
+    <a href="installation.html">Instalacao</a>
+    <a href="architecture.html">Arquitetura</a>
+  </div>
+  <div class="nav-section">
+    <h3>Paleta de Componentes</h3>
+    <a href="controls-standard.html">Padrao (11)</a>
+    <a href="controls-additional.html">Adicional (10)</a>
+    <a href="controls-native.html">Win32 / Cocoa / GTK3 (9)</a>
+    <a href="controls-system.html">Sistema (2)</a>
+    <a href="controls-dialogs.html">Dialogos (6)</a>
+    <a href="controls-database.html">Acesso a Dados (9)</a>
+    <a href="controls-internet.html">Internet (9)</a>
+    <a href="controls-threading.html">Threading (8)</a>
+    <a href="controls-ai.html">IA (7)</a>
+    <a href="controls-erp.html">ERP / Negocios (12)</a>
+  </div>
+  <div class="nav-section">
+    <h3>Recursos do IDE</h3>
+    <a href="form-designer.html">Designer de Formularios</a>
+    <a href="object-inspector.html">Inspetor de Objetos</a>
+    <a href="code-editor.html">Editor de Codigo</a>
+    <a href="two-way-tools.html">Ferramentas Bidirecionais</a>
+    <a href="debugger.html">Depurador</a>
+    <a href="ai-assistant.html">Assistente de IA</a>
+    <a href="build-run.html">Compilar &amp; Executar</a>
+  </div>
+  <div class="nav-section">
+    <h3>Tutoriais</h3>
+    <a href="tutorial-hello.html">Hello World</a>
+    <a href="tutorial-forms.html">Trabalhando com Formularios</a>
+    <a href="tutorial-events.html">Tratamento de Eventos</a>
+    <a href="tutorial-database.html">CRUD de Banco de Dados</a>
+    <a href="tutorial-webserver.html">Servidor Web</a>
+    <a href="tutorial-ai.html">Integracao com IA</a>
+    <a href="tutorial-transformer.html">Transformer</a>
+  </div>
+  <div class="nav-section">
+    <h3>Referencia</h3>
+    <a href="ref-properties.html">Propriedades A-Z</a>
+    <a href="ref-events.html">Eventos A-Z</a>
+    <a href="ref-methods.html">Metodos A-Z</a>
+    <a href="ref-commands.html">Comandos xBase</a>
+    <a href="ref-functions.html">Bridge HB_FUNC</a>
+  </div>
+  <div class="nav-section">
+    <h3>Plataformas</h3>
+    <a href="platform-windows.html">Windows</a>
+    <a href="platform-macos.html">macOS</a>
+    <a href="platform-linux.html">Linux</a>
+    <a href="platform-android.html">Android <span class="badge planned">Planned</span></a>
+    <a href="platform-ios.html">iOS <span class="badge planned">Planned</span></a>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+<div class="breadcrumbs">
+  <a href="index.html">Docs</a> <span>/</span> Visao Geral
+</div>
+
+<h1>Documentacao do HarbourBuilder</h1>
+<p>O IDE visual multiplataforma mais poderoso para Harbour. Crie aplicacoes nativas para
+<span class="badge win">Windows</span>
+<span class="badge mac">macOS</span>
+<span class="badge linux">Linux</span>
+com uma unica base de codigo.</p>
+
+<div class="info-box tip">
+  <strong>O que e o HarbourBuilder?</strong>
+  Um IDE visual no estilo Borland C++Builder que gera codigo Harbour. Projete formularios visualmente,
+  arraste componentes da paleta, defina propriedades no inspetor e execute — com desempenho
+  nativo em todas as plataformas.
+</div>
+
+<h2>Arquitetura</h2>
+<div class="mermaid">
+graph TB
+    A["Application Code (.prg)"] --> B["xBase Commands<br/>#xcommand (compile-time)"]
+    B --> C["Harbour OOP Layer<br/>TForm, TControl, TToolBar"]
+    C --> D["HB_FUNC Bridge<br/>UI_FormNew, UI_SetProp, UI_OnEvent"]
+    D --> E1["Win32 API<br/>C++ (CreateWindowEx)"]
+    D --> E2["Cocoa/AppKit<br/>Objective-C (NSView)"]
+    D --> E3["GTK3<br/>C (GtkWidget)"]
+    style A fill:#58a6ff,stroke:#388bfd,color:#0d1117
+    style D fill:#3fb950,stroke:#2ea043,color:#0d1117
+    style E1 fill:#0078d4,stroke:#005a9e,color:#fff
+    style E2 fill:#555,stroke:#333,color:#fff
+    style E3 fill:#e95420,stroke:#c34113,color:#fff
+</div>
+
+<h2>Paleta de Componentes</h2>
+<p>78 controles em 10 abas — a paleta de componentes mais completa de qualquer IDE Harbour:</p>
+
+<table>
+  <tr><th>Aba</th><th>Controles</th><th>Qtd</th></tr>
+  <tr><td><strong>Padrao</strong></td><td>Label, Edit, Memo, Button, CheckBox, RadioButton, ListBox, ComboBox, GroupBox, Panel, ScrollBar</td><td>11</td></tr>
+  <tr><td><strong>Adicional</strong></td><td>BitBtn, SpeedButton, Image, Shape, Bevel, MaskEdit, StringGrid, ScrollBox, StaticText, LabeledEdit</td><td>10</td></tr>
+  <tr><td><strong>Nativo</strong></td><td>TabControl, TreeView, ListView, ProgressBar, RichEdit, TrackBar, UpDown, DateTimePicker, MonthCalendar</td><td>9</td></tr>
+  <tr><td><strong>Sistema</strong></td><td>Timer, PaintBox</td><td>2</td></tr>
+  <tr><td><strong>Dialogos</strong></td><td>OpenDialog, SaveDialog, FontDialog, ColorDialog, FindDialog, ReplaceDialog</td><td>6</td></tr>
+  <tr><td><strong>Acesso a Dados</strong></td><td>DBFTable, MySQL, MariaDB, PostgreSQL, SQLite, Firebird, SQLServer, Oracle, MongoDB</td><td>9</td></tr>
+  <tr><td><strong>Internet</strong></td><td>WebView, WebServer, WebSocket, HttpClient, FtpClient, SmtpClient, TcpServer, TcpClient, UdpSocket</td><td>9</td></tr>
+  <tr><td><strong>Threading</strong></td><td>Thread, Mutex, Semaphore, CriticalSection, ThreadPool, AtomicInt, CondVar, Channel</td><td>8</td></tr>
+  <tr><td><strong>IA</strong></td><td>OpenAI, Gemini, Claude, DeepSeek, Grok, Ollama, Transformer</td><td>7</td></tr>
+</table>
+<p><strong>Total: 78 controles</strong> — todos disponiveis no Windows, macOS e Linux.</p>
+
+<h2>Principais Recursos</h2>
+
+<details>
+  <summary>Designer Visual de Formularios</summary>
+  <div>
+    <p>Designer de formularios WYSIWYG com grade de pontos, alcas de selecao, selecao por elastico,
+    arrastar e soltar da paleta de componentes e geracao de codigo em tempo real.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Ferramentas Bidirecionais</summary>
+  <div>
+    <p>Alteracoes no designer atualizam instantaneamente o editor de codigo, e vice-versa.
+    Suas implementacoes de METHOD sao sempre preservadas durante a regeneracao do codigo.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Assistente de IA Integrado</summary>
+  <div>
+    <p>Assistente de codificacao com IA local alimentado pelo Ollama. Faca perguntas sobre Harbour,
+    obtenha sugestoes de codigo, refatore codigo e corrija erros — tudo sem conexao com a internet.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Depurador Integrado</summary>
+  <div>
+    <p>Execucao passo a passo (F7/F8), pontos de interrupcao (F9), inspecao de variaveis,
+    pilha de chamadas e janela de observacao — tudo integrado ao editor de codigo.</p>
+  </div>
+</details>
+
+<h2>Exemplo Rapido</h2>
+
+<pre><span class="pp">#include</span> <span class="st">"hbbuilder.ch"</span>
+
+<span class="kw">function</span> <span class="fn">Main</span>()
+
+   <span class="kw">local</span> oForm, oBtn
+
+   <span class="cmd">DEFINE FORM</span> oForm <span class="cmd">TITLE</span> <span class="st">"Hello World"</span> ;
+      <span class="cmd">SIZE</span> <span class="nb">400</span>, <span class="nb">300</span> <span class="cmd">FONT</span> <span class="st">"Segoe UI"</span>, <span class="nb">10</span>
+
+   @ <span class="nb">120</span>, <span class="nb">140</span> <span class="cmd">BUTTON</span> oBtn <span class="cmd">PROMPT</span> <span class="st">"Click Me!"</span> ;
+      <span class="cmd">OF</span> oForm <span class="cmd">SIZE</span> <span class="nb">120</span>, <span class="nb">32</span>
+   oBtn:<span class="fn">OnClick</span> := { || MsgInfo( <span class="st">"Hello from HarbourBuilder!"</span> ) }
+
+   <span class="cmd">ACTIVATE FORM</span> oForm <span class="cmd">CENTERED</span>
+
+<span class="kw">return</span> <span class="kw">nil</span></pre>
+
+<p>Este codigo roda de forma <strong>identica</strong> no Windows, macOS e Linux — com controles nativos em cada plataforma.</p>
+
+<div class="info-box info">
+  <strong>Vibe coded 100% usando Claude Code</strong>
+  <p>O HarbourBuilder foi construido inteiramente com assistencia de IA — desde o nucleo em C++ e os backends nativos
+  ate a camada OOP do Harbour e o designer visual. Um novo paradigma no desenvolvimento de software.</p>
+</div>
+
+</div>
+
+<script src="../assets/js/docs.js"></script>
+</body>
+</html>

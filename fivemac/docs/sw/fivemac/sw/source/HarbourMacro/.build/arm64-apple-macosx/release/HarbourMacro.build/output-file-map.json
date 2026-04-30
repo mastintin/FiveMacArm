@@ -1,0 +1,13 @@
+{
+  "": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/HarbourMacro.build/HarbourMacro.d",
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/HarbourMacro.build/HarbourMacro.o",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/HarbourMacro.build/primary.swiftdeps"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/Definition/HarbourMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/HarbourMacro.build/HarbourMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/HarbourMacro.build/HarbourMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/HarbourMacro.build/HarbourMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/HarbourMacro.build/HarbourMacro.dia"
+  }
+}

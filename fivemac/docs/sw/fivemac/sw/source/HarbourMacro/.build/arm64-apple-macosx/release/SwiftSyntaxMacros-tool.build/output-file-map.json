@@ -1,0 +1,91 @@
+{
+  "": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/SwiftSyntaxMacros.d",
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/SwiftSyntaxMacros.o",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/primary.swiftdeps"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/AbstractSourceLocation.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AbstractSourceLocation.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AbstractSourceLocation~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AbstractSourceLocation.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AbstractSourceLocation.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroExpansionContext.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MacroExpansionContext.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MacroExpansionContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MacroExpansionContext.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MacroExpansionContext.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/AccessorMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AccessorMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AccessorMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AccessorMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AccessorMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/AttachedMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AttachedMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AttachedMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AttachedMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/AttachedMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/CodeItemMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/CodeItemMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/CodeItemMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/CodeItemMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/CodeItemMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/DeclarationMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/DeclarationMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/DeclarationMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/DeclarationMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/DeclarationMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/ExpressionMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExpressionMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExpressionMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExpressionMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExpressionMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/ExtensionMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExtensionMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExtensionMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExtensionMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/ExtensionMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/FreestandingMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/FreestandingMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/FreestandingMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/FreestandingMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/FreestandingMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/Macro+Format.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro+Format.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro+Format~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro+Format.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro+Format.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/Macro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/Macro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/MemberAttributeMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberAttributeMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberAttributeMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberAttributeMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberAttributeMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/MemberMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/MemberMacro.dia"
+  },
+  "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacros/MacroProtocols/PeerMacro.swift": {
+    "object": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/PeerMacro.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/PeerMacro~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/PeerMacro.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/sw/source/HarbourMacro/.build/arm64-apple-macosx/release/SwiftSyntaxMacros-tool.build/PeerMacro.dia"
+  }
+}

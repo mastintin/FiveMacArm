@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/master.swiftdeps"
+  },
+  "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/checkouts/swift-syntax/Sources/SwiftSyntax509/Empty.swift": {
+    "dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.d",
+    "object": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.swift.o",
+    "swiftmodule": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty~partial.swiftmodule",
+    "swift-dependencies": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.swiftdeps",
+    "diagnostics": "/Users/manuel/Fivemac/fivemac/SwiftUI/source/HarbourMacro/.build/arm64-apple-macosx/debug/SwiftSyntax509.build/Empty.dia"
+  }
+}

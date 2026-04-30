@@ -1,0 +1,10 @@
+proyectos fivemac/
+
+*.app
+*.o
+*.obj
+*.log
+.DS_Store
+fivemac/samples/*.c
+fivemac/nativo/samples/obj/
+*.dSYM
