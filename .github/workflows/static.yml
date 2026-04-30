@@ -3,7 +3,7 @@ name: Deploy static content to Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "gh-pages"]
   workflow_dispatch:
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: false # ESTO EVITA EL ERROR DEL SUBMÓDULO CORRUPTO
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -33,7 +33,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Desplegamos la carpeta de documentación interna que ahora es una carpeta normal
+          # Desplegamos la carpeta docs de la rama main
           path: 'fivemac/docs/sw/'
           
       - name: Deploy to GitHub Pages
