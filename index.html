@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SW | Portal de Documentación</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Marked.js para convertir MD a HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Prism.js para resaltado de código -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🏝️ SW</div>
+                <div class="version">v2.0 Architecture</div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-title">Introducción</span>
+                    <a href="#" class="nav-item active" data-md="data/SW_CONCEPT.md">Arquitectura y Evolución</a>
+                </div>
+                <div class="nav-group">
+                    <span class="group-title">Estructura & Layout</span>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwWindow.md">TSwWindow</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwVStack.md">TSwVStack</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwHStack.md">TSwHStack</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwZStack.md">TSwZStack</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwGrid.md">TSwGrid</a>
+                </div>
+                <div class="nav-group">
+                    <span class="group-title">Navegación</span>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwSidebar.md">TSwSidebar</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwTabView.md">TSwTabView</a>
+                </div>
+                <div class="nav-group">
+                    <span class="group-title">Controles Básicos</span>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwLabel.md">TSwLabel</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwButton.md">TSwButton</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwGet.md">TSwGet</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwToggle.md">TSwToggle</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwSlider.md">TSwSlider</a>
+                </div>
+                <div class="nav-group">
+                    <span class="group-title">Controles Avanzados</span>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwList.md">TSwList</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwWebView.md">TSwWebView</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwDatePicker.md">TSwDatePicker</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwImage.md">TSwImage</a>
+                    <a href="#" class="nav-item" data-md="data/controls/TSwProgress.md">TSwProgress</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <div id="breadcrumb">Documentación / Arquitectura</div>
+            </header>
+            <article id="md-viewer" class="prose">
+                <!-- El contenido Markdown se cargará aquí -->
+                <div class="loader">Cargando documentación...</div>
+            </article>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
