@@ -291,3 +291,12 @@
    [ STYLE <nStyle> ] ;
    => ;
    <oDate> := TSwDatePicker():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <dDate>, <nStyle> )
+
+#xcommand @ <nRow>, <nCol> CARD [ <oCard> ] ;
+   [ TITLE <cTitle> ] ;
+   [ SYMBOL <cSymbol> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oCard> := ] TSwCard():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>], [<cSymbol>] )

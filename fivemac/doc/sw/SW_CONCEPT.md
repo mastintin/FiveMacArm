@@ -64,6 +64,7 @@ Para una navegación más cómoda por todos los componentes disponibles, consult
 Contenedores para organizar la interfaz de forma reactiva y fluida.
 
 - **[TSwVStack](controls/TSwVStack.md)**: Organización vertical.
+- **[TSwCard](controls/TSwCard.md)**: Contenedor de tarjeta estilizada.
 - **[TSwHStack](controls/TSwHStack.md)**: Organización horizontal.
 - **[TSwZStack](controls/TSwZStack.md)**: Organización por capas (eje Z).
 - **[TSwGrid](controls/TSwGrid.md)**: Cuadrículas adaptativas y flexibles.
