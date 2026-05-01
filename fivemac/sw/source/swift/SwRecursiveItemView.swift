@@ -49,6 +49,8 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderGrid())
             case .picker:
                 AnyView(renderPicker())
+            case .card:
+                AnyView(renderCard())
             case .panel:
                 AnyView(renderPanel())
             case .sidebar:
@@ -166,6 +168,14 @@ public struct SwRecursiveItemView: View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? SwiftPickerState {
                 SwiftPickerView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderCard() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftCardState {
+                SwiftCardView(state: state)
             } else { EmptyView() }
         }
     }

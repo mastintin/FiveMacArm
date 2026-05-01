@@ -76,6 +76,9 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             newItem = SwiftPickerView.create(id: cleanid, initial: initial)
 
+        case 19: // Card
+            newItem = try SwiftCardView.create(id: cleanid, from: jsonData)
+
         case 20: // Panel
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             newItem = SwiftPanelView.create(id: cleanid, initial: initial)

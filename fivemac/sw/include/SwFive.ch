@@ -67,6 +67,16 @@
 #define SW_TOGGLE_BUTTON      2
 
 //----------------------------------------------------------------------------//
+// CARD ACCENT SIDES
+//----------------------------------------------------------------------------//
+#define SW_ACCENT_NONE        0
+#define SW_ACCENT_TOP         1
+#define SW_ACCENT_BOTTOM      2
+#define SW_ACCENT_LEFT        3
+#define SW_ACCENT_RIGHT       4
+#define SW_ACCENT_ALL         5
+
+//----------------------------------------------------------------------------//
 // BASIC COMMANDS
 //----------------------------------------------------------------------------//
 
@@ -133,6 +143,11 @@
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
    [ <oStack> := ] TSwZStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+
+#xcommand @ <nRow>, <nCol> SPACER [ <oSpacer> ] ;
+   [ <of: OF, WINDOW, DIALOG, VSTACK, HSTACK, CARD> <oParent> ] ;
+   => ;
+   [ <oSpacer> := ] TSwSpacer():New( [<oParent>] )
 
 
 
