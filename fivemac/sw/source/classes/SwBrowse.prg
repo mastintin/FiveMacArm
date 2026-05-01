@@ -14,9 +14,11 @@ CLASS TSwBrowse FROM TSwiftControl
     METHOD SetCellValue( nRow, nCol, uVal )
     METHOD Update( hNewState )
     
-    // Nuevos métodos para lógica dinámica
+    // Métodos para lógica dinámica
     METHOD SetBackColor( nCol, bColor )
     METHOD SetColImg( nCol, bImg )
+    METHOD SetBrowseBackColor( cColor )
+    METHOD SetDB( oDb, cQuery )
     
 ENDCLASS
 
@@ -80,6 +82,66 @@ METHOD SetColImg( nCol, bImg ) CLASS TSwBrowse
    if nCol > 0 .and. nCol <= Len( ::aCols )
       ::aCols[ nCol ][ "bImg" ] := bImg
    endif
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD SetBrowseBackColor( cColor ) CLASS TSwBrowse
+   ::Apply( { "backcolor" => cColor } )
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD SetDB( oDb, cQuery ) CLASS TSwBrowse
+
+    local aData := {}, aStruct, i, hRow, aRes, cKey, cFld
+    local bIsSqlite := hb_IsObject( oDb ) .and. __ObjHasMsg( oDb, "SqliteQuery" )
+    local bIsDbf    := ! hb_IsObject( oDb )
+    
+    // ------ Fuente SQLITE ------
+    if bIsSqlite
+       DEFAULT cQuery := "SELECT * FROM " + oDb:cTable
+       
+       aRes := oDb:SqliteQuery( cQuery )
+       
+       if hb_IsArray( aRes ) .and. Len( aRes ) > 0
+
+          // Auto-columnas si no están definidas
+          if Empty( ::aCols )
+             for i := 1 to Len( hb_HKeys( aRes[ 1 ] ) )
+                cKey := hb_HKeys( aRes[ 1 ] )[ i ]
+                ::AddColumn( cKey, 120, cKey )
+             next
+          endif
+          
+          aData := aRes
+       endif
+
+    // ------ Fuente DBF (workarea activa) ------
+    elseif bIsDbf
+       aStruct := DbStruct()
+
+       // Auto-columnas si no están definidas
+       if Empty( ::aCols )
+          for i := 1 to Len( aStruct )
+             ::AddColumn( aStruct[ i ][ 1 ], 100, Lower( aStruct[ i ][ 1 ] ) )
+          next
+       endif
+       
+       DbGoTop()
+       do while ! Eof()
+          hRow := {}
+          for i := 1 to Len( aStruct )
+             cFld := aStruct[ i ][ 1 ]
+             hRow[ Lower( cFld ) ] := cValToChar( FieldGet( FieldPos( cFld ) ) )
+          next
+          AAdd( aData, hRow )
+          DbSkip()
+       enddo
+    endif
+    
+    ::SetArray( aData )
+
 return nil
 
 //----------------------------------------------------------------------------//

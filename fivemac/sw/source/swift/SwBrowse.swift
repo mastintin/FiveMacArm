@@ -21,6 +21,7 @@ public class BrowseState: SwApplyable {
     var columns: [SwBrowseColumn] = []
     var rows: [SwBrowseRow] = []
     var selection: String?
+    var backColorHex: String?
     
     public init(id: String) {
         self.id = id
@@ -28,6 +29,10 @@ public class BrowseState: SwApplyable {
     
     public func apply(property: String, value: Any) {
         Task { @MainActor in
+            if property == "backcolor", let hex = value as? String {
+                self.backColorHex = hex
+            }
+            
             if property == "columns", let colsData = value as? [[String: Any]] {
                 let newCols = colsData.compactMap { dict -> SwBrowseColumn? in
                     let title = dict["title"] as? String ?? ""
@@ -134,6 +139,16 @@ struct NSTableViewController: NSViewRepresentable {
     
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         guard let tableView = nsView.documentView as? NSTableView else { return }
+        
+        // Aplicar color de fondo al scroll view y table view
+        if let hex = state.backColorHex, let color = NSColor(hex: hex) {
+            nsView.drawsBackground = true
+            nsView.backgroundColor = color
+            tableView.backgroundColor = color
+        } else {
+            nsView.drawsBackground = false
+            tableView.backgroundColor = .controlBackgroundColor
+        }
         
         let currentIds = tableView.tableColumns.map { $0.identifier.rawValue }
         let newIds = state.columns.map { $0.field }

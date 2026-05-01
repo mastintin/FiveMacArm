@@ -26,6 +26,9 @@ function AppMain()
    oBrw:AddColumn( "Email", 180, "email" )
    oBrw:AddColumn( "Estado", 80, "status" )
    
+   // Color de fondo del browse completo
+   oBrw:SetBrowseBackColor( "#F0F4F8" )
+   
    // Lógica de diseño mediante Codeblocks
    oBrw:SetBackColor( 4, { | v | If( v == "Baja", "#FFCCCC", If( v == "Pendiente", "#FFF3CD", "#D1E7DD" ) ) } )
    
