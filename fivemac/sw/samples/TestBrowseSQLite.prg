@@ -13,59 +13,52 @@ function AppMain()
    local oDb
    local cDbPath := Path() + "jubilacion.db"
    
-   // Conectar a la base de datos
-   SQLITE CONNECT cDbPath INTO oDb
-   
-   if oDb == nil
-      MsgInfo( "No se pudo abrir jubilacion.db" )
-      return nil
-   endif
-   
    DEFINE WINDOW oWnd TITLE "Jubilacion - Cotizaciones" SIZE 720, 500
    
    @ 20, 20 SWBROWSE oBrw SIZE 680, 400 OF oWnd
    
-   // Columnas definidas a mano para labels amigables
-   oBrw:AddColumn( "Año",       70,  "year"       )
-   oBrw:AddColumn( "Mes",       50,  "month"      )
-   oBrw:AddColumn( "Base (€)", 130,  "amount"     )
-   oBrw:AddColumn( "Laguna",    80,  "es_laguna"  )
-   oBrw:AddColumn( "Usuario",   70,  "user_id"    )
+   // Columnas definidas a mano
+   oBrw:AddColumn( "Año",      70,  "year"      )
+   oBrw:AddColumn( "Mes",      50,  "month"     )
+   oBrw:AddColumn( "Base (€)", 130, "amount"    )
+   oBrw:AddColumn( "Laguna",   80,  "es_laguna" )
+   oBrw:AddColumn( "Usuario",  70,  "user_id"   )
    
-   // Color fondo del browse
-   oBrw:SetBrowseBackColor( "#F8FAFC" )
+   oBrw:cBackColor := "#F8FAFC"
    
-   // Resaltar lagunas en rojo, resto en verde suave
-   oBrw:SetBackColor( 4, { |v| If( v == "1", "#FFCCCC", "#D1E7DD" ) } )
-   oBrw:SetColImg( 4, { |v| If( v == "1", "exclamationmark.triangle.fill", "checkmark.circle.fill" ) } )
+   // Conectar y cargar
+   if File( cDbPath )
+      oDb := TSwSqlite():New( cDbPath, 2 )
+      if ! Empty( oDb ) .and. ! Empty( oDb:hDB )
+         // Es importante que oDb:cTable tenga el nombre de la tabla para que SetDB 
+         // pueda obtener los nombres de columna si no los conoce
+         oDb:cTable := "cotizaciones" 
+         
+         oBrw:SetDB( oDb, "SELECT year, month, amount, es_laguna, user_id " + ;
+                          "FROM cotizaciones WHERE user_id = 1 " + ;
+                          "ORDER BY year DESC, month DESC" )
+      endif
+   else
+      MsgInfo( "No se encuentra la base de datos en: " + cDbPath )
+   endif
    
-   // Icono en columna Año
-   oBrw:SetColImg( 1, { || "calendar" } )
-   
-   // Icono en columna Base
-   oBrw:SetColImg( 3, { || "eurosign.circle" } )
-   
-   // Cargar datos con query personalizada: solo usuario 1, orden descendente
-   oBrw:SetDB( oDb, "SELECT year, month, amount, es_laguna, user_id " + ;
-                    "FROM cotizaciones WHERE user_id = 1 " + ;
-                    "ORDER BY year DESC, month DESC" )
-   
-   oBrw:bLDblClick := { | o, nId | ShowDetalle( o, nId, oDb ) }
+   oBrw:bLDblClick := { | o, nId | ShowDetalle( o, nId ) }
    
    ACTIVATE WINDOW oWnd CENTERED
 
-   SQLITE CLOSE oDb
+   if ! Empty( oDb ) ; oDb:End() ; endif
 
 return nil
 
 //----------------------------------------------------------------------------//
 
-static function ShowDetalle( oBrw, nId, oDb )
+function ShowDetalle( oBrw, nId )
    local nRow  := Val( nId )
-   local hRow  := oBrw:aRows[ nRow ]
-   local cMsg  := "Año: "  + hRow[ "year" ]  + CRLF + ;
-                  "Mes: "  + hRow[ "month" ] + CRLF + ;
-                  "Base: " + hRow[ "amount" ] + " €" + CRLF + ;
-                  "Laguna: " + If( hRow[ "es_laguna" ] == "1", "Sí", "No" )
-   MsgInfo( cMsg, "Detalle Cotización" )
+   local hRow
+   if nRow > 0 .and. nRow <= Len( oBrw:aRows )
+      hRow  := oBrw:aRows[ nRow ]
+      MsgInfo( "Año: "  + hRow[ "year" ]  + CRLF + ;
+               "Mes: "  + hRow[ "month" ] + CRLF + ;
+               "Base: " + hRow[ "amount" ] + " €", "Detalle" )
+   endif
 return nil

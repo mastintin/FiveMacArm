@@ -186,3 +186,57 @@ void SwGet_SetEuroDate(NSTextField *control) {
     return self;
 }
 @end
+
+//----------------------------------------------------------------------------//
+// SWLOG - Log desde Harbour via NSLog
+//----------------------------------------------------------------------------//
+
+HB_FUNC(SWLOG) {
+    NSString *msg = hb_NSSTRING_par(1);
+    NSLog(@"[HRB] %@", msg);
+}
+
+//----------------------------------------------------------------------------//
+// PATH FUNCTIONS (ported from nativo/source/winapi/system.m)
+//----------------------------------------------------------------------------//
+
+// Path() -> Parent directory of the .app bundle (same as nativo HB_FUNC(PATH))
+HB_FUNC(PATH) {
+    NSBundle *bundle = [NSBundle mainBundle];
+    if (bundle != nil) {
+        NSString *buPath = [bundle bundlePath];
+        NSString *parentPath = [buPath stringByDeletingLastPathComponent];
+        if (parentPath != nil) {
+            // Añadimos "/" final para que Path() + "file.db" funcione correctamente
+            NSString *withSlash = [parentPath stringByAppendingString:@"/"];
+            hb_retc([withSlash UTF8String]);
+        } else {
+            hb_retc("");
+        }
+    } else {
+        hb_retc("");
+    }
+}
+
+// UserPath() -> Home directory (~)
+HB_FUNC(USERPATH) {
+    NSString *userPath = [@"~" stringByExpandingTildeInPath];
+    hb_retc(userPath != nil ? [userPath UTF8String] : "");
+}
+
+// HomePath() -> alias for UserPath
+HB_FUNC(HOMEPATH) {
+    NSString *userPath = [@"~" stringByExpandingTildeInPath];
+    hb_retc(userPath != nil ? [userPath UTF8String] : "");
+}
+
+// ImgPath() -> Resources directory inside the .app bundle
+HB_FUNC(IMGPATH) {
+    NSString *resPath = [[NSBundle mainBundle] resourcePath];
+    if (resPath != nil) {
+        NSString *fullPath = [resPath stringByAppendingString:@"/"];
+        hb_retc([fullPath UTF8String]);
+    } else {
+        hb_retc("");
+    }
+}

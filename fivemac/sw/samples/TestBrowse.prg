@@ -27,14 +27,14 @@ function AppMain()
    oBrw:AddColumn( "Estado", 80, "status" )
    
    // Color de fondo del browse completo
-   oBrw:SetBrowseBackColor( "#F0F4F8" )
+   oBrw:cBackColor := "#F0F4F8"
    
    // Lógica de diseño mediante Codeblocks
-   oBrw:SetBackColor( 4, { | v | If( v == "Baja", "#FFCCCC", If( v == "Pendiente", "#FFF3CD", "#D1E7DD" ) ) } )
+   oBrw:SetColBackColor( 4, { | v | If( v == "Baja", "#FFCCCC", If( v == "Pendiente", "#FFF3CD", "#D1E7DD" ) ) } )
    
    oBrw:SetColImg( 4, { | v | If( v == "Activo", "checkmark.circle.fill", ;
-                             If( v == "Baja", "xmark.circle.fill", ;
-                             If( v == "Pendiente", "clock.fill", "" ) ) ) } )
+      If( v == "Baja", "xmark.circle.fill", ;
+      If( v == "Pendiente", "clock.fill", "" ) ) ) } )
                               
    oBrw:SetColImg( 2, { || "person.circle" } )
    oBrw:SetColImg( 3, { || "envelope" } )
