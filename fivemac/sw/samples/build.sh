@@ -77,7 +77,7 @@ NATIVO_LIBS="-L$FIVEMAC_PATH/nativo/lib -lfive -lfivec -lfiveextras"
 # Linking the sample with the lib
 swiftc -o "$APP_NAME.app/Contents/MacOS/$APP_NAME" \
     "obj/$APP_NAME.o" \
-    -L"../lib" -lSwiftFive \
+    -L"../lib" -Xlinker -force_load -Xlinker ../lib/libSwiftFive.a \
     -L"$SDK_PATH/usr/lib" \
     $SCINTILLA_LIB \
     $HARBOUR_LIBS \
