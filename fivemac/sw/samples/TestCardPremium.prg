@@ -20,7 +20,7 @@ function AppMain()
    oCard:nBorderWidth := 1            // Ancho del borde exterior
    oCard:nShadow      := 20           // Sombra profunda
    oCard:nCorner      := 18           // Bordes redondeados
-   oCard:cBackColor   := ".white"     // Fondo blanco
+   oCard:cBackColor   := ".gradient(#f8faff, #ffffff)"     // Fondo blanco
    oCard:cIconColor   := ".gray"      // Icono grisáceo
       
    // Contenido interno

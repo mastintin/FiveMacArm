@@ -106,7 +106,7 @@ public struct SwiftCardView: View {
                 Rectangle().fill(accent).frame(height: CGFloat(state.accentWidth))
             }
         }
-        .background(state.backgroundColor ?? AnyShapeStyle(Color(white: 1.0)))
+        .background(state.backgroundColor ?? AnyShapeStyle(Color(NSColor.controlBackgroundColor)))
         .cornerRadius(state.cornerRadius)
         .shadow(color: Color.black.opacity(0.15), radius: CGFloat(state.shadowRadius), x: 0, y: state.shadowRadius / 2)
         .overlay(

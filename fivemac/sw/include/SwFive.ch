@@ -362,5 +362,6 @@
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   [ COLOR <cColor> ] ;
    => ;
-   [ <oCard> := ] TSwCard():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>], [<cSymbol>] )
+   [ <oCard> := ] TSwCard():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>], [<cSymbol>], [<cColor>] )

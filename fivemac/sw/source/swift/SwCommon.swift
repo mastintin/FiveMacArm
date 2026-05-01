@@ -217,6 +217,9 @@ public class SwiftWindowState: SwiftVStackState {
                     win.title = v
                 } else if prop == "center" {
                     win.center()
+                    // Sincronización de vuelta a Harbour
+                    let json = "{\"\(self.windowId)\":{\"top\":\(Int(win.frame.origin.y)),\"left\":\(Int(win.frame.origin.x))}}"
+                    Harbour.call("SW_UPDATE_HB", json)
                 } else if prop == "modal", let v = value as? Bool {
                     if v { win.level = .modalPanel }
                 } else if prop == "visible" && (value as? Bool == true || (value as? Int == 1)) {

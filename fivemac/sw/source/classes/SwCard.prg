@@ -11,7 +11,7 @@ CLASS TSwCard FROM TSwVStack
     DATA cTitleColor
     DATA cBackColor
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cTitle, cSymbol )
+    METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cTitle, cSymbol, cBackColor )
     
     ACCESS cAccentColor      INLINE hb_HGetDef( ::hState, "accentcolor", "" )
     ASSIGN cAccentColor( c ) INLINE ( ::hState["accentcolor"] := c, ::Apply( "accentcolor", c ) )
@@ -47,7 +47,7 @@ ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cTitle, cSymbol ) CLASS TSwCard
+METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cTitle, cSymbol, cBackColor ) CLASS TSwCard
 
     DEFAULT nWidth := 200, nHeight := 150, nAutoResize := 0
     DEFAULT cTitle := "", cSymbol := ""
@@ -76,6 +76,7 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cTitle, cSy
     
     ::hState["title"]  := cTitle
     ::hState["symbol"] := cSymbol
+    if !Empty( cBackColor ) ; ::hState["backcolor"] := cBackColor ; endif
     
     SwiftRegisterItem( ::cId, Self )
     

@@ -12,11 +12,15 @@ CLASS TSwWindow FROM TSwiftControl
 
     ACCESS cBackColor    INLINE hb_HGetDef( ::hState, "backcolor", "" )
     ASSIGN cBackColor(c) INLINE ( ::hState["backcolor"] := c, ::Apply( { "backcolor" => c } ) )
+
+    ACCESS lCenter     INLINE hb_HGetDef( ::hState, "center", .f. )
+    ASSIGN lCenter(l)  INLINE ( ::hState["center"] := l, if( l, ::Apply( { "center" => .t. } ), ) )
     
     METHOD New( cTitle, nWidth, nHeight, cId, oParent ) CONSTRUCTOR
     METHOD Activate( lModal )
     METHOD End()
     METHOD Close() INLINE ::End()
+    METHOD Center() INLINE ::lCenter := .t.
     METHOD Update( hProps )
     
     METHOD Disable() INLINE SD:Apply( ::cId, { "interactive" => .f. } )
