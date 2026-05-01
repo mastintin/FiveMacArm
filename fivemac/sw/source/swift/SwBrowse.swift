@@ -29,11 +29,14 @@ public class BrowseState: SwApplyable {
     public func apply(property: String, value: Any) {
         Task { @MainActor in
             if property == "columns", let colsData = value as? [[String: Any]] {
-                self.columns = colsData.compactMap { dict in
+                let newCols = colsData.compactMap { dict -> SwBrowseColumn? in
                     let title = dict["title"] as? String ?? ""
                     let field = dict["field"] as? String ?? ""
                     let width = dict["width"] as? Double
                     return SwBrowseColumn(title: title, field: field, width: width != nil ? CGFloat(width!) : nil)
+                }
+                if self.columns.map({$0.field}) != newCols.map({$0.field}) {
+                    self.columns = newCols
                 }
             }
             
@@ -56,9 +59,48 @@ public class BrowseState: SwApplyable {
                         newRowData[key] = "\(val)"
                     }
                     self.rows[index] = SwBrowseRow(id: rowId, data: newRowData)
-                    print("🏝️ Swift [Browse] Partial update received for row ID: \(rowId)")
                 }
             }
+        }
+    }
+}
+
+// CÉLULA PERSONALIZADA BASADA EN EL ESTÁNDAR NSTableCellView
+class SwBrowseCellView: NSTableCellView {
+    private let bgView = NSView()
+    var bgColor: NSColor?
+    
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setup()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+    
+    private func setup() {
+        self.wantsLayer = true
+        self.layer?.masksToBounds = true
+        
+        bgView.wantsLayer = true
+        bgView.translatesAutoresizingMaskIntoConstraints = false
+        self.addSubview(bgView, positioned: .below, relativeTo: nil)
+        
+        NSLayoutConstraint.activate([
+            bgView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            bgView.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+            bgView.topAnchor.constraint(equalTo: self.topAnchor),
+            bgView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
+        ])
+    }
+    
+    func updateStyle(isSelected: Bool) {
+        if isSelected {
+            bgView.layer?.backgroundColor = nil
+        } else {
+            bgView.layer?.backgroundColor = bgColor?.cgColor
         }
     }
 }
@@ -93,22 +135,21 @@ struct NSTableViewController: NSViewRepresentable {
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         guard let tableView = nsView.documentView as? NSTableView else { return }
         
-        // Sincronizar columnas y ordenación
-        if tableView.tableColumns.count != state.columns.count {
+        let currentIds = tableView.tableColumns.map { $0.identifier.rawValue }
+        let newIds = state.columns.map { $0.field }
+        
+        if currentIds != newIds {
             for col in tableView.tableColumns { tableView.removeTableColumn(col) }
             for colData in state.columns {
                 let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(colData.field))
                 col.title = colData.title
                 if let width = colData.width { col.width = width }
-                
-                // Habilitar ordenación para esta columna
+                col.resizingMask = [.autoresizingMask, .userResizingMask]
                 let descriptor = NSSortDescriptor(key: colData.field, ascending: true)
                 col.sortDescriptorPrototype = descriptor
-                
                 tableView.addTableColumn(col)
             }
         }
-        
         tableView.reloadData()
     }
     
@@ -124,27 +165,24 @@ struct NSTableViewController: NSViewRepresentable {
             self.parent = parent
         }
         
-        // DataSource
         func numberOfRows(in tableView: NSTableView) -> Int {
             return parent.state.rows.count
         }
         
-        // ORDENACIÓN NATIVA
         func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
             guard let descriptor = tableView.sortDescriptors.first, let field = descriptor.key else { return }
             let ascending = descriptor.ascending
-            
-            print("🏝️ Native [NSTableView] Sorting by: \(field) (\(ascending ? "ASC" : "DESC"))")
             
             parent.state.rows.sort { r1, r2 in
                 let v1 = r1.data[field] ?? ""
                 let v2 = r2.data[field] ?? ""
                 
-                // Intentar comparación numérica si ambos son números
+                // Intento de ordenación numérica
                 if let n1 = Double(v1), let n2 = Double(v2) {
                     return ascending ? n1 < n2 : n1 > n2
                 }
                 
+                // Ordenación de texto (localizada)
                 return ascending ? v1.localizedCompare(v2) == .orderedAscending : v1.localizedCompare(v2) == .orderedDescending
             }
             
@@ -156,28 +194,39 @@ struct NSTableViewController: NSViewRepresentable {
             
             let field = column.identifier.rawValue
             let rowData = parent.state.rows[row].data
+            let cellId = NSUserInterfaceItemIdentifier("SwBrowseCell")
+            
+            var cell = tableView.makeView(withIdentifier: cellId, owner: nil) as? SwBrowseCellView
+            if cell == nil {
+                cell = SwBrowseCellView(frame: .zero)
+                cell?.identifier = cellId
+            }
+            
+            // Limpieza y configuración
+            cell?.subviews.forEach { if $0 !== cell?.subviews.first { $0.removeFromSuperview() } } // Mantener solo bgView
+            
             let text = rowData[field] ?? ""
-            let imageName = rowData["\(field)_img"] // Buscamos imagen específica para este campo
-            let colorHex = rowData["\(field)_color"] // Buscamos color específico para este campo
+            let imageName = rowData["\(field)_img"]
+            let colorHex = rowData["\(field)_color"]
+            let rowColorHex = rowData["row_color"]
             
-            let container = NSView()
+            if let hex = colorHex ?? rowColorHex {
+                cell?.bgColor = NSColor(hex: hex)
+            } else {
+                cell?.bgColor = nil
+            }
             
-            // Imagen opcional
             var lastView: NSView?
             if let imgName = imageName, !imgName.isEmpty {
                 let imageView = NSImageView()
-                if let sysImg = NSImage(systemSymbolName: imgName, accessibilityDescription: nil) {
-                    imageView.image = sysImg
-                } else if let bundleImg = NSImage(named: imgName) {
-                    imageView.image = bundleImg
-                }
+                if let sysImg = NSImage(systemSymbolName: imgName, accessibilityDescription: nil) { imageView.image = sysImg }
+                else if let bundleImg = NSImage(named: imgName) { imageView.image = bundleImg }
                 imageView.translatesAutoresizingMaskIntoConstraints = false
                 imageView.contentTintColor = .secondaryLabelColor
-                container.addSubview(imageView)
-                
+                cell?.addSubview(imageView)
                 NSLayoutConstraint.activate([
-                    imageView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-                    imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
+                    imageView.centerYAnchor.constraint(equalTo: cell!.centerYAnchor),
+                    imageView.leadingAnchor.constraint(equalTo: cell!.leadingAnchor, constant: 4),
                     imageView.widthAnchor.constraint(equalToConstant: 16),
                     imageView.heightAnchor.constraint(equalToConstant: 16)
                 ])
@@ -190,28 +239,26 @@ struct NSTableViewController: NSViewRepresentable {
             textField.isEditable = false
             textField.cell?.lineBreakMode = .byTruncatingTail
             textField.translatesAutoresizingMaskIntoConstraints = false
-            container.addSubview(textField)
-            
+            cell?.addSubview(textField)
             NSLayoutConstraint.activate([
-                textField.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-                textField.leadingAnchor.constraint(equalTo: lastView?.trailingAnchor ?? container.leadingAnchor, constant: 4),
-                textField.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -4)
+                textField.centerYAnchor.constraint(equalTo: cell!.centerYAnchor),
+                textField.leadingAnchor.constraint(equalTo: lastView?.trailingAnchor ?? cell!.leadingAnchor, constant: 4),
+                textField.trailingAnchor.constraint(equalTo: cell!.trailingAnchor, constant: -4)
             ])
             
-            // Lógica de colores 100% DINÁMICA (Sin Hardcoding)
-            let cellColorHex = rowData["\(field)_color"]
-            let rowColorHex = rowData["row_color"]
-            
-            if let hex = cellColorHex ?? rowColorHex, let color = NSColor(hex: hex) {
-                container.wantsLayer = true
-                container.layer?.backgroundColor = color.withAlphaComponent(0.2).cgColor
-            }
-            
-            return container
+            cell?.updateStyle(isSelected: tableView.isRowSelected(row))
+            return cell
         }
         
         func tableViewSelectionDidChange(_ notification: Notification) {
             guard let tableView = notification.object as? NSTableView else { return }
+            tableView.enumerateAvailableRowViews { (rowView, row) in
+                for i in 0..<rowView.numberOfColumns {
+                    if let cell = rowView.view(atColumn: i) as? SwBrowseCellView {
+                        cell.updateStyle(isSelected: rowView.isSelected)
+                    }
+                }
+            }
             let selectedRow = tableView.selectedRow
             if selectedRow >= 0 && selectedRow < parent.state.rows.count {
                 parent.state.selection = parent.state.rows[selectedRow].id
@@ -237,7 +284,6 @@ struct NSTableViewController: NSViewRepresentable {
     }
 }
 
-// Extensión para colores Hexadecimales
 extension NSColor {
     convenience init?(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -253,27 +299,20 @@ extension NSColor {
 
 public struct SwiftBrowseView: View {
     @State var state: BrowseState
-    
     public var body: some View {
         VStack(spacing: 0) {
             if state.columns.isEmpty {
-                ContentUnavailableView("No Columns Defined", systemImage: "table.badge.more")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ContentUnavailableView("No Columns Defined", systemImage: "table.badge.more").frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                NSTableViewController(state: state)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                NSTableViewController(state: state).frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            
             Divider()
-            
             HStack {
                 Text(state.selection != nil ? "Selected ID: \(state.selection!)" : "No selection")
                 Spacer()
                 Text("Total rows: \(state.rows.count)")
             }
-            .padding(8)
-            .font(.caption)
-            .background(Color(NSColor.controlBackgroundColor))
+            .padding(8).font(.caption).background(Color(NSColor.controlBackgroundColor))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
