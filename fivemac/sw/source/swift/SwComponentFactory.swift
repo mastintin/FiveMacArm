@@ -104,6 +104,10 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
             newItem = SwiftMenuItemView.create(id: cleanid, initial: initial)
             
+        case 27: // Browse
+            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            newItem = SwiftBrowseView.create(id: cleanid, initial: initial)
+            
         case 110: // AppMenu
             SwAppMenu.setup(from: jsonData)
             

@@ -1,0 +1,26 @@
+#line 3 "TestBrowse.prg"
+function Main()
+   HSW_START_SWIFT( "AppMain" )
+return nil
+
+function AppMain()
+   local oWnd, oBrw
+
+
+
+
+
+
+
+
+   local aData := {  { "101", "Manuel Murillo", "Madrid", "45" },  { "102", "Antonio Pérez", "Barcelona", "38" },  { "103", "Jose García", "Valencia", "52" },  { "104", "Maria López", "Sevilla", "29" },  { "105", "Elena Rivas", "Murcia", "33" },  { "106", "David Sanz", "Zaragoza", "41" },  { "107", "Lucia Ferrero", "Bilbao", "36" }  }
+
+   oWnd := TSwWindow():New( "Fivemac Browse Premium (Native Table)", 650, 450, , )
+
+   oBrw := TSwBrowse():New( 60, 20, 610, 360, oWnd )
+
+
+
+   oWnd:Activate( .T. )
+
+return nil

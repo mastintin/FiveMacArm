@@ -20,12 +20,14 @@ function AppMain()
    
    @ 60, 20 SWBROWSE oBrw OF oWnd SIZE 610, 360
    
-   oBrw:AddColumn( "ID", 60, "id" )
-   oBrw:AddColumn( "Nombre Completo", 250, "name" )
-   oBrw:AddColumn( "Email", 180, "email" )
-   oBrw:AddColumn( "Estado", 80, "status" )
-   
-   oBrw:SetArray( aData )
+    oBrw:AddColumn( "ID", 60, "id" )
+    oBrw:AddColumn( "Nombre Completo", 250, "name" )
+    oBrw:AddColumn( "Email", 180, "email" )
+    oBrw:AddColumn( "Estado", 80, "status" )
+    
+    oBrw:bLDblClick := { | o, nId | MsgInfo( "Has hecho doble clic en la fila: " + cValToChar( nId ) ) }
+
+    oBrw:SetArray( aData )
    
    @ 15, 20 SAY "Test de Browse Dinámico (SwiftUI Native Table)" OF oWnd SIZE 400, 30
    

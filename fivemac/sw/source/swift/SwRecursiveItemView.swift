@@ -67,7 +67,13 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderMenu())
             case .menuitem:
                 AnyView(renderMenuItem())
-        default:
+            case .browse:
+                if let state = ViewRegistry.getState(for: item.id) as? BrowseState {
+                    AnyView(SwiftBrowseView(state: state))
+                } else {
+                    AnyView(EmptyView())
+                }
+            default:
                 AnyView(EmptyView())
             }
             

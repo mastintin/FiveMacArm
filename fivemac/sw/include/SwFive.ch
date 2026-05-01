@@ -356,6 +356,12 @@
    => ;
    <oDate> := TSwDatePicker():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <dDate>, <nStyle> )
 
+#xcommand @ <nRow>, <nCol> SWBROWSE [ <oBrw> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   => ;
+   [ <oBrw> := ] TSwBrowse():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd> )
+
 #xcommand @ <nRow>, <nCol> CARD [ <oCard> ] ;
    [ TITLE <cTitle> ] ;
    [ SYMBOL <cSymbol> ] ;

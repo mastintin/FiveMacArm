@@ -5,10 +5,12 @@
 CLASS TSwBrowse FROM TSwiftControl
 
     DATA aCols INIT {}
+    DATA bLDblClick
 
     METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId )
     METHOD AddColumn( cTitle, nWidth, cField )
     METHOD SetArray( aData )
+    METHOD Update( hNewState )
     
 ENDCLASS
 
@@ -63,18 +65,51 @@ return nil
 METHOD SetArray( aData ) CLASS TSwBrowse
 
     local aRows := {}
-    local n, i, hRow
+    local n, i, hRow, aKeys
     
+    if Len( aData ) > 0 .and. Empty( ::aCols )
+       if hb_IsHash( aData[ 1 ] )
+          aKeys := hb_HKeys( aData[ 1 ] )
+          for i := 1 to Len( aKeys )
+             ::AddColumn( aKeys[ i ], 100, aKeys[ i ] )
+          next
+       elseif hb_IsArray( aData[ 1 ] )
+          for i := 1 to Len( aData[ 1 ] )
+             ::AddColumn( "Col " + AllTrim( Str( i ) ), 100, "col" + AllTrim( Str( i ) ) )
+          next
+       endif
+    endif
+
     for n := 1 to Len( aData )
         hRow := { "id" => AllTrim( Str( n ) ) }
-        for i := 1 to Len( ::aCols )
-            if i <= Len( aData[ n ] )
-               hRow[ ::aCols[ i ][ "field" ] ] := cValToChar( aData[ n ][ i ] )
-            endif
-        next
+        if hb_IsHash( aData[ n ] )
+           // Combinar hRow con el hash de datos manualmente
+           aKeys := hb_HKeys( aData[ n ] )
+           for i := 1 to Len( aKeys )
+              hRow[ aKeys[ i ] ] := cValToChar( aData[ n ][ aKeys[ i ] ] )
+           next
+        else 
+           for i := 1 to Len( ::aCols )
+               if i <= Len( aData[ n ] )
+                  hRow[ ::aCols[ i ][ "field" ] ] := cValToChar( aData[ n ][ i ] )
+               endif
+           next
+        endif
         AAdd( aRows, hRow )
     next
     
     ::Apply( { "rows" => aRows } )
 
 return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD Update( hNewState ) CLASS TSwBrowse
+
+    if hb_HHasKey( hNewState, "event" ) .and. hNewState[ "event" ] == "dblclick"
+       if hb_IsBlock( ::bLDblClick )
+          Eval( ::bLDblClick, Self, hb_HGetDef( hNewState, "rowid", "" ) )
+       endif
+    endif
+
+return ::Super:Update( hNewState )
