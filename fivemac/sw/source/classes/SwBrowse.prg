@@ -5,12 +5,18 @@
 CLASS TSwBrowse FROM TSwiftControl
 
     DATA aCols INIT {}
+    DATA aRows INIT {}
     DATA bLDblClick
 
     METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId )
     METHOD AddColumn( cTitle, nWidth, cField )
     METHOD SetArray( aData )
+    METHOD SetCellValue( nRow, nCol, uVal )
     METHOD Update( hNewState )
+    
+    // Nuevos métodos para lógica dinámica
+    METHOD SetBackColor( nCol, bColor )
+    METHOD SetColImg( nCol, bImg )
     
 ENDCLASS
 
@@ -62,10 +68,26 @@ return nil
 
 //----------------------------------------------------------------------------//
 
+METHOD SetBackColor( nCol, bColor ) CLASS TSwBrowse
+   if nCol > 0 .and. nCol <= Len( ::aCols )
+      ::aCols[ nCol ][ "bClrBack" ] := bColor
+   endif
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD SetColImg( nCol, bImg ) CLASS TSwBrowse
+   if nCol > 0 .and. nCol <= Len( ::aCols )
+      ::aCols[ nCol ][ "bImg" ] := bImg
+   endif
+return nil
+
+//----------------------------------------------------------------------------//
+
 METHOD SetArray( aData ) CLASS TSwBrowse
 
     local aRows := {}
-    local n, i, hRow, aKeys
+    local n, i, hRow, aKeys, cField, uVal
     
     if Len( aData ) > 0 .and. Empty( ::aCols )
        if hb_IsHash( aData[ 1 ] )
@@ -82,8 +104,9 @@ METHOD SetArray( aData ) CLASS TSwBrowse
 
     for n := 1 to Len( aData )
         hRow := { "id" => AllTrim( Str( n ) ) }
+        
+        // 1. Poblado básico de datos
         if hb_IsHash( aData[ n ] )
-           // Combinar hRow con el hash de datos manualmente
            aKeys := hb_HKeys( aData[ n ] )
            for i := 1 to Len( aKeys )
               hRow[ aKeys[ i ] ] := cValToChar( aData[ n ][ aKeys[ i ] ] )
@@ -95,10 +118,56 @@ METHOD SetArray( aData ) CLASS TSwBrowse
                endif
            next
         endif
+        
+        // 2. Decoración dinámica (Colores e Imágenes)
+        for i := 1 to Len( ::aCols )
+           cField := ::aCols[ i ][ "field" ]
+           uVal   := hRow[ cField ]
+           
+           if hb_HHasKey( ::aCols[ i ], "bClrBack" )
+              hRow[ cField + "_color" ] := Eval( ::aCols[ i ][ "bClrBack" ], uVal, n, i, hRow )
+           endif
+           
+           if hb_HHasKey( ::aCols[ i ], "bImg" )
+              hRow[ cField + "_img" ] := Eval( ::aCols[ i ][ "bImg" ], uVal, n, i, hRow )
+           endif
+        next
+
         AAdd( aRows, hRow )
     next
     
+    ::aRows := aRows
     ::Apply( { "rows" => aRows } )
+
+return nil
+
+//----------------------------------------------------------------------------//
+
+METHOD SetCellValue( nRow, nCol, uVal ) CLASS TSwBrowse
+
+    local hRow, cField, cVal
+    
+    if nRow > 0 .and. nRow <= Len( ::aRows ) .and. nCol > 0 .and. nCol <= Len( ::aCols )
+       
+       hRow   := ::aRows[ nRow ]
+       cField := ::aCols[ nCol ][ "field" ]
+       cVal   := cValToChar( uVal )
+       
+       hRow[ cField ] := cVal
+       
+       // Re-evaluar decoración para esta celda
+       if hb_HHasKey( ::aCols[ nCol ], "bClrBack" )
+          hRow[ cField + "_color" ] := Eval( ::aCols[ nCol ][ "bClrBack" ], cVal, nRow, nCol, hRow )
+       endif
+       
+       if hb_HHasKey( ::aCols[ nCol ], "bImg" )
+          hRow[ cField + "_img" ] := Eval( ::aCols[ nCol ][ "bImg" ], cVal, nRow, nCol, hRow )
+       endif
+       
+       // Enviar solo la fila actualizada
+       ::Apply( { "row_update" => hRow } )
+       
+    endif
 
 return nil
 

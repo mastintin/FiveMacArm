@@ -6,31 +6,52 @@ return nil
 
 function AppMain()
    local oWnd, oBrw
-   local aData := { ;
-      { "101", "Manuel Murillo", "manuel@test.com", "Activo" }, ;
-      { "102", "Antonio Pérez", "antonio@test.com", "Activo" }, ;
-      { "103", "Jose García", "jose@test.com", "Baja" }, ;
-      { "104", "Maria López", "maria@test.com", "Activo" }, ;
-      { "105", "Elena Rivas", "elena@test.com", "Pendiente" }, ;
-      { "106", "David Sanz", "david@test.com", "Activo" }, ;
-      { "107", "Lucia Ferrero", "lucia@test.com", "Activo" } ;
-   }
+   local aData := {}
+   
+   // Datos limpios
+   AAdd( aData, { "id" => 101, "name" => "Manuel Murillo", "email" => "manuel@test.com", "status" => "Activo" } )
+   AAdd( aData, { "id" => 102, "name" => "Antonio Pérez", "email" => "antonio@test.com", "status" => "Activo" } )
+   AAdd( aData, { "id" => 103, "name" => "Jose García", "email" => "jose@test.com", "status" => "Baja" } )
+   AAdd( aData, { "id" => 104, "name" => "Maria López", "email" => "maria@test.com", "status" => "Activo" } )
+   AAdd( aData, { "id" => 105, "name" => "Elena Rivas", "email" => "elena@test.com", "status" => "Pendiente" } )
+   AAdd( aData, { "id" => 106, "name" => "David Sanz", "email" => "david@test.com", "status" => "Activo" } )
+   AAdd( aData, { "id" => 107, "name" => "Lucia Ferrero", "email" => "lucia@test.com", "status" => "Activo" } )
    
    DEFINE WINDOW oWnd TITLE "Fivemac Browse Premium (Native Table)" SIZE 650, 450
    
-   @ 60, 20 SWBROWSE oBrw OF oWnd SIZE 610, 360
+   @ 20, 20 SWBROWSE oBrw SIZE 610, 360 OF oWnd
    
-    oBrw:AddColumn( "ID", 60, "id" )
-    oBrw:AddColumn( "Nombre Completo", 250, "name" )
-    oBrw:AddColumn( "Email", 180, "email" )
-    oBrw:AddColumn( "Estado", 80, "status" )
-    
-    oBrw:bLDblClick := { | o, nId | MsgInfo( "Has hecho doble clic en la fila: " + cValToChar( nId ) ) }
+   oBrw:AddColumn( "ID", 60, "id" )
+   oBrw:AddColumn( "Nombre Completo", 250, "name" )
+   oBrw:AddColumn( "Email", 180, "email" )
+   oBrw:AddColumn( "Estado", 80, "status" )
+   
+   // Lógica de diseño mediante Codeblocks
+   oBrw:SetBackColor( 4, { | v | If( v == "Baja", "#FFCCCC", If( v == "Pendiente", "#FFF3CD", "#D1E7DD" ) ) } )
+   
+   oBrw:SetColImg( 4, { | v | If( v == "Activo", "checkmark.circle.fill", ;
+                             If( v == "Baja", "xmark.circle.fill", ;
+                             If( v == "Pendiente", "clock.fill", "" ) ) ) } )
+                              
+   oBrw:SetColImg( 2, { || "person.circle" } )
+   oBrw:SetColImg( 3, { || "envelope" } )
 
-    oBrw:SetArray( aData )
+   // Doble clic para cambiar el valor (Test de actualización parcial)
+   oBrw:bLDblClick := { | o, nId | UpdateStatus( o, nId ) }
    
-   @ 15, 20 SAY "Test de Browse Dinámico (SwiftUI Native Table)" OF oWnd SIZE 400, 30
+   oBrw:SetArray( aData )
    
-   oWnd:Activate( .t. ) // Modal para ver el log
+   ACTIVATE WINDOW oWnd CENTERED
+   
+return nil
 
+//----------------------------------------------------------------------------//
+
+static function UpdateStatus( oBrw, nId )
+   local nRow := Val( nId )
+   local cOld := oBrw:aRows[ nRow ][ "status" ]
+   local cNew := if( cOld == "Activo", "Baja", "Activo" )
+   
+   oBrw:SetCellValue( nRow, 4, cNew )
+   
 return nil

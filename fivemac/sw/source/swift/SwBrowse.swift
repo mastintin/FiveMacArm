@@ -14,7 +14,7 @@ struct SwBrowseRow: Identifiable {
     var data: [String: String]
 }
 
-// El estado sigue siendo el mismo para mantener compatibilidad con Harbour
+// El estado
 @Observable
 public class BrowseState: SwApplyable {
     public let id: String
@@ -27,29 +27,43 @@ public class BrowseState: SwApplyable {
     }
     
     public func apply(property: String, value: Any) {
-        if property == "columns", let colsData = value as? [[String: Any]] {
-            self.columns = colsData.compactMap { dict in
-                let title = dict["title"] as? String ?? ""
-                let field = dict["field"] as? String ?? ""
-                let width = dict["width"] as? Double
-                return SwBrowseColumn(title: title, field: field, width: width != nil ? CGFloat(width!) : nil)
-            }
-        }
-        
-        if property == "rows", let rowsData = value as? [[String: Any]] {
-            self.rows = rowsData.compactMap { dict in
-                let rowId = dict["id"] as? String ?? UUID().uuidString
-                var rowData: [String: String] = [:]
-                for (key, val) in dict {
-                    rowData[key] = "\(val)"
+        Task { @MainActor in
+            if property == "columns", let colsData = value as? [[String: Any]] {
+                self.columns = colsData.compactMap { dict in
+                    let title = dict["title"] as? String ?? ""
+                    let field = dict["field"] as? String ?? ""
+                    let width = dict["width"] as? Double
+                    return SwBrowseColumn(title: title, field: field, width: width != nil ? CGFloat(width!) : nil)
                 }
-                return SwBrowseRow(id: rowId, data: rowData)
+            }
+            
+            if property == "rows", let rowsData = value as? [[String: Any]] {
+                self.rows = rowsData.compactMap { dict in
+                    let rowId = dict["id"] as? String ?? UUID().uuidString
+                    var rowData: [String: String] = [:]
+                    for (key, val) in dict {
+                        rowData[key] = "\(val)"
+                    }
+                    return SwBrowseRow(id: rowId, data: rowData)
+                }
+            }
+            
+            if property == "row_update", let rowDataDict = value as? [String: Any] {
+                let rowId = rowDataDict["id"] as? String ?? ""
+                if let index = self.rows.firstIndex(where: { $0.id == rowId }) {
+                    var newRowData: [String: String] = [:]
+                    for (key, val) in rowDataDict {
+                        newRowData[key] = "\(val)"
+                    }
+                    self.rows[index] = SwBrowseRow(id: rowId, data: newRowData)
+                    print("🏝️ Swift [Browse] Partial update received for row ID: \(rowId)")
+                }
             }
         }
     }
 }
 
-// WRAPPER NATIVO DE NSTABLEVIEW (El motor real de macOS)
+// WRAPPER NATIVO DE NSTABLEVIEW
 struct NSTableViewController: NSViewRepresentable {
     @Bindable var state: BrowseState
     
@@ -68,7 +82,7 @@ struct NSTableViewController: NSViewRepresentable {
         tableView.usesAlternatingRowBackgroundColors = true
         tableView.allowsColumnResizing = true
         tableView.columnAutoresizingStyle = .uniformColumnAutoresizingStyle
-        tableView.rowHeight = 24 // Altura de fila estándar nativa
+        tableView.rowHeight = 24
         
         context.coordinator.tableView = tableView
         scrollView.documentView = tableView
@@ -79,13 +93,18 @@ struct NSTableViewController: NSViewRepresentable {
     func updateNSView(_ nsView: NSScrollView, context: Context) {
         guard let tableView = nsView.documentView as? NSTableView else { return }
         
-        // Sincronizar columnas
+        // Sincronizar columnas y ordenación
         if tableView.tableColumns.count != state.columns.count {
             for col in tableView.tableColumns { tableView.removeTableColumn(col) }
             for colData in state.columns {
                 let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(colData.field))
                 col.title = colData.title
                 if let width = colData.width { col.width = width }
+                
+                // Habilitar ordenación para esta columna
+                let descriptor = NSSortDescriptor(key: colData.field, ascending: true)
+                col.sortDescriptorPrototype = descriptor
+                
                 tableView.addTableColumn(col)
             }
         }
@@ -110,15 +129,60 @@ struct NSTableViewController: NSViewRepresentable {
             return parent.state.rows.count
         }
         
-        // Delegate - Renderizado de celdas con CENTRADO VERTICAL
+        // ORDENACIÓN NATIVA
+        func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
+            guard let descriptor = tableView.sortDescriptors.first, let field = descriptor.key else { return }
+            let ascending = descriptor.ascending
+            
+            print("🏝️ Native [NSTableView] Sorting by: \(field) (\(ascending ? "ASC" : "DESC"))")
+            
+            parent.state.rows.sort { r1, r2 in
+                let v1 = r1.data[field] ?? ""
+                let v2 = r2.data[field] ?? ""
+                
+                // Intentar comparación numérica si ambos son números
+                if let n1 = Double(v1), let n2 = Double(v2) {
+                    return ascending ? n1 < n2 : n1 > n2
+                }
+                
+                return ascending ? v1.localizedCompare(v2) == .orderedAscending : v1.localizedCompare(v2) == .orderedDescending
+            }
+            
+            tableView.reloadData()
+        }
+        
         func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
             guard let column = tableColumn, row < parent.state.rows.count else { return nil }
             
             let field = column.identifier.rawValue
-            let text = parent.state.rows[row].data[field] ?? ""
+            let rowData = parent.state.rows[row].data
+            let text = rowData[field] ?? ""
+            let imageName = rowData["\(field)_img"] // Buscamos imagen específica para este campo
+            let colorHex = rowData["\(field)_color"] // Buscamos color específico para este campo
             
-            // Contenedor para centrar verticalmente
             let container = NSView()
+            
+            // Imagen opcional
+            var lastView: NSView?
+            if let imgName = imageName, !imgName.isEmpty {
+                let imageView = NSImageView()
+                if let sysImg = NSImage(systemSymbolName: imgName, accessibilityDescription: nil) {
+                    imageView.image = sysImg
+                } else if let bundleImg = NSImage(named: imgName) {
+                    imageView.image = bundleImg
+                }
+                imageView.translatesAutoresizingMaskIntoConstraints = false
+                imageView.contentTintColor = .secondaryLabelColor
+                container.addSubview(imageView)
+                
+                NSLayoutConstraint.activate([
+                    imageView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+                    imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
+                    imageView.widthAnchor.constraint(equalToConstant: 16),
+                    imageView.heightAnchor.constraint(equalToConstant: 16)
+                ])
+                lastView = imageView
+            }
             
             let textField = NSTextField(labelWithString: text)
             textField.isBezeled = false
@@ -126,34 +190,26 @@ struct NSTableViewController: NSViewRepresentable {
             textField.isEditable = false
             textField.cell?.lineBreakMode = .byTruncatingTail
             textField.translatesAutoresizingMaskIntoConstraints = false
-            
             container.addSubview(textField)
             
             NSLayoutConstraint.activate([
                 textField.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-                textField.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
+                textField.leadingAnchor.constraint(equalTo: lastView?.trailingAnchor ?? container.leadingAnchor, constant: 4),
                 textField.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -4)
             ])
             
-            // Lógica de colores aplicada al CONTENEDOR
-            let val = text.lowercased()
-            if val == "baja" || val == "inactive" { 
+            // Lógica de colores 100% DINÁMICA (Sin Hardcoding)
+            let cellColorHex = rowData["\(field)_color"]
+            let rowColorHex = rowData["row_color"]
+            
+            if let hex = cellColorHex ?? rowColorHex, let color = NSColor(hex: hex) {
                 container.wantsLayer = true
-                container.layer?.backgroundColor = NSColor.systemRed.withAlphaComponent(0.2).cgColor 
-            }
-            else if val == "activo" || val == "active" { 
-                container.wantsLayer = true
-                container.layer?.backgroundColor = NSColor.systemGreen.withAlphaComponent(0.2).cgColor 
-            }
-            else if val == "pendiente" { 
-                container.wantsLayer = true
-                container.layer?.backgroundColor = NSColor.systemOrange.withAlphaComponent(0.2).cgColor 
+                container.layer?.backgroundColor = color.withAlphaComponent(0.2).cgColor
             }
             
             return container
         }
         
-        // Selección
         func tableViewSelectionDidChange(_ notification: Notification) {
             guard let tableView = notification.object as? NSTableView else { return }
             let selectedRow = tableView.selectedRow
@@ -164,17 +220,13 @@ struct NSTableViewController: NSViewRepresentable {
             }
         }
         
-        // Doble clic nativo
         @objc func onDoubleClick(_ sender: AnyObject) {
             guard let tableView = sender as? NSTableView else { return }
             let clickedRow = tableView.clickedRow
             if clickedRow >= 0 && clickedRow < parent.state.rows.count {
                 let rowId = parent.state.rows[clickedRow].id
-                print("🏝️ Native [NSTableView] Double Click Detected: Row \(rowId)")
-                
                 SwDispatcher.shared.recordChange(id: parent.state.id, property: "event", value: "dblclick")
                 SwDispatcher.shared.recordChange(id: parent.state.id, property: "rowid", value: rowId)
-                
                 let changes = SwDispatcher.shared.flushStateChanges()
                 if let data = try? JSONSerialization.data(withJSONObject: changes),
                    let json = String(data: data, encoding: .utf8) {
@@ -182,6 +234,20 @@ struct NSTableViewController: NSViewRepresentable {
                 }
             }
         }
+    }
+}
+
+// Extensión para colores Hexadecimales
+extension NSColor {
+    convenience init?(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        var rgb: UInt64 = 0
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+        self.init(red: CGFloat((rgb & 0xFF0000) >> 16) / 255.0,
+                  green: CGFloat((rgb & 0x00FF00) >> 8) / 255.0,
+                  blue: CGFloat(rgb & 0x0000FF) / 255.0,
+                  alpha: 1.0)
     }
 }
 
@@ -194,7 +260,6 @@ public struct SwiftBrowseView: View {
                 ContentUnavailableView("No Columns Defined", systemImage: "table.badge.more")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                // USAMOS EL CONTROL NATIVO PARA MÁXIMA RESPUESTA
                 NSTableViewController(state: state)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
