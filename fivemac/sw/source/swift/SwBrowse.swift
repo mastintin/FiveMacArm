@@ -58,11 +58,16 @@ public class BrowseState: SwApplyable {
         return columns[index].title
     }
     
-    // Función auxiliar para obtener el valor de una celda por índice de columna
     func cellValue(_ row: SwBrowseRow, _ colIndex: Int) -> String {
         guard colIndex < columns.count else { return "" }
         let field = columns[colIndex].field
         return row.data[field] ?? ""
+    }
+    
+    // Función auxiliar para obtener el ancho de una columna por índice
+    func colWidth(_ index: Int) -> CGFloat? {
+        guard index < columns.count else { return 0 }
+        return columns[index].width
     }
 }
 
@@ -77,11 +82,16 @@ public struct SwiftBrowseView: View {
             } else {
                 // Usamos columnas fijas mapeadas a los datos dinámicos para asegurar compilación
                 Table(state.rows, selection: $state.selection, sortOrder: $state.sortOrder) {
-                    TableColumn(state.colTitle(0)) { row in Text(state.cellValue(row, 0)) }
-                    TableColumn(state.colTitle(1)) { row in Text(state.cellValue(row, 1)) }
-                    TableColumn(state.colTitle(2)) { row in Text(state.cellValue(row, 2)) }
-                    TableColumn(state.colTitle(3)) { row in Text(state.cellValue(row, 3)) }
-                    TableColumn(state.colTitle(4)) { row in Text(state.cellValue(row, 4)) }
+                    TableColumn(state.colTitle(0)) { row in Text(state.cellValue(row, 0)) }.width(state.colWidth(0))
+                    TableColumn(state.colTitle(1)) { row in Text(state.cellValue(row, 1)) }.width(state.colWidth(1))
+                    TableColumn(state.colTitle(2)) { row in Text(state.cellValue(row, 2)) }.width(state.colWidth(2))
+                    TableColumn(state.colTitle(3)) { row in Text(state.cellValue(row, 3)) }.width(state.colWidth(3))
+                    TableColumn(state.colTitle(4)) { row in Text(state.cellValue(row, 4)) }.width(state.colWidth(4))
+                    TableColumn(state.colTitle(5)) { row in Text(state.cellValue(row, 5)) }.width(state.colWidth(5))
+                    TableColumn(state.colTitle(6)) { row in Text(state.cellValue(row, 6)) }.width(state.colWidth(6))
+                    TableColumn(state.colTitle(7)) { row in Text(state.cellValue(row, 7)) }.width(state.colWidth(7))
+                    TableColumn(state.colTitle(8)) { row in Text(state.cellValue(row, 8)) }.width(state.colWidth(8))
+                    TableColumn(state.colTitle(9)) { row in Text(state.cellValue(row, 9)) }.width(state.colWidth(9))
                 }
                 .tableStyle(.inset)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
