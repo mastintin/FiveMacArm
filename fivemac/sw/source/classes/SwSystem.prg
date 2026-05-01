@@ -92,5 +92,36 @@ FUNCTION CValToChar( uVal )
 RETURN ""
 
 //----------------------------------------------------------------------------//
+// FUNCIONES DE RUTAS (Equivalentes a las de nativo/source/winapi/system.m)
+//----------------------------------------------------------------------------//
+
+// Path() -> Directorio padre del .app bundle (donde está el ejecutable)
+// Equivalente exacto a HB_FUNC(PATH) en system.m:
+//   bundlePath -> stringByDeletingLastPathComponent
+FUNCTION Path()
+   local cBundle := hb_DirBase()                 // .../MyApp.app/Contents/MacOS/
+   cBundle := hb_DirSepDel( cBundle )            // elimina / final
+   cBundle := hb_FNameDir( cBundle )             // sube a MacOS/
+   cBundle := hb_DirSepDel( cBundle )            // elimina / final
+   cBundle := hb_FNameDir( cBundle )             // sube a Contents/
+   cBundle := hb_DirSepDel( cBundle )            // elimina / final
+   cBundle := hb_FNameDir( cBundle )             // sube a .app/
+   cBundle := hb_DirSepDel( cBundle )            // elimina / final
+return hb_FNameDir( cBundle )                    // directorio que contiene el .app
+
+// UserPath() -> Directorio home del usuario (~)
+FUNCTION UserPath()
+return hb_GetEnv( "HOME" )
+
+// HomePath() -> alias de UserPath
+FUNCTION HomePath()
+return UserPath()
+
+// ImgPath() -> Ruta de imágenes dentro del bundle Resources
+FUNCTION ImgPath()
+   local cBundle := hb_DirBase()                 // .../MyApp.app/Contents/MacOS/
+   cBundle := hb_DirSepDel( cBundle )
+   cBundle := hb_FNameDir( cBundle )             // Contents/
+return cBundle + "Resources" + hb_ps()
 
 // EOF
