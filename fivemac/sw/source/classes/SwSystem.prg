@@ -59,4 +59,38 @@ FUNCTION GetFile( cTitle, cTypes, cPrompt ) ; return SD:Query():GetFile( cTitle,
 FUNCTION GetDir( cTitle, cPrompt )          ; return SD:Query():GetDir( cTitle, cPrompt )
 FUNCTION SaveFile( cName, cTitle, cPrompt ) ; return SD:Query():SaveFile( cTitle, cName, cPrompt )
 
+//----------------------------------------------------------------------------//
+
+FUNCTION CValToChar( uVal )
+
+    LOCAL cType := ValType( uVal )
+
+    DO CASE
+        CASE cType == "C" .OR. cType == "M"
+            RETURN uVal
+
+        CASE cType == "N"
+            RETURN hb_ntos( uVal ) 
+
+        CASE cType == "D"
+            RETURN DToC( uVal )
+
+        CASE cType == "L"
+            RETURN If( uVal, ".T.", ".F." )
+
+        CASE cType == "A"
+            RETURN "{...}" 
+
+        CASE cType == "O"
+            RETURN "[Object]"
+
+        CASE cType == "NIL"
+            RETURN ""
+
+    ENDCASE
+
+RETURN ""
+
+//----------------------------------------------------------------------------//
+
 // EOF
