@@ -225,6 +225,19 @@ public class SwiftWindowState: SwiftVStackState {
                 } else if prop == "visible" && (value as? Bool == true || (value as? Int == 1)) {
                     win.makeKeyAndOrderFront(nil)
                     NSApp.activate(ignoringOtherApps: true)
+                } else if prop == "toolbaritems", let v = value as? [[String: Any]] {
+                    // Actualización dinámica del Toolbar
+                    if let data = try? JSONSerialization.data(withJSONObject: v),
+                       let buttons = try? JSONDecoder().decode([ToolbarItemConfig].self, from: data),
+                       let delegate = ViewRegistry.get("Delegate_\(self.windowId)") as? SwWindowDelegate {
+                        
+                        delegate.customButtons = buttons
+                        let toolbar = NSToolbar(identifier: "Toolbar_\(self.windowId)")
+                        toolbar.delegate = delegate
+                        toolbar.displayMode = .iconAndLabel
+                        win.toolbar = toolbar
+                        print("🏝️ [Swift-Window] Toolbar actualizada dinámicamente con \(buttons.count) items.")
+                    }
                 } else if prop == "close" {
                     win.close()
                 }

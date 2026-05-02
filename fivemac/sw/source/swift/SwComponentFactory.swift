@@ -57,10 +57,14 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
 
         case 100: // Window
             let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            let usetoolbar = initial.hastoolbar ?? false 
+            let buttons = initial.toolbarItems ?? []
             sw_createwindow_hb_internal(title: initial.title ?? "", 
                                          width: initial.width ?? 500, 
                                          height: initial.height ?? 400, 
-                                         id: cleanid)
+                                         id: cleanid, 
+                                         hastoolbar: usetoolbar,
+                                         buttons: buttons)
 
         case 14: // Get
             newItem = try SwiftGetView.create(id: cleanid, from: jsonData)
@@ -174,6 +178,15 @@ extension GeometryProtocol {
     public var style: Int? { return nil }
 }
 
+// MARK: - Toolbar Models
+
+public struct ToolbarItemConfig: Codable {
+    public let id: String?
+    public let label: String?
+    public let icon: String?
+}
+
+
 public struct GenericInit: Codable, GeometryProtocol {
     public let title: String?
     public let caption: String?
@@ -186,5 +199,7 @@ public struct GenericInit: Codable, GeometryProtocol {
     public let parentheight: Double?
     public let interactive: Int?
     public let style: Int?
+    public let hastoolbar: Bool? 
+    public let toolbarItems: [ToolbarItemConfig]? 
 }
 
