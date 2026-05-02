@@ -1,7 +1,6 @@
 import SwiftUI
 import AppKit
 import Observation
-import HarbourMacro
 
 // MARK: - Message Model
 struct AIChatMessage: Identifiable {

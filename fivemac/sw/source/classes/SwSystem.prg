@@ -92,8 +92,7 @@ FUNCTION CValToChar( uVal )
 RETURN ""
 
 //----------------------------------------------------------------------------//
-// FUNCIONES DE RUTAS - implementadas en SwGetBridge.m via HB_FUNC
-// PATH(), USERPATH(), HOMEPATH(), IMGPATH()
+// FUNCIONES DE RUTAS - Implementadas en utilsC.m
 //----------------------------------------------------------------------------//
 
 // EOF

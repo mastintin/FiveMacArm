@@ -1,0 +1,184 @@
+import AppKit
+import Foundation
+
+// MARK: - Custom Formatters (Swift version)
+
+/// Formateador que convierte todo a mayúsculas durante la edición.
+public class SWUpperFormatter: Formatter {
+    public override func string(for obj: Any?) -> String? {
+        return (obj as? String) ?? ""
+    }
+    
+    public override func getObjectValue(_ obj: AutoreleasingUnsafeMutablePointer<AnyObject?>?, for string: String, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
+        obj?.pointee = string as AnyObject
+        return true
+    }
+    
+    public override func isPartialStringValid(_ partialString: String, newEditingString newString: AutoreleasingUnsafeMutablePointer<NSString?>?, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
+        let upper = partialString.uppercased()
+        if upper != partialString {
+            newString?.pointee = upper as NSString
+            return false
+        }
+        return true
+    }
+}
+
+/// Formateador que solo permite caracteres alfabéticos.
+public class SWAlphaFormatter: Formatter {
+    public override func string(for obj: Any?) -> String? {
+        return (obj as? String) ?? ""
+    }
+    
+    public override func getObjectValue(_ obj: AutoreleasingUnsafeMutablePointer<AnyObject?>?, for string: String, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
+        obj?.pointee = string as AnyObject
+        return true
+    }
+    
+    public override func isPartialStringValid(_ partialString: String, newEditingString newString: AutoreleasingUnsafeMutablePointer<NSString?>?, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
+        for char in partialString {
+            if !char.isLetter && !char.isWhitespace {
+                return false
+            }
+        }
+        return true
+    }
+}
+
+/// Formateador basado en máscaras (Picture) estilo Harbour.
+public class SWPictureFormatter: Formatter {
+    public var picture: String = ""
+    
+    public init(picture: String) {
+        self.picture = picture
+        super.init()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
+    public override func string(for obj: Any?) -> String? {
+        return (obj as? String) ?? ""
+    }
+    
+    public override func getObjectValue(_ obj: AutoreleasingUnsafeMutablePointer<AnyObject?>?, for string: String, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
+        obj?.pointee = string as AnyObject
+        return true
+    }
+    
+    public override func isPartialStringValid(_ partialString: String, newEditingString newString: AutoreleasingUnsafeMutablePointer<NSString?>?, errorDescription error: AutoreleasingUnsafeMutablePointer<NSString?>?) -> Bool {
+        var i = 0
+        var formatted = ""
+        let partialChars = Array(partialString)
+        let pictureChars = Array(picture)
+        
+        for j in 0..<pictureChars.count {
+            guard i < partialChars.count else { break }
+            let maskChar = pictureChars[j]
+            let inputChar = partialChars[i]
+            
+            if maskChar == "9" {
+                if inputChar.isNumber {
+                    formatted.append(inputChar)
+                    i += 1
+                } else {
+                    return false
+                }
+            } else {
+                formatted.append(maskChar)
+                if inputChar == maskChar {
+                    i += 1
+                }
+            }
+        }
+        
+        if formatted == partialString {
+            return true
+        }
+        
+        newString?.pointee = formatted as NSString
+        return false
+    }
+}
+
+/// Formateador numérico europeo (es_ES).
+public class SWEuroNumberFormatter: NumberFormatter, @unchecked Sendable {
+    public override init() {
+        super.init()
+        self.locale = Locale(identifier: "es_ES")
+        self.numberStyle = .decimal
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.locale = Locale(identifier: "es_ES")
+        self.numberStyle = .decimal
+    }
+}
+
+/// Formateador de fechas europeo.
+public class SWEuroDateFormatter: DateFormatter, @unchecked Sendable {
+    public override init() {
+        super.init()
+        self.dateFormat = "dd/MM/yyyy"
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.dateFormat = "dd/MM/yyyy"
+    }
+}
+
+// MARK: - Bridge Helpers
+
+@_cdecl("SwGet_SetUpper")
+@MainActor
+public func swGet_SetUpper(_ control: NSControl?) {
+    control?.cell?.formatter = SWUpperFormatter()
+}
+
+@_cdecl("SwGet_SetAlpha")
+@MainActor
+public func swGet_SetAlpha(_ control: NSControl?) {
+    control?.cell?.formatter = SWAlphaFormatter()
+}
+
+@_cdecl("SwGet_SetPicture")
+@MainActor
+public func swGet_SetPicture(_ control: NSControl?, picture: String) {
+    control?.cell?.formatter = SWPictureFormatter(picture: picture)
+}
+
+@_cdecl("SwGet_SetEuroDate")
+@MainActor
+public func swGet_SetEuroDate(_ control: NSControl?) {
+    control?.cell?.formatter = SWEuroDateFormatter()
+}
+
+@_cdecl("SwGet_SetEuroNumber")
+@MainActor
+public func swGet_SetEuroNumber(_ control: NSControl?, picture: String) {
+    let formatter = SWEuroNumberFormatter()
+    
+    // Lógica similar a Objective-C para detectar decimales y agrupación
+    if let dotIndex = picture.firstIndex(of: ".") {
+        let decimals = picture[picture.index(after: dotIndex)...].count
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = decimals
+    } else {
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 0
+    }
+    
+    formatter.usesGroupingSeparator = picture.contains(",")
+    
+    // Limitar dígitos enteros si la máscara tiene '9's
+    let intPart = picture.split(separator: ".").first ?? ""
+    let nineCount = intPart.filter { $0 == "9" }.count
+    if nineCount > 0 {
+        formatter.maximumIntegerDigits = nineCount
+    }
+    
+    control?.cell?.formatter = formatter
+}
