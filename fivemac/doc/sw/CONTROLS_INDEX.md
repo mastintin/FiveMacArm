@@ -14,7 +14,7 @@ Bienvenido al índice interactivo de componentes del módulo **SW**. Esta págin
 | **📐 Layout** | [**TSwVStack**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwHStack**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwZStack**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwGrid**](https://mastintin.github.io/FiveMacArm/) |
 | **🧭 Navegación**| [**TSwSidebar**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwTabView**](https://mastintin.github.io/FiveMacArm/) |
 | **🔘 Controles** | [**TSwLabel**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwButton**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwGet**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwToggle**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwSlider**](https://mastintin.github.io/FiveMacArm/) |
-| **📦 Avanzados** | [**TSwList**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwWebView**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwDatePicker**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwImage**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwProgress**](https://mastintin.github.io/FiveMacArm/) |
+| **📦 Avanzados** | [**TSwList**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwWebView**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwDatePicker**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwImage**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwProgress**](https://mastintin.github.io/FiveMacArm/) <br> [**TSwGauge**](https://mastintin.github.io/FiveMacArm/) |
 
 ---
 *Powered by Harbour & SwiftUI*

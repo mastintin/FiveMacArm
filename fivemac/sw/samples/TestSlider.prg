@@ -9,7 +9,7 @@ function AppMain()
 
     DEFINE WINDOW oWnd TITLE "Test: Swift Native Slider" SIZE 400, 350
 
-    @ 230, 20 SAY oSay PROMPT "Volumen de la Radio: 50" OF oWnd 
+    @ 230, 20 SAY oSay PROMPT "Volumen de la Radio: 50" OF oWnd SIZE 400, 40
     oSay:SetFontSize( 20 )
 
     @ 160, 20 SLIDER oSld VALUE 50 RANGE 0, 100 OF oWnd SIZE 200, 40 ;

@@ -68,6 +68,13 @@
 #define SW_TOGGLE_BUTTON      2
 
 //----------------------------------------------------------------------------//
+// GAUGE STYLES
+//----------------------------------------------------------------------------//
+#define SW_GAUGE_CIRCULAR       0
+#define SW_GAUGE_LINEAR         1
+#define SW_GAUGE_CAPACITY       2
+
+//----------------------------------------------------------------------------//
 // CARD ACCENT SIDES
 //----------------------------------------------------------------------------//
 #define SW_ACCENT_NONE        0
@@ -407,8 +414,25 @@
 #xcommand @ <nRow>, <nCol> COLORPICKER [ <oCp> ] ;
    [ <v: VAR, VALUE> <cValue> ] ;
    [ PROMPT <cPrompt> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
-   [ SIZE <nWidth>, <nHeight> ] ;
-   [ ACTION <uAction> ] ;
-   => ;
-   [ <oCp> := ] TSwColorPicker():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cValue>], [<cPrompt>], <oWnd>, [<{uAction}>] )
+    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ ACTION <uAction> ] ;
+    => ;
+    [ <oCp> := ] TSwColorPicker():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cValue>], [<cPrompt>], <oWnd>, [<{uAction}>] )
+
+//----------------------------------------------------------------------------//
+// GAUGE
+//----------------------------------------------------------------------------//
+
+#xcommand @ <nRow>, <nCol> GAUGE [ <oGauge> ] ;
+    [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
+    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+    [ SIZE <nWidth>, <nHeight> ] ;
+    [ PROMPT <cPrompt> ] [ SUBTITLE <cSubtitle> ] ;
+    [ ICON <cIcon> ] [ COLOR <cColor> ] ;
+    [ STYLE <nStyle> ] [ UNIT <cUnit> ] ;
+    [ <disabled: DISABLED> ] ;
+    [ <showval: SHOWVALUE> ] ;
+    => ;
+    [ <oGauge> := ] TSwGauge():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<nValue>], [<nMin>], [<nMax>], <oWnd>, , ;
+                                    [<cPrompt>], [<cSubtitle>], [<cIcon>], [<cColor>], [<nStyle>], <.disabled.>, , [<.showval.>], [<cUnit>] )

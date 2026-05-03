@@ -123,6 +123,9 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
         case 31: // ColorPicker
             newItem = try SwiftColorPickerView.create(id: cleanid, from: jsonData)
 
+        case 32: // Gauge
+            newItem = try SwiftGaugeView.create(id: cleanid, from: jsonData)
+
         case 110: // AppMenu
             SwAppMenu.setup(from: jsonData)
             

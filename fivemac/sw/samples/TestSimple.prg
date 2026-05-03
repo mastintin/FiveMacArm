@@ -1,19 +1,7 @@
 #include "swfive.ch"
 
 function Main()
-   HSW_START_SWIFT( "AppMain" )
-return nil
-
-function AppMain()
-   local oWnd
-   
-   SW_LOG( "TestSimple: DEFINE WINDOW" )
-   DEFINE WINDOW oWnd TITLE "Test Simple" SIZE 400, 300
-   
-   SW_LOG( "TestSimple: Center" )
-   oWnd:Center()
-   
-   SW_LOG( "TestSimple: Activate" )
-   oWnd:Activate()
-   SW_LOG( "TestSimple: Done" )
+   local oStp
+   oStp := TSwStepper():New( 10, 10, 100, 30, 10, 0, 100, 1, "Test" )
+   MsgInfo( "Stepper created" )
 return nil

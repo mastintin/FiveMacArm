@@ -81,6 +81,8 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderStepper())
             case .colorpicker:
                 AnyView(renderColorPicker())
+            case .gauge:
+                AnyView(renderGauge())
             default:
                 AnyView(EmptyView())
             }
@@ -262,6 +264,14 @@ public struct SwRecursiveItemView: View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? ColorPickerState {
                 SwiftColorPickerView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderGauge() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? GaugeState {
+                SwiftGaugeView(state: state)
             } else { EmptyView() }
         }
     }
