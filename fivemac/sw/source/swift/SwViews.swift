@@ -80,6 +80,8 @@ internal struct ViewsCommands {
         let typeId = (data["type"] as? Int) ?? (params["type"] as? Int) ?? 0
         let parentid = (data["parentid"] as? String) ?? (params["parentid"] as? String) ?? ""
         
+        print("SwFactory: Pre-create check - ID: \((data["id"] ?? params["id"]) ?? "N/A"), Type: \((data["type"] ?? params["type"]) ?? "N/A")")
+        
         if let jsonData = try? JSONSerialization.data(withJSONObject: data, options: []),
            let jsonStr = String(data: jsonData, encoding: .utf8) {
             

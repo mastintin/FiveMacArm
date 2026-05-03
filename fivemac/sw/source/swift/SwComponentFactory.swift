@@ -118,6 +118,11 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
         case 29: // Map
             newItem = try SwiftMapView.create(id: cleanid, from: jsonData)
             
+        case 30: // Stepper
+            newItem = try SwiftStepperView.create(id: cleanid, from: jsonData)
+        case 31: // ColorPicker
+            newItem = try SwiftColorPickerView.create(id: cleanid, from: jsonData)
+
         case 110: // AppMenu
             SwAppMenu.setup(from: jsonData)
             

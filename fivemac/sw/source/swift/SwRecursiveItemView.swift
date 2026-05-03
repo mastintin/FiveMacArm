@@ -77,6 +77,10 @@ public struct SwRecursiveItemView: View {
                 AnyView(renderQuickLook())
             case .map:
                 AnyView(renderMap())
+            case .stepper:
+                AnyView(renderStepper())
+            case .colorpicker:
+                AnyView(renderColorPicker())
             default:
                 AnyView(EmptyView())
             }
@@ -242,6 +246,22 @@ public struct SwRecursiveItemView: View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? SwiftMapState {
                 SwiftMapView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderStepper() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? StepperState {
+                SwiftStepperView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderColorPicker() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? ColorPickerState {
+                SwiftColorPickerView(state: state)
             } else { EmptyView() }
         }
     }

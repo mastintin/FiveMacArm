@@ -7,6 +7,9 @@
     ACCESS Caption          INLINE ::hState["text"]
     ASSIGN Caption(c)       INLINE ( ::hState["text"] := c, ::Apply( "text", c ) )
  
+    ACCESS Value            INLINE ::Caption
+    ASSIGN Value(c)         INLINE ::Caption := c
+ 
     ACCESS lScroll          INLINE hb_HGetDef( ::hState, "hasscroll", .F. )
     ASSIGN lScroll( l )     INLINE ( ::hState["hasscroll"] := l, ::Apply( "hasscroll", l ) )
    

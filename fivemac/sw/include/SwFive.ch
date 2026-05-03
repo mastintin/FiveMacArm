@@ -393,3 +393,22 @@
    [ <oQl> := ] TSwQuickLook():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cFile>], [<nRes>] )
 
 
+#xcommand @ <nRow>, <nCol> STEPPER [ <oStp> ] ;
+   [ <v: VAR, VALUE> <nValue> ] ;
+   [ RANGE <nMin>, <nMax> ] ;
+   [ STEP <nStep> ] ;
+   [ PROMPT <cPrompt> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ ACTION <uAction> ] ;
+   => ;
+   [ <oStp> := ] TSwStepper():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<nValue>], [<nMin>], [<nMax>], [<nStep>], [<cPrompt>], <oWnd>, [<{uAction}>] )
+
+#xcommand @ <nRow>, <nCol> COLORPICKER [ <oCp> ] ;
+   [ <v: VAR, VALUE> <cValue> ] ;
+   [ PROMPT <cPrompt> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ ACTION <uAction> ] ;
+   => ;
+   [ <oCp> := ] TSwColorPicker():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cValue>], [<cPrompt>], <oWnd>, [<{uAction}>] )
