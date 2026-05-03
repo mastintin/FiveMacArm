@@ -73,6 +73,10 @@ public struct SwRecursiveItemView: View {
                 } else {
                     AnyView(EmptyView())
                 }
+            case .quicklook:
+                AnyView(renderQuickLook())
+            case .map:
+                AnyView(renderMap())
             default:
                 AnyView(EmptyView())
             }
@@ -222,6 +226,22 @@ public struct SwRecursiveItemView: View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? SwiftMenuItemState {
                 SwiftMenuItemView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderQuickLook() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftQuickLookState {
+                SwiftQuickLookView(state: state)
+            } else { EmptyView() }
+        }
+    }
+
+    private func renderMap() -> some View {
+        Group {
+            if let state = ViewRegistry.getState(for: item.id) as? SwiftMapState {
+                SwiftMapView(state: state)
             } else { EmptyView() }
         }
     }

@@ -27,6 +27,9 @@
 
      ACCESS Step          INLINE hb_HGetDef( ::hState, "step", 0 )
      ASSIGN Step( n )     INLINE ( ::hState["step"] := n, ::Apply( { "step" => n } ) )
+
+     ACCESS lShowValue      INLINE hb_HGetDef( ::hState, "showvalue", .T. )
+     ASSIGN lShowValue( l ) INLINE ( ::hState["showvalue"] := l, ::Apply( { "showvalue" => l } ) )
  
      ACCESS bAction          INLINE hb_HGetDef( ::hState, "action", nil )
      ASSIGN bAction( u )     INLINE ( ::hState["action"] := u,;
@@ -39,7 +42,7 @@
                                       ::Apply( { "interactive" => ::hState["interactive"] } ) )
  
      METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction,;
-                 cPrompt, cIconMin, cIconMax, cColor, nStep, lDisabled, nAutoResize )
+                 cPrompt, cIconMin, cIconMax, cColor, nStep, lDisabled, nAutoResize, lShowValue )
      METHOD SetValue( nVal, lSync )
      METHOD Update( hNewState )
      METHOD OnAction()
@@ -53,7 +56,7 @@
  //----------------------------------------------------------------------------//
  
  METHOD New( nTop, nLeft, nWidth, nHeight, nValue, nMin, nMax, oWnd, cId, bAction,;
-             cPrompt, cIconMin, cIconMax, cColor, nStep, lDisabled, nAutoResize ) CLASS TSwSlider
+             cPrompt, cIconMin, cIconMax, cColor, nStep, lDisabled, nAutoResize, lShowValue ) CLASS TSwSlider
     
     DEFAULT nWidth := 200, nHeight := 30
     
@@ -62,7 +65,7 @@
     ::hState["value"]       := hb_defaultValue( nValue, 0 )
     ::hState["min"]         := hb_defaultValue( nMin, 0 )
     ::hState["max"]         := hb_defaultValue( nMax, 100 )
-    ::hState["showvalue"]   := .T.
+    ::hState["showvalue"]   := hb_defaultValue( lShowValue, .T. )
     ::hState["type"]        := 11
     ::hState["interactive"] := .F.
     
@@ -78,7 +81,7 @@
  
     ::Create()
  
- return self
+    return self
   
  //----------------------------------------------------------------------------//
  

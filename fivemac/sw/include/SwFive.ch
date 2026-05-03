@@ -17,6 +17,7 @@
 #define CRLF hb_OsNewLine()
 
 #define SW_TYPE_APPMENU 110
+#define SW_TYPE_QUICKLOOK 28
 
 //----------------------------------------------------------------------------//
 // COLORS.CH
@@ -173,10 +174,11 @@
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] [ SIZE <nWidth>, <nHeight> ] ;
    [ PROMPT <cPrompt> ] [ ICONMIN <cIconMin> ] [ ICONMAX <cIconMax> ] ;
    [ COLOR <cColor> ] [ STEP <nStep> ] [ <disabled: DISABLED> ] ;
+   [ <show: SHOWVALUE> <lShowValue> ] ;
    [ ACTION <uAction> ] ;
    => ;
    [ <oSld> := ] TSwSlider():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<nValue>], [<nMin>], [<nMax>], <oWnd>, , [<{uAction}>], ;
-   [<cPrompt>], [<cIconMin>], [<cIconMax>], [<cColor>], [<nStep>], <.disabled.> )
+                                  [<cPrompt>], [<cIconMin>], [<cIconMax>], [<cColor>], [<nStep>], <.disabled.>, , [<.lShowValue.>] )
 
 #xcommand @ <nRow>, <nCol> TOGGLE [ <oTgl> ] ;
    [ <v: VAR, VALUE> <lValue> ] ;
@@ -371,3 +373,23 @@
    [ COLOR <cColor> ] ;
    => ;
    [ <oCard> := ] TSwCard():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>], [<cSymbol>], [<cColor>] )
+
+#xcommand @ <nRow>, <nCol> MAP [ <oMap> ] ;
+   [ LAT <nLat> ] ;
+   [ LON <nLon> ] ;
+   [ ZOOM <nZoom> ] ;
+   [ STYLE <nStyle> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   => ;
+   [ <oMap> := ] TSwMap():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nLat>], [<nLon>], [<nZoom>], [<nStyle>] )
+
+#xcommand @ <nRow>, <nCol> QUICKLOOK [ <oQl> ] ;
+   [ FILE <cFile> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   => ;
+   [ <oQl> := ] TSwQuickLook():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cFile>], [<nRes>] )
+
+

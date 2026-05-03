@@ -49,7 +49,7 @@ public class SliderState: SwApplyable {
         case "visible", "lvisible":
             if let bVal = value as? Bool { self.isVisible = bVal }
             else if let iVal = value as? Int { self.isVisible = (iVal != 0) }
-        case "prompt", "title":
+        case "prompt", "title", "text":
             if let sVal = value as? String { self.prompt = sVal }
         case "iconmin":
             if let sVal = value as? String { self.iconMin = sVal }
