@@ -133,6 +133,8 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyab
     public var cornerRadius: CGFloat = 0
     public var spacing: CGFloat = 0
     public var alignment: Int = 0 // 0: center, 1: leading/top, 2: trailing/bottom
+    public var isVisible: Bool = true
+    public var isEnabled: Bool = true
     
     public init() {}
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
@@ -155,6 +157,10 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyab
         } else if prop == "alignment" {
             if let n = (value as? NSNumber)?.intValue { self.alignment = n }
             else if let n = value as? Int { self.alignment = n }
+        } else if prop == "visible" {
+            self.isVisible = SwUtils.toBool(value)
+        } else if prop == "enabled" {
+            self.isEnabled = SwUtils.toBool(value)
         }
     }
 }
@@ -185,6 +191,7 @@ public class BaseControlState: SwApplyable {
 
 
 
+@Observable
 public class SwiftWindowState: SwiftVStackState {
     public var windowId: String = ""
     public var isInteractive: Bool = true
@@ -199,7 +206,6 @@ public class SwiftWindowState: SwiftVStackState {
         print("🏝️ [Swift-Window] ID: \(self.windowId), Prop: \(prop), Val: \(value)")
         
         DispatchQueue.main.async {
-            self.windowId = self.windowId.lowercased() 
             if prop == "interactive", let v = value as? Bool {
                 self.isInteractive = v
             } else if prop == "backcolor" {
@@ -220,8 +226,6 @@ public class SwiftWindowState: SwiftVStackState {
                     // Sincronización de vuelta a Harbour
                     let json = "{\"\(self.windowId)\":{\"top\":\(Int(win.frame.origin.y)),\"left\":\(Int(win.frame.origin.x))}}"
                     Harbour.call("SW_UPDATE_HB", json)
-                } else if prop == "modal", let v = value as? Bool {
-                    if v { win.level = .modalPanel }
                 } else if prop == "visible" && (value as? Bool == true || (value as? Int == 1)) {
                     win.makeKeyAndOrderFront(nil)
                     NSApp.activate(ignoringOtherApps: true)

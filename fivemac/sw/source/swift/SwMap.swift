@@ -68,8 +68,8 @@ public class SwiftMapState: SwApplyable {
             if let text = value as? String { searchLocation(text) }
         case "addannotation":
             if let dict = value as? [String: Any],
-               let lat = SwUtils.toDouble(dict["lat"]),
-               let lon = SwUtils.toDouble(dict["lon"]) {
+               let lat = SwUtils.toDouble(dict["lat"] as Any),
+               let lon = SwUtils.toDouble(dict["lon"] as Any) {
                 let anno = SwAnnotation(lat: lat, lon: lon, 
                                       title: dict["title"] as? String ?? "", 
                                       subtitle: dict["subtitle"] as? String)
@@ -79,9 +79,9 @@ public class SwiftMapState: SwApplyable {
             self.annotations.removeAll()
         case "camera":
             if let dict = value as? [String: Any] {
-                if let n = SwUtils.toDouble(dict["pitch"])    { self.pitch = n }
-                if let n = SwUtils.toDouble(dict["heading"])  { self.heading = n }
-                if let n = SwUtils.toDouble(dict["distance"]) { self.distance = n }
+                if let n = SwUtils.toDouble(dict["pitch"] as Any)    { self.pitch = n }
+                if let n = SwUtils.toDouble(dict["heading"] as Any)  { self.heading = n }
+                if let n = SwUtils.toDouble(dict["distance"] as Any) { self.distance = n }
                 updateCamera()
             }
         default: break
@@ -95,7 +95,7 @@ public class SwiftMapState: SwApplyable {
         search.start { response, error in
             guard let response = response, let item = response.mapItems.first else { return }
             DispatchQueue.main.async {
-                self.center = item.placemark.coordinate
+                self.center = item.location.coordinate
                 self.distance = 5000
                 self.updateCamera()
             }

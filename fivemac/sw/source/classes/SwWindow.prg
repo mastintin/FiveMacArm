@@ -17,6 +17,7 @@ CLASS TSwWindow FROM TSwiftControl
    ACCESS lCenter     INLINE hb_HGetDef( ::hState, "center", .f. )
    ASSIGN lCenter(l)  INLINE ( ::hState["center"] := l, if( l, ::Apply( { "center" => .t. } ), ) )
     
+
    METHOD New( cTitle, nWidth, nHeight, cId, oParent ) CONSTRUCTOR
    METHOD Activate( lModal )
    METHOD End()

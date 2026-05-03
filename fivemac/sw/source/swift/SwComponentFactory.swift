@@ -7,8 +7,8 @@ import SwiftUI
 public func sw_component_create_internal(id: String, typeId: Int, jsonStr: String, parentid: String) {
     let jsonData = jsonStr.data(using: .utf8) ?? Data()
     let decoder = JSONDecoder()
-    let cleanid = id.lowercased()
-    let cleanParentId = parentid.lowercased()
+    let cleanid = id
+    let cleanParentId = parentid
     
     print("🏝️ Swift: Received Create Component - ID: \(cleanid), Type: \(typeId), Parent: \(cleanParentId)")
     
@@ -56,7 +56,7 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             newItem = try SwiftProgressView.create(id: cleanid, from: jsonData)
 
         case 100: // Window
-            let initial = try decoder.decode(GenericInit.self, from: jsonData)
+            let initial = try decoder.decode(WindowInit.self, from: jsonData)
             let usetoolbar = initial.hastoolbar ?? false 
             let buttons = initial.toolbarItems ?? []
             sw_createwindow_hb_internal(title: initial.title ?? "", 
@@ -65,6 +65,13 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
                                          id: cleanid, 
                                          hastoolbar: usetoolbar,
                                          buttons: buttons)
+
+        case 101: // Specialized Navigation Window
+            let initial = try decoder.decode(WindowInit.self, from: jsonData)
+            sw_createnavwindow_hb_internal(title: initial.title ?? "", 
+                                            width: initial.width ?? 900, 
+                                            height: initial.height ?? 600, 
+                                            id: cleanid)
 
         case 14: // Get
             newItem = try SwiftGetView.create(id: cleanid, from: jsonData)
@@ -192,13 +199,7 @@ extension GeometryProtocol {
     public var style: Int? { return nil }
 }
 
-// MARK: - Toolbar Models
-
-public struct ToolbarItemConfig: Codable {
-    public let id: String?
-    public let label: String?
-    public let icon: String?
-}
+// MARK: - Toolbar Models (Moved to SwWindow.swift)
 
 
 public struct GenericInit: Codable, GeometryProtocol {

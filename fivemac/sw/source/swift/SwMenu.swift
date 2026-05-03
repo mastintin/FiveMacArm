@@ -7,8 +7,6 @@ public class SwiftMenuState: SwiftVStackState {
     public var id: String
     public var caption: String
     public var systemImage: String = ""
-    public var isVisible: Bool = true
-    public var isEnabled: Bool = true
 
     public init(id: String, caption: String) {
         self.id = id

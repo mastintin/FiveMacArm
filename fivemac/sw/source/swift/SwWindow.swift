@@ -1,6 +1,20 @@
 import SwiftUI
 import AppKit
 
+public struct ToolbarItemConfig: Codable {
+    public let id: String?
+    public let label: String?
+    public let icon: String?
+}
+
+public struct WindowInit: Codable {
+    public let title: String?
+    public let width: Double?
+    public let height: Double?
+    public let hastoolbar: Bool?
+    public let toolbarItems: [ToolbarItemConfig]?
+}
+
 class SwWindowDelegate: NSObject, NSWindowDelegate, NSToolbarDelegate {
     let windowId: String
     var customButtons: [ToolbarItemConfig] = []

@@ -14,6 +14,11 @@ public struct SwRecursiveItemView: View {
     }
     
     public var body: some View {
+        renderContent()
+    }
+    
+    @ViewBuilder
+    private func renderContent() -> some View {
         let finalWidth = width > 0 ? width : CGFloat(item.itemWidth ?? 0)
         let finalHeight = height > 0 ? height : CGFloat(item.itemHeight ?? 0)
         
@@ -351,6 +356,32 @@ public struct SwWindowView: View {
     let id: String
     
     public var body: some View {
+        mainContent
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .disabled(!state.isInteractive)
+            .onAppear {
+            print("🏝️ [Swift-Window] onAppear detectado para \(id).")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                let json = "{\"\(id)\":{\"event\":\"init\"}}"
+                Harbour.call("SW_UPDATE_HB", json)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var sidebarContent: some View {
+        let sidebars = state.items.filter { $0.type == .sidebar }
+        ZStack {
+            ForEach(sidebars) { item in
+                SwRecursiveItemView(item: item)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var mainContent: some View {
+        let details = state.items
+        
         ZStack(alignment: .topLeading) {
             if let bg = state.backgroundColor {
                 Rectangle().fill(bg)
@@ -361,12 +392,9 @@ public struct SwWindowView: View {
             }
             
             GeometryReader { proxy in
-                // Usamos un ZStack con alineación topLeading para posicionar con offsets
-                // Esto es más seguro para gestos que .position()
                 ZStack(alignment: .topLeading) {
-                    ForEach(state.items) { item in
+                    ForEach(details) { item in
                         let geometry = calculateGeometry(for: item, in: proxy.size)
-                        
                         SwRecursiveItemView(
                             item: item, 
                             width: geometry.width,
@@ -375,15 +403,6 @@ public struct SwWindowView: View {
                         .offset(x: geometry.x, y: geometry.y)
                     }
                 }
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .disabled(!state.isInteractive)
-        .onAppear {
-            print("🏝️ [Swift-Window] onAppear detectado para \(id).")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                let json = "{\"\(id)\":{\"event\":\"init\"}}"
-                Harbour.call("SW_UPDATE_HB", json)
             }
         }
     }

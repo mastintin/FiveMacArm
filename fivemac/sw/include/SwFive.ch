@@ -95,6 +95,13 @@
    => ;
    <oWnd> := TSwWindow():New( [<cTitle>], [<nWidth>], [<nHeight>], , [<oParent>] )
 
+#xcommand DEFINE NAVWINDOW <oWnd> ;
+   [ TITLE <cTitle> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
+   [ <of: OF, WINDOW, DIALOG> <oParent> ] ;
+   => ;
+   <oWnd> := TSwNavWindow():New( [<cTitle>], [<nWidth>], [<nHeight>], , [<oParent>] )
+
 #xcommand ACTIVATE WINDOW <oWnd> ;
    [ <center: CENTER, CENTERED> ] ;
    [ <modal: MODAL> ] ;
@@ -128,8 +135,27 @@
    [ SYMBOL <cSymbol> ] ;
    [ <of: OF, SIDEBAR> <oSidebar> ] ;
    [ ACTION <uAction> ] ;
+   [ ID <cId> ] ;
    => ;
-   [ <oItem> := ] TSwSidebarItem():New( <nRow>, <nCol>, <oSidebar>, <cPrompt>, <cSymbol>, , [<{uAction}>] )
+   [ <oItem> := ] TSwSidebarItem():New( <nRow>, <nCol>, <oSidebar>, <cPrompt>, <cSymbol>, [<cId>], [<{uAction}>] )
+
+// --- Modern Block Syntax for Sidebars ---
+
+#xcommand DEFINE SIDEBAR <oSbr> [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   => ;
+   <oSbr> := TSwSidebar():New( 0, 0, 200, 500, <oWnd> )
+
+#xcommand NAVSECTION <cTitle> [ <of: OF, SIDEBAR> <oSbr> ] ;
+   => ;
+   <oSbr>:AddSection( <cTitle> )
+
+#xcommand NAVITEM <cPrompt> [ ICON <cIcon> ] [ ID <cId> ] [ <of: OF, SIDEBAR> <oSbr> ] ;
+   [ ACTION <uAction> ] ;
+   => ;
+   <oSbr>:AddItem( <cPrompt>, [<cIcon>], [<cId>], [<{uAction}>] )
+
+#xcommand END SECTION =>
+#xcommand END SIDEBAR =>
 
 #xcommand @ <nRow>, <nCol> VSTACK [ <oStack> ] ;
    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;

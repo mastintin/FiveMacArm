@@ -6,6 +6,7 @@ public class SwiftSidebarItemState: BaseControlState {
     public var symbol: String = "circle"
     public var isSelected: Bool = false
     public var isInteractive: Bool = true
+    public var isSection: Bool = false
     
     public init(id: String, prompt: String, symbol: String = "", isInteractive: Bool = true) {
         super.init(id: id)
@@ -25,6 +26,8 @@ public class SwiftSidebarItemState: BaseControlState {
             self.isSelected = SwUtils.toBool(value)
         case "interactive":
             self.isInteractive = SwUtils.toBool(value)
+        case "issection":
+            self.isSection = SwUtils.toBool(value)
         default:
             super.apply(property: property, value: value)
         }
@@ -36,31 +39,41 @@ public struct SwSidebarItemView: View {
     @State private var isHovered = false
     
     public var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: state.symbol)
-                .font(.system(size: 14, weight: .medium))
-                .frame(width: 20)
-            
-            Text(state.prompt)
-                .font(.system(size: 13))
-            
-            Spacer()
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .contentShape(RoundedRectangle(cornerRadius: 6))
-        .background(
-            RoundedRectangle(cornerRadius: 6)
-                .fill(state.isSelected ? Color.accentColor : (isHovered && state.isInteractive ? Color.secondary.opacity(0.15) : Color.clear))
-        )
-        .foregroundColor(state.isSelected ? .white : .primary)
-        .onHover { hovering in 
-            if state.isInteractive { isHovered = hovering }
-        }
-        .onTapGesture {
-            if state.isInteractive {
-                print("🚢 [Swift] SidebarItem clicked: \(state.id)")
-                SwiftBridge.onAction(state.id)
+        Group {
+            if state.isSection {
+                Text(state.prompt.uppercased())
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.top, 16)
+                    .padding(.bottom, 4)
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: state.symbol)
+                        .font(.system(size: 14, weight: .medium))
+                        .frame(width: 20)
+                    
+                    Text(state.prompt)
+                        .font(.system(size: 13))
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .contentShape(RoundedRectangle(cornerRadius: 6))
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(state.isSelected ? Color.accentColor : (isHovered && state.isInteractive ? Color.secondary.opacity(0.15) : Color.clear))
+                )
+                .foregroundColor(state.isSelected ? .white : .primary)
+                .onHover { hovering in 
+                    if state.isInteractive { isHovered = hovering }
+                }
+                .onTapGesture {
+                    if state.isInteractive {
+                        SwiftBridge.onAction(state.id)
+                    }
+                }
             }
         }
     }

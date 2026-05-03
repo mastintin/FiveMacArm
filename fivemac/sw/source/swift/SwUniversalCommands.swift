@@ -29,17 +29,16 @@ internal struct UniversalCommands {
                             state.apply(property: key, value: value)
                             
                             if let item = ViewRegistry.getItem(for: id) {
+                                print("🏝️ [Sync-Item] ID: \(id), Updating StackItem property '\(key)'")
                                 switch key.lowercased() {
                                     case "top": if let n = (value as? NSNumber)?.doubleValue { item.y = n }
                                     case "left": if let n = (value as? NSNumber)?.doubleValue { item.x = n }
                                     case "width": 
                                         if let n = (value as? NSNumber)?.doubleValue { 
-                                            print("🏝️ [Geometry] ID: \(id), Width -> \(n)")
                                             item.itemWidth = n 
                                         }
                                     case "height": 
                                         if let n = (value as? NSNumber)?.doubleValue { 
-                                            print("🏝️ [Geometry] ID: \(id), Height -> \(n)")
                                             item.itemHeight = n 
                                         }
                                     case "resizemask": if let n = (value as? NSNumber)?.intValue { item.resizemask = n }
