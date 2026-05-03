@@ -103,7 +103,6 @@ public struct SwiftGaugeView: View {
     private var gaugeBody: some View {
         let total = max(1.0, state.max - state.min)
         let current = max(0, min(state.value - state.min, total))
-        let pct = Int((current / total) * 100)
 
         switch state.style {
         case 0: // accessoryCircular

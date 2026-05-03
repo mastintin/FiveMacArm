@@ -24,6 +24,7 @@ public class SwDispatcher {
         SystemCommands.register(in: self)
         TimerCommands.register(in: self)
         UniversalCommands.register(in: self)
+        ReportCommands.register(in: self)
     }
     
     /// Registra un nuevo comando en el despachador
