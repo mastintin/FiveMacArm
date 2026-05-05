@@ -168,6 +168,20 @@
    => ;
    [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>], [<cTitle>], [<cSymbol>], [<cBackColor>], [<nCorner>] )
 
+#xcommand @ <nRow>, <nCol> HEADER [ <oHeader> ] ;
+             [ TITLE <cTitle> ] ;
+             [ SUBTITLE <cSubtitle> ] ;
+             [ IMAGE <cImage> ] ;
+             [ COLORS <cColors> ] ;
+             [ STATUS <cStatus> ] ;
+             [ ICON <cStatusIcon> ] ;
+             [ OF <oWnd> ] ;
+             [ SIZE <nWidth>, <nHeight> ] ;
+             [ ID <cId> ] ;
+             [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+      => ;
+      [ <oHeader> := ] TSwHeader():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cTitle>], [<cSubtitle>], [<cImage>], [<cColors>], [<cStatus>], [<cStatusIcon>], <oWnd>, [<cId>], [<nRes>] )
+
 #xcommand @ <nRow>, <nCol> BANNER [ <oHeader> ] ;
              [ TITLE <cTitle> ] ;
              [ SUBTITLE <cSubtitle> ] ;
