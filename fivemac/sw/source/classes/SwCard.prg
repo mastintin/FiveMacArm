@@ -43,6 +43,9 @@ CLASS TSwCard FROM TSwVStack
     ACCESS nBorderWidth      INLINE hb_HGetDef( ::hState, "borderwidth", 0 )
     ASSIGN nBorderWidth( n ) INLINE ( ::hState["borderwidth"] := n, ::Apply( "borderwidth", n ) )
 
+    ACCESS lGlass            INLINE hb_HGetDef( ::hState, "isglass", .F. )
+    ASSIGN lGlass( l )       INLINE ( ::hState["isglass"] := l, ::Apply( "isglass", l ) )
+
 ENDCLASS
 
 //----------------------------------------------------------------------------//

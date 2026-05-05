@@ -13,13 +13,13 @@ CLASS TSwVStack FROM TSwiftControl
     ACCESS nPadding          INLINE hb_HGetDef( ::hState, "padding", 8 )
     ASSIGN nPadding( n )     INLINE ( ::hState["padding"] := n, ::Apply( "padding", n ) )
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize )
+    METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cBackColor, nCorner )
 
 ENDCLASS
 
 //----------------------------------------------------------------------------//
 
-METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize ) CLASS TSwVStack
+METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cBackColor, nCorner ) CLASS TSwVStack
 
     DEFAULT nWidth := 100, nHeight := 100, nAutoResize := 0
     
@@ -37,6 +37,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize ) CLASS TSwV
     ::oParent := oParent
     
     ::hState["type"] := SW_TYPE_VSTACK
+    if !Empty( cBackColor ); ::hState["backcolor"] := cBackColor; endif
+    if !Empty( nCorner );    ::hState["corner"] := nCorner; endif
+
     ::Create()
 
 return Self

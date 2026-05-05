@@ -46,7 +46,10 @@
     ACCESS cBorderShape     INLINE hb_HGetDef( ::hState, "bordershape", "" )
     ASSIGN cBorderShape( c ) INLINE ( ::hState["bordershape"] := c, ::Apply( "bordershape", c ) )
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize, cFont, cColor, cBackColor, cIcon, cIconColor, cShape )
+    ACCESS nIconSize        INLINE hb_HGetDef( ::hState, "iconsize", 0 )
+    ASSIGN nIconSize( n )   INLINE ( ::hState["iconsize"] := n, ::Apply( "iconsize", n ) )
+
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize, cFont, cColor, cBackColor, cIcon, cIconColor, cShape, nAlign, nIconSize )
     METHOD SetText( cText, lSync )
     METHOD SetPrompt( cText ) INLINE ::SetText( cText )
    
@@ -54,7 +57,7 @@
  
  // -------------------------------------------------------------------------------- //
  
- METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize, cFont, cColor, cBackColor, cIcon, cIconColor, cShape ) CLASS TSwLabel
+ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize, cFont, cColor, cBackColor, cIcon, cIconColor, cShape, nAlign, nIconSize ) CLASS TSwLabel
  
     DEFAULT nWidth := 100, nHeight := 20
      
@@ -76,6 +79,8 @@
     if !Empty( cIcon );      ::hState["icon"] := cIcon; endif
     if !Empty( cIconColor ); ::hState["iconcolor"] := cIconColor; endif
     if !Empty( cShape );     ::hState["bordershape"] := cShape; endif
+    if !Empty( nAlign );     ::hState["alignment"] := nAlign; endif
+    if !Empty( nIconSize );  ::hState["iconsize"] := nIconSize; endif
  
     ::Create()
   

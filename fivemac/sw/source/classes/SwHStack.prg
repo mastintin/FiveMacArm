@@ -13,13 +13,13 @@ CLASS TSwHStack FROM TSwiftControl
     ACCESS nPadding          INLINE hb_HGetDef( ::hState, "padding", 8 )
     ASSIGN nPadding( n )     INLINE ( ::hState["padding"] := n, ::Apply( "padding", n ) )
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize )
+    METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cBackColor, nCorner )
  
 ENDCLASS
  
 //----------------------------------------------------------------------------//
  
-METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize ) CLASS TSwHStack
+METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cBackColor, nCorner ) CLASS TSwHStack
  
     DEFAULT nWidth := 100, nHeight := 100, nAutoResize := 0
      
@@ -37,6 +37,9 @@ METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize ) CLASS TSwH
     ::oParent := oParent
      
     ::hState["type"] := SW_TYPE_HSTACK
+    if !Empty( cBackColor ); ::hState["backcolor"] := cBackColor; endif
+    if !Empty( nCorner );    ::hState["corner"] := nCorner; endif
+
     SW_LOG( "🚢 Harbour: HStack New ID: " + ::cId + " Parent: " + hb_ValToStr( ::hState["parentid"] ) )
     ::Create()
  

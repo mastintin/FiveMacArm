@@ -144,6 +144,10 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
                 throw error
             }
 
+        case 33: // Header
+            print("🛠️ [Swift-Factory] Detectado HEADER.")
+            newItem = try SwiftHeaderView.create(id: cleanid, from: jsonData)
+
         case 110: // AppMenu
             SwAppMenu.setup(from: jsonData)
             

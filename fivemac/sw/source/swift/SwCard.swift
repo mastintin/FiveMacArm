@@ -106,17 +106,41 @@ public struct SwiftCardView: View {
                 Rectangle().fill(accent).frame(height: CGFloat(state.accentWidth))
             }
         }
-        .background(state.backgroundColor ?? AnyShapeStyle(Color(NSColor.controlBackgroundColor)))
-        .cornerRadius(state.cornerRadius)
-        .shadow(color: Color.black.opacity(0.15), radius: CGFloat(state.shadowRadius), x: 0, y: state.shadowRadius / 2)
-        .overlay(
-            RoundedRectangle(cornerRadius: state.cornerRadius)
-                .stroke(state.borderColor ?? (state.accentSide == 5 ? state.accentColor : nil) ?? AnyShapeStyle(.clear), 
-                        lineWidth: state.borderWidth > 0 ? state.borderWidth : (state.accentSide == 5 ? state.accentWidth : 0))
-        )
+        .modifier(CardGlassModifier(state: state))
         .clipShape(RoundedRectangle(cornerRadius: state.cornerRadius))
     }
+}
+
+struct CardGlassModifier: ViewModifier {
+    var state: SwiftCardState
     
+    func body(content: Content) -> some View {
+        if state.isGlass {
+            content
+                .background(Color.clear)
+                .background(VisualEffectView(material: .hudWindow, blendingMode: .withinWindow))
+                .cornerRadius(state.cornerRadius)
+                .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 5)
+                .overlay(
+                    RoundedRectangle(cornerRadius: state.cornerRadius)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+        } else {
+            // ESTADO SÓLIDO ORIGINAL (Píxel por Píxel)
+            content
+                .background(state.backgroundColor ?? AnyShapeStyle(Color(NSColor.controlBackgroundColor)))
+                .cornerRadius(state.cornerRadius)
+                .shadow(color: Color.black.opacity(0.15), radius: CGFloat(state.shadowRadius), x: 0, y: state.shadowRadius / 2)
+                .overlay(
+                    RoundedRectangle(cornerRadius: state.cornerRadius)
+                        .stroke(state.borderColor ?? (state.accentSide == 5 ? state.accentColor : nil) ?? AnyShapeStyle(.clear), 
+                                lineWidth: state.borderWidth > 0 ? state.borderWidth : (state.accentSide == 5 ? state.accentWidth : 0))
+                )
+        }
+    }
+}
+
+extension SwiftCardView {
     public static func create(id: String, from jsonData: Data) throws -> StackItem {
         let decoder = JSONDecoder()
         let initial = try decoder.decode(CardInit.self, from: jsonData)

@@ -150,9 +150,11 @@
    [ BACKCOLOR <cBackColor> ] ;
    [ ICON <cIcon> ] ;
    [ ICONCOLOR <cIconColor> ] ;
+   [ ICONSIZE <nIconSize> ] ;
    [ SHAPE <cShape> ] ;
+   [ ALIGNMENT <nAlign> ] ;
    => ;
-   [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cText>, <oWnd>, [<cId>], [<nRes>], [<cFont>], [<cColor>], [<cBackColor>], [<cIcon>], [<cIconColor>], [<cShape>] )
+   [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cText>, <oWnd>, [<cId>], [<nRes>], [<cFont>], [<cColor>], [<cBackColor>], [<cIcon>], [<cIconColor>], [<cShape>], [<nAlign>], [<nIconSize>] )
 
 #xcommand @ <nRow>, <nCol> PANEL [ <oPanel> ] ;
    [ ID <cId> ] ;
@@ -161,8 +163,24 @@
    [ TITLE <cTitle> ] ;
    [ SYMBOL <cSymbol> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   [ BACKCOLOR <cBackColor> ] ;
+   [ CORNER <nCorner> ] ;
    => ;
-   [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>], [<cTitle>], [<cSymbol>] )
+   [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>], [<cTitle>], [<cSymbol>], [<cBackColor>], [<nCorner>] )
+
+#xcommand @ <nRow>, <nCol> BANNER [ <oHeader> ] ;
+             [ TITLE <cTitle> ] ;
+             [ SUBTITLE <cSubtitle> ] ;
+             [ IMAGE <cImage> ] ;
+             [ COLORS <cColors> ] ;
+             [ STATUS <cStatus> ] ;
+             [ ICON <cStatusIcon> ] ;
+             [ OF <oWnd> ] ;
+             [ SIZE <nWidth>, <nHeight> ] ;
+             [ ID <cId> ] ;
+             [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+      => ;
+      [ <oHeader> := ] TSwHeader():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cTitle>], [<cSubtitle>], [<cImage>], [<cColors>], [<cStatus>], [<cStatusIcon>], <oWnd>, [<cId>], [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> SIDEBAR [ <oSidebar> ] ;
    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
@@ -203,24 +221,30 @@
    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   [ BACKCOLOR <cBackColor> ] ;
+   [ CORNER <nCorner> ] ;
    => ;
-   [ <oStack> := ] TSwVStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>] )
+   [ <oStack> := ] TSwVStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>], [<cBackColor>], [<nCorner>] )
 
 #xcommand @ <nRow>, <nCol> HSTACK [ <oStack> ] ;
    [ ID <cId> ] ;
    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   [ BACKCOLOR <cBackColor> ] ;
+   [ CORNER <nCorner> ] ;
    => ;
-   [ <oStack> := ] TSwHStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>] )
+   [ <oStack> := ] TSwHStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>], [<cBackColor>], [<nCorner>] )
 
 #xcommand @ <nRow>, <nCol> ZSTACK [ <oStack> ] ;
    [ ID <cId> ] ;
    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   [ BACKCOLOR <cBackColor> ] ;
+   [ CORNER <nCorner> ] ;
    => ;
-   [ <oStack> := ] TSwZStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>] )
+   [ <oStack> := ] TSwZStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>], [<cBackColor>], [<nCorner>] )
 
 #xcommand @ <nRow>, <nCol> SPACER [ <oSpacer> ] ;
    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, VSTACK, HSTACK, CARD> <oParent> ] ;

@@ -19,13 +19,13 @@
      ACCESS nPadding         INLINE hb_HGetDef( ::hState, "padding", 8 )
      ASSIGN nPadding( n )    INLINE ( ::hState["padding"] := n, ::Apply( "padding", n ) )
  
-     METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize )
+     METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cBackColor, nCorner )
  
  ENDCLASS
   
  //----------------------------------------------------------------------------//
   
- METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize ) CLASS TSwZStack
+ METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize, cBackColor, nCorner ) CLASS TSwZStack
  
      DEFAULT nWidth := 100, nHeight := 100, nAutoResize := 0
       
@@ -43,6 +43,9 @@
      ::oParent := oParent
       
      ::hState["type"] := SW_TYPE_ZSTACK
-     ::Create()
+    if !Empty( cBackColor ); ::hState["backcolor"] := cBackColor; endif
+    if !Empty( nCorner );    ::hState["corner"] := nCorner; endif
+
+    ::Create()
   
  return Self

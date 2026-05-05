@@ -4,6 +4,9 @@
 
 CLASS TSwPanel FROM TSwiftControl
 
+   ACCESS lGlass            INLINE hb_HGetDef( ::hState, "isglass", .F. )
+   ASSIGN lGlass( l )       INLINE ( ::hState["isglass"] := l, ::Apply( "isglass", l ) )
+
    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId, nAutoResize, cTitle, cSymbol )
    
    METHOD SetBorderColor( cColor ) INLINE ::Apply( "bordercolor", cColor )
@@ -11,6 +14,12 @@ CLASS TSwPanel FROM TSwiftControl
    METHOD SetShadow( nRadius )     INLINE ::Apply( "shadow", nRadius )
    METHOD SetPadding( nPadding )   INLINE ::Apply( "padding", nPadding )
    METHOD SetBadge( xValue )       INLINE ::Apply( "badge", xValue )
+
+   ACCESS nPadding          INLINE hb_HGetDef( ::hState, "padding", 8 )
+   ASSIGN nPadding( n )     INLINE ( ::hState["padding"] := n, ::Apply( "padding", n ) )
+   
+   ACCESS nSpacing          INLINE hb_HGetDef( ::hState, "spacing", 0 )
+   ASSIGN nSpacing( n )     INLINE ( ::hState["spacing"] := n, ::Apply( "spacing", n ) )
 
 ENDCLASS
 

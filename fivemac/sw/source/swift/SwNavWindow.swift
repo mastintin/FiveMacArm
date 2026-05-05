@@ -115,6 +115,7 @@ public struct SwNavWindowView: View {
                 }
             }
             .listStyle(.sidebar)
+            .navigationTitle(navTitle)
             .onChange(of: state.selectedId) { old, new in
                 if let val = new {
                     SwiftBridge.onEvent(id, event: "change", value: val)
@@ -135,51 +136,28 @@ public struct SwNavWindowView: View {
         } detail: {
             // Columna de Detalle: Tercer estadio
             NavigationStack(path: $state.path) {
-                ScrollView {
-                    ZStack {
-                        Color(NSColor.windowBackgroundColor)
-                        
-                        if let selDetail = state.selectedContentId,
-                           let item = state.items.first(where: { $0.id.lowercased() == selDetail.lowercased() }) {
-                            // Centramos el contenido del detalle como una tarjeta elegante
-                            VStack {
-                                Spacer(minLength: 20)
-                                HStack {
-                                    Spacer()
-                                    SwRecursiveItemView(item: item)
-                                        .frame(width: 500) // Ancho fijo para la "ficha" de detalle
-                                        .padding(30)
-                                        .background(Color(NSColor.controlBackgroundColor).opacity(0.7))
-                                        .cornerRadius(16)
-                                        .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 10)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                                        )
-                                    Spacer()
-                                }
-                                Spacer(minLength: 20)
-                            }
-                        } else {
-                            renderDefaultView()
-                                .padding(.top, 100)
-                        }
-                    }
+                if let selDetail = state.selectedContentId,
+                   let item = state.items.first(where: { $0.id.lowercased() == selDetail.lowercased() }) {
+                    SwRecursiveItemView(item: item)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                } else {
+                    renderDefaultView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color(NSColor.windowBackgroundColor))
                 }
-                .background(Color(NSColor.windowBackgroundColor))
-                .navigationDestination(for: String.self) { destinationId in
-                    if let item = state.items.first(where: { $0.id.lowercased() == destinationId.lowercased() }) {
-                        SwRecursiveItemView(item: item)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        Text("Vista no encontrada: \(destinationId)")
-                    }
+            }
+            .background(Color(NSColor.windowBackgroundColor))
+            .navigationDestination(for: String.self) { destinationId in
+                if let item = state.items.first(where: { $0.id.lowercased() == destinationId.lowercased() }) {
+                    SwRecursiveItemView(item: item)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    Text("Vista no encontrada: \(destinationId)")
                 }
             }
         }
         .navigationSplitViewStyle(.balanced)
         .onChange(of: state.selectedId) { 
-            // Limpieza absoluta al cambiar de módulo
             state.selectedContentId = nil
             state.path = NavigationPath()
         }

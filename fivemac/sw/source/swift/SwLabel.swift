@@ -23,6 +23,7 @@ public class SwiftLabelState: SwApplyable {
     public var systemImage: String = ""
     public var iconColor: AnyShapeStyle? = nil
     public var borderShape: String = ""
+    public var iconSize: Double = 0
     
     public init(id: String, text: String) {
         self.id = id
@@ -46,6 +47,7 @@ public class SwiftLabelState: SwApplyable {
         } else if prop == "fontstyle" {
             if let sVal = value as? String { 
                 self.fontModifiers = sVal 
+                self.fontBase = mapFontBase(sVal) // <--- ¡Añadido para que reconozca .title1!
                 self.underline = sVal.lowercased().contains(".underline")
                 self.strikethrough = sVal.lowercased().contains(".strikethrough")
             }
@@ -104,27 +106,30 @@ public class SwiftLabelState: SwApplyable {
             }
         } else if prop == "bordershape" {
             if let sVal = value as? String { self.borderShape = sVal.lowercased() }
+        } else if prop == "iconsize" {
+            if let n = SwUtils.toDouble(value) { self.iconSize = n }
         }
     }
 
     private func mapFontBase(_ s: String) -> Font {
-        let clean = s.lowercased().replacingOccurrences(of: ".", with: "")
-        switch clean {
-        case "largetitle": return .largeTitle
-        case "title": return .title
-        case "title2": return .title2
-        case "title3": return .title3
-        case "headline": return .headline
-        case "subheadline": return .subheadline
-        case "body": return .body
-        case "callout": return .callout
-        case "footnote": return .footnote
-        case "caption": return .caption
-        case "caption2": return .caption2
-        default: 
-            if let size = Double(clean) { return .system(size: size) }
-            return .body
-        }
+        let clean = s.lowercased()
+        if clean.contains("largetitle") { return .largeTitle }
+        if clean.contains("title1") || (clean.contains("title") && !clean.contains("title2") && !clean.contains("title3")) { return .title }
+        if clean.contains("title2") { return .title2 }
+        if clean.contains("title3") { return .title3 }
+        if clean.contains("headline") { return .headline }
+        if clean.contains("subheadline") { return .subheadline }
+        if clean.contains("body") { return .body }
+        if clean.contains("callout") { return .callout }
+        if clean.contains("footnote") { return .footnote }
+        if clean.contains("caption2") { return .caption2 }
+        if clean.contains("caption") { return .caption }
+        
+        // Si es un número (tamaño fijo)
+        let onlyDigits = clean.replacingOccurrences(of: ".", with: "").filter { "0123456789".contains($0) }
+        if let size = Double(onlyDigits) { return .system(size: size) }
+        
+        return .body
     }
 }
 
@@ -155,7 +160,9 @@ public struct SwiftLabelView: View {
             
             HStack(spacing: 8) {
                 if !state.systemImage.isEmpty {
+                    let _ = print("🖼️ [SwiftLabel] Rendering icon: '\(state.systemImage)' with size: \(state.iconSize)")
                     Image(systemName: state.systemImage)
+                        .font(.system(size: state.iconSize > 0 ? state.iconSize : 20)) // Forzamos mínimo 20 si hay icono
                         .foregroundStyle(state.iconColor ?? state.color)
                 }
                 
@@ -184,7 +191,7 @@ public struct SwiftLabelView: View {
             }
             .shadow(color: state.shadowRadius > 0 ? state.shadowColor : .clear, radius: state.shadowRadius)
             .padding(state.shadowRadius)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
+            .frame(maxWidth: .infinity, alignment: alignment)
         }
     }
 }
@@ -204,6 +211,7 @@ extension SwiftLabelView {
         if let ic = initial.icon { state.systemImage = ic }
         if let icc = initial.iconcolor { state.apply(property: "iconcolor", value: icc) }
         if let fs = initial.fontstyle { state.apply(property: "fontstyle", value: fs) }
+        if let isz = initial.iconsize { state.iconSize = isz }
         
         ViewRegistry.register(state, for: id)
         
@@ -217,6 +225,7 @@ extension SwiftLabelView {
 public struct LabelInit: Codable, GeometryProtocol {
     public let text: String?
     public let bordershape: String?, color: String?, backcolor: String?, icon: String?, iconcolor: String?, fontstyle: String?
+    public let iconsize: Double?
     public let width, height, top, left: Double?
     public let resizemask: Int?
     public let hasscroll: Bool?

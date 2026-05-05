@@ -26,6 +26,12 @@
     ACCESS text             INLINE ::hState["text"]
     ASSIGN text( c )        INLINE ( ::hState["text"] := c, ::Apply( "text", c ) )
 
+    ACCESS cBackColor       INLINE hb_HGetDef( ::hState, "backcolor", "" )
+    ASSIGN cBackColor( c )  INLINE ( ::hState["backcolor"] := c, ::Apply( "backcolor", c ) )
+
+    ACCESS nCorner          INLINE hb_HGetDef( ::hState, "corner", 0 )
+    ASSIGN nCorner( n )     INLINE ( ::hState["corner"] := n, ::Apply( "corner", n ) )
+
     ACCESS isVisible        INLINE hb_HGetDef( ::hState, "visible", .t. )
     ACCESS isEnabled        INLINE hb_HGetDef( ::hState, "enabled", .t. )
     

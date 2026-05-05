@@ -314,17 +314,17 @@ struct SwStackContent: View {
         let content = ForEach(state.items) { subItem in
             SwRecursiveItemView(item: subItem)
         }
-        
-        Group {
+               return Group {
             if type == .vstack {
                 let align: HorizontalAlignment = {
                     switch state.alignment {
-                    case 1: return .leading
-                    case 2: return .trailing
+                    case 2: return .leading
+                    case 3: return .trailing
                     default: return .center
                     }
                 }()
                 VStack(alignment: align, spacing: state.spacing) { content }
+                    .frame(maxWidth: .infinity)
             } else if type == .hstack {
                 let align: VerticalAlignment = {
                     switch state.alignment {
@@ -334,6 +334,7 @@ struct SwStackContent: View {
                     }
                 }()
                 HStack(alignment: align, spacing: state.spacing) { content }
+                    .frame(maxWidth: .infinity)
             } else {
                 let align: Alignment = {
                     switch state.alignment {
@@ -349,11 +350,23 @@ struct SwStackContent: View {
                     }
                 }()
                 ZStack(alignment: align) { content }
+                    .frame(maxWidth: .infinity)
             }
         }
         .padding(state.padding)
-        .background(state.backgroundColor ?? AnyShapeStyle(Color.clear))
+        .background(state.isGlass ? AnyShapeStyle(Color.clear) : (state.backgroundColor ?? AnyShapeStyle(Color.clear)))
+        .background {
+            if state.isGlass {
+                VisualEffectView(material: .hudWindow, blendingMode: .withinWindow)
+                    .clipShape(RoundedRectangle(cornerRadius: state.cornerRadius))
+            }
+        }
         .cornerRadius(state.cornerRadius)
+        .overlay(
+            RoundedRectangle(cornerRadius: state.cornerRadius)
+                .stroke(state.isGlass ? Color.white.opacity(0.15) : Color.clear, lineWidth: state.isGlass ? 1 : 0)
+        )
+        .shadow(color: state.isGlass ? Color.black.opacity(0.2) : Color.clear, radius: state.isGlass ? 10 : 0)
     }
 }
 
