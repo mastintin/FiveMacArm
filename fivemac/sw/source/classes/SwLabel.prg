@@ -43,7 +43,10 @@
     ACCESS cIconColor       INLINE hb_HGetDef( ::hState, "iconcolor", "" )
     ASSIGN cIconColor( c )  INLINE ( ::hState["iconcolor"] := c, ::Apply( "iconcolor", c ) )
  
-    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize )
+    ACCESS cBorderShape     INLINE hb_HGetDef( ::hState, "bordershape", "" )
+    ASSIGN cBorderShape( c ) INLINE ( ::hState["bordershape"] := c, ::Apply( "bordershape", c ) )
+
+    METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize, cFont, cColor, cBackColor, cIcon, cIconColor, cShape )
     METHOD SetText( cText, lSync )
     METHOD SetPrompt( cText ) INLINE ::SetText( cText )
    
@@ -51,7 +54,7 @@
  
  // -------------------------------------------------------------------------------- //
  
- METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize ) CLASS TSwLabel
+ METHOD New( nTop, nLeft, nWidth, nHeight, cText, oWnd, cId, nAutoResize, cFont, cColor, cBackColor, cIcon, cIconColor, cShape ) CLASS TSwLabel
  
     DEFAULT nWidth := 100, nHeight := 20
      
@@ -66,6 +69,13 @@
     if hb_IsObject( oWnd )
        ::hState["parentid"] := oWnd:cId
     endif
+
+    if !Empty( cFont );      ::hState["fontstyle"] := cFont; endif
+    if !Empty( cColor );     ::hState["color"] := cColor; endif
+    if !Empty( cBackColor ); ::hState["backcolor"] := cBackColor; endif
+    if !Empty( cIcon );      ::hState["icon"] := cIcon; endif
+    if !Empty( cIconColor ); ::hState["iconcolor"] := cIconColor; endif
+    if !Empty( cShape );     ::hState["bordershape"] := cShape; endif
  
     ::Create()
   

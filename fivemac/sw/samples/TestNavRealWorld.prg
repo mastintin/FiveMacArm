@@ -80,6 +80,9 @@ function AppMain()
                            ACTION GenAction( hData[cId], "nombre" )
                         @ 0, 0 GET hGets[cId]["apellidos"] VAR hData[cId]["apellidos"] OF oV1 SIZE 260, 35 ;
                            ACTION GenAction( hData[cId], "apellidos" )
+                        
+                        @ 0, 0 SAY "ACTIVO" OF oV1 SIZE 100, 30 ;
+                           FONT ".footnote.bold" COLOR ".white" BACKCOLOR ".green" ICON "checkmark.shield.fill" SHAPE ".capsule"
 
                 // Tarjeta 2 activa (Cálculo de Jubilación)
                 @ 0, 0 CARD oCard2 TITLE "Cálculo de Jubilación" SYMBOL "timer" OF oVStack SIZE 440, 360

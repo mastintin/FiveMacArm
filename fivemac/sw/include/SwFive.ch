@@ -143,8 +143,16 @@
 #xcommand @ <nRow>, <nCol> SAY [ <oSay> PROMPT ] <cText> ;
    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ ID <cId> ] ;
+   [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   [ FONT <cFont> ] ;
+   [ COLOR <cColor> ] ;
+   [ BACKCOLOR <cBackColor> ] ;
+   [ ICON <cIcon> ] ;
+   [ ICONCOLOR <cIconColor> ] ;
+   [ SHAPE <cShape> ] ;
    => ;
-   [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cText>, <oWnd> )
+   [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cText>, <oWnd>, [<cId>], [<nRes>], [<cFont>], [<cColor>], [<cBackColor>], [<cIcon>], [<cIconColor>], [<cShape>] )
 
 #xcommand @ <nRow>, <nCol> PANEL [ <oPanel> ] ;
    [ ID <cId> ] ;

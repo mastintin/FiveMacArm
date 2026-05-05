@@ -22,6 +22,7 @@ public class SwiftLabelState: SwApplyable {
     public var isVisible: Bool = true
     public var systemImage: String = ""
     public var iconColor: AnyShapeStyle? = nil
+    public var borderShape: String = ""
     
     public init(id: String, text: String) {
         self.id = id
@@ -101,6 +102,8 @@ public class SwiftLabelState: SwApplyable {
                 if sVal.hasPrefix(".") { self.iconColor = mapColorStyle(sVal) }
                 else { self.iconColor = AnyShapeStyle(Color(hex: sVal)) }
             }
+        } else if prop == "bordershape" {
+            if let sVal = value as? String { self.borderShape = sVal.lowercased() }
         }
     }
 
@@ -164,18 +167,21 @@ public struct SwiftLabelView: View {
             .multilineTextAlignment(state.textAlignment)
             .shadow(color: state.textShadowRadius > 0 ? state.textShadowColor : .clear, radius: state.textShadowRadius)
             .foregroundStyle(state.color)
-            .padding(hasBack ? 8 : 0)
+            .padding(.horizontal, state.borderShape == ".capsule" ? 12 : (hasBack ? 8 : 0))
+            .padding(.vertical, state.borderShape == ".capsule" ? 6 : (hasBack ? 8 : 0))
+            .background {
+                if state.borderShape == ".capsule" {
+                    Capsule().fill(state.backgroundColor ?? AnyShapeStyle(Color.clear))
+                } else if hasBack {
+                    RoundedRectangle(cornerRadius: 8).fill(state.backgroundColor ?? AnyShapeStyle(Color.clear))
+                }
+            }
             .background {
                 if let vib = state.vibranceMaterial {
-                    Rectangle().fill(vib)
+                    if state.borderShape == ".capsule" { Capsule().fill(vib) }
+                    else { RoundedRectangle(cornerRadius: 8).fill(vib) }
                 }
             }
-            .background {
-                if let bg = state.backgroundColor {
-                    Rectangle().fill(bg)
-                }
-            }
-            .cornerRadius(hasBack ? 8 : 0)
             .shadow(color: state.shadowRadius > 0 ? state.shadowColor : .clear, radius: state.shadowRadius)
             .padding(state.shadowRadius)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
@@ -191,6 +197,14 @@ extension SwiftLabelView {
         let initial = try decoder.decode(LabelInit.self, from: jsonData)
         
         let state = SwiftLabelState(id: id, text: initial.text ?? "")
+        print("🏷️ [SwiftLabel] Creating '\(id)' with text: '\(state.text)' shape: '\(initial.bordershape ?? "none")' color: '\(initial.color ?? "none")'")
+        if let b = initial.bordershape { state.borderShape = b }
+        if let c = initial.color { state.apply(property: "color", value: c) }
+        if let bc = initial.backcolor { state.apply(property: "backcolor", value: bc) }
+        if let ic = initial.icon { state.systemImage = ic }
+        if let icc = initial.iconcolor { state.apply(property: "iconcolor", value: icc) }
+        if let fs = initial.fontstyle { state.apply(property: "fontstyle", value: fs) }
+        
         ViewRegistry.register(state, for: id)
         
         let item = StackItem(type: .text, id: id)
@@ -202,6 +216,7 @@ extension SwiftLabelView {
 // MARK: - Protocols & Data Structures
 public struct LabelInit: Codable, GeometryProtocol {
     public let text: String?
+    public let bordershape: String?, color: String?, backcolor: String?, icon: String?, iconcolor: String?, fontstyle: String?
     public let width, height, top, left: Double?
     public let resizemask: Int?
     public let hasscroll: Bool?
