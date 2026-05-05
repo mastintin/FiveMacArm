@@ -18,6 +18,36 @@
 
 #define SW_TYPE_APPMENU 110
 #define SW_TYPE_QUICKLOOK 28
+#define SW_TYPE_LABEL   0
+#define SW_TYPE_VSTACK  1
+#define SW_TYPE_HSTACK  2
+#define SW_TYPE_ZSTACK  24
+#define SW_TYPE_SCROLL  3
+#define SW_TYPE_IMAGE   7
+#define SW_TYPE_LIST    8
+#define SW_TYPE_BUTTON  9
+#define SW_TYPE_TOGGLE  10
+#define SW_TYPE_SLIDER  11
+#define SW_TYPE_WEBVIEW 12
+#define SW_TYPE_PROGRESS 13
+#define SW_TYPE_WINDOW  100
+#define SW_TYPE_NAVWINDOW 101
+#define SW_TYPE_GET     14
+#define SW_TYPE_DATEPICKER 15
+#define SW_TYPE_GRID    16
+#define SW_TYPE_PICKER  18
+#define SW_TYPE_CARD    19
+#define SW_TYPE_PANEL   20
+#define SW_TYPE_SIDEBAR 21
+#define SW_TYPE_SIDEBARITEM 22
+#define SW_TYPE_TABVIEW 23
+#define SW_TYPE_MENU    25
+#define SW_TYPE_MENUITEM 26
+#define SW_TYPE_BROWSE  27
+#define SW_TYPE_MAP     29
+#define SW_TYPE_STEPPER 30
+#define SW_TYPE_COLORPICKER 31
+#define SW_TYPE_GAUGE   32
 
 //----------------------------------------------------------------------------//
 // COLORS.CH
@@ -73,6 +103,8 @@
 #define SW_GAUGE_CIRCULAR       0
 #define SW_GAUGE_LINEAR         1
 #define SW_GAUGE_CAPACITY       2
+#define SW_GAUGE_PREMIUM        3
+#define SW_GAUGE_SPEEDOMETER    4
 
 //----------------------------------------------------------------------------//
 // CARD ACCENT SIDES
@@ -91,14 +123,14 @@
 #xcommand DEFINE WINDOW <oWnd> ;
    [ TITLE <cTitle> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oParent> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oParent> ] ;
    => ;
    <oWnd> := TSwWindow():New( [<cTitle>], [<nWidth>], [<nHeight>], , [<oParent>] )
 
 #xcommand DEFINE NAVWINDOW <oWnd> ;
    [ TITLE <cTitle> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oParent> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oParent> ] ;
    => ;
    <oWnd> := TSwNavWindow():New( [<cTitle>], [<nWidth>], [<nHeight>], , [<oParent>] )
 
@@ -109,22 +141,23 @@
    <oWnd>:Activate( <.modal.> )
 
 #xcommand @ <nRow>, <nCol> SAY [ <oSay> PROMPT ] <cText> ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    => ;
    [ <oSay> := ] TSwLabel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cText>, <oWnd> )
 
 #xcommand @ <nRow>, <nCol> PANEL [ <oPanel> ] ;
+   [ ID <cId> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, NAVWINDOW> <oWnd> ] ;
+   [ SIZE <nWidth>, <nHeight> ] ;
    [ TITLE <cTitle> ] ;
    [ SYMBOL <cSymbol> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
-   [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
-   [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>], [<cTitle>], [<cSymbol>] )
+   [ <oPanel> := ] TSwPanel():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>], [<cTitle>], [<cSymbol>] )
 
 #xcommand @ <nRow>, <nCol> SIDEBAR [ <oSidebar> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
@@ -141,7 +174,7 @@
 
 // --- Modern Block Syntax for Sidebars ---
 
-#xcommand DEFINE SIDEBAR <oSbr> [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+#xcommand DEFINE SIDEBAR <oSbr> [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    => ;
    <oSbr> := TSwSidebar():New( 0, 0, 200, 500, <oWnd> )
 
@@ -158,28 +191,31 @@
 #xcommand END SIDEBAR =>
 
 #xcommand @ <nRow>, <nCol> VSTACK [ <oStack> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ ID <cId> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
-   [ <oStack> := ] TSwVStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+   [ <oStack> := ] TSwVStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> HSTACK [ <oStack> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ ID <cId> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
-   [ <oStack> := ] TSwHStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+   [ <oStack> := ] TSwHStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> ZSTACK [ <oStack> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ ID <cId> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
-   [ <oStack> := ] TSwZStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nRes>] )
+   [ <oStack> := ] TSwZStack():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> SPACER [ <oSpacer> ] ;
-   [ <of: OF, WINDOW, DIALOG, VSTACK, HSTACK, CARD> <oParent> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, VSTACK, HSTACK, CARD> <oParent> ] ;
    => ;
    [ <oSpacer> := ] TSwSpacer():New( [<oParent>] )
 
@@ -189,22 +225,27 @@
    [ <p: PROMPT, SYMBOL> <cSymbol> ] ;
    [ FILE <cFile> ] ;
    [ URL <cUrl> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
    [ <oImg> := ] TSwImage():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<cSymbol>], <oWnd>, [<cFile>], [<cUrl>], , [<nRes>] )
 
 #xcommand @ <nRow>, <nCol> BUTTON [ <oBtn> PROMPT ] <cPrompt> ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ ACTION <uAction> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
+   [ ID <cId> ] ;
+   [ STYLE <cStyle> ] ;
+   [ ICON <cIcon> ] ;
+   [ SHAPE <cShape> ] ;
+   [ COLOR <cColor> ] ;
    => ;
-   [ <oBtn> := ] TSwButton():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cPrompt>, <oWnd>, [<{uAction}>], [<nRes>] )
+   [ <oBtn> := ] TSwButton():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <cPrompt>, <oWnd>, [<{uAction}>], [<nRes>], [<cId>], [<cStyle>], [<cIcon>], [<cShape>], [<cColor>] )
 
 #xcommand @ <nRow>, <nCol> SLIDER [ <oSld> ] [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] [ SIZE <nWidth>, <nHeight> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] [ SIZE <nWidth>, <nHeight> ] ;
    [ PROMPT <cPrompt> ] [ ICONMIN <cIconMin> ] [ ICONMAX <cIconMax> ] ;
    [ COLOR <cColor> ] [ STEP <nStep> ] [ <disabled: DISABLED> ] ;
    [ <show: SHOWVALUE> <lShowValue> ] ;
@@ -218,7 +259,7 @@
    [ PROMPT <cPrompt> ] ;
    [ SUBTITLE <cSubtitle> ] ;
    [ ICON <cIcon> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ STYLE <nStyle> ] ;
    [ ACTION <uAction> ] ;
@@ -226,16 +267,17 @@
    [ <oTgl> := ] TSwToggle():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], [<lValue>], [<cPrompt>], <oWnd>, , [<nStyle>], , [<{uAction}>], [<cSubtitle>], [<cIcon>] )
 
 #xcommand @ <nRow>, <nCol> LIST <oList> ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ ID <cId> ] ;
    [ STYLE <nStyle> ] ;
    [ <anchor: ANCHOR, ANCHORS> <nAnchor> ] ;
    [ <search: SEARCH> ] ;
    => ;
-   <oList> := TSwList():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, , [<nAnchor>], , [<nStyle>], <.search.> )
+   <oList> := TSwList():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<cId>], [<nAnchor>], , [<nStyle>], <.search.> )
 
 #xcommand @ <nRow>, <nCol> GRID [ <oGrid> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ COLUMNS <aCols> ] ;
    [ <anchor: ANCHOR, ANCHORS> <nAnchor> ] ;
@@ -244,7 +286,7 @@
 
 #xcommand @ <nRow>, <nCol> PICKER [ <oPkr> ] ;
    [ ITEMS <aItems> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ PROMPT <cPrompt> ] ;
    [ STYLE <nStyle> ] ;
@@ -253,9 +295,9 @@
    => ;
    [ <oPkr> := ] TSwPicker():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<aItems>], [<{uChange}>], , [<nAnchor>], [<cPrompt>], [<nStyle>] )
 
-#xcommand DEFINE ROW <oRow> OF <oList> [ ID <cId> ] ;
+#xcommand DEFINE ROW [ <oRow> ] OF <oList> [ ID <cId> ] ;
    => ;
-   <oRow> := <oList>:AddRow( [<cId>] )
+   [ <oRow> := ] <oList>:AddRow( [<cId>] )
 
 
 //----------------------------------------------------------------------------//
@@ -263,8 +305,9 @@
 //----------------------------------------------------------------------------//
 
 #xcommand @ <nRow>, <nCol> GET [ <oGet> VAR ] <uVar> ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
+   [ ID <cId> ] ;
    [ PROMPT <cPrompt> ] ;
    [ PICTURE <cPicture> ] ;
    [ <password: PASSWORD> ] ;
@@ -273,7 +316,7 @@
    [ ACTION <uAction> ] ;
    => ;
    [ <oGet> := ] SwGet():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>],;
-   <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], [<uValid>], <.password.>, [<cPlaceholder>], [<cPrompt>] )
+   <uVar>, <oWnd>, [\{|v| <uAction> \}], [<cPicture>], [<uValid>], <.password.>, [<cPlaceholder>], [<cPrompt>], [<cId>] )
 
 //----------------------------------------------------------------------------//
 // PROGRESS STYLES
@@ -284,7 +327,7 @@
 #xcommand @ <nRow>, <nCol> PROGRESS [ <oProg> ] ;
    [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ PROMPT <cPrompt> ] [ SUBTITLE <cSubtitle> ] ;
    [ ICON <cIcon> ] [ COLOR <cColor> ] ;
    [ <indet: INDETERMINATE> ] [ STYLE <nStyle> ] ;
@@ -294,7 +337,7 @@
    [<cPrompt>], [<cSubtitle>], [<cIcon>], [<cColor>], <.indet.>, [<nStyle>], <.showval.> )
 
 #xcommand @ <nRow>, <nCol> TABVIEW [ <oTabs> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ STYLE <nStyle> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
@@ -303,7 +346,7 @@
 
 #xcommand @ <nRow>, <nCol> WEBVIEW [ <oWv> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ URL <cUrl> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
@@ -312,7 +355,7 @@
 #xcommand @ <nRow>, <nCol> CONTROL MENU [ <oMenu> ] ;
    [ PROMPT <cPrompt> ] ;
    [ ICON <cIcon> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
@@ -392,7 +435,7 @@
    <oDate> := TSwDatePicker():New( <nTop>, <nLeft>, <nWidth>, <nHeight>, <oWnd>, <dDate>, <nStyle> )
 
 #xcommand @ <nRow>, <nCol> SWBROWSE [ <oBrw> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    => ;
    [ <oBrw> := ] TSwBrowse():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd> )
@@ -400,7 +443,7 @@
 #xcommand @ <nRow>, <nCol> CARD [ <oCard> ] ;
    [ TITLE <cTitle> ] ;
    [ SYMBOL <cSymbol> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    [ COLOR <cColor> ] ;
@@ -412,14 +455,14 @@
    [ LON <nLon> ] ;
    [ ZOOM <nZoom> ] ;
    [ STYLE <nStyle> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    => ;
    [ <oMap> := ] TSwMap():New( <nRow>, <nCol>, [<nWidth>], [<nHeight>], <oWnd>, [<nLat>], [<nLon>], [<nZoom>], [<nStyle>] )
 
 #xcommand @ <nRow>, <nCol> QUICKLOOK [ <oQl> ] ;
    [ FILE <cFile> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ <res: AUTORESIZE, ANCHORS> <nRes> ] ;
    => ;
@@ -431,7 +474,7 @@
    [ RANGE <nMin>, <nMax> ] ;
    [ STEP <nStep> ] ;
    [ PROMPT <cPrompt> ] ;
-   [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+   [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
    [ SIZE <nWidth>, <nHeight> ] ;
    [ ACTION <uAction> ] ;
    => ;
@@ -440,7 +483,7 @@
 #xcommand @ <nRow>, <nCol> COLORPICKER [ <oCp> ] ;
    [ <v: VAR, VALUE> <cValue> ] ;
    [ PROMPT <cPrompt> ] ;
-    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
     [ SIZE <nWidth>, <nHeight> ] ;
     [ ACTION <uAction> ] ;
     => ;
@@ -452,7 +495,7 @@
 
 #xcommand @ <nRow>, <nCol> GAUGE [ <oGauge> ] ;
     [ <v: VAR, VALUE> <nValue> ] [ RANGE <nMin>, <nMax> ] ;
-    [ <of: OF, WINDOW, DIALOG> <oWnd> ] ;
+    [ <of: OF, WINDOW, DIALOG, PANEL, VSTACK, HSTACK, ZSTACK, NAVWINDOW> <oWnd> ] ;
     [ SIZE <nWidth>, <nHeight> ] ;
     [ PROMPT <cPrompt> ] [ SUBTITLE <cSubtitle> ] ;
     [ ICON <cIcon> ] [ COLOR <cColor> ] ;

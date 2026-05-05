@@ -35,10 +35,12 @@ public class ListState: SwApplyable, StackStateProtocol {
              if let sVal = value as? String { self.filterText = sVal.lowercased() }
         case "hassearch":
              if let bVal = value as? Bool { self.hasSearch = bVal }
+             else if let nVal = value as? Int { self.hasSearch = nVal != 0 }
         case "searchstyle":
              if let nVal = value as? Int { self.searchStyle = nVal }
         case "interactive":
-             self.isInteractive = (value as? Bool) ?? false
+             if let bVal = value as? Bool { self.isInteractive = bVal }
+             else if let nVal = value as? Int { self.isInteractive = nVal != 0 }
         case "clear":
              self.items.removeAll()
              self.lastItem = nil
@@ -94,9 +96,9 @@ public struct SwiftListView: View {
                 contentWithSearch()
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onChange(of: state.selectedId) { oldId, newId in
             if let id = newId {
-                print("🏝️ [Swift] Detectado cambio de selección: \(id)")
                 selectRow(id, state: state)
             }
         }
@@ -125,7 +127,6 @@ public struct SwiftListView: View {
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.2), lineWidth: 1))
                 .padding(.horizontal, 12)
                 .padding(.top, 12)
-                .padding(.bottom, 4)
             }
             
             renderList()
@@ -183,8 +184,7 @@ public struct SwiftListView: View {
     }
 
     private func selectRow(_ rowId: String, state: ListState) {
-        print("🏝️ [Swift] selectRow enviando pipeline para: \(rowId)")
-        let json = "{\"\(state.id)\":{\"SelectedId\":\"\(rowId)\",\"event\":\"select\"}}"
+        let json = "{\"\(state.id)\":{\"selectedid\":\"\(rowId)\",\"event\":\"select\"}}"
         Harbour.call("SW_UPDATE_HB", json)
     }
 
@@ -192,6 +192,7 @@ public struct SwiftListView: View {
     public static func create(id: String, initial: GenericInit) -> StackItem {
         let state = ListState(id: id)
         ViewRegistry.register(state, for: id)
+        state.isInteractive = (initial.interactive ?? 0) != 0
         let item = StackItem(type: .list, id: id)
         setupGeometry(item: item, from: initial)
         return item

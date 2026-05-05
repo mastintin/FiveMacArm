@@ -18,10 +18,31 @@ public struct SwRecursiveItemView: View {
     }
     
     @ViewBuilder
-    private func renderContent() -> some View {
-        let finalWidth = width > 0 ? width : CGFloat(item.itemWidth ?? 0)
-        let finalHeight = height > 0 ? height : CGFloat(item.itemHeight ?? 0)
+    private func applyGeometry(_ v: some View) -> some View {
+        let isFlexible = item.type == .list || item.type == .tabview || item.type == .vstack || item.type == .hstack || item.type == .panel
         
+        if isFlexible {
+            // Contenedores ocupan todo el ancho
+            AnyView(v.frame(maxWidth: .infinity, alignment: .leading))
+        } else {
+            // Tamaño solicitado
+            let finalW = width > 0 ? width : CGFloat(item.itemWidth ?? 100)
+            let finalH = height > 0 ? height : CGFloat(item.itemHeight ?? 30)
+            
+            // Solo aplicamos margen de seguridad a componentes con efectos visuales (botones, gauges, imágenes)
+            let needsAir = item.type == .button || item.type == .gauge || item.type == .image
+            
+            if needsAir {
+                AnyView(v.padding(15).frame(width: finalW + 30, height: finalH + 30))
+            } else {
+                // El resto (SAY, GET, etc.) mantiene su tamaño exacto para no romper layouts densos
+                AnyView(v.frame(width: finalW, height: finalH))
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func renderContent() -> some View {
         Group {
             let content: AnyView = switch item.type {
             case .vstack, .hstack, .zstack:
@@ -92,8 +113,7 @@ public struct SwRecursiveItemView: View {
                 AnyView(EmptyView())
             }
             
-            content
-                .modifier(FlexibleFrameModifier(width: finalWidth, height: finalHeight))
+            applyGeometry(content)
         }
     }
     
@@ -277,7 +297,10 @@ public struct SwRecursiveItemView: View {
         Group {
             if let state = ViewRegistry.getState(for: item.id) as? GaugeState {
                 SwiftGaugeView(state: state)
-            } else { EmptyView() }
+            } else { 
+                let _ = print("⚠️ [SwRecursiveItemView] NO se encontró GaugeState para ID: \(item.id)")
+                EmptyView() 
+            }
         }
     }
 }
@@ -328,6 +351,7 @@ struct SwStackContent: View {
                 ZStack(alignment: align) { content }
             }
         }
+        .padding(state.padding)
         .background(state.backgroundColor ?? AnyShapeStyle(Color.clear))
         .cornerRadius(state.cornerRadius)
     }
@@ -395,12 +419,19 @@ public struct SwWindowView: View {
                 ZStack(alignment: .topLeading) {
                     ForEach(details) { item in
                         let geometry = calculateGeometry(for: item, in: proxy.size)
-                        SwRecursiveItemView(
+                        let v = SwRecursiveItemView(
                             item: item, 
                             width: geometry.width,
                             height: geometry.height
                         )
-                        .offset(x: geometry.x, y: geometry.y)
+                        
+                        // Solo aplicamos offset si no es 0,0 (para permitir flujo natural en stacks)
+                        // O si estamos en el nivel raíz de la ventana
+                        if geometry.x != 0 || geometry.y != 0 {
+                            v.offset(x: geometry.x, y: geometry.y)
+                        } else {
+                            v
+                        }
                     }
                 }
             }

@@ -41,7 +41,6 @@ public struct SwiftGetView: View {
                             Image(systemName: state.systemImage)
                                 .foregroundStyle(state.iconColor ?? state.color)
                                 .font(.system(size: 14, weight: .medium))
-                                .padding(.leading, 10)
                         }
 
                         // El Campo de Texto Nativo
@@ -73,8 +72,6 @@ public struct SwiftGetView: View {
                             .multilineTextAlignment(state.alignment)
                             .disabled(!state.isEnabled || state.isReadOnly)
                         }
-                        .padding(.leading, state.systemImage.isEmpty ? 12 : 2)
-                        .padding(.trailing, state.text.isEmpty ? 12 : 2)
 
                         // Botón de Borrado
                         if !state.text.isEmpty && state.isEnabled {
@@ -84,9 +81,9 @@ public struct SwiftGetView: View {
                                     .font(.system(size: 14))
                             }
                             .buttonStyle(.plain)
-                            .padding(.trailing, 10)
                         }
                     }
+                    .padding(.horizontal, 10)
                     .onChange(of: state.text) { oldValue, newValue in
                         if oldValue != newValue {
                             applyModernFormatting(newValue)

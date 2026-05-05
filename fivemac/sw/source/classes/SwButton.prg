@@ -18,38 +18,26 @@
  
      ACCESS cColor           INLINE hb_HGetDef( ::hState, "color", "" )
      ASSIGN cColor( c )      INLINE ( ::hState["color"] := c, ::Apply( "color", c ) )
-
+ 
      ACCESS cBackColor       INLINE hb_HGetDef( ::hState, "backcolor", "" )
      ASSIGN cBackColor( c )  INLINE ( ::hState["backcolor"] := c, ::Apply( "backcolor", c ) )
-
-     ACCESS cVibrance        INLINE hb_HGetDef( ::hState, "vibrance", "" )
-     ASSIGN cVibrance( c )   INLINE ( ::hState["vibrance"] := c, ::Apply( "vibrance", c ) )
-
+ 
      ACCESS cIcon            INLINE hb_HGetDef( ::hState, "icon", "" )
      ASSIGN cIcon( c )       INLINE ( ::hState["icon"] := c, ::Apply( "icon", c ) )
  
-     ACCESS cIconColor       INLINE hb_HGetDef( ::hState, "iconcolor", "" )
-     ASSIGN cIconColor( c )  INLINE ( ::hState["iconcolor"] := c, ::Apply( "iconcolor", c ) )
-
-     ACCESS nShadow          INLINE hb_HGetDef( ::hState, "shadow", 0 )
-     ASSIGN nShadow( n )     INLINE ( ::hState["shadow"] := n, ::Apply( "shadow", n ) )
-
      ACCESS uFontSize        INLINE hb_HGetDef( ::hState, "fontsize", 13 )
      ASSIGN uFontSize( u )   INLINE ( ::hState["fontsize"] := u, ::Apply( "fontsize", u ) )
-
-     ACCESS cFontStyle       INLINE hb_HGetDef( ::hState, "fontstyle", "" )
-     ASSIGN cFontStyle( c )  INLINE ( ::hState["fontstyle"] := c, ::Apply( "fontstyle", c ) )
  
-     ACCESS nRole            INLINE hb_HGetDef( ::hState, "role", 0 )
-     ASSIGN nRole( n )       INLINE ( ::hState["role"] := n, ::Apply( "role", n ) )
+     ACCESS cStyle           INLINE hb_HGetDef( ::hState, "style", "" )
+     ASSIGN cStyle( c )      INLINE ( ::hState["style"] := c, ::Apply( "style", c ) )
  
-     ACCESS lRepeat          INLINE hb_HGetDef( ::hState, "repeat", .f. )
-     ASSIGN lRepeat( l )     INLINE ( ::hState["repeat"] := l, ::Apply( "repeat", l ) )
+     ACCESS cGlassEffect     INLINE hb_HGetDef( ::hState, "glass", "" )
+     ASSIGN cGlassEffect( c ) INLINE ( ::hState["glass"] := c, ::Apply( "glass", c ) )
  
      ACCESS cBorderShape     INLINE hb_HGetDef( ::hState, "bordershape", ".rounded" )
      ASSIGN cBorderShape( c ) INLINE ( ::hState["bordershape"] := c, ::Apply( "bordershape", c ) )
  
-     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId )
+     METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId, cStyle, cIcon, cShape, cColor )
      METHOD SetText( cText )
      METHOD OnAction()
      METHOD End()
@@ -58,7 +46,7 @@
  
  //----------------------------------------------------------------------------//
  
- METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId ) CLASS TSwButton
+ METHOD New( nTop, nLeft, nWidth, nHeight, cPrompt, oWnd, bAction, nAutoResize, cId, cStyle, cIcon, cShape, cColor ) CLASS TSwButton
  
      DEFAULT nWidth := 90, nHeight := 30, cPrompt := "SwBtn", nAutoResize := 0
      
@@ -72,8 +60,11 @@
  
      ::hState["caption"] := cPrompt
      ::hState["type"]    := 9
-     ::hState["interactive"] := 0
- 
+     if !Empty( cStyle ); ::hState["style"] := cStyle; endif 
+     if !Empty( cIcon );  ::hState["icon"]  := cIcon;  endif
+     if !Empty( cShape ); ::hState["bordershape"] := cShape; endif
+     if !Empty( cColor ); ::hState["color"] := cColor; endif
+
      ::bAction  := bAction
     
      ::Create()

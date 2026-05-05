@@ -7,11 +7,13 @@ public class SwiftButtonState: SwApplyable {
     public var id: String
     public var caption: String
     public var backgroundColor: AnyShapeStyle = AnyShapeStyle(Color.blue)
-    public var foregroundColor: AnyShapeStyle = AnyShapeStyle(Color.white)
+    public var foregroundColor: AnyShapeStyle = AnyShapeStyle(Color.primary) // Por defecto Negro
     public var vibranceMaterial: AnyShapeStyle? = nil
-    public var cornerRadius: CGFloat = 8
+    public var cornerRadius: CGFloat = 12
     public var isVisible: Bool = true
     public var isEnabled: Bool = true
+    public var isGlass: Bool = false
+    public var glassTint: Color = .clear
     public var systemImage: String = ""
     public var iconColor: AnyShapeStyle? = nil
     public var shadowRadius: Double = 0
@@ -36,53 +38,36 @@ public class SwiftButtonState: SwApplyable {
             self.caption = String(describing: value)
         case "color", "fgcolor":
             if let sVal = value as? String {
-                if sVal.hasPrefix(".") { self.foregroundColor = mapColorStyle(sVal) }
-                else { self.foregroundColor = AnyShapeStyle(Color(hex: sVal)) }
+                let smart = parseSmartStyle(sVal)
+                self.foregroundColor = smart.style
             }
         case "backcolor", "bgcolor":
             if let sVal = value as? String {
-                if sVal.isEmpty { self.backgroundColor = AnyShapeStyle(Color.clear) }
-                else if sVal.hasPrefix(".") { self.backgroundColor = mapColorStyle(sVal) }
-                else { self.backgroundColor = AnyShapeStyle(Color(hex: sVal)) }
-            } else if let nVal = value as? Int {
-                self.backgroundColor = AnyShapeStyle(Color(hex: String(format: "#%06X", nVal)))
+                let smart = parseSmartStyle(sVal)
+                self.backgroundColor = smart.style
             }
-        case "vibrance":
-            if let sVal = value as? String { self.vibranceMaterial = mapMaterial(sVal) }
-        case "corner", "cornerradius":
-            if let n = (value as? NSNumber)?.doubleValue ?? (value as? Double) { self.cornerRadius = CGFloat(n) }
-        case "visible":
-            if let b = value as? Bool { self.isVisible = b }
-            else if let n = value as? Int { self.isVisible = (n == 1) }
-        case "enabled":
-            if let b = value as? Bool { self.isEnabled = b }
-            else if let n = value as? Int { self.isEnabled = (n == 1) }
+        case "style":
+             if let sVal = value as? String {
+                let smart = parseSmartStyle(sVal)
+                self.isGlass = smart.isMaterial
+                self.glassTint = smart.baseColor
+             }
+        case "glass":
+             if let sVal = value as? String {
+                let smart = parseSmartStyle(sVal)
+                self.glassTint = smart.baseColor
+             }
         case "icon":
             if let sVal = value as? String { self.systemImage = sVal }
         case "iconcolor":
             if let sVal = value as? String {
-                if sVal.hasPrefix(".") { self.iconColor = mapColorStyle(sVal) }
-                else { self.iconColor = AnyShapeStyle(Color(hex: sVal)) }
+                let smart = parseSmartStyle(sVal)
+                self.iconColor = smart.style
             }
         case "shadow":
             if let n = (value as? NSNumber)?.doubleValue ?? (value as? Double) { self.shadowRadius = n }
-        case "shadowcolor":
-            if let sVal = value as? String { self.shadowColor = Color(hex: sVal) }
         case "fontsize":
             if let n = (value as? NSNumber)?.doubleValue ?? (value as? Double) { self.fontSize = n }
-        case "fontstyle":
-            if let sVal = value as? String { self.fontModifiers = sVal }
-        case "role":
-            if let n = (value as? NSNumber)?.intValue ?? (value as? Int) {
-                switch n {
-                case 1: self.role = .destructive
-                case 2: self.role = .cancel
-                default: self.role = nil
-                }
-            }
-        case "repeat":
-            if let b = value as? Bool { self.isRepeatable = b }
-            else if let n = value as? Int { self.isRepeatable = (n == 1) }
         case "bordershape":
             if let sVal = value as? String { self.borderShape = sVal.lowercased() }
         case "pipeline_json":
@@ -93,7 +78,49 @@ public class SwiftButtonState: SwApplyable {
     }
 }
 
-// MARK: - Button Style
+// MARK: - Glass Button Style (Artesanal Premium Completo)
+struct GlassButtonStyle: ButtonStyle {
+    @Bindable var state: SwiftButtonState
+    @Environment(\.isEnabled) private var isEnabled
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(state.foregroundColor)
+            .padding(.horizontal, state.borderShape.contains(".circle") ? 10 : 20)
+            .padding(.vertical, 10)
+            .background {
+                if state.borderShape.contains(".capsule") {
+                    ZStack {
+                        Capsule().fill(.ultraThinMaterial)
+                        if state.glassTint != .clear { Capsule().fill(state.glassTint.opacity(0.45)).blendMode(.overlay) }
+                        Capsule().fill(LinearGradient(colors: [.white.opacity(0.4), .clear], startPoint: .top, endPoint: .center)).padding(2)
+                        Capsule().stroke(LinearGradient(colors: [.white.opacity(0.5), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.5)
+                    }
+                } else if state.borderShape.contains(".circle") {
+                    ZStack {
+                        Circle().fill(.ultraThinMaterial)
+                        if state.glassTint != .clear { Circle().fill(state.glassTint.opacity(0.45)).blendMode(.overlay) }
+                        Circle().fill(LinearGradient(colors: [.white.opacity(0.4), .clear], startPoint: .top, endPoint: .center)).padding(2)
+                        Circle().stroke(LinearGradient(colors: [.white.opacity(0.5), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.5)
+                    }
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: state.cornerRadius).fill(.ultraThinMaterial)
+                        if state.glassTint != .clear { RoundedRectangle(cornerRadius: state.cornerRadius).fill(state.glassTint.opacity(0.45)).blendMode(.overlay) }
+                        RoundedRectangle(cornerRadius: state.cornerRadius).fill(LinearGradient(colors: [.white.opacity(0.4), .clear], startPoint: .top, endPoint: .center)).padding(2)
+                        RoundedRectangle(cornerRadius: state.cornerRadius).stroke(LinearGradient(colors: [.white.opacity(0.5), .clear], startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 0.5)
+                    }
+                }
+            }
+            .opacity(isEnabled ? 1.0 : 0.5)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .shadow(color: (state.glassTint == .clear ? Color.black : state.glassTint).opacity(0.2), 
+                    radius: configuration.isPressed ? 3 : 6, x: 0, y: 3)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Premium Button Style (Standard)
 struct PremiumButtonStyle: ButtonStyle {
     @Bindable var state: SwiftButtonState
     @Environment(\.isEnabled) private var isEnabled
@@ -101,39 +128,10 @@ struct PremiumButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .foregroundStyle(state.foregroundColor)
-            .opacity(configuration.isPressed ? 0.7 : (isEnabled ? 1.0 : 0.5))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background {
-                if state.borderShape.contains(".capsule") {
-                    Capsule().fill(state.vibranceMaterial ?? AnyShapeStyle(Color.clear))
-                        .opacity(isEnabled ? 1.0 : 0.3)
-                } else if state.borderShape.contains(".circle") {
-                    Circle().fill(state.vibranceMaterial ?? AnyShapeStyle(Color.clear))
-                        .opacity(isEnabled ? 1.0 : 0.3)
-                } else {
-                    RoundedRectangle(cornerRadius: state.cornerRadius).fill(state.vibranceMaterial ?? AnyShapeStyle(Color.clear))
-                        .opacity(isEnabled ? 1.0 : 0.3)
-                }
-            }
-            .background {
-                if state.borderShape.contains(".capsule") {
-                    Capsule().fill(state.backgroundColor)
-                        .grayscale(isEnabled ? 0 : 0.6)
-                        .opacity(isEnabled ? 1.0 : 0.3)
-                } else if state.borderShape.contains(".circle") {
-                    Circle().fill(state.backgroundColor)
-                        .grayscale(isEnabled ? 0 : 0.6)
-                        .opacity(isEnabled ? 1.0 : 0.3)
-                } else {
-                    RoundedRectangle(cornerRadius: state.cornerRadius).fill(state.backgroundColor)
-                        .grayscale(isEnabled ? 0 : 0.6)
-                        .opacity(isEnabled ? 1.0 : 0.3)
-                }
-            }
+            .background(state.backgroundColor, in: RoundedRectangle(cornerRadius: state.cornerRadius))
             .shadow(color: state.shadowRadius > 0 ? state.shadowColor : .clear, radius: state.shadowRadius)
-            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 
@@ -141,65 +139,79 @@ struct PremiumButtonStyle: ButtonStyle {
 public struct SwiftButtonView: View {
     @Bindable var state: SwiftButtonState
     
-    var finalFont: Font {
-        var f = Font.system(size: state.fontSize)
-        let mods = state.fontModifiers.lowercased()
-        if mods.contains(".bold") { f = f.bold() }
-        if mods.contains(".italic") { f = f.italic() }
-        if mods.contains(".monospaced") { f = f.monospaced() }
-        return f
-    }
-
     public var body: some View {
         if state.isVisible {
-            Button(role: state.role, action: {
+            Button(action: {
                 if let batchJSON = state.pipelineJSON, let data = batchJSON.data(using: .utf8) {
-                    Task { @MainActor in
-                        await executeWorkflowBatch(jsonData: data)
-                    }
+                    Task { @MainActor in await executeWorkflowBatch(jsonData: data) }
                 } else {
                     let json = "{\"\(state.id)\":{\"event\":\"click\"}}"
                     Harbour.call("SW_UPDATE_HB", json)
                 }
             }) {
-                HStack(spacing: 6) {
-                    if !state.systemImage.isEmpty {
-                        Image(systemName: state.systemImage)
-                        .foregroundStyle(state.iconColor ?? state.foregroundColor)
+                ZStack {
+                    HStack(spacing: state.caption.isEmpty ? 0 : 6) {
+                        if !state.systemImage.isEmpty {
+                            Image(systemName: state.systemImage)
+                                .font(.system(size: (state.borderShape.contains(".circle") && state.caption.isEmpty) ? 28 : state.fontSize))
+                                .foregroundStyle(state.iconColor ?? state.foregroundColor)
+                                .offset(x: (state.systemImage == "play.fill" && state.caption.isEmpty) ? 2 : 0)
+                        }
+                        
+                        if !state.caption.isEmpty {
+                            Text(state.caption)
+                                .font(.system(size: state.fontSize))
+                                .foregroundStyle(state.foregroundColor)
+                        }
                     }
-                    Text(state.caption)
-                        .font(finalFont)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.5)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
-            .buttonStyle(PremiumButtonStyle(state: state))
-            .disabled(!state.isEnabled)
-            .buttonRepeatBehavior(state.isRepeatable ? .enabled : .disabled)
+            .buttonStyle(state.isGlass ? AnyButtonStyle(GlassButtonStyle(state: state)) : AnyButtonStyle(PremiumButtonStyle(state: state)))
         }
     }
 }
 
-// MARK: - Factory Logic (Encapsulada)
+struct AnyButtonStyle: ButtonStyle {
+    private let _makeBody: (Configuration) -> AnyView
+    init<S: ButtonStyle>(_ style: S) { _makeBody = { configuration in AnyView(style.makeBody(configuration: configuration)) } }
+    func makeBody(configuration: Configuration) -> AnyView { _makeBody(configuration) }
+}
+
+// MARK: - Factory Logic
 extension SwiftButtonView {
     @MainActor
     public static func create(id: String, from jsonData: Data) throws -> StackItem {
         let decoder = JSONDecoder()
         let initial = try decoder.decode(ButtonInit.self, from: jsonData)
+        let state = SwiftButtonState(id: id, caption: initial.caption ?? "")
         
-        let state = SwiftButtonState(id: id, caption: initial.caption ?? initial.title ?? "")
+        if let s = initial.style { 
+            let smart = parseSmartStyle(s)
+            state.isGlass = smart.isMaterial
+            state.glassTint = smart.baseColor
+        }
+        if let b = initial.bordershape { state.borderShape = b }
+        if let i = initial.icon { state.systemImage = i }
+        if let g = initial.glass {
+            let smart = parseSmartStyle(g)
+            state.glassTint = smart.baseColor
+        }
+        if let c = initial.color {
+            let smart = parseSmartStyle(c)
+            state.foregroundColor = smart.style
+        }
+        
         ViewRegistry.register(state, for: id)
-        
         let item = StackItem(type: .button, id: id)
         setupGeometry(item: item, from: initial)
         return item
     }
 }
 
-// MARK: - Protocols & Data Structures
 public struct ButtonInit: Codable, GeometryProtocol {
-    public let caption: String?, title: String?
+    public let caption: String?
+    public let style: String?, glass: String?, bordershape: String?, icon: String?, color: String?
     public let width, height, top, left: Double?
     public let resizemask: Int?
     public let parentwidth, parentheight: Double?

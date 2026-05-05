@@ -15,6 +15,9 @@
 
      ACCESS nAlignment       INLINE hb_HGetDef( ::hState, "alignment", 0 )
      ASSIGN nAlignment( n )  INLINE ( ::hState["alignment"] := n, ::Apply( "alignment", n ) )
+
+     ACCESS nPadding         INLINE hb_HGetDef( ::hState, "padding", 8 )
+     ASSIGN nPadding( n )    INLINE ( ::hState["padding"] := n, ::Apply( "padding", n ) )
  
      METHOD New( nTop, nLeft, nWidth, nHeight, oParent, cId, nAutoResize )
  

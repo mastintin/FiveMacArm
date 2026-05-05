@@ -89,11 +89,11 @@ public struct SwiftCardView: View {
                         }
                     }
                     
-                    Spacer(minLength: 0) // Empujamos todo hacia arriba
+                    Spacer(minLength: 0)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
-                .padding(.top, 25) // Valor equilibrado para el padding superior
+                .padding(.top, 25)
                 
                 // Right Accent Bar
                 if state.accentSide == 4, let accent = state.accentColor {

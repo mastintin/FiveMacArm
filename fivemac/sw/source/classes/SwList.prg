@@ -21,22 +21,17 @@
     ASSIGN bPipeline( u )   INLINE ( ::hState["pipeline"] := u,;
        ::hState["interactive"] := !Empty( u ) .or. !Empty( ::bAction ),;
        ::Apply( { "interactive" => ::hState["interactive"] } ) )
- 
-    ACCESS lScroll          INLINE hb_HGetDef( ::hState, "hasscroll", .F. )
-    ASSIGN lScroll( l )     INLINE ( ::hState["hasscroll"] := l, ::Apply( { "hasscroll" => l } ) )
+
+    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId, nAutoResize, bAction, nStyle, lSearch ) CONSTRUCTOR
+    METHOD AddRow( cId )
+    METHOD AddItem( cId )   INLINE ::AddRow( cId )
+    METHOD Add( cId )       INLINE ::AddRow( cId )
     
-    ACCESS lSearch          INLINE hb_HGetDef( ::hState, "hassearch", .F. )
-    ASSIGN lSearch( l )     INLINE ( ::hState["hassearch"] := l, ::Apply( { "hassearch" => l } ) )
+    METHOD Select( cId )    INLINE ( ::cSelectedId := cId, ::Apply( { "selectedid" => cId } ) )
+    METHOD Clear()          INLINE ( ::Apply( { "clear" => .T. } ) )
     
-    ACCESS nSearchStyle          INLINE hb_HGetDef( ::hState, "searchstyle", 0 )
-    ASSIGN nSearchStyle( n )     INLINE ( ::hState["searchstyle"] := n, ::Apply( { "searchstyle" => n } ) )
-   
-    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId, nAutoResize, bAction, nStyle, lSearch )
-    METHOD AddRow()
-    METHOD Clear()
-    METHOD Filter( cText )
-    METHOD GetIndex( cRowId )
-    METHOD OnAction()
+    METHOD SetFilter( cText ) INLINE ::Apply( { "filter" => cText } )
+    
     METHOD Update( hNewState )
     
  ENDCLASS
@@ -54,17 +49,17 @@
        ::hState["parentid"] := oWnd:cId
     endif
        
-    ::hState["hasscroll"]   := .T. 
-    ::hState["interactive"] := .F.
+    ::hState["hasscroll"]   := 1 
+    ::hState["interactive"] := 0
     ::hState["style"]       := nStyle
-    ::hState["hassearch"]   := lSearch
- 
+    ::hState["hassearch"]   := iif( lSearch, 1, 0 )
+
     if !Empty( bAction )
        ::bAction := bAction
     endif
     
     ::hState["type"] := SW_TYPE_LIST
- 
+
     ::Create()
     ::Apply( { "style" => ::hState["style"], "hassearch" => ::hState["hassearch"] } )
     
@@ -73,60 +68,31 @@
  //----------------------------------------------------------------------------//
     
  METHOD AddRow( cId ) CLASS TSwList
-    return TSwListRow():New( 0, 0, 0, 0, Self, cId )
-     
- //----------------------------------------------------------------------------//
-  
- METHOD Clear() CLASS TSwList
-    ::Apply( { "clear" => .T. } )
- return nil
-  
- METHOD Filter( cText ) CLASS TSwList
-    ::Apply( { "filter" => cText } )
- return nil
-     
+ return TSwListRow():New( 0, 0, 0, 0, Self, cId )
+    
  //----------------------------------------------------------------------------//
     
  METHOD Update( hNewState ) CLASS TSwList
-     
-    if hb_HHasKey( hNewState, "SelectedId" )
-       ::cSelectedId := hNewState["SelectedId"]
-       // Update the index automatically based on the ID
-       ::hState["selectedindex"] := ::GetIndex( ::cSelectedId )
-    elseif hb_HHasKey( hNewState, "selectedId" )
-       ::cSelectedId := hNewState["selectedId"]
-       ::hState["selectedindex"] := ::GetIndex( ::cSelectedId )
-    endif
- 
-    ::Super:Update( hNewState )
-     
- return nil
-     
- //----------------------------------------------------------------------------//
     
- METHOD OnAction() CLASS TSwList
-    if !Empty( ::bPipeline )
-       WITH OBJECT Sw_GetProxy()
-          :Pipeline( ::bPipeline )
-       END
-    elseif !Empty( ::bAction )
-       Eval( ::bAction, ::cSelectedId, Self )
+    if hb_HHasKey( hNewState, "selectedid" )
+       ::cSelectedId := hNewState["selectedid"]
+       
+       if !Empty( ::bAction )
+          Eval( ::bAction, ::cSelectedId, Self )
+       endif
     endif
+    
  return nil
  
  //----------------------------------------------------------------------------//
  
- METHOD GetIndex( cRowId ) CLASS TSwList
-    local nIndex
-    // El Proxy ya nos devuelve el valor contenido en la clave "result" directamente
-    nIndex := SWProxy("q"):GetIndex( ::cId, cRowId )
-    if !hb_IsNumeric( nIndex ) .or. nIndex == -1
-       return 0
-    endif
- return nIndex + 1
- 
- //----------------------------------------------------------------------------//
- // clase fila de lista 
-  
  CLASS TSwListRow FROM TSwHStack
+    METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId ) CONSTRUCTOR
  ENDCLASS
+ 
+ METHOD New( nTop, nLeft, nWidth, nHeight, oWnd, cId ) CLASS TSwListRow
+    ::Super:New( nTop, nLeft, nWidth, nHeight, oWnd, cId )
+    ::hState["type"]      := 2 // HStack
+    ::hState["alignment"] := 1 // Leading (Izquierda)
+    ::Create()
+ return Self

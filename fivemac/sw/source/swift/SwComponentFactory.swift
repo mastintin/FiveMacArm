@@ -5,6 +5,7 @@ import SwiftUI
 
 @MainActor
 public func sw_component_create_internal(id: String, typeId: Int, jsonStr: String, parentid: String) {
+    print("🛠️ [Swift-Factory] CREANDO: ID='\(id)', Tipo=\(typeId), Parent='\(parentid)'")
     let jsonData = jsonStr.data(using: .utf8) ?? Data()
     let decoder = JSONDecoder()
     let cleanid = id
@@ -131,7 +132,17 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
             newItem = try SwiftColorPickerView.create(id: cleanid, from: jsonData)
 
         case 32: // Gauge
-            newItem = try SwiftGaugeView.create(id: cleanid, from: jsonData)
+            print("🛠️ [Swift-Factory] Detectado GAUGE. Decodificando...")
+            do {
+                newItem = try SwiftGaugeView.create(id: cleanid, from: jsonData)
+                print("🛠️ [Swift-Factory] GAUGE creado con éxito: \(cleanid)")
+            } catch {
+                print("🛠️ [Swift-Factory] ❌ Error decodificando GAUGE: \(error)")
+                if let jsonString = String(data: jsonData, encoding: .utf8) {
+                    print("🛠️ [Swift-Factory] JSON que falló: \(jsonString)")
+                }
+                throw error
+            }
 
         case 110: // AppMenu
             SwAppMenu.setup(from: jsonData)
@@ -149,14 +160,13 @@ public func sw_component_create_internal(id: String, typeId: Int, jsonStr: Strin
         ViewRegistry.register(item, for: cleanid)
         if !cleanParentId.isEmpty {
             if let parentState = ViewRegistry.getState(for: cleanParentId) as? StackStateProtocol {
+                print("SwFactory: [JERARQUÍA] Parent found for \(cleanid). Parent ID: \(cleanParentId), Parent Type: \(type(of: parentState))")
                 ViewRegistry.registerParent(id: cleanid, parentId: cleanParentId)
                 parentState.items.append(item)
                 parentState.lastItem = item
                 print("SwFactory: [JERARQUÍA] ✅ Añadido \(cleanid) al padre [\(cleanParentId)]. Total items en padre: \(parentState.items.count)")
             } else {
-                print("SwFactory: [ERROR] ❌ No se encontró el padre o no es un contenedor válido: \(cleanParentId)")
-                // Si no se encuentra el padre, por seguridad lo añadimos a la última ventana activa?
-                // No, mejor dejarlo huérfano para ver el error en el log.
+                print("SwFactory: [ERROR] ❌ No se encontró el padre o no es un contenedor válido: \(cleanParentId). Registry state: \(ViewRegistry.getState(for: cleanParentId) ?? "NIL")")
             }
         } else {
             print("SwFactory: [AVISO] ⚠️ Componente \(cleanid) creado sin parentid.")
@@ -217,4 +227,3 @@ public struct GenericInit: Codable, GeometryProtocol {
     public let hastoolbar: Bool? 
     public let toolbarItems: [ToolbarItemConfig]? 
 }
-

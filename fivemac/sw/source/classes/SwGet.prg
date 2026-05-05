@@ -72,7 +72,7 @@
  
     METHOD _event( c )      INLINE If( c == "valid", ::OnValid(), )
 
-    METHOD New( nTop, nLeft, nWidth, nHeight, uValue, oWnd, bAction, cPicture, bValid, lSecure, cPlaceholder, cPrompt )
+    METHOD New( nTop, nLeft, nWidth, nHeight, uValue, oWnd, bAction, cPicture, bValid, lSecure, cPlaceholder, cPrompt, cId )
     METHOD SetText( cText )
     METHOD OnAction( cNewText )
     METHOD OnValid()
@@ -88,7 +88,7 @@
   
  //----------------------------------------------------------------------------//
   
- METHOD New( nTop, nLeft, nWidth, nHeight, uValue, oWnd, bAction, cPicture, bValid, lSecure, cPlaceholder, cPrompt ) CLASS SwGet
+ METHOD New( nTop, nLeft, nWidth, nHeight, uValue, oWnd, bAction, cPicture, bValid, lSecure, cPlaceholder, cPrompt, cId ) CLASS SwGet
   
     DEFAULT nWidth := 120, nHeight := 38
     DEFAULT uValue := "", lSecure := .F., cPlaceholder := "", cPrompt := ""
@@ -99,6 +99,10 @@
 
     ::Super:New( nTop, nLeft, nWidth, nHeight )
     
+    if !Empty( cId )
+       ::cId := cId
+    endif
+
     ::oWnd     := oWnd
     ::bValid   := bValid
     ::cPicture := cPicture

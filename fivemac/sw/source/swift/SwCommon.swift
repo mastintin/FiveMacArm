@@ -135,6 +135,7 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyab
     public var alignment: Int = 0 // 0: center, 1: leading/top, 2: trailing/bottom
     public var isVisible: Bool = true
     public var isEnabled: Bool = true
+    public var padding: CGFloat = 8
     
     public init() {}
     public func setAccentColorRGBA(r: Int, g: Int, b: Int, a: Int) {}
@@ -161,6 +162,10 @@ public class SwiftVStackState: StackStateProtocol, RGBAColorableState, SwApplyab
             self.isVisible = SwUtils.toBool(value)
         } else if prop == "enabled" {
             self.isEnabled = SwUtils.toBool(value)
+        } else if prop == "padding" {
+            if let n = (value as? NSNumber)?.doubleValue { self.padding = CGFloat(n) }
+            else if let n = value as? Double { self.padding = CGFloat(n) }
+            else if let n = value as? Int { self.padding = CGFloat(n) }
         }
     }
 }
@@ -195,6 +200,7 @@ public class BaseControlState: SwApplyable {
 public class SwiftWindowState: SwiftVStackState {
     public var windowId: String = ""
     public var isInteractive: Bool = true
+    public var title: String? = nil
     
     public init(id: String) {
         self.windowId = id
@@ -221,6 +227,7 @@ public class SwiftWindowState: SwiftVStackState {
             if let win = ViewRegistry.get("NSWindow_\(self.windowId)") as? NSWindow {
                 if prop == "title", let v = value as? String {
                     win.title = v
+                    self.title = v
                 } else if prop == "center" {
                     win.center()
                     // Sincronización de vuelta a Harbour
@@ -271,12 +278,39 @@ public func parseGradient(_ s: String) -> AnyShapeStyle? {
 public func mapMaterial(_ s: String) -> AnyShapeStyle? {
     switch s.lowercased() {
     case ".ultrathin": return AnyShapeStyle(.ultraThinMaterial)
-    case ".thin": return AnyShapeStyle(.thinMaterial)
+    case ".thin", ".glass": return AnyShapeStyle(.thinMaterial)
     case ".regular": return AnyShapeStyle(.regularMaterial)
     case ".thick": return AnyShapeStyle(.thickMaterial)
     case ".ultrathick": return AnyShapeStyle(.ultraThickMaterial)
     default: return nil
     }
+}
+
+public struct SmartStyle {
+    public var isMaterial: Bool
+    public var baseColor: Color
+    public var style: AnyShapeStyle
+}
+
+public func parseSmartStyle(_ sVal: String, defaultColor: Color = .blue) -> SmartStyle {
+    let low = sVal.lowercased()
+    let isMaterial = low.contains(".glass") || low.contains(".thin") || low.contains(".gota")
+    
+    var cleanColor = low
+        .replacingOccurrences(of: ".glass", with: "")
+        .replacingOccurrences(of: ".thin", with: "")
+        .replacingOccurrences(of: ".gota", with: "")
+        .trimmingCharacters(in: .whitespaces)
+    
+    var baseColor = defaultColor
+    if cleanColor == "." || cleanColor.isEmpty {
+        // default remains
+    } else {
+        if !cleanColor.hasPrefix(".") { cleanColor = "." + cleanColor }
+        baseColor = mapBaseColor(cleanColor)
+    }
+    
+    return SmartStyle(isMaterial: isMaterial, baseColor: baseColor, style: mapColorStyle(cleanColor))
 }
 
 public func mapColorStyle(_ s: String) -> AnyShapeStyle {
@@ -299,6 +333,10 @@ public func mapColorStyle(_ s: String) -> AnyShapeStyle {
     case ".gray": return AnyShapeStyle(Color.gray)
     case ".black": return AnyShapeStyle(Color.black)
     case ".white": return AnyShapeStyle(Color.white)
+    case ".cyan": return AnyShapeStyle(Color.cyan)
+    case ".indigo": return AnyShapeStyle(Color.indigo)
+    case ".mint": return AnyShapeStyle(Color.mint)
+    case ".teal": return AnyShapeStyle(Color.teal)
     default: return AnyShapeStyle(.primary)
     }
 }
@@ -339,6 +377,16 @@ public func applySwiftViewLayout(swiftView: NSView, parent: NSObject, top: Doubl
 public struct SwiftBridge {
     public static func onAction(_ id: String) {
         let json = "{\"\(id)\":{\"event\":\"click\"}}"
+        Harbour.call("SW_UPDATE_HB", json)
+    }
+    
+    public static func onEvent(_ id: String, event: String, value: String? = nil) {
+        var json = "{\"\(id)\":{\"event\":\"\(event)\""
+        if let v = value { 
+            let cleanVal = v.replacingOccurrences(of: "\"", with: "\\\"")
+            json += ",\"value\":\"\(cleanVal)\"" 
+        }
+        json += "}}"
         Harbour.call("SW_UPDATE_HB", json)
     }
     
